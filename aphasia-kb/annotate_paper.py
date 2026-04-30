@@ -1,0 +1,287 @@
+"""
+annotate_paper.py — produce a color-highlighted version of a paper's
+PDF using the verbatim quotes recorded in a draft KB entry's
+`source_passages`.
+
+The user's verification mechanism: open the annotated PDF and the draft
+side-by-side. Each color matches a finding-aspect (claim, sample,
+statistics, etc.) so they can see at a glance:
+
+  - whether each highlighted sentence is the *right* one for that aspect
+  - whether anything important is *un*-highlighted (i.e., missed)
+
+Usage
+-----
+    # Single draft:
+    python annotate_paper.py \
+        --pdf   papers/Fridriksson2018.pdf \
+        --draft drafts/regions/ho-cort_44__Fridriksson2018.md
+
+    # Multiple drafts from one paper (multi-bucket case):
+    python annotate_paper.py \
+        --pdf   papers/Fridriksson2018.pdf \
+        --draft drafts/regions/ho-cort_44__Fridriksson2018.md \
+                drafts/therapies/mit__Fridriksson2018.md
+
+Writes:
+    papers/Fridriksson2018_annotated.pdf
+
+Optional:
+    --out PATH        explicit output path
+    --no-legend       skip the color-legend page
+    --fail-on-missing exit non-zero if any quote couldn't be located
+
+Color scheme is the single source of truth in `aphasia_kb.SUPPORTS_COLORS`.
+
+Dependencies
+------------
+    pip install pymupdf pyyaml
+
+(PyMuPDF / fitz is the only way to add highlight annotations to a PDF
+from Python without rasterizing.)
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+# Re-use vocab + colors from the loader so the two stay in sync
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from aphasia_kb import (
+    parse_markdown,
+    SUPPORTS_VOCAB,
+    SUPPORTS_COLORS,
+)
+
+
+# ============================================================
+# Quote-finding heuristics
+# ============================================================
+def _hex_to_rgb01(hex_color: str) -> tuple[float, float, float]:
+    """'#a8c8ff' -> (0.658, 0.784, 1.0). PyMuPDF wants 0..1 floats."""
+    h = hex_color.lstrip("#")
+    return tuple(int(h[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+
+
+def _normalize_for_search(s: str) -> str:
+    """Collapse whitespace and strip elision markers so quotes match
+    even when the PDF has line breaks the agent's quote doesn't."""
+    import re
+    s = s.replace("[\u2026]", " ").replace("[...]", " ")
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def _find_quote_rects(page, quote: str):
+    """Try increasingly forgiving searches; return list of fitz.Rect."""
+    raw = quote.strip()
+    norm = _normalize_for_search(raw)
+    candidates = [raw, norm]
+
+    # Try the leading chunk (first ~120 chars) — useful when the agent
+    # accidentally pasted slightly more than what's literally on one
+    # PDF line and the longer search fails.
+    if len(norm) > 120:
+        candidates.append(norm[:120])
+    # Try the leading sentence (everything up to the first . ? !)
+    import re
+    first_sentence = re.split(r"[.?!]\s+", norm, maxsplit=1)[0]
+    if first_sentence and first_sentence != norm:
+        candidates.append(first_sentence + ".")
+
+    for cand in candidates:
+        try:
+            rects = page.search_for(cand, quads=False)
+        except Exception:
+            rects = []
+        if rects:
+            return rects, cand
+    return [], None
+
+
+# ============================================================
+# Main
+# ============================================================
+def annotate(
+    draft_paths,                       # Path | list[Path]
+    pdf_path: Path,
+    out_path: Path | None = None,
+    *,
+    add_legend: bool = True,
+    fail_on_missing: bool = False,
+) -> dict:
+    """Annotate `pdf_path` based on the union of source_passages from
+    one or more draft files.
+
+    `draft_paths` may be a single Path (single-draft, original API) or
+    a list of Paths (multi-draft, e.g., region + therapy drafts from
+    the same paper)."""
+    try:
+        import fitz  # PyMuPDF
+    except ImportError as e:
+        raise SystemExit(
+            "PyMuPDF is required. Install with:\n"
+            "    pip install pymupdf"
+        ) from e
+
+    # Normalize draft_paths to a list
+    if isinstance(draft_paths, (str, Path)):
+        draft_paths = [Path(draft_paths)]
+    else:
+        draft_paths = [Path(p) for p in draft_paths]
+
+    # Collect all source_passages from all drafts. The finding_id we
+    # pass into the legend prefixes the source draft so the user can
+    # tell which draft a highlight came from.
+    all_passages = []      # list of (display_id, passage_dict)
+    for dp in draft_paths:
+        fm, _ = parse_markdown(dp)
+        if not fm:
+            raise SystemExit(f"No frontmatter in draft: {dp}")
+        findings = fm.get("findings") or []
+        if not findings:
+            print(f"  ⚠ {dp.name}: no findings — skipped")
+            continue
+        # Use draft basename minus .md as a short prefix
+        prefix = dp.stem
+        for f in findings:
+            fid = f.get("id", "?")
+            for p in (f.get("source_passages") or []):
+                all_passages.append((f"{prefix}:{fid}", p))
+
+    if not all_passages:
+        raise SystemExit("No source_passages in any draft.")
+
+    # Open the PDF
+    doc = fitz.open(str(pdf_path))
+
+    # Output path: <pdf_stem>_annotated.pdf next to the source
+    if out_path is None:
+        out_path = pdf_path.with_name(f"{pdf_path.stem}_annotated.pdf")
+
+    # Pre-compute text per page once (for fallback search)
+    n_pages = doc.page_count
+
+    summary = {"placed": [], "missed": []}
+
+    for fid, passage in all_passages:
+        supports = passage.get("supports", "claim")
+        if supports not in SUPPORTS_VOCAB:
+            print(f"  ⚠ {fid}: unknown supports={supports!r} — using grey")
+            color = (0.7, 0.7, 0.7)
+        else:
+            color = _hex_to_rgb01(SUPPORTS_COLORS[supports])
+
+        quote = (passage.get("quote") or "").strip()
+        if not quote or quote.startswith("[PLACEHOLDER"):
+            print(f"  ⚠ {fid} ({supports}): quote is empty/placeholder — skipped")
+            summary["missed"].append({
+                "finding": fid, "supports": supports,
+                "reason": "placeholder/empty quote",
+                "section": passage.get("section"),
+            })
+            continue
+
+        # Search across all pages (start with the hinted page if any)
+        hinted_page = passage.get("page")
+        page_order = list(range(n_pages))
+        if isinstance(hinted_page, int) and 0 <= hinted_page - 1 < n_pages:
+            # Convert 1-based page label to 0-based index, prioritize it
+            zero_based = hinted_page - 1
+            page_order = [zero_based] + [p for p in page_order if p != zero_based]
+
+        placed = False
+        for pno in page_order:
+            page = doc[pno]
+            rects, matched = _find_quote_rects(page, quote)
+            if not rects:
+                continue
+            for rect in rects:
+                annot = page.add_highlight_annot(rect)
+                annot.set_colors(stroke=color)
+                annot.set_info(
+                    title=f"[{fid}] {supports}",
+                    content=quote[:200] + ("…" if len(quote) > 200 else ""),
+                )
+                annot.update()
+            summary["placed"].append({
+                "finding": fid, "supports": supports,
+                "page": pno + 1, "n_rects": len(rects),
+                "matched_form": matched[:60] + ("…" if len(matched or "") > 60 else ""),
+            })
+            placed = True
+            break
+        if not placed:
+            print(f"  ⚠ {fid} ({supports}, page hint {hinted_page}): "
+                  f"quote not found in PDF")
+            summary["missed"].append({
+                "finding": fid, "supports": supports,
+                "reason": "quote not located in PDF",
+                "section": passage.get("section"),
+                "page_hint": hinted_page,
+                "quote_preview": quote[:80] + ("…" if len(quote) > 80 else ""),
+            })
+
+    # Add a legend page
+    if add_legend:
+        page = doc.new_page()
+        text = "Color legend\n" + "=" * 40 + "\n\n"
+        for sup in sorted(SUPPORTS_VOCAB):
+            text += f"  {sup:20s}  {SUPPORTS_COLORS[sup]}\n"
+        text += "\n\nGenerated by aphasia-kb/annotate_paper.py"
+        page.insert_text((50, 50), text, fontsize=11)
+        # Also draw small color rectangles next to each line
+        y = 50 + 40    # roughly where the first entry starts
+        for sup in sorted(SUPPORTS_VOCAB):
+            r = fitz.Rect(280, y, 320, y + 12)
+            page.draw_rect(r, color=(0.2, 0.2, 0.2),
+                           fill=_hex_to_rgb01(SUPPORTS_COLORS[sup]),
+                           width=0.5)
+            y += 13.7    # matches insert_text default leading
+
+    doc.save(str(out_path))
+    doc.close()
+
+    # Report
+    print(f"\n✓ Annotated PDF: {out_path}")
+    print(f"  Placed: {len(summary['placed'])} highlight(s)")
+    print(f"  Missed: {len(summary['missed'])} passage(s)")
+    if summary["missed"] and fail_on_missing:
+        sys.exit(2)
+
+    return summary
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--draft", required=True, type=Path, nargs="+",
+                   help="One or more draft KB entry markdown files. "
+                        "All passages from all drafts are highlighted "
+                        "on the same PDF.")
+    p.add_argument("--pdf", required=True, type=Path,
+                   help="Source paper PDF.")
+    p.add_argument("--out", type=Path, default=None,
+                   help="Output PDF path (default: <pdf>_annotated.pdf).")
+    p.add_argument("--no-legend", action="store_true",
+                   help="Skip the color-legend page.")
+    p.add_argument("--fail-on-missing", action="store_true",
+                   help="Exit non-zero if any quote couldn't be located.")
+    args = p.parse_args(argv)
+
+    for d in args.draft:
+        if not d.exists():
+            p.error(f"draft not found: {d}")
+    if not args.pdf.exists():
+        p.error(f"pdf not found: {args.pdf}")
+
+    annotate(args.draft, args.pdf, args.out,
+             add_legend=not args.no_legend,
+             fail_on_missing=args.fail_on_missing)
+
+
+if __name__ == "__main__":
+    main()

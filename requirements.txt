@@ -1,0 +1,36 @@
+# Python dependencies for the LINDA notebook + aphasia-kb tooling.
+# Install on a new machine with:
+#     pip install -r requirements.txt
+#
+# (Most of these come pre-installed in Neurodesk; this file is the
+# reproducibility contract.)
+
+# Core neuroimaging
+nibabel>=5.0
+nilearn>=0.10
+scipy>=1.10
+numpy>=1.24
+pandas>=2.0
+
+# Notebook UI
+ipywidgets>=8.0
+ipyniivue>=2.0
+matplotlib>=3.7
+
+# DICOM / extras used by the original template cells
+pydicom
+
+# Knowledge-base loader + annotator
+PyYAML>=6.0
+pymupdf>=1.23           # for annotate_paper.py (PDF highlight annotations)
+
+# Notebook validation (used by the workflow)
+nbformat>=5.0
+
+# Optional: for the Stage-2 Neurosynth bootstrap (only needed if you
+# decide to populate the KB from coordinate-based meta-analyses)
+# nimare>=0.1.0
+
+# Optional: dataset management. Comes pre-installed in Neurodesk; if
+# you're running this elsewhere you'll need datalad too:
+# datalad>=0.19

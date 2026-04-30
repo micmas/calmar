@@ -1,0 +1,26 @@
+{
+  "schema_version": 2,
+  "subject": "sub-M2041",
+  "session": "ses-872",
+  "mask": "Lesion_in_MNI.nii.gz",
+  "stages": {
+    "skull_strip": {
+      "rating": 2,
+      "issue_tags": [],
+      "notes": ""
+    },
+    "lesion": {
+      "rating": 2,
+      "issue_tags": [],
+      "notes": ""
+    }
+  },
+  "rating": 2,
+  "rating_label": "acceptable",
+  "issue_tags": [],
+  "notes": "",
+  "reviewer": null,
+  "reviewed_on": "2026-04-30",
+  "marked_for_rerun": false,
+  "edits": []
+}
