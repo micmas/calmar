@@ -804,6 +804,227 @@ def rerun_subject(t1w_path: Path, linda_out_dir: Path, *,
     return res.returncode
 
 
+# Path to the R stub that calls LINDA with brain_mask= bypass.
+# Lives next to this module.
+_LINDA_R_STUB     = Path(__file__).parent / "linda_predict_with_mask.R"
+# Bash wrapper that auto-routes to host Rscript or to Rscript inside
+# the LINDA singularity container. Used by default on Neurodesk where
+# R only exists inside the container.
+_LINDA_BASH_STUB  = Path(__file__).parent / "linda_predict_with_mask.sh"
+
+
+def run_linda_with_mask_via_R(
+    t1w_path: Path,
+    brain_mask: Path,
+    linda_out_dir: Path,
+    *,
+    reviewer: str | None = None,
+    r_cmd: str = "R",
+    verbose: bool = True,
+    cache: bool = True,
+) -> int:
+    """
+    Bridge helper for Neurodesk users whose LINDA container deploys `R`
+    on PATH but not `Rscript` (and where the in-container
+    `linda_predict_with_mask.sh` wrapper hasn't been built yet).
+
+    Calls `R --no-save -e '...'` with an inline LINDA invocation that
+    uses `brain_mask=` to bypass internal skull stripping. Mirrors the
+    file-on-disk approach but skips the Rscript dependency entirely.
+
+    Same return-code semantics as `run_linda_with_mask()`: 0 on success,
+    nonzero on R failure.
+    """
+    linda_out_dir = Path(linda_out_dir)
+    linda_out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Build the R command. We escape paths via repr() so apostrophes /
+    # spaces don't break the inline expression.
+    t1   = str(Path(t1w_path).resolve())
+    mask = str(Path(brain_mask).resolve())
+    out  = str(linda_out_dir.resolve())
+    verbose_lit = "TRUE" if verbose else "FALSE"
+    cache_lit   = "TRUE" if cache   else "FALSE"
+    r_expr = (
+        "suppressPackageStartupMessages(library(LINDA)); "
+        f"outputs <- linda_predict("
+        f"file={t1!r}, brain_mask={mask!r}, outdir={out!r}, "
+        f"verbose={verbose_lit}, cache={cache_lit}); "
+        f"save(outputs, file=file.path({out!r}, 'linda_outputs.RData')); "
+        "cat('[run_linda_with_mask_via_R] DONE\\n')"
+    )
+
+    cmd = [r_cmd, "--no-save", "--quiet", "-e", r_expr]
+    print(f"  ▶ (R --no-save) bypassing LINDA's skull-strip with HD-BET mask")
+    print(f"      T1     = {t1}")
+    print(f"      mask   = {mask}")
+    print(f"      outdir = {out}")
+    res = subprocess.run(cmd)
+
+    if res.returncode == 0:
+        lesion = linda_out_dir / "Lesion_in_MNI.nii.gz"
+        if lesion.exists():
+            rec = QCRecord.load(lesion)
+            rec.marked_for_rerun = False
+            rec.log_edit(
+                operation="rerun_with_mask_bypass_via_R",
+                params={"brain_mask_source": mask, "r_cmd": r_cmd},
+                reviewer=reviewer, tool="R --no-save -e",
+            )
+            rec.save()
+    return res.returncode
+
+
+# Common system locations to look for a host Rscript binary.
+_RSCRIPT_SEARCH_PATHS = [
+    "/usr/bin/Rscript",
+    "/usr/local/bin/Rscript",
+    "/opt/R/bin/Rscript",
+    "/opt/conda/bin/Rscript",
+]
+
+
+def _find_rscript(explicit: str = "Rscript") -> str | None:
+    """Locate a host Rscript binary, or None if not found.
+
+    Search order:
+      1. The explicit command (PATH lookup or absolute path).
+      2. A few static fallback paths.
+
+    NOTE: this only checks the *host* — on Neurodesk the host has no R
+    and Rscript only exists inside the LINDA singularity container. In
+    that case `run_linda_with_mask()` falls back to the bash wrapper
+    which dispatches through `singularity exec`.
+    """
+    import shutil as _sh
+    p = _sh.which(explicit) or (explicit if Path(explicit).is_absolute()
+                                and Path(explicit).exists() else None)
+    if p:
+        return p
+    for cand in _RSCRIPT_SEARCH_PATHS:
+        if Path(cand).is_file():
+            return cand
+    return None
+
+
+def run_linda_with_mask(
+    t1w_path: Path,
+    brain_mask: Path,
+    linda_out_dir: Path,
+    *,
+    reviewer: str | None = None,
+    rscript_cmd: str = "Rscript",
+    r_stub: Path | None = None,
+    verbose: bool = True,
+    cache: bool = True,
+) -> int:
+    """
+    Run LINDA via its R API, passing a pre-computed brain mask so LINDA
+    bypasses its own (template-based) skull-stripping. This sidesteps the
+    over-stripping failure mode where lesion-induced template-registration
+    error causes LINDA's internal n4_skull_strip to drop large chunks of
+    cortex near the lesion.
+
+    LINDA writes its outputs directly into `linda_out_dir` (the R API
+    respects the `outdir=` arg), so unlike the shell wrapper there's no
+    "outputs landed adjacent to input" relocation step.
+
+    Returns the Rscript exit code. Appends a sidecar edit log entry on
+    success, identifying the mask source for provenance.
+    """
+    stub = Path(r_stub) if r_stub else _LINDA_R_STUB
+    if not stub.exists():
+        raise FileNotFoundError(
+            f"LINDA R stub not found at {stub}. Expected it next to "
+            f"linda_qc.py — was the file checked in?"
+        )
+
+    # Routing logic (in priority order):
+    #   1. Explicit override: `rscript_cmd` set to anything other than
+    #      "Rscript" → call that Rscript on the R stub directly.
+    #   2. **Container wrapper**: `linda_predict_with_mask.sh` on PATH
+    #      → call it like any other CLI. This is what Neurodesk ships
+    #      in the LINDA container alongside `linda_predict.sh`. Cleanest
+    #      path: the host wrapper does the singularity exec for us.
+    #   3. **Local bash wrapper**: the `linda_predict_with_mask.sh`
+    #      that ships in this repo, which auto-discovers the LINDA
+    #      `.simg` from `linda_predict.sh` and dispatches via
+    #      `singularity exec`. Fallback for older container versions
+    #      that don't yet bundle the in-container script.
+    #   4. **Host Rscript**: native R install, if you have one.
+    import shutil as _sh
+    explicit_override = (rscript_cmd != "Rscript")
+    container_wrapper = _sh.which("linda_predict_with_mask.sh")
+
+    args_tail = [
+        "--t1",     str(t1w_path),
+        "--mask",   str(brain_mask),
+        "--outdir", str(linda_out_dir),
+    ]
+
+    if explicit_override:
+        resolved = _find_rscript(rscript_cmd)
+        if resolved is None:
+            raise FileNotFoundError(
+                f"Cannot find Rscript at the requested location "
+                f"({rscript_cmd!r})."
+            )
+        cmd = [resolved, str(stub), *args_tail]
+        print(f"  ▶ (host Rscript override) {' '.join(cmd)}")
+    elif container_wrapper:
+        # Cleanest path — Neurodesk's transparent-singularity wrapper
+        # for the in-container script. Same UX as linda_predict.sh.
+        cmd = [container_wrapper, *args_tail]
+        print(f"  ▶ (container wrapper) {' '.join(cmd)}")
+    elif _LINDA_BASH_STUB.exists():
+        # Local bash wrapper — does the singularity exec dance itself.
+        cmd = ["bash", str(_LINDA_BASH_STUB), *args_tail]
+        print(f"  ▶ (local bash wrapper → singularity exec) "
+              f"{' '.join(cmd)}")
+    else:
+        resolved = _find_rscript("Rscript")
+        if resolved is None:
+            raise FileNotFoundError(
+                "Cannot find any way to invoke LINDA's R API:\n"
+                "  • `linda_predict_with_mask.sh` not on PATH (would "
+                "be installed by the LINDA Neurodesk container)\n"
+                "  • the local bash wrapper at "
+                f"{_LINDA_BASH_STUB} is missing\n"
+                "  • no host Rscript found\n\n"
+                "Fixes:\n"
+                "  • Update the LINDA module so its container ships "
+                "linda_predict_with_mask.sh, OR\n"
+                "  • Pull the repo (the local wrapper ships next to "
+                "this module), OR\n"
+                "  • Set CONFIG['HDBET_RSCRIPT_CMD'] to an absolute "
+                "Rscript path, OR\n"
+                "  • Drop back to legacy padding mode with "
+                "CONFIG['HDBET_USE_MASK_BYPASS'] = False."
+            )
+        cmd = [resolved, str(stub), *args_tail]
+        print(f"  ▶ (host Rscript) {' '.join(cmd)}")
+
+    if not verbose:
+        cmd.append("--quiet")
+    if not cache:
+        cmd.append("--no-cache")
+
+    res = subprocess.run(cmd)
+
+    if res.returncode == 0:
+        mask = linda_out_dir / "Lesion_in_MNI.nii.gz"
+        if mask.exists():
+            rec = QCRecord.load(mask)
+            rec.marked_for_rerun = False
+            rec.log_edit(
+                operation="rerun_with_mask_bypass",
+                params={"brain_mask_source": str(brain_mask)},
+                reviewer=reviewer, tool="linda_predict_with_mask.R",
+            )
+            rec.save()
+    return res.returncode
+
+
 # ============================================================
 # Brain extraction integration (HD-BET / SynthStrip)
 # ============================================================
@@ -997,27 +1218,40 @@ def replace_linda_skull_strip(linda_out_dir: Path,
 def make_brain_with_padding(t1_path: Path, brain_mask_path: Path,
                             output_path: Path,
                             *, padding_mm: float = 8.0,
-                            fake_skull_intensity_pct: float = 40.0) -> Path:
+                            fake_skull_intensity_pct: float = 40.0,
+                            csf_rim_mm: float = 2.0,
+                            csf_intensity_pct: float = 5.0) -> Path:
     """
     Build a synthetic T1 image where the brain is intact and surrounded
-    by a thin rim of low-intensity "fake skull" voxels. Designed to be
-    fed into LINDA so its internal brain extractor has a non-brain rim
-    to strip, instead of biting into a brain-air boundary and
-    over-stripping the brain.
+    by an anatomically-realistic two-layer rim:
 
-    Output structure:
-      - inside HD-BET brain mask  : original T1 intensities (brain)
-      - in the dilated rim        : fake_skull_intensity_pct of brain mean
-      - outside the dilated rim   : 0
+        brain  →  CSF (thin, dark)  →  skull (thicker, medium)  →  zero
+
+    The two-rim design mimics the real T1 brain-edge pattern (CSF in
+    the subarachnoid space → meninges/skull → scalp). This gives
+    LINDA's ANTs-based stripper a more stable target — its
+    template-prior expects a CSF/skull boundary, not a brain/air one,
+    and tends to bite less aggressively into the brain when it sees
+    the expected pattern.
+
+    Output structure (concentric, inside out):
+      1. inside HD-BET brain mask         : original T1 intensities (brain)
+      2. CSF rim  (csf_rim_mm thick)      : csf_intensity_pct of brain mean
+      3. Skull rim (padding_mm thick)     : fake_skull_intensity_pct of brain mean
+      4. outside skull rim                : 0
 
     Args:
         t1_path: original T1 (with skull intact)
         brain_mask_path: HD-BET-derived brain mask (binary)
         output_path: where to write the padded T1
-        padding_mm: rim thickness in mm (default 8 — wide enough that
-                    LINDA's stripper doesn't bleed past it).
-        fake_skull_intensity_pct: rim intensity as % of brain mean
-                    (default 40 — roughly mimics dura/skull on T1).
+        padding_mm: SKULL rim thickness in mm (default 8)
+        fake_skull_intensity_pct: skull rim intensity as % of brain mean
+                    (default 40 — roughly mimics dura/skull on T1)
+        csf_rim_mm: CSF rim thickness in mm (default 2; set to 0 to
+                    disable the inner rim and use the old single-rim
+                    behaviour)
+        csf_intensity_pct: CSF rim intensity as % of brain mean
+                    (default 5 — CSF is very dark on T1)
 
     Returns the output path. Both input volumes must share the same
     affine and shape; we don't resample.
@@ -1040,22 +1274,36 @@ def make_brain_with_padding(t1_path: Path, brain_mask_path: Path,
         raise ValueError(f"Brain mask is empty: {brain_mask_path}")
 
     voxel_size = max(abs(t1.affine[0, 0]), 0.1)
-    padding_voxels = max(1, int(round(padding_mm / voxel_size)))
-    dilated = binary_dilation(mask_data, iterations=padding_voxels)
+    csf_voxels   = max(0, int(round(csf_rim_mm / voxel_size)))
+    skull_voxels = max(1, int(round(padding_mm / voxel_size)))
 
-    brain_mean = float(t1_data[mask_data].mean())
-    rim_value = brain_mean * (fake_skull_intensity_pct / 100.0)
+    # Two concentric dilations: first to the CSF edge, then further
+    # to the skull edge.
+    if csf_voxels > 0:
+        csf_dilated = binary_dilation(mask_data, iterations=csf_voxels)
+    else:
+        csf_dilated = mask_data
+    skull_dilated = binary_dilation(csf_dilated, iterations=skull_voxels)
+
+    csf_rim   = csf_dilated   & ~mask_data
+    skull_rim = skull_dilated & ~csf_dilated
+
+    brain_mean  = float(t1_data[mask_data].mean())
+    csf_value   = brain_mean * (csf_intensity_pct / 100.0)
+    skull_value = brain_mean * (fake_skull_intensity_pct / 100.0)
 
     padded = np.zeros_like(t1_data, dtype=t1_data.dtype)
     padded[mask_data] = t1_data[mask_data]
-    rim_voxels = dilated & ~mask_data
-    padded[rim_voxels] = rim_value
+    if csf_voxels > 0:
+        padded[csf_rim] = csf_value
+    padded[skull_rim] = skull_value
 
     n_brain = int(mask_data.sum())
-    n_rim = int(rim_voxels.sum())
-    print(f"  padded T1: {n_brain:,} brain voxels (kept), "
-          f"{n_rim:,} rim voxels @ intensity {rim_value:.1f}, "
-          f"{padding_voxels}-voxel ({padding_mm:.0f}mm) padding")
+    n_csf   = int(csf_rim.sum())
+    n_skull = int(skull_rim.sum())
+    print(f"  padded T1: brain {n_brain:,} (intensity ~{brain_mean:.0f})"
+          f"  +  CSF rim {n_csf:,} ({csf_voxels}vox @ ~{csf_value:.1f})"
+          f"  +  skull rim {n_skull:,} ({skull_voxels}vox @ ~{skull_value:.1f})")
 
     nib.save(nib.Nifti1Image(padded, t1.affine, t1.header),
              str(output_path))
@@ -1115,27 +1363,46 @@ def hdbet_then_linda(t1w_path: Path, linda_out_dir: Path,
                      *, work_dir: Path | None = None,
                      reviewer: str | None = None,
                      linda_cmd: str = "linda_predict.sh",
+                     use_mask_bypass: bool = True,
                      use_padding: bool = True,
                      padding_mm: float = 8.0,
+                     csf_rim_mm: float = 2.0,
                      hdbet_mode: str = "fast",
-                     hdbet_device: str | None = None) -> dict:
+                     hdbet_device: str | None = None,
+                     rscript_cmd: str = "Rscript") -> dict:
     """
     First-pass version of `restrip_and_rerun` (no backup, no QC reset).
     Use this for the *initial* segmentation when there are no prior
     LINDA outputs to preserve.
 
-    Workflow:
-      1. Run HD-BET (or SynthStrip) on the original T1 → brain mask.
-      2. If `use_padding`, build a padded T1 (brain + fake-skull rim).
-      3. Run LINDA on the padded T1.
-      4. Move LINDA's output (which it writes adjacent to its input)
-         into `linda_out_dir`.
+    Two modes (in order of preference):
+
+    A. **Mask-bypass mode** (`use_mask_bypass=True`, default):
+       1. Run HD-BET on the T1 → brain mask.
+       2. Call `linda_predict(file=T1, brain_mask=hdbet_mask)` via the
+          R stub. LINDA's internal n4_skull_strip is *bypassed*, so
+          template-registration error on lesioned brains can't drop
+          cortex. Outputs land directly in `linda_out_dir` (no
+          relocation step).
+
+    B. **Legacy padding mode** (`use_mask_bypass=False`):
+       1. Run HD-BET on the T1 → brain mask.
+       2. If `use_padding`, build a padded T1 (brain + CSF rim + skull
+          rim) so LINDA's internal stripper has anatomy-shaped intensity
+          to grab onto and doesn't bleed into the brain.
+       3. Run LINDA on the padded T1 via `linda_predict.sh`.
+       4. Move LINDA's outputs (which it writes adjacent to its input)
+          into `linda_out_dir`.
+
+    Mask-bypass is the right answer; padding is kept as a fallback in
+    case the R stub or the LINDA R API isn't available on a given box.
 
     Raises RuntimeError if no brain extractor is on PATH — see
     `brain_extractor_help_text()`.
 
     Returns a dict with the brain extractor used, the input fed to
-    LINDA, LINDA's exit code, and which files landed in linda_out_dir.
+    LINDA, the mode used, LINDA's exit code, and (legacy mode only)
+    which files landed in linda_out_dir.
     """
     if detect_brain_extractor() is None:
         raise RuntimeError(brain_extractor_help_text())
@@ -1146,12 +1413,32 @@ def hdbet_then_linda(t1w_path: Path, linda_out_dir: Path,
         return {"phase": "brain_extraction", **bx,
                 "linda_returncode": None, "moved": []}
 
+    # ---------- mode A: mask bypass via R API ----------
+    if use_mask_bypass:
+        linda_out_dir.mkdir(parents=True, exist_ok=True)
+        rc = run_linda_with_mask(
+            t1w_path, bx["mask"], linda_out_dir,
+            reviewer=reviewer, rscript_cmd=rscript_cmd,
+        )
+        return {
+            "phase":       "complete",
+            **bx,
+            "mode":        "mask_bypass",
+            "linda_input": str(t1w_path),
+            "use_padding": False,
+            "padding_mm":  None,
+            "linda_returncode": rc,
+            "moved":       [],
+        }
+
+    # ---------- mode B: legacy padding + linda_predict.sh ----------
     linda_input = bx["brain"]
     if use_padding:
         padded = work / f"{Path(t1w_path).name.replace('.nii.gz', '').replace('.nii', '')}_padded.nii.gz"
         try:
             make_brain_with_padding(t1w_path, bx["mask"], padded,
-                                    padding_mm=padding_mm)
+                                    padding_mm=padding_mm,
+                                    csf_rim_mm=csf_rim_mm)
             linda_input = padded
         except Exception as e:
             print(f"  ⚠ Padding failed ({e}); using bare brain.")
@@ -1180,11 +1467,12 @@ def hdbet_then_linda(t1w_path: Path, linda_out_dir: Path,
     return {
         "phase": "complete",
         **bx,
+        "mode":        "legacy_padding",
         "linda_input": str(linda_input),
         "use_padding": use_padding,
-        "padding_mm": padding_mm if use_padding else None,
+        "padding_mm":  padding_mm if use_padding else None,
         "linda_returncode": rc,
-        "moved": moved,
+        "moved":       moved,
     }
 
 
@@ -1192,30 +1480,38 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
                       *, work_dir: Path | None = None,
                       reviewer: str | None = None,
                       linda_cmd: str = "linda_predict.sh",
+                      use_mask_bypass: bool = True,
                       use_padding: bool = True,
-                      padding_mm: float = 8.0) -> dict:
+                      padding_mm: float = 8.0,
+                      csf_rim_mm: float = 2.0,
+                      rscript_cmd: str = "Rscript") -> dict:
     """
-    One-shot: run HD-BET on `t1w_path`, then re-run LINDA on the
-    skull-stripped image. The original LINDA outputs are preserved.
+    One-shot: run HD-BET on `t1w_path`, then re-run LINDA. The original
+    LINDA outputs are preserved in `_linda_original/` for revert.
 
-    Strategy: rather than mucking with LINDA's intermediate files
-    (which is fragile across versions), we pass the brain-extracted T1
-    as the new input.
+    Two modes (in order of preference):
 
-    `use_padding` (default True): wrap the HD-BET-stripped brain in a
-    thin rim of low-intensity "fake skull" before handing to LINDA, so
-    LINDA's own brain extractor has something to strip and doesn't
-    bleed past the brain-air boundary. Set to False to feed the bare
-    HD-BET output directly (older behavior, sometimes over-strips).
+    A. **Mask-bypass mode** (`use_mask_bypass=True`, default):
+       Pass HD-BET's mask straight to LINDA via the R API
+       (`linda_predict(brain_mask=...)`). LINDA's internal
+       `n4_skull_strip` is skipped entirely, sidestepping the failure
+       mode where lesion-induced template-registration error drops
+       cortex near the lesion.
 
-    `padding_mm`: rim thickness when use_padding=True (default 8mm —
-    wide enough that LINDA's stripper doesn't bite into the brain).
+    B. **Legacy padding mode** (`use_mask_bypass=False`):
+       Wrap the HD-BET brain in a CSF + skull rim and feed the padded
+       image to `linda_predict.sh`. Kept as a fallback for boxes where
+       the R API isn't available.
+
+    `use_padding` / `padding_mm` / `csf_rim_mm` only apply in legacy
+    mode. In mask-bypass mode they are ignored (no padding is needed —
+    the bypass is what fixes the over-stripping).
 
     IMPORTANT: We *clear* the .nii.gz files in `linda_out_dir` after
-    backing them up, because LINDA's predict.sh skips work when
-    outputs already exist. Without the clear, the re-run is a no-op.
+    backing them up, because LINDA's caches skip work when outputs
+    already exist. Without the clear, the re-run is a no-op.
 
-    Returns a dict with the brain extractor used, the path to the T1
+    Returns a dict with: brain extractor used, mode used, the path
     actually fed to LINDA, LINDA's exit code, per-file regeneration
     status, and any mask-coverage warnings.
     """
@@ -1224,23 +1520,29 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
     if bx["returncode"] != 0:
         return {"phase": "brain_extraction", **bx, "linda_returncode": None}
 
-    # Optionally build a padded T1 (brain + fake-skull rim) and feed
-    # THAT to LINDA, instead of the bare brain-extracted image.
-    linda_input = bx["brain"]
-    padded_path = None
-    if use_padding:
-        padded_path = work / f"{Path(t1w_path).stem.replace('.nii','')}_padded.nii.gz"
-        try:
-            make_brain_with_padding(
-                t1w_path, bx["mask"], padded_path,
-                padding_mm=padding_mm,
-            )
-            linda_input = padded_path
-            print(f"  Using padded brain as LINDA input: {padded_path}")
-        except Exception as e:
-            print(f"  ⚠ Padding failed ({e}); falling back to bare brain.")
-            padded_path = None
-            linda_input = bx["brain"]
+    # Decide what we'll feed LINDA + which mode label to record.
+    padded_path = None  # only set in legacy mode
+    if use_mask_bypass:
+        mode = "mask_bypass"
+        linda_input = t1w_path  # original T1; mask is supplied separately
+        print(f"  Mode: mask-bypass — feeding HD-BET mask to LINDA's R API")
+    else:
+        mode = "legacy_padding"
+        linda_input = bx["brain"]
+        if use_padding:
+            padded_path = work / f"{Path(t1w_path).stem.replace('.nii','')}_padded.nii.gz"
+            try:
+                make_brain_with_padding(
+                    t1w_path, bx["mask"], padded_path,
+                    padding_mm=padding_mm,
+                    csf_rim_mm=csf_rim_mm,
+                )
+                linda_input = padded_path
+                print(f"  Using padded brain as LINDA input: {padded_path}")
+            except Exception as e:
+                print(f"  ⚠ Padding failed ({e}); falling back to bare brain.")
+                padded_path = None
+                linda_input = bx["brain"]
 
     # 1. Back up everything LINDA wrote into linda_out_dir
     orig_dir = linda_out_dir / "_linda_original"
@@ -1265,35 +1567,40 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
         print(f"  Cleared {len(cleared)} stale .nii.gz file(s) from "
               f"{linda_out_dir} before re-running LINDA.")
 
-    # 3. Run LINDA on the (possibly padded) skull-stripped T1.
-    #    NOTE: linda_predict.sh writes .nii.gz output to a `linda/`
-    #    subdirectory ADJACENT TO THE INPUT T1, not into the supplied
-    #    output_dir. We work around that in step 3.5 by moving them.
-    rc = rerun_subject(linda_input, linda_out_dir,
-                       reviewer=reviewer, linda_cmd=linda_cmd)
-
-    # 3.5. Find where LINDA actually wrote outputs (adjacent to the
-    #      input we just gave it) and move them into linda_out_dir.
-    actual_out_dir = Path(linda_input).parent / "linda"
-    moved = []
-    if actual_out_dir.exists() and actual_out_dir.resolve() != linda_out_dir.resolve():
-        print(f"  Moving new LINDA output from {actual_out_dir} → {linda_out_dir}")
-        linda_out_dir.mkdir(parents=True, exist_ok=True)
-        for src in actual_out_dir.iterdir():
-            if not src.is_file():
-                continue
-            dst = linda_out_dir / src.name
-            # If a stale copy exists at canonical, replace it
-            if dst.exists():
-                dst.unlink()
-            shutil.move(str(src), str(dst))
-            moved.append(src.name)
-        # Try to remove the now-empty actual_out_dir
-        try:
-            actual_out_dir.rmdir()
-        except OSError:
-            pass
-        print(f"  Moved {len(moved)} file(s) into canonical linda/ dir.")
+    # 3. Run LINDA — either via the R API (mask-bypass) or the shell
+    #    wrapper (legacy padding).
+    if use_mask_bypass:
+        rc = run_linda_with_mask(
+            t1w_path, bx["mask"], linda_out_dir,
+            reviewer=reviewer, rscript_cmd=rscript_cmd,
+        )
+        # The R API writes directly to outdir — no relocation needed.
+        moved = []
+    else:
+        # NOTE: linda_predict.sh writes outputs to `linda/` adjacent to
+        # its input. We move them into linda_out_dir below.
+        rc = rerun_subject(linda_input, linda_out_dir,
+                           reviewer=reviewer, linda_cmd=linda_cmd)
+        actual_out_dir = Path(linda_input).parent / "linda"
+        moved = []
+        if (actual_out_dir.exists()
+                and actual_out_dir.resolve() != linda_out_dir.resolve()):
+            print(f"  Moving new LINDA output from {actual_out_dir} → "
+                  f"{linda_out_dir}")
+            linda_out_dir.mkdir(parents=True, exist_ok=True)
+            for src in actual_out_dir.iterdir():
+                if not src.is_file():
+                    continue
+                dst = linda_out_dir / src.name
+                if dst.exists():
+                    dst.unlink()
+                shutil.move(str(src), str(dst))
+                moved.append(src.name)
+            try:
+                actual_out_dir.rmdir()
+            except OSError:
+                pass
+            print(f"  Moved {len(moved)} file(s) into canonical linda/ dir.")
 
     # 4. Verify regeneration: which canonical files are newer than
     #    they were before the re-run? Surface this in the result so
@@ -1344,7 +1651,9 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
         rec.log_edit(
             operation="restrip_with_hd_bet_and_rerun",
             params={"brain_extractor": bx["tool"],
+                    "mode": mode,
                     "skull_stripped_t1": str(bx["brain"]),
+                    "brain_mask": str(bx["mask"]),
                     "linda_input": str(linda_input),
                     "use_padding": bool(padded_path is not None),
                     "padding_mm": padding_mm if padded_path else None,
@@ -1366,8 +1675,10 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
     return {
         "phase": "complete",
         **bx,
-        "linda_returncode": rc,
+        "mode":              mode,
+        "linda_input":       str(linda_input),
+        "linda_returncode":  rc,
         "regenerated_files": regenerated,
         "missing_after_rerun": missing_after,
-        "mask_warning": mask_warning,
+        "mask_warning":      mask_warning,
     }

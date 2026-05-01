@@ -1,0 +1,2073 @@
+You are an extraction agent for an aphasia knowledge base.
+
+You read the paper below and produce one or more **draft KB entries**
+under schema v2.2. Your output will be saved as markdown files in
+`aphasia-kb/drafts/<bucket>/` for human review.
+
+# Output format (REQUIRED)
+
+Return a SINGLE JSON object matching this exact schema, with no
+prose or markdown around it:
+
+{
+  "drafts": [
+    {
+      "bucket": "regions" | "impairments" | "therapies",
+      "filename": "<entry_id>__<citation_key_no_at>.md",
+      "content": "<full markdown including YAML frontmatter and prose body>"
+    },
+    ...
+  ],
+  "summary": "<one-line description of what was extracted>",
+  "extraction_log_line": "<ISO date> | EXTRACTED | <citation> | <ids> | <details>",
+  "notes_for_reviewer": "<anything you want the reviewer to pay extra attention to>"
+}
+
+Each draft's `content` field must:
+  - Start with `---` and a YAML frontmatter block (schema_version: 2.2)
+  - Contain at least one valid `findings` entry (or be empty if you're
+    creating a new region/impairment/therapy entry without findings)
+  - Set `status: draft` and `created_by: agent:claude-extract-cli`
+  - Set `created_on: <today's ISO date>`
+  - Include verbatim `source_passages` with the `supports` tag for
+    each finding
+
+# Workflow rules (read carefully)
+
+The complete workflow is in EXTRACTION_SKILL.md (below). Key rules:
+
+1. ANCHOR PERSPECTIVE: write region-anchored drafts when the paper
+   makes region-tied claims (the typical case). Only spawn impairment-
+   or therapy-anchored drafts when the claim isn't tied to a specific
+   region.
+
+2. EXISTING IDS: prefer adding findings to entries that already exist
+   in the KB (listed below). If you must reference a region/impairment/
+   therapy that isn't in the KB, use a sensible new id and flag it in
+   `provenance.flags` so the reviewer knows to add it.
+
+3. CITATION: the paper's citation key is provided below. Add a citation
+   to citations.md only if it doesn't exist there yet — but DO include
+   the key in every finding's `citation` field.
+
+4. CONFIDENCE: be honest. `provenance.confidence: high` only when you
+   have the full paper and understood the section end-to-end. Use
+   `medium` for inferred fields, `low` for abstract-only or major
+   ambiguity. Add specific flags in `provenance.flags`.
+
+5. SOURCE PASSAGES: every finding needs verbatim quotes (1-3 sentences
+   each) tagged with their `supports` field. The annotator uses these
+   to highlight the source PDF.
+
+6. NEVER INVENT: statistics, sample sizes, citations, or effect
+   directions. If the paper doesn't report it, use `not_reported`.
+
+# Existing KB entries you can target
+
+regions: ho-cort_44
+impairments: (none)
+therapies: (none)
+
+# Citations already defined
+
+# Citations
+
+Bibliography for `@Key` references that appear in any entry's frontmatter.
+Add a new block below whenever you cite a new paper. Keep the `## @Key`
+header exactly as it is referenced from frontmatter (case-sensitive).
+
+> All entries below are starter references chosen for their canonical status
+> in the lesion-aphasia / aphasia-therapy literature. Verify before clinical use.
+
+## @Fridriksson2018
+Fridriksson J, Yourganov G, Bonilha L, Basilakos A, Den Ouden DB, Rorden C.
+Revealing the dual streams of speech processing.
+*Proc Natl Acad Sci USA*. 2018;115(7):1432–1437.
+doi:10.1073/pnas.1714922115
+
+## @Mirman2015
+Mirman D, Chen Q, Zhang Y, Wang Z, Faseyitan OK, Coslett HB, Schwartz MF.
+Neural organization of spoken language revealed by lesion-symptom mapping.
+*Nat Commun*. 2015;6:6762.
+doi:10.1038/ncomms7762
+
+## @Hillis2007
+Hillis AE.
+Aphasia: progress in the last quarter of a century.
+*Neurology*. 2007;69(2):200–213.
+doi:10.1212/01.wnl.0000265600.69385.6f
+
+## @Schlaug2008
+Schlaug G, Marchina S, Norton A.
+From singing to speaking: why singing may lead to recovery of expressive
+language function in patients with Broca's aphasia.
+*Music Percept*. 2008;25(4):315–323.
+doi:10.1525/mp.2008.25.4.315
+
+## @Boyle2004
+Boyle M.
+Semantic feature analysis treatment for anomia in two fluent aphasia syndromes.
+*Am J Speech Lang Pathol*. 2004;13(3):236–249.
+doi:10.1044/1058-0360(2004/025)
+
+## @Pulvermuller2001
+Pulvermüller F, Neininger B, Elbert T, Mohr B, Rockstroh B, Koebbel P, Taub E.
+Constraint-induced therapy of chronic aphasia after stroke.
+*Stroke*. 2001;32(7):1621–1626.
+doi:10.1161/01.str.32.7.1621
+
+## @Bonilha2014
+Bonilha L, Rorden C, Fridriksson J.
+Assessing the clinical effect of residual cortical disconnection after ischemic
+strokes.
+*Stroke*. 2014;45(4):988–993.
+doi:10.1161/STROKEAHA.113.004137
+
+## @Saur2008
+Saur D, Kreher BW, Schnell S, Kümmerer D, Kellmeyer P, Vry M-S, et al.
+Ventral and dorsal pathways for language.
+*Proc Natl Acad Sci USA*. 2008;105(46):18035–18040.
+doi:10.1073/pnas.0805234105
+
+## @Marchina2011
+Marchina S, Zhu LL, Norton A, Zipse L, Wan CY, Schlaug G.
+Impairment of speech production predicted by lesion load of the left arcuate
+fasciculus.
+*Stroke*. 2011;42(8):2251–2256.
+doi:10.1161/STROKEAHA.110.606103
+
+## @Geschwind1965
+Geschwind N.
+Disconnexion syndromes in animals and man.
+*Brain*. 1965;88(2):237–294.
+doi:10.1093/brain/88.2.237
+
+## @Yourganov2015
+Yourganov G, Smith KG, Fridriksson J, Rorden C.
+Predicting aphasia type from brain damage measured with structural MRI.
+*Cortex*. 2015;73:203–215.
+doi:10.1016/j.cortex.2015.09.005
+
+
+# EXTRACTION_SKILL.md
+
+# Paper-extraction skill — instructions for the agent
+
+> **Purpose.** Take one neuroscience / aphasia paper and produce one or
+> more **draft** knowledge-base entries under schema **v2.1**, plus a
+> color-annotated version of the source paper that lets the user
+> visually verify what was extracted from where. The user reviews
+> every draft before it enters the canonical knowledge base. **You
+> never write directly to `regions/`, `impairments/`, or `therapies/`.**
+
+This file is the agent's instruction manual. It must be read **in full**
+before any extraction. The schema is defined in `schema.md` (v2.1 — read
+that too). This file tells you how to *use* the schema responsibly.
+
+## What v2.1 / v2.2 added (since v2.0)
+
+From v2.1:
+
+1. **Every finding's `source_passages` list is required and each entry
+   carries a `supports` tag** (one of `claim` / `method` / `sample` /
+   `statistics` / `confounders` / `region_definition` / `limitation` /
+   `imaging_details`). The tags drive the colored highlights in the
+   annotated PDF. No `source_passages`, no annotation, no extraction.
+2. **Every imaging-based finding gets an `imaging_details` block** —
+   reference space, atlases used, preprocessing pipeline, and any
+   reported peak coordinates. Behavioral-only findings can omit it.
+
+From v2.2:
+
+3. **`method` can be a list** for multimodal papers
+   (e.g. `[fMRI_activation, DTI]` instead of just one method).
+4. **`imaging_details.modalities`** — per-modality acquisition blocks
+   for multimodal papers (fMRI volume count, DTI b-values, etc.).
+   Single-modality papers can stay with the flat `acquisition` block.
+5. **`imaging_details.task`** — paradigm description for task-based
+   fMRI findings.
+6. **`relationship`** — required field on every finding. One of
+   `causal` / `correlational` / `recruitment` / `responder`. Tells the
+   reader what kind of claim the finding is making (see "Relationship
+   semantics" below). `direction` is the *valence* (likely / unlikely);
+   `relationship` is the *type* (causal vs correlational vs …).
+
+---
+
+## 1. Workflow
+
+For each paper the user gives you:
+
+1. **Acknowledge what you have.** State whether you have the full PDF, an
+   abstract only, a preprint, or a secondary description. If you only have
+   the abstract, you may produce a draft but you **must** set
+   `provenance.confidence: low` and add a flag.
+
+2. **Identify the unit-of-extraction.** A single paper typically yields
+   1–10 findings. Each finding is a single (region, impairment-or-therapy,
+   direction) triple. If a paper reports 5 regions for naming and 3 for
+   fluency, that's 8 findings — but they may live in 5 region files (since
+   findings are stored on the *region side*).
+
+   **Anchor perspective rule (avoid duplication).** When a paper makes
+   region-tied claims (which is most of the literature), put each
+   finding in a *region* draft with the appropriate `target` /
+   `target_kind`. Don't mirror the same finding into a second draft on
+   the impairment or therapy side — the loader's
+   `interpret_overlap()` already pulls findings *across* all region
+   entries when you query "what predicts impairment X?", so the
+   impairment view is automatically derived.
+
+   Spawn a separate impairment- or therapy-anchored draft only when
+   the paper's claim isn't tied to a specific region. Examples:
+     * "Naming errors split into semantic vs phonological subtypes
+       regardless of lesion location" → impairment draft.
+     * "MIT efficacy across mixed-lesion non-fluent aphasia (RCT,
+       n=80)" → therapy draft.
+
+   **Multi-bucket papers.** If one paper legitimately produces drafts
+   in multiple buckets (e.g., a region anchor draft for the LSM
+   finding *and* a therapy anchor draft for an embedded RCT analysis),
+   that's fine — write one draft per bucket. The annotator handles
+   multi-draft mode (`--draft a.md --draft b.md --pdf paper.pdf`) so
+   you produce one annotated PDF per paper, not per draft.
+
+3. **Refuse early when in doubt.** See "Refusal rules" below. A refused
+   paper is a clean outcome; an over-confident extraction is not.
+
+4. **Write each finding into the appropriate `drafts/` subfolder.** File
+   naming convention:
+   `drafts/regions/<region_id>__<citation_key>.md`
+   for example: `drafts/regions/ho-cort_44__Fridriksson2018.md`.
+   If a region file for that combination already exists in `regions/`, your
+   draft *adds findings* by mirroring the existing file, appending your
+   findings to the `findings:` list, bumping `status: draft`, and updating
+   `created_by` / `created_on` to your run.
+
+5. **Run `annotate_paper.py`** on the draft + the source PDF. This
+   produces `papers/<basename>_annotated.pdf` with colored highlights
+   showing exactly which sentences you extracted for each finding-aspect.
+   Hand the user both the draft and the annotated PDF — the annotated
+   PDF is the user's primary verification tool.
+
+6. **Update `extraction_log.md`** with one line per paper processed:
+   `2026-04-29 | @Fridriksson2018 | 4 drafts | confidence: medium | flags: 2 | agent: claude-opus-4-7`
+
+7. **Stop and ask** if you encounter any of the conditions in "When to ask
+   the user" below.
+
+---
+
+## 2. Refusal rules
+
+Refuse to produce a draft (and explain why) when:
+
+- The paper is an **editorial, commentary, or letter** without primary
+  data.
+- The paper is a **single-case report** *and* the finding is not novel
+  enough to warrant a `case-study` entry. Default: extract single cases
+  only when the user explicitly asks.
+- You cannot identify the paper's **method**. If you can't choose a
+  `method` value from the controlled vocabulary, you do not understand the
+  paper well enough.
+- The **direction of the claim is ambiguous** in the paper. Don't guess.
+- The paper is a **review/meta-analysis without primary tables**. If it
+  cites other papers' findings, extract from those papers instead.
+- The paper makes claims about **non-human models** or **non-stroke
+  etiologies** unless the user has scoped the request to those.
+
+---
+
+## 3. When to ask the user (don't proceed silently)
+
+Ask before continuing if:
+
+- The atlas the paper uses is **different from the LINDA pipeline's atlas**
+  and you can't tell whether the regions are equivalent. Surface the
+  mismatch; let the user decide whether to map across atlases.
+- The paper reports a **direction opposite to existing approved entries**
+  on the same (region, target) pair. This is a contradiction worth
+  surfacing for review, not silently overwriting.
+- The paper's `sample.population` does not match the KB's intended scope
+  (e.g., the KB is for adult chronic stroke aphasia and the paper is on
+  primary progressive aphasia or paediatric aphasia). Confirm before
+  extracting.
+
+---
+
+## 4. Field-by-field extraction guidance
+
+For each `finding` field listed in `schema.md`, here's how to fill it
+honestly. Re-read this whenever you're unsure.
+
+### `claim`
+One sentence in your own words. Mirror the paper's *direction* (likely vs
+unlikely) but use plain language. **Never paste a paper sentence here** —
+that's what `source_passages` is for.
+
+Bad: `"Cluster centered on left BA44 was significantly associated with the speech-fluency factor (p<.001 corrected)."`
+Good: `"Damage to the left inferior frontal gyrus pars opercularis is associated with reduced speech fluency in chronic stroke."`
+
+### `direction`
+- `likely` / `unlikely`: positive / negative finding (use with any
+  `relationship`).
+- `likely_responder` / `unlikely_responder`: legacy v2.0/2.1 shortcut
+  for therapy responsiveness. In v2.2 prefer `relationship: responder`
+  + `direction: likely | unlikely`.
+- `no_effect`: the paper specifically tested and found no association
+  (a useful and under-recorded class of finding).
+- `mixed`: the paper reports both supporting and contradicting evidence
+  within the same study.
+
+### `relationship` (v2.2, required)
+
+| value           | use when…                                            |
+|-----------------|------------------------------------------------------|
+| `causal`        | LSM, VLSM, MLPA, lesion-network mapping, disconnectome — "damage to X is associated with Y." |
+| `correlational` | fMRI_FC, rs_fMRI, DTI, NODDI, EEG, MEG — "activity / integrity of X tracks Y" without a causal claim. |
+| `recruitment`   | task-based fMRI_activation — "X is recruited / active during the Y task." |
+| `responder`     | clinical_RCT or behavioral_only — "patients with X lesion / region pattern respond to Y therapy." |
+
+The combination `relationship` + `direction` tells the reader exactly
+what the finding means. `causal + likely` = "damage causes Y";
+`recruitment + likely` = "X lights up for Y task";
+`correlational + unlikely` = "X activity does not correlate with Y."
+
+`interpret_overlap()` (the per-patient lesion → literature aggregator)
+treats all four `relationship` values with `direction: likely` as
+"damage to this region predicts the impairment" — which is the right
+inference whether the underlying evidence is causal or correlational.
+The `relationship` field preserves the epistemic distinction for
+human readers and downstream agents.
+
+### `method`
+**v2.2:** can be a single string OR a list of strings. Pick the closest
+entry/entries from the vocabulary in `schema.md`. If you can't pick one,
+refuse the extraction.
+
+- Single-modality paper (most LSM, most fMRI, most DTI):
+  `method: LSM` or `method: fMRI_activation`, etc.
+- Multimodal paper (fMRI + DTI; T1 + lesion-network mapping; etc.):
+  `method: [fMRI_activation, DTI]`. Order doesn't matter for the
+  loader, but list the *primary* method used to derive the specific
+  finding first.
+
+Common ambiguities:
+- "Univariate VLSM" → `VLSM`. "Multivariate / SVR-LSM" → `MLPA`.
+- "Lesion network mapping" (using a normative connectome) → `lesion_network_mapping`.
+- An fMRI paper that reports both activation and connectivity → list
+  both: `[fMRI_activation, fMRI_FC]`, with the dominant one first.
+
+### `sample`
+Read the **Methods → Participants** section. If the paper splits its
+sample into subgroups, extract the sample size of the subgroup the finding
+applies to, not the overall study n.
+
+If a sample field is genuinely not reported (common for `age_range`,
+`handedness`), use the literal string `not_reported`. Do **not** guess.
+
+### `statistics`
+Read the relevant **Results** sentence and the corresponding figure / table.
+- For LSM/VLSM: the threshold is usually permutation-based; report it
+  exactly as the paper does (e.g., `"permutation p<.05 corrected; minimum cluster size 100 voxels"`).
+- For RCTs: report the omnibus test threshold and the per-comparison
+  effect size + CI when the finding is about a treatment effect.
+- If only a *figure* shows the result with no numeric reporting in the
+  text, set `statistics.threshold: not_reported` and add a flag.
+
+### `confounders_controlled` / `confounders_not_controlled`
+Read the **Methods** + **Results** sections. Common controls to look for:
+lesion volume, age, sex, time post-stroke, education, baseline severity.
+List what's controlled in the analysis that produced *this finding*.
+Things that aren't controlled go in `_not_controlled`. If the paper truly
+controls for nothing relevant, use `[]` for `_controlled` — don't fake it.
+
+### `region_definition`
+Critical for cross-study comparison. **How did the paper define the brain
+region the finding is about?** Three common patterns:
+1. **`atlas`**: paper used a named atlas → fill `atlas` and (ideally) the
+   atlas index.
+2. **`peak_coord_sphere`**: paper reports a peak voxel and built a
+   spherical ROI → fill `mni_peak` and `radius_mm`.
+3. **`data_driven_cluster`**: paper let the data define the cluster (LSM,
+   ICA, etc.) → fill `description` with one sentence.
+
+This field is what allows a downstream interpreter to know whether two
+papers are talking about the *same* region.
+
+### `replications` / `contradictions`
+Only fill if the paper itself cites the prior work. Don't go fishing in
+your training data. Use the same `@Key` style as `citation`. If the paper
+references work that isn't yet in `citations.md`, add a flag and surface
+it to the user — they can decide whether to add the reference.
+
+### `author_limitations`
+Read the **Discussion → Limitations** subsection (or the paper's Discussion
+generally if there's no dedicated Limitations heading). Transcribe the
+authors' own caveats in your words, one per list item. Do **not** invent
+limitations — if the paper claims none, write `[]` and add a flag.
+
+### `evidence_quality` (the *paper's* class)
+- `meta-analysis`: a coordinate-based or effect-size meta-analysis.
+- `RCT`: randomized controlled therapy trial.
+- `cohort`: a typical group-level lesion-symptom or imaging study.
+- `case-study`: a single subject or 2–3 subjects.
+- `tentative`: preliminary, exploratory, or methodologically limited
+  findings (e.g., uncorrected statistics, very small samples).
+
+### `strength` (the *agent's* read)
+- `strong`: large sample, robust correction, large effect, replicated
+  elsewhere (per the paper itself), no fatal confounders.
+- `moderate`: typical group study, plausibly correct but not airtight.
+- `weak`: small sample, marginal correction, or a known limitation
+  affects the interpretation.
+
+`strength` is your call as the extractor. It's not the same as
+`evidence_quality` (which classifies the *paper*). A weak finding can
+appear in a high-quality paper.
+
+### `provenance.confidence` (the agent's confidence in the *extraction*)
+- `high`: you have the full paper, you understood the relevant section
+  end-to-end, no ambiguities about what the finding is.
+- `medium`: you have the paper but had to infer at least one field, or
+  there's a borderline judgment somewhere.
+- `low`: abstract only, or you noticed multiple ambiguities, or the
+  reporting is poor enough that you're partly guessing.
+
+If `confidence: low`, the user should expect to need to verify most of
+the extraction.
+
+### `provenance.flags`
+Specific, one-line concerns. Write the kind of flag a reviewer needs to
+act on. Bad flags are vague ("uncertain"); good flags name the field and
+the issue.
+
+Bad: `"unsure"`
+Good: `"sample n inferred from Figure 1 caption — not stated in text"`
+Good: `"effect direction is positive in Table 2 but negative in Figure 4 — verify"`
+
+### `source_passages` (REQUIRED in v2.1)
+
+A list of `{section, page, quote, supports}` objects. Each one is a
+short verbatim quote (1–3 sentences) and the category of finding-aspect
+it supports. The annotator uses these to produce the colored
+highlighted PDF, so quotes must be **exact** — `Ctrl+F` should find
+each one in the PDF. Use `[…]` to elide irrelevant clauses; never edit
+the substantive claim.
+
+Aim for one passage per `supports` category that the finding actually
+makes a claim about. Typical complete set per finding:
+
+  - `claim` (1×)  — the headline result sentence
+  - `sample` (1×) — the cohort description
+  - `method` (1×) — the analytical approach
+  - `statistics` (1×) — the threshold / effect-size sentence
+  - `imaging_details` (1×) — acquisition + preprocessing
+  - `region_definition` (1×) — how the region was defined
+  - `limitation` (1× or more) — the authors' own caveats
+  - `confounders` (0–1×) — only if explicitly listed
+
+If you only have the abstract (not the full paper), label
+`section: "Abstract"` and lower `provenance.confidence` to `medium` or
+`low`. The user will know the annotator can only highlight the
+abstract in that case.
+
+### `imaging_details` (new in v2.1; required for imaging-based findings)
+
+Skip only when `method` is `behavioral_only` / `clinical_RCT` /
+`meta-analysis` / `computational_model`. For everything else, fill:
+
+  - `field_strength` — `"3T"`, `"1.5T"`, etc., or `not_reported`.
+  - `acquisition.{voxel_size_mm, TR_ms, TE_ms, sequence}` — pull from
+    the Methods *Imaging Acquisition* / *MRI Acquisition* section. Any
+    sub-field can be omitted if not reported, but at least try for
+    voxel size and sequence.
+  - `preprocessing_pipeline` — one-line summary of the preprocessing
+    stack (e.g. `"FreeSurfer 6.0 + FSL FLIRT/FNIRT to MNI152"`,
+    `"SPM12 unified segmentation + DARTEL"`, `"ANTs N4 + diffeomorphic
+    registration"`). The single most important field after
+    `reference_space` for cross-study compatibility.
+  - `reference_space` — `MNI152` / `MNI305` / `Talairach` / `native` /
+    `other` / `not_reported`. Required (will fail validation otherwise
+    for imaging-based findings).
+  - `atlases_used` — list of strings, e.g. `["AAL", "HarvardOxford"]`.
+    Required (use `[]` if the paper used no atlas, e.g. pure
+    voxel-wise LSM with manual tracings).
+  - `coordinates_reported` — list of `{region, mni: [x,y,z]}` for any
+    peak coordinates explicitly given. The most useful imaging field
+    for downstream interpretation, since you can spatially compare
+    these to the patient's lesion location. Skip if the paper reports
+    only cluster maps without peak coordinates.
+
+**v2.2 — multimodal acquisition (`modalities`):**
+For papers with more than one modality (e.g., T1 anatomy + task fMRI +
+DTI), use the `modalities` list instead of (or in addition to) the
+single `acquisition` block:
+
+```yaml
+imaging_details:
+  modalities:
+    - modality: T1
+      sequence: MPRAGE
+      voxel_size_mm: [1, 1, 1]
+      TR_ms: 2300
+      TE_ms: 2.96
+    - modality: fMRI
+      sequence: EPI
+      voxel_size_mm: [3, 3, 3]
+      TR_ms: 2000
+      TE_ms: 30
+      volumes: 240
+    - modality: DTI
+      voxel_size_mm: [2, 2, 2]
+      n_directions: 64
+      b_values: [0, 1000]
+```
+
+Each entry needs a `modality` key; the rest is free-form per modality.
+
+**v2.2 — fMRI task (`task`):**
+For findings whose `method` includes `fMRI_activation`, fill the
+`imaging_details.task` block:
+
+```yaml
+imaging_details:
+  task:
+    name: "Picture naming"
+    description: "Subjects named line drawings of common objects."
+    contrasts: ["Naming > Rest", "Naming > Scrambled"]
+    baseline: "Visual fixation"
+```
+
+Add a corresponding `source_passages` entry with
+`supports: imaging_details` so the acquisition / task sentences get
+highlighted in the annotated PDF.
+
+---
+
+## 5. Output format
+
+For each paper:
+
+1. Produce one **draft markdown file per (region, paper)** combination,
+   placed in `drafts/regions/`. Same convention for impairment-targeted
+   findings → `drafts/impairments/`, therapy-targeted → `drafts/therapies/`.
+2. The frontmatter follows schema v2 exactly. Validate with
+   `python aphasia_kb.py --check drafts/`.
+3. Append one line to `extraction_log.md`.
+
+### File-naming convention
+
+`drafts/<bucket>/<entry_id>__<citation_key>.md`
+
+- `bucket` ∈ `regions`, `impairments`, `therapies`.
+- `entry_id` is the existing entry's `id` (e.g., `ho-cort_44`) or, for a
+  new entry, the proposed `id` you assigned.
+- `citation_key` is the paper's `@Key` minus the `@`.
+
+Examples:
+- `drafts/regions/ho-cort_44__Fridriksson2018.md`
+- `drafts/impairments/naming__Mirman2015.md`
+- `drafts/therapies/mit__Schlaug2008.md`
+
+### When the entry already exists
+
+If `regions/ho-cort_44.md` already exists and you're adding new findings
+for it from a new paper:
+
+1. **Copy the approved file** into `drafts/` under the naming convention
+   above.
+2. **Bump `status: draft`** and update `created_by` / `created_on` to your
+   run.
+3. **Append** your new findings to the existing `findings:` list. Give
+   them new `id`s (`f4`, `f5`, …) that don't collide with existing ones.
+4. **Do not modify** existing findings. The reviewer decides whether to
+   accept your additions.
+
+---
+
+## 6. Discipline rules (non-negotiable)
+
+- **Never invent a citation.** If you reference a paper, it must already
+  exist in `citations.md` *or* you must add a properly-formatted entry
+  there in the same run.
+- **Never invent statistics, effect sizes, or sample numbers.** If the
+  paper doesn't report the field, use `not_reported`.
+- **Never silently change `direction`** based on prior knowledge. The
+  direction comes from *this paper*.
+- **Never write outside `drafts/`, `papers/`, `extraction_log.md`, and
+  `citations.md`.** No exceptions.
+- **Always set `status: draft` and `created_by: agent:<your-id>`.**
+- **Always update `extraction_log.md`** in the same run.
+
+---
+
+## 7. Worked example
+
+See `examples/region_ifg_opercularis_fridriksson2018.md` for a fully
+extracted v2 entry. Pay particular attention to:
+
+- How `not_reported` is used for `sample.age_range` and several
+  `statistics` fields.
+- How `provenance.flags` records the specific things a reviewer needs to
+  verify.
+- How `confounders_not_controlled` makes the analysis gaps visible.
+- How `source_passages` is filled (or not — the example currently has a
+  placeholder, which the agent should replace when the PDF is available).
+
+---
+
+## 8. When the user asks you to extract from multiple papers at once
+
+Process them one at a time and produce one draft set per paper. Do not
+combine findings across papers into a single file — every finding has a
+single `citation`, and conflating papers makes provenance impossible to
+audit.
+
+After all papers are processed, summarize for the user: papers processed,
+drafts written, refusals and why, papers requiring user input before
+proceeding.
+
+
+# schema.md
+
+# Schema v2.2
+
+Every entry is a single markdown file with **YAML frontmatter** followed by
+**prose**. The frontmatter is the contract that `aphasia_kb.py`,
+`promote.py`, `annotate_paper.py`, and any extraction agent rely on.
+Changing field names or controlled vocabularies should be a deliberate,
+documented change to *this file* and the loader together.
+
+> **Status note.** Schema v1 → v2.0 → v2.1 → **v2.2** (current).
+>
+> - **v2.0** introduced the rich finding object (method/sample/stats/etc.).
+> - **v2.1** made `source_passages` required and added `imaging_details`
+>   for the color-annotated PDF workflow.
+> - **v2.2** adds: `method` as a list (multimodal papers), an
+>   `imaging_details.modalities` block (per-modality acquisition),
+>   `imaging_details.task` (for fMRI), and a `finding.relationship`
+>   field that disambiguates "damage causes Y" (causal) from "X is
+>   recruited for Y" (correlational/recruitment) from "lesion pattern
+>   predicts Y therapy benefit" (responder).
+>
+> New entries must declare `schema_version: 2.2`. The loader reads older
+> entries (v1, v2.0, v2.1) for backwards compatibility.
+
+## File-level fields (every entry)
+
+| Field            | Type    | Required | Notes |
+|------------------|---------|----------|-------|
+| `schema_version` | int     | yes      | Must be `2`. |
+| `id`             | string  | yes      | Stable join key, lowercase, dash-or-underscore-separated. |
+| `name`           | string  | yes      | Human-readable name. |
+| `aliases`        | list    | no       | Other names that should resolve to this entry. |
+| `kind`           | enum    | yes      | See per-bucket section below. |
+| `status`         | enum    | yes      | `draft` \| `in_review` \| `approved` \| `rejected` \| `legacy_v1`. |
+| `reviewer`       | string  | when status=`approved` | Free text identifying the human reviewer. |
+| `reviewed_on`    | ISO date | when status=`approved` | When the reviewer signed off. |
+| `created_by`     | string  | yes | E.g. `agent:claude-opus-4-7` or `human:michele`. |
+| `created_on`     | ISO date | yes | When the entry was first written. |
+| `findings`       | list of *finding* objects | yes (may be empty) | See below. |
+| `notes`          | string  | no       | Free text, file-level. |
+
+## `regions/` files
+
+In addition to the file-level fields above:
+
+| Field             | Type            | Required | Notes |
+|-------------------|-----------------|----------|-------|
+| `kind`            | enum            | yes      | `atlas` \| `classical` \| `network` \| `tract`. |
+| `atlas`           | string          | when `kind=atlas` | Atlas name + version, e.g. `HarvardOxford-cort-maxprob-thr25-2mm`. |
+| `atlas_index`     | int             | when `kind=atlas` | Index into the atlas labels list. |
+| `mni_centroid`    | [x, y, z]       | no       | |
+| `hemisphere`      | enum            | no       | `left` \| `right` \| `bilateral`. Default `left` for language regions. |
+| `members`         | list of region ids | when `kind=network` or `tract` | Constituent regions / endpoints. |
+| `networks`        | list of region ids | no | Networks this region participates in. |
+| `tracts_adjacent` | list of region ids | no | Tracts that pass through / terminate near this region. |
+
+## `impairments/` files
+
+| Field              | Type            | Required | Notes |
+|--------------------|-----------------|----------|-------|
+| `kind`             | const `impairment` | yes   | |
+| `short_definition` | string          | yes      | One-sentence clinical definition. |
+| `assessment`       | list of strings | no       | Standard tests, e.g. `["BNT", "WAB-R Naming"]`. |
+
+## `therapies/` files
+
+| Field                  | Type            | Required | Notes |
+|------------------------|-----------------|----------|-------|
+| `kind`                 | const `therapy` | yes      | |
+| `short_description`    | string          | yes      | |
+| `targets_impairments`  | list of strings | yes      | impairment ids this therapy is designed to treat. |
+| `dosage`               | string          | no       | Typical dose, e.g. `3 sessions/week × 8 weeks`. |
+
+---
+
+## The `finding` object (the heart of v2)
+
+Each finding is one piece of evidence linking the entry to one impairment,
+therapy, or region. Required fields are marked **R**; strongly encouraged
+ones are **S**; optional ones are **O**.
+
+### Identity
+
+| Field         | R/S/O | Type   | Notes |
+|---------------|-------|--------|-------|
+| `id`          | R     | string | Stable id within the file (e.g. `f1`, `f2`). Used by `replications` / `contradictions` to refer to specific findings. |
+| `target`      | R     | string | The other-side `id` (an impairment id from this entry, or a region id from an impairment/therapy entry). |
+| `target_kind` | R     | enum   | `impairment` \| `therapy` \| `region` \| `prognosis`. |
+| `claim`       | R     | string | One sentence stating the finding in plain language. The agent's own prose, not a quote. |
+| `direction`   | R     | enum   | `likely` \| `unlikely` \| `likely_responder` \| `unlikely_responder` \| `no_effect` \| `mixed`. |
+| `citation`    | R     | string | `@Key` referencing `citations.md`. |
+
+### Method
+
+| Field      | R/S/O | Type   | Notes |
+|------------|-------|--------|-------|
+| `method`   | R     | enum or list | **v2.2:** can be a string (single method) or a list of strings (multimodal paper). E.g. `LSM` or `[fMRI_activation, DTI]`. |
+| `design`   | S     | enum   | `cross-sectional` \| `longitudinal` \| `RCT` \| `case-series` \| `single-case` \| `meta-analysis` \| `systematic-review`. |
+| `imaging`  | S     | enum   | `T1` \| `T2` \| `FLAIR` \| `CT` \| `DWI` \| `fMRI` \| `multimodal` \| `none` \| `not_reported`. |
+| `relationship` | R | enum | **v2.2:** what kind of relationship the finding describes. See *Relationship semantics* below. |
+
+### Relationship semantics (v2.2)
+
+The `relationship` field tells a downstream interpreter what kind of
+claim a finding is making. `direction` (likely / unlikely / no_effect /
+mixed) is the *valence*; `relationship` is the *type*. Both are needed
+to know what e.g. `direction: likely` actually means.
+
+| `relationship`   | Typical methods                        | "likely" means                                                                                          |
+|------------------|----------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `causal`         | LSM, VLSM, MLPA, lesion_network_mapping, disconnectome | "Damage to this region is associated with the impairment" — the canonical lesion-symptom claim. |
+| `correlational`  | fMRI_FC, rs_fMRI, DTI, NODDI, EEG, MEG | "Activity / integrity of this region tracks behavior" — no causal claim, just covariation.              |
+| `recruitment`    | fMRI_activation                        | "This region is recruited (active) during this task" — task-functional claim.                           |
+| `responder`      | clinical_RCT, behavioral_only          | "Patients with this lesion / region pattern respond well to this therapy" — a moderator claim.          |
+
+For `interpret_overlap()` (the per-patient lesion → literature interpretation),
+all four `relationship` values with `direction: likely` get treated as
+"damage to this region predicts the impairment" — which is the right
+inference whether the underlying evidence is causal LSM, correlational
+fMRI, recruitment, or therapy-responder data. The `relationship` field
+preserves the *epistemic distinction* for the user and for any
+downstream agent that needs to reason about evidence type.
+
+### Sample
+
+A nested object — fields inside `sample` may be `not_reported` if the paper
+doesn't say.
+
+| Field                       | R/S/O | Notes |
+|-----------------------------|-------|-------|
+| `sample.n`                  | R     | int. Use `not_reported` if absent. |
+| `sample.population`         | R     | E.g. `chronic left-hemisphere stroke`. |
+| `sample.time_post_onset`    | S     | E.g. `>=6 months`, `mean 38 months (SD 24)`. |
+| `sample.age_range`          | S     | E.g. `35-78 years`, `mean 58 (SD 12)`. |
+| `sample.handedness`         | S     | E.g. `all right-handed`, `mixed`. |
+| `sample.language`           | S     | E.g. `English monolingual`, `Spanish-English bilingual`. |
+| `sample.recruitment`        | O     | One sentence. |
+| `sample.inclusion_criteria` | O     | List or one-sentence summary. |
+| `sample.exclusion_criteria` | O     | List or one-sentence summary. |
+
+### Statistics
+
+| Field                  | R/S/O | Notes |
+|------------------------|-------|-------|
+| `statistics.threshold` | R     | E.g. `FWE p<.05`, `FDR q<.05`, `uncorrected p<.001 with k>10`. Use `not_reported` if absent. |
+| `statistics.cluster_extent` | O | int (voxels). |
+| `statistics.effect_size` | S   | E.g. `β = 0.34`, `OR 2.1`, `r = .42`. Use `not_reported` if absent. |
+| `statistics.ci_95`     | O     | E.g. `[1.4, 3.1]`. |
+| `statistics.p_value`   | O     | E.g. `.003`. |
+
+### Confounders
+
+| Field                          | R/S/O | Notes |
+|--------------------------------|-------|-------|
+| `confounders_controlled`       | R     | List of strings, e.g. `["lesion volume", "age", "time post-stroke"]`. Use `[]` (empty) only if the paper explicitly states none. |
+| `confounders_not_controlled`   | R     | Things you (the extractor) noticed weren't controlled for. Use `[]` if the methods are exhaustive or you can't tell. |
+
+### Region definition (how the *paper* defined the region)
+
+| Field                          | R/S/O | Notes |
+|--------------------------------|-------|-------|
+| `region_definition.kind`       | R     | `atlas` \| `manual_ROI` \| `peak_coord_sphere` \| `tract` \| `data_driven_cluster` \| `not_reported`. |
+| `region_definition.atlas`      | when `kind=atlas` | Atlas name + version. |
+| `region_definition.mni_peak`   | when `kind=peak_coord_sphere` | `[x, y, z]` in mm, MNI. |
+| `region_definition.radius_mm`  | when `kind=peak_coord_sphere` | int. |
+| `region_definition.description`| S     | One sentence. |
+
+### Imaging details (introduced v2.1; expanded v2.2)
+
+A nested object capturing the imaging pipeline. Lets a downstream
+interpreter check whether this finding's space/atlas is comparable to
+the patient's imaging.
+
+| Field                                  | R/S/O | Notes |
+|----------------------------------------|-------|-------|
+| `imaging_details.field_strength`       | S     | E.g. `"3T"`, `"1.5T"`, `not_reported`. |
+| `imaging_details.acquisition.voxel_size_mm` | O | `[x, y, z]` in mm. *Single-modality shortcut* — for multimodal papers, prefer the `modalities` list below. |
+| `imaging_details.acquisition.TR_ms`    | O     | int / float. |
+| `imaging_details.acquisition.TE_ms`    | O     | int / float. |
+| `imaging_details.acquisition.sequence` | O     | E.g. `"MPRAGE"`, `"FSE"`, `"EPI"`. |
+| `imaging_details.modalities`           | O     | **v2.2:** list of per-modality acquisition blocks. Use this when the paper combines several modalities (e.g. T1 + fMRI + DTI). Each entry: `{modality: "T1"\|"fMRI"\|"DTI"\|...; voxel_size_mm: [], TR_ms, TE_ms, sequence, n_directions (DTI), b_values (DTI), volumes (fMRI), notes}`. Free-form per-modality. |
+| `imaging_details.task`                 | when `method` includes `fMRI_activation` | **v2.2:** `{name: str, description: str, contrasts: [str], baseline: str}` — the fMRI paradigm. Skip for resting-state or non-fMRI findings. |
+| `imaging_details.preprocessing_pipeline`| S    | One-line description, e.g. `"FreeSurfer 6.0 + FSL FLIRT/FNIRT"`, `"SPM12 unified segmentation + DARTEL"`, `"FSL FEAT + ANTs registration to MNI152"`. |
+| `imaging_details.reference_space`      | R     | `MNI152` \| `MNI305` \| `Talairach` \| `native` \| `other` \| `not_reported`. |
+| `imaging_details.atlases_used`         | R     | List of strings, e.g. `["HarvardOxford-cort-maxprob-thr25-2mm", "AAL"]`. Use `[]` if none. |
+| `imaging_details.coordinates_reported` | O     | List of `{region: str, mni: [x, y, z]}` objects for explicitly reported peak coordinates. |
+
+### Cross-study links
+
+| Field            | R/S/O | Notes |
+|------------------|-------|-------|
+| `replications`   | O     | List of `@Key`s of papers that replicate this finding. |
+| `contradictions` | O     | List of `@Key`s of papers that contradict this finding. |
+
+### Author-acknowledged caveats
+
+| Field                | R/S/O | Notes |
+|----------------------|-------|-------|
+| `author_limitations` | R     | List of one-line caveats the authors themselves note in their Discussion or Limitations section. Use `[]` only if the paper truly has none. |
+
+### Extractor's assessment
+
+These fields capture the *agent's* judgment, separate from what the paper
+reports.
+
+| Field                 | R/S/O | Notes |
+|-----------------------|-------|-------|
+| `evidence_quality`    | R     | `case-study` \| `cohort` \| `RCT` \| `meta-analysis` \| `tentative`. Reflects the *paper*. |
+| `strength`            | R     | `weak` \| `moderate` \| `strong`. The agent's read of how robustly this paper supports the claim. |
+
+### Audit trail (provenance)
+
+| Field                       | R/S/O | Notes |
+|-----------------------------|-------|-------|
+| `provenance.extracted_by`   | R     | E.g. `agent:claude-opus-4-7` or `human:michele`. |
+| `provenance.extracted_on`   | R     | ISO date. |
+| `provenance.paper_section`  | R     | E.g. `Results, page 1435`, `Table 2`, `Figure 4 caption`. |
+| `provenance.confidence`     | R     | Agent's confidence in the *extraction itself* (not in the finding). `high` \| `medium` \| `low`. |
+| `provenance.flags`          | R     | List of one-line concerns, e.g. `["effect direction unclear", "sample n inferred from figure"]`. Use `[]` if none. |
+
+### Source passages (REQUIRED in v2.1)
+
+The verbatim quotes that justify each finding. These drive the
+color-annotated PDF that `annotate_paper.py` produces — without them
+there's no visual audit, so they are required.
+
+| Field                  | R/S/O | Notes |
+|------------------------|-------|-------|
+| `source_passages`      | R     | List of `{section, page, quote, supports}` objects. At least one entry. The exact sentence(s) in the paper, copied verbatim. |
+| `source_passages[].section` | R | E.g. `"Results"`, `"Methods – Participants"`, `"Discussion – Limitations"`, `"Table 2 caption"`. |
+| `source_passages[].page`    | R | int (or `null` if it's a table/figure caption with unclear page). |
+| `source_passages[].quote`   | R | Verbatim text. Use `[…]` for elided clauses; never edit the substantive claim. Keep short — 1–3 sentences max per passage. |
+| `source_passages[].supports`| R | One of: `claim` \| `method` \| `sample` \| `statistics` \| `confounders` \| `region_definition` \| `limitation` \| `imaging_details`. Drives which color highlights this passage in the annotated PDF. |
+
+### Free notes
+
+| Field   | R/S/O | Notes |
+|---------|-------|-------|
+| `notes` | O     | Free text, finding-level. |
+
+---
+
+## Controlled vocabularies (frozen for v2.2; change requires a v2.3 bump)
+
+```
+schema_version    = 2 | 2.1 | 2.2 (current)
+status            = draft | in_review | approved | rejected | legacy_v1
+supports          = claim | method | sample | statistics | confounders
+                  | region_definition | limitation | imaging_details
+reference_space   = MNI152 | MNI305 | Talairach | native | other
+                  | not_reported
+relationship      = causal | correlational | recruitment | responder
+direction         = likely | unlikely | likely_responder | unlikely_responder
+                  | no_effect | mixed
+strength          = weak | moderate | strong
+evidence_quality  = case-study | cohort | RCT | meta-analysis | tentative
+confidence        = high | medium | low
+region.kind       = atlas | classical | network | tract
+target_kind       = impairment | therapy | region | prognosis
+method            = LSM | VLSM | MLPA | MVPA
+                  | fMRI_activation | fMRI_FC | rs_fMRI
+                  | DTI | NODDI | tractography
+                  | lesion_network_mapping | disconnectome
+                  | EEG | MEG | TMS | tDCS
+                  | behavioral_only | clinical_RCT | meta-analysis
+                  | computational_model
+design            = cross-sectional | longitudinal | RCT | case-series
+                  | single-case | meta-analysis | systematic-review
+imaging           = T1 | T2 | FLAIR | CT | DWI | fMRI | multimodal
+                  | none | not_reported
+region_definition.kind = atlas | manual_ROI | peak_coord_sphere | tract
+                       | data_driven_cluster | not_reported
+```
+
+## "Not reported" handling
+
+Many real papers omit one or more required fields. The convention is:
+
+- Use the literal string `not_reported` for any required string field that
+  the paper does not report.
+- Use the literal `null` (or omit the field) for `int`/`list` fields that
+  are not reported, and add a flag in `provenance.flags`.
+- An entry can still be `approved` with `not_reported` fields, but a
+  reviewer should consider whether the missing fields undermine the claim.
+
+## Citations
+
+`citations.md` holds one block per `@Key` referenced in any frontmatter:
+
+```markdown
+## @Fridriksson2018
+Fridriksson J, Yourganov G, Bonilha L, ... Revealing the dual streams of
+speech processing. Proc Natl Acad Sci USA. 2018;115(7):1432–1437.
+doi:10.1073/pnas.1714922115
+```
+
+
+# Paper
+
+Citation key: @Yourganov2015
+PDF filename: Yourganov-2015-Predicting aphasia type from br.pdf
+Page count: 24
+
+
+=== PAGE 1 ===
+PREDICTING APHASIA TYPE FROM BRAIN DAMAGE 
+MEASURED WITH STRUCTURAL MRI
+Grigori Yourganova,*, Kimberly G. Smithb, Julius Fridrikssonb, and Chris Rordena
+aDepartment of Psychology, University of South Carolina, Columbia, SC, 29208, USA
+bDepartment of Communication Sciences and Disorders, University of South Carolina, Columbia, 
+SC, 29208, USA
+Abstract
+Chronic aphasia is a common consequence of a left-hemisphere stroke. Since the early insights by 
+Broca and Wernicke, studying the relationship between the loci of cortical damage and patterns of 
+language impairment has been one of the concerns of aphasiology. We utilized multivariate 
+classification in a cross-validation framework to predict the type of chronic aphasia from the 
+spatial pattern of brain damage. Our sample consisted of 98 patients with five types of aphasia 
+(Broca’s, Wernicke’s, global, conduction, and anomic), classified based on scores on the Western 
+Aphasia Battery. Binary lesion maps were obtained from structural MRI scans (obtained at least 6 
+months poststroke, and within 2 days of behavioural assessment); after spatial normalization, the 
+lesions were parcellated into a disjoint set of brain areas. The proportion of damage to the brain 
+areas was used to classify patients’ aphasia type. To create this parcellation, we relied on five 
+brain atlases; our classifier (support vector machine) could differentiate between different kinds of 
+aphasia using any of the five parcellations. In our sample, the best classification accuracy was 
+obtained when using a novel parcellation that combined two previously published brain atlases, 
+with the first atlas providing the segmentation of grey matter, and the second atlas used to segment 
+the white matter. For each aphasia type, we computed the relative importance of different brain 
+areas for distinguishing it from other aphasia types; our findings were consistent with previously 
+published reports of lesion locations implicated in different types of aphasia. Overall, our results 
+revealed that automated multivariate classification could distinguish between aphasia types based 
+on damage to atlas-defined brain areas.
+Keywords
+chronic aphasia; aphasia typology; multivariate classification
+*Corresponding author: Phone: +1 803 369 5797, yourgano@musc.edu, Address: Department of Psychology, University of South 
+Carolina, 1512 Pendleton Street, Columbia, SC 29208, USA. Present address: Department of Neurology, Medical University of South 
+Carolina, 171 Ashley Avenue, Charleston, SC 29425, USA. 
+Publisher's Disclaimer: This is a PDF file of an unedited manuscript that has been accepted for publication. As a service to our 
+customers we are providing this early version of the manuscript. The manuscript will undergo copyediting, typesetting, and review of 
+the resulting proof before it is published in its final citable form. Please note that during the production process errors may be 
+discovered which could affect the content, and all legal disclaimers that apply to the journal pertain.
+HHS Public Access
+Author manuscript
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Published in final edited form as:
+Cortex. 2015 December ; 73: 203–215. doi:10.1016/j.cortex.2015.09.005.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 2 ===
+1. INTRODUCTION
+Aphasia is a language disorder frequently observed after damage to the left hemisphere of 
+the brain. Depending on the location of damage in relation to the cortical language regions, 
+aphasic patients can demonstrate very different patterns of language impairment. In general, 
+patients with similar lesion location and size show somewhat similar aphasic symptoms. 
+Nevertheless, there is a fair amount of heterogeneity in patterns of cortical damage across 
+patients with similar language impairments (Willmes & Poeck, 1993). Such heterogeneity is 
+expected in clinical populations; however, when this variance is too great it suggests that 
+group studies might be “useless and harmful” for understanding individual symptoms 
+(Caramazza & McCloskey, 1988). On the other hand, it is possible that the relationship 
+between symptoms and structural injury reflect specific patterns of injury to a spatially 
+distributed network; in this case, multivariate analysis is more sensitive than the more 
+traditional univariate approaches that ignore the interactions between spatial locations (see 
+e.g. Yourganov et al., 2014). Our objective was to determine whether automated 
+multivariate classification algorithms could accurately predict aphasia type based on the 
+pattern of brain injury.
+Modern aphasia classification largely rests on a model of language localization typically 
+referred to as the Wernicke-Lichtheim model. This model was largely developed by 
+Wernicke and Lichtheim between 1874 and 1886 (for a comprehensive historical account 
+and bibliography, see Tesak & Code, 2008), and brought together previous and concurrent 
+ideas about language localization (notably, Dax’s insight on the connection between left-
+hemisphere lesions and speech disorders; Broca’s pioneering results on the localization of 
+the motor centre within the inferior frontal lobe; Meynert’s idea of the importance of the 
+peri-Sylvian region in speech comprehension; Kussmaul’s hypothesis of a concept center in 
+the brain, although Kussmaul did not hypothesize its specific location). The Wernicke-
+Lichtheim model postulates the existence of three interconnected “language centers”: 
+sensory, motor, and concept (the original Wernicke’s model consisted of only the sensory 
+and motor centers; Lichtheim added the concept center, without specifying its anatomical 
+location; Wernicke revised his model accordingly). Damage to each center and connective 
+tract would result in a specific aphasia type, with the exception of damage to the concept 
+center, which would cause memory deficits rather than aphasia. According to this model, 
+damage to the motor and sensory centers produces impairment in expression and 
+comprehension, respectively called motor and sensory aphasia. Damage to the tract that 
+connects these two centers, the arcuate fasciculus, results in conduction aphasia, which 
+manifests in difficulties repeating others’ speech. When the connections between these two 
+centers and the concept center are damaged, it results in two forms of transcortical aphasia 
+(Tesak & Code, 2008, p.90–91): transcortical motor aphasia, in which a patient has 
+difficulty with expression but repetition is relatively preserved, and transcortical sensory 
+aphasia, in which comprehension is impaired, but repetition is preserved. When the damage 
+is extensive and covers several loci, it results in what Lichtheim called total aphasia 
+(Lichtheim, 1885); a condition that today is typically referred to as global aphasia. Finally, 
+amnestic aphasia (now more commonly referred to as ‘anomic aphasia’) is a relatively mild 
+language impairment manifested in word-finding difficulties; it is not linked to damage to a 
+Yourganov et al.
+Page 2
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 3 ===
+specific locus. This model of language localization revolutionized the concept of aphasia 
+typology despite resistance from others in the field.
+These early accounts provided the basis for Norman Geschwind’s seminal writings on the 
+classification of aphasia and associated lesion locations (Geschwind & Kaplan, 1962; 
+Geschwind, 1965; Geschwind & Fusillo, 1966). He proposed the concept of cortical 
+disconnection. Specifically, a brain lesion could affect either a discrete cortical area, the 
+connecting fibers between these areas, or both. The symptoms of aphasia were based on the 
+specific location of the lesion. Geschwind’s proposal remains relevant today, as researchers 
+utilize new neuroimaging techniques to provide a more precise account of the anatomical 
+substrate underlying language dysfunction and informing classification of aphasia 
+syndromes (Benson & Ardila, 1996). Although classification of aphasia based on clusters of 
+symptoms has been criticized on the premise that no two individuals with aphasia present 
+with the same clinical symptoms (Caplan, 1987; Carmazza, 1984; Schwartz, 1984), 
+syndrome classification, while limiting at times, has remained fairly consistent and 
+replicable for over a century.
+These historical accounts of aphasia classification form the basis for modern aphasia 
+typology and the foundation to current aphasia classification systems. Most aphasia 
+typology schemes include such types as Broca’s, Wernicke’s, conduction, transcortical 
+motor and sensory, anomic, and global aphasia (Ardila, 2010). A notable exception is the 
+system proposed by Luria (1970), with a markedly different definition of aphasia types (it 
+should be noted that Luria investigated aphasia in patients suffering from bullet wounds, 
+rather than from stroke-related lesions). The type of aphasia is now commonly determined 
+based on standardized behavioural testing; for example, the Western Aphasia Battery 
+(WAB; Kertesz, 1982; Kertesz, 2006) was developed with the explicit purpose relating 
+patterns of language impairment to a particular classical aphasia type.
+The aphasia syndromes and associated clinical symptoms are constrained by the underlying 
+vasculature. In fact, Hillis discussed the classic aphasia typology as vascular syndromes 
+“consisting of frequently associated deficits that reflect damage or dysfunction of regions of 
+neural tissue (essential for particular language functions) supplied by a particular artery” 
+(Hillis, 2007). Damage to brain regions supplied by the superior division of the middle 
+cerebral artery (MCA), such as the left posterior inferior frontal cortex and insula, result in 
+Broca’s aphasia symptomatology (e.g., non-fluent speech production, relatively spared 
+auditory comprehension, and, in some cases, agrammatic sentence processing). Deficits 
+associated with Wernicke’s aphasia (e.g., fluent jargon and poor auditory comprehension) 
+are typically related to damage of neural regions supplied by the inferior division of the left 
+MCA. Transcortical motor aphasia is thought to be caused by damage to brain regions 
+supplied by the anterior cerebral artery (ACA; Masdeu et al., 1979; Rubens, 1976) or 
+watershed regions between the ACA and MCA (Hillis, 2007), with lesions occurring 
+anterior and superior to Broca’s area (Freedman et al., 1984). Lesions to regions around 
+Wernicke’s area that are supplied by the posterior cerebral artery (PCA) and watershed areas 
+between the MCA and PCA territory (Alexander et al., 1989) result in symptoms associated 
+with transcortical sensory aphasia. Global aphasia is associated with extensive cortical 
+damage in the region supplied by the MCA; in most cases, both Broca’s area and 
+Yourganov et al.
+Page 3
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 4 ===
+Wernicke’s area are damaged (Mazzocchi & Vignolo, 1979). Conduction aphasia, 
+characterized by good comprehension, frequent phonemic errors in speech production and 
+poor repetition, has historically been associated with lesions of the arcuate fasciculus, a 
+white-matter tract connecting Broca’s and Wernicke’s areas (Geschwind, 1965). However, 
+more recent evidence indicates this syndrome is related to lesions of the supramarginal 
+gyrus, left dorsal superior temporal gyrus, or the temporo-parietal junction (Buchsbaum et 
+al., 2011; Hickok et al., 2000; Anderson et al., 1999; Palumbo et al., 1992; Selnes et al., 
+1992; Damasio & Damasio, 1980).
+Classification of aphasia syndromes has proven useful in both clinical and research settings. 
+It remains common to report aphasia types in clinical studies of aphasia because it is 
+expected that patients with the same aphasia type present with similar clinical symptoms and 
+patterns of brain damage. In addition, it is expected that research and clinical findings are 
+potentially applicable to patients with a similar cluster of symptoms. Classification has 
+allowed clinicians to predict recovery (Kertesz, 1997) and to select patients for appropriate 
+interventions (Chapey, 2001). Importantly, aphasia syndromes classified based on clinical 
+assessment has allowed clinicians to make robust predictions about the areas of the brain 
+that are damaged, and in particular, hypoperfused (Hillis, 2007). Reineck and colleagues 
+(2005) examined how assessment of language function can be useful acutely to estimate the 
+site and volume of hypoperfusion in patients with aphasia, and in conjunction with diffusion 
+weighted imaging, identify patients who might benefit from reperfusion therapy and 
+possibly predict prognosis (Reineck & Hillis, 2004; Reineck et al., 2005).
+With the accumulation of neurological findings, determination of aphasia type from brain 
+damage has become less clear than the classical Wernicke-Lichtheim model had suggested. 
+As mentioned above, conduction aphasia is now considered a result of damage to grey 
+matter around the temporo-parietal junction (Damasio, 1982; Hickok et al., 2000), rather 
+than exclusively white-matter damage (i.e., arcuate fasciculus) as proposed by the classical 
+Wernicke-Lichtheim model. The damage limited to Broca’s area does not lead to Broca’s 
+aphasia, and the same can be said about Wernicke’s area and Wernicke’s aphasia (Damasio, 
+1982, Fridriksson et al., 2014). Early attempts to predict aphasia type from brain damage 
+(Basso et al., 1985; Willmes & Poeck, 1993) have reported poor prediction accuracies. This 
+is likely caused by the heterogeneity of brain damage within groups of the same aphasia 
+type. Over time, larger sample sizes and better imaging techniques led to a more accurate 
+localization of aphasia symptoms (Kreisler et al., 2000; Henseler et al., 2013). However, the 
+most common approach to studying the neurological causes of aphasia is voxel-based 
+lesion-symptom mapping (Bates et al., 2003), which is a univariate method where the 
+impact of each cortical location is evaluated independent of the other locations; this might 
+introduce a spatial bias, as reported by Mah et al. (2014).
+An alternative (multivariate) approach has recently gained popularity in neuroimaging 
+studies (see, for example, Pereira et al., 2009). This approach evaluates the contribution of 
+all brain locations (which could be voxels or cortical regions) at once; the interactions 
+between the locations are considered as important as the contributions of each specific 
+location. It is relevant to stroke studies because stroke usually damages multiple brain areas. 
+Schmah and colleagues (2010) analyzed fMRI data from a longitudinal stroke study using 
+Yourganov et al.
+Page 4
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 5 ===
+several multivariate and univariate algorithms, and evaluated the algorithms on their ability 
+to predict the post-stroke onset and the task (e.g., finger tapping versus wrist flexion). Saur 
+and colleagues (2010) used a multivariate method called Support Vector Machine (SVM) to 
+predict the post-stroke recovery of function. Smith et al. (2013) used SVM to diagnose acute 
+spatial neglect. In the current study, we used SVM to predict aphasia type based on patterns 
+of brain damage. To our knowledge, this is the first study to classify aphasia using a 
+multivariate approach, although the multivariate framework has been applied to the 
+diagnosis of such neurological disorders as dementia, schizophrenia and Parkinson’s disease 
+(Orru et al., 2012).
+The three main components of our approach are: (1) careful spatial normalization of lesions; 
+(2) segmentation of the lesioned area using a brain atlas; (3) multivariate prediction of 
+aphasia type within a cross-validation framework. The goal of the first step is to lessen the 
+impact of individual differences in cortical shape and size; for this purpose, we adapted our 
+Clinical Toolbox (Rorden et al., 2012) to support enantiomorphic normalization (Nachev et 
+al., 2008) using SPM12. The second step serves to reduce the number of inputs to the 
+multivariate analysis. These inputs are called features in the machine learning literature 
+(Pereira et al. 2010), and the stability of predictions is often impaired by using a large 
+number of features. In our analysis, we used a brain atlas (e.g., the Brodmann atlas) to define 
+the brain areas and to compute the amount of damage to each area; the left-hemisphere areas 
+are the features for our predictive algorithm. This step transforms a large number of binary 
+features (voxels, which are either damaged or not) into a much smaller set of continuous-
+valued features (brain areas with an associated proportion of damage). The atlas-based 
+approach, combined with multivariate analysis that accounts for simultaneous contribution 
+of different brain areas to a given behavioural syndrome, has the potential to diminish the 
+spatial bias that was reported by Mah et al. (2014), although it does not eliminate the bias 
+completely (that would require functionally homogeneous brain areas, where the 
+relationship between the damage and behavioural deficit is uniform across areas). The 
+downside of the atlas-based approach is relatively poorer spatial localization because our 
+spatial resolution is defined by brain areas rather than by voxels. For our purpose, a brain 
+atlas is efficient if it segments the brain into the areas such that aphasia type can be decoded 
+from damage to these areas. Lastly, during the third step, SVM estimates the association 
+between patterns of brain damage and aphasia types (“training”), and assigns the type to 
+previously unseen patients based on their pattern of brain damage (“testing”).
+Our cohort is a group of 98 chronic stroke patients with aphasia. We used multivariate 
+classification to distinguish between five aphasia types: Broca’s, Wernicke’s, anomic, 
+global, and conduction. Unfortunately, our sample did not have any patients with 
+transcortical sensory aphasia and only one patient with transcortical motor aphasia, who had 
+to be excluded because we needed the absolute minimum of two representatives of each 
+aphasia type (one used for training and another for testing). Lesions were defined from the 
+structural MRI scans by a neurologist. To segment the lesions, we used a set of brain atlases, 
+some containing only white or only grey matter areas, and some containing both. Our study 
+shows that, despite patient heterogeneity, there is a correspondence between the spatial 
+pattern of brain damage and the resulting language deficit, which has significant 
+Yourganov et al.
+Page 5
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 6 ===
+implications for diagnosis, prognosis, and therapeutic intervention for the recovery of 
+language in individuals with aphasia.
+2. MATERIALS AND METHODS
+2.1 Participants
+Our participant sample was selected from 139 right-handed patients with chronic left 
+hemisphere stroke. Recruitment relied on referrals from local neurologists and 
+advertisements in print and radio media in the state of South Carolina; the study was 
+approved by the local ethics committee. The behavioural assessment of the patients took 
+place between May 2007 and October 2014. Out of these patients, 98 persons were included 
+in the current study. The exclusion criteria were: absence of aphasia (n=19); MRI scanning 
+could not be performed for health concerns (n=15); speech deficits were driven by apraxia 
+of speech rather than aphasia (n=2); the stroke lesion was bilateral (n=3); multiple sclerosis 
+(n=1). Also, our sample contained only one patient with transcortical motor aphasia; this 
+patient had to be excluded because, in our study, each aphasia type has to be represented by, 
+at the very least, two people (one for training the classifier, and another for testing it). Of the 
+98 participants whose data constituted the final study sample, 5 aphasia types were 
+observed:
+•
+Anomic aphasia: 35 patients;
+•
+Broca’s aphasia: 33 patients;
+•
+Wernicke’s aphasia: 7 patients;
+•
+conduction aphasia: 13 patients;
+•
+global aphasia: 10 patients.
+Aphasia types were classified according to the Western Aphasia Battery (WAB; Kertesz, 
+1982; see Supplementary Table 1). The number of patients differed across aphasia types, 
+generally, reflecting the difference in incidence and prevalence of these types of aphasia in 
+the population, but more specifically of those who self-refer for participation in research. 
+The mean sample age was 58 years (standard deviation = 11.9; range = 31–80), and 36 were 
+women. All patients were at least 6 months post-stroke, and the mean time since stroke onset 
+was 40.1 months (SD= 49.6; range = 6–276). Supplementary Table 2 lists the demographic 
+information for each studied patient.
+2.2 MRI data collection and preprocessing
+MRI scanning was performed within two days of behavioural testing of language abilities. 
+Images were acquired on a Siemens Trio 3T scanner equipped with a 12-element head coil 
+located at the University of South Carolina. These images utilized a T1-weighted MP-RAGE 
+sequence with 1 mm isotropic voxels, a 256×256 matrix size, and a 9-degree flip angle. For 
+the first 25 individuals we used a 160 slice sequence with TR=2250 ms, TI=900 ms, 
+TE=4.52 ms. For the latter 72 individuals, we used a 192 slice sequence with TR=2250 ms, 
+TI=925 ms, TE=4.15 ms with parallel imaging (GRAPPA=2, 80 reference lines). Each of 
+these scans required about 7 minutes to acquire. We also acquired a T2-weighted image 
+Yourganov et al.
+Page 6
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 7 ===
+using a sampling perfection with application optimized contrasts using a different flip angle 
+evolution (3D-SPACE) sequence. This 3D TSE scan uses a TR=2800 ms, a TE of 402 ms, 
+variable flip angle, 256×256 matrix scan with 192 1 mm thick slices, using parallel imaging 
+(GRAPPA x2, 120 reference lines).
+Lesions were manually drawn on the T2 weighted image by a trained neurologist. The T2 
+image was then coregistered to match the T1 image, and these parameters were used to 
+reslice the lesion into the native T1 space. The resliced lesion maps were smoothed with a 3 
+mm full-width half maximum Gaussian kernel to remove jagged edges associated with 
+manual drawing. We then performed enantiomorphic normalization (Nachev et al., 2008) 
+using SPM12 and Matlab scripts we developed. The enantiomorphic normalization steps 
+were as follows. First, a mirrored image of the T1 scan (reflected around the longitudinal 
+fissure) was created, and this mirrored image was coregistered to the native T1 image. We 
+then created a chimeric image based on the native T1 scan with the lesioned tissue replaced 
+by tissue from the mirrored scan (using the smoothed lesion map to modulate this blending, 
+feathering the lesion edge). SPM12’s unified segmentation-normalization (Ashburner & 
+Friston, 2005) was used to warp this chimeric image to standard space, with the resulting 
+spatial transform applied to the actual T1 scan as well as the lesion map. The normalized 
+lesion map was then binarized using a 50% probability threshold. Figure 1 shows the 
+overlap of lesions for patients of each aphasia type.
+2.3 Segmentation
+To segment the brain and compute the damage to each brain area, we used five different 
+atlases:
+1.
+Speculative Brodmann atlas; 82 areas (provided by Professor Krish Singh of 
+Cardiff University)
+2.
+An atlas containing both grey and white matter developed by Faria et al., (2012), 
+which we refer to as John Hopkins University (JHU) atlas; 189 areas
+3.
+AAL atlas: 116 grey-matter areas (Tzourio-Mazoyer et al., 2001)
+4.
+An atlas of white-matter tracts (Catani & Thiebaut de Schotten, 2008), which we 
+refer to as CTS (Catani - Thiebaut de Schotten) atlas for the sake of brevity; 34 
+areas
+5.
+A union of AAL and CTS atlases (AALCTS); 150 areas. This novel atlas was made 
+by combining the AAL and CTS atlases (in cases of spatial overlap between the 
+atlases, we used the labels from the CTS atlas)
+We decided to use Brodmann’s atlas for its historical importance in behavioural 
+neuroscience and neurology, and the AAL atlas for its popularity in the field (according to 
+Google Scholar, the paper by Tzourio-Mazoyer et al., 2001 has been referenced more than 
+5,000 times). The CTS atlas was selected because it is well-established in the field (it has 
+been cited more than 500 times according to Google Scholar), and because it has been 
+developed for a general, not age-specific population. Compared to these atlases, the JHU 
+atlas is relatively new; it was created using a more powerful MRI scanner (3T compared to 
+Yourganov et al.
+Page 7
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 8 ===
+1.5T used in Catani & Thiebaut de Schotten, 2008), and Tzourio-Mazoyer et al., 2001) and a 
+larger sample of patients (20 patients; in contrast, 12 patients were used by CTS et al., and a 
+single patient was used by Tzourio-Mazoyer et al., 2001); the authors (Faria et al., 2012) 
+have extensively evaluated its across-subject reproducibility and applicability to different 
+modalities (anatomical and functional MRI and DTI).
+Supplementary Table 3 lists the names of the brain areas used in each atlas. Since damage 
+was constrained to the left hemisphere, right-hemisphere areas were excluded from the 
+analysis. Furthermore, areas that were not damaged in any patients were excluded as well. 
+For the remaining areas, we computed the percentage of damage as the ratio of lesioned 
+voxels to the total number of voxels in the area.
+2.4 Classification
+Support vector machines (SVMs) were used to predict the aphasia type from brain damage. 
+The percentage of damage to the brain areas served as the input to a classifier, and the 
+aphasia type was the output. We used the implementation provided by LIBSVM Matlab 
+library (Chang & Lin, 2011). We used the radial-basis-function kernel, which is the default 
+in LIBSVM (the kernel width was set to its default level, which is 1/number of features). 
+The penalty parameter C was optimized (during training, we ran the classification using 
+different values of C, to determine the optimal value). Aphasia type was predicted in a series 
+of binary (two-class) problems; for 5 aphasia types, there are 10 ways of pairing one type 
+versus another. In addition, we ran a multi-class classification, where all 5 aphasia types 
+were used in one classification problem.
+2.5 Training and testing the classifier
+The different patient groups, representing different aphasia types, were not balanced in size. 
+If we used the leave-one-out procedure, the groups would be represented with a different 
+number of training examples, and this could bias the classification towards larger groups 
+(Pereira et al., 2009). Overall average classification accuracy might be well above chance 
+because test examples from larger groups would be classified accurately, but this would be 
+at the expense of inaccurate prediction for the smaller group. To avoid this bias, we used a 
+resampling procedure whereby the classes were represented with the same number of 
+training examples. At each resampling iteration, one patient from the smaller group was held 
+out, and the remaining patients were used for training. In the larger group, the number of 
+training examples was the same as for the smaller group, and the remaining patients were 
+used for testing. For example, we have 30 patients with anomic aphasia, and only 9 patients 
+with global aphasia. To train the classifier, we randomly select 8 patients with global 
+aphasia, and the same number of patients with anomic aphasia; our test set is composed of 
+one patient with global aphasia, and 22 patients with anomic aphasia. Because the groups 
+are balanced during training, there is no bias toward either group.
+This resampling procedure was done repeatedly, creating a unique training-test split at each 
+repetition. If the size of the larger group is N and the size of the smaller group is M, there are 
+unique training-test splits. The resampling procedure was repeated either Nsplits or 500 
+Yourganov et al.
+Page 8
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 9 ===
+times, whichever number was smaller. At each iteration, we checked the uniqueness of the 
+training-test splits by making sure this split had not been used before.
+During training, we performed another round of cross-validation to determine the optimal 
+value for the C (penalty) parameter. This was done with 8-fold cross-validation: the training 
+set was separated into 8 subsets of roughly equal size (the difference in size between any 
+two subsets was at most 1 patient). We tested 10 different values for C (0.0001, 0.001, 0.01, 
+0.1, 1, 2, 10, 100, 1000, 10000). For each tested value, we iterated 8 times: one subset was 
+held out to test the classifier, and the remaining 7 subsets were merged and used for training 
+with a specific setting of C. Thus, we computed the average classification accuracy for each 
+value of C, and identified the value that optimized the accuracy. This value of C was then 
+used to classify the test set (which was disjoint from the training set, in order to prevent 
+overfitting).
+2.6 Evaluation of significance
+When group sizes are unequal, one could suggest two levels for ‘chance’ performance: 
+either 50% (as there are two choices) or the more stringent incidence of the more frequent 
+class. We chose the latter. For example, consider a symptom present in 80% of the 
+population. In this case, one can perform at 80% classification accuracy by simply guessing 
+that everyone has the symptom. Given this, significance of test-set classification accuracy 
+was evaluated with a binomial distribution (Pereira et al., 2009). Let us consider a two-class 
+problem with classes of size N and M (where N≥M); we want to know whether the observed 
+classification accuracy is better than chance. Because of unbalanced group sizes, a classifier 
+operating at chance level assigns the test example to the larger group with N/(N+M) 
+frequency, and to the smaller group with M/(N+M) frequency. The probability of correctly 
+guessing k test examples out of n is given by the density function of the binomial 
+distribution (Freund & Walpole, 1980):
+(1)
+where p= N/(N+M). The p value (the probability of obtaining at least k successes out of n 
+trials under the null hypothesis of the classifier operating at chance) is P(X≥k), where X is a 
+binomial random variable with distribution defined by (1). To compute these p values for the 
+observed classification accuracy y, we used n=500 and k=500*y (in practice, any large 
+number could be used for n because y was an accurate estimate of classification accuracy 
+obtained on a large number of training-test splits). False discovery rate (Genovese et al., 
+2002) was used to correct for multiple comparisons.
+2.7 Classification maps
+For binary classification, we created brain maps where the loading on each brain area 
+reflected its importance in classification. In the case of a linear classifier, these loadings are 
+given by the angle of the hyperplane that separates the two classes (see Kjems et al., 2002 
+for a general discussion, and LaConte et al., 2005 for application to SVM). Since our 
+number of features (brain areas) is large relative to the number of training examples, radial 
+Yourganov et al.
+Page 9
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 10 ===
+basis function (RBF) kernel is approximately equivalent to linear kernel with an adjusted 
+penalty parameter (Keerthi & Lin, 2003). Therefore, the brain loadings can be approximated 
+using a weighted product of support vectors:
+(2)
+where Nsv is the number of support vectors, and xi and ci are the support vectors and their 
+associated coefficients, computed by LIBSVM for a particular training set. The jth element 
+of w is the loading for the jth brain area. The absolute value of the loading indicates the 
+relevance of this brain area to aphasia type prediction, and the sign of the loading indicates 
+the “preference” of the area; for a particular two-class contrast, the area has a preference for 
+a given class if larger damage to this area increases the chance of the patient to be assigned 
+to that class (Rasmussen et al., 2012; Yourganov et al., 2014).
+When classifying a particular contrast, we computed the brain loadings for each training-test 
+split, computed the mean loading of each area across splits, and normalized the loading by 
+dividing by the standard deviation of the loadings of this area across splits. In addition, for 
+each aphasia type, we computed the predictive relevance of each brain area, which indicated 
+the relevance of this brain area in distinguishing a particular aphasia type from all other 
+types. To compute the predictive relevance, we calculated the normalized brain loadings for 
+all pairings of the particular aphasia type with the other 4 aphasia types. Then, we identified 
+the areas that had positive loadings (that is, increased damage to these areas would increase 
+the chance of the patient to be categorized as having the particular aphasia type), and 
+computed the weighted average of these positive loadings across 4 pairings of aphasia types. 
+The weights were the ratios of the number of patients in the contrasted aphasia type to the 
+total number of patients. The purpose of the weighting was to give more influence to the 
+pairings of aphasia groups with greater number of patients because these groups are more 
+representative of the general patient population.
+3. RESULTS
+The accuracy of predicting the aphasia type is summarized in Tables 1 and 2 and 
+Supplementary Table 4. The prediction was framed as a two-class problem (i.e., we tried to 
+differentiate between two aphasia types). Table 1 lists the accuracy of predicting one aphasia 
+type versus another, that is, the ratio of patients with aphasia type correctly predicted. Table 
+2 lists, for each pairing of types, the prediction accuracy per each class (this would be 
+analogous to sensitivity/specificity if the two classes were defined according to presence/
+absence of a symptom). Supplementary Table 4 lists the values of balanced accuracy for 
+each contrast (computed as the average of the two per-class accuracies). Our sample 
+contained patients with 5 aphasia types, which yielded 10 pairings of classes. For each 
+pairing, we trained the classifier on the damage to brain areas defined using 5 different brain 
+atlases. The accuracies that are significantly better than chance (after correcting for multiple 
+comparisons controlling the false discovery rate) are noted with asterisks in Tables 1 and 2. 
+There was a pronounced difference in the number of patients per aphasia type; because of 
+this, some seemingly high accuracies are not significantly better than chance. For example, 
+Yourganov et al.
+Page 10
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 11 ===
+the prediction of anomic versus Wernicke’s aphasia (represented with 35 and 7 patients, 
+respectively) was never significantly better than chance, regardless of brain atlas used to 
+define the brain areas. For this contrast, the most accurate prediction (81.28%) was obtained 
+with the CTS atlas; however, if we simply assumed that a patient has anomic aphasia 
+without looking at the underlying brain damage, we would be accurate 35/(35+7)=83.33% 
+percent of the time.
+Overall, the AALCTS atlas was the most successful: it could resolve 7 out of 10 contrasts. 
+The JHU atlas could resolve 5 contrasts, and the other atlases could resolve 6 contrasts. The 
+average performance of AALCTS was the highest, and the average performance of the CTS 
+white-matter atlas was the lowest; however, the differences in classification accuracy 
+between atlases were not significant (Friedman test for column effects: p = 0.355; Wilcoxon 
+signed-rank test between CTS and AALCTS atlases: p = 0.106). AALCTS was the only 
+atlas that could successfully classify Broca’s versus Wernicke’s aphasia. Three contrasts 
+could not be resolved using any atlas: anomic versus Wernicke’s, Broca’s versus global, and 
+conduction versus Wernicke’s aphasia.
+Figures 2 and 3 illustrate the importance of various brain areas (defined with AALCTS) to 
+two-class prediction of aphasia type. For each pairing of aphasia types, we computed the 
+loading of each brain area that indicated its contribution to classification. The sign of the 
+loading indicated the aphasia-type preference of the area. Formally speaking, a preference of 
+area X for aphasia type Y means that increased damage to the area X in a random patient 
+would increase the chance of assigning this patient to aphasia type Y. The loadings 
+presented in Figures 2 and 3 are normalized (each loading is divided by the standard 
+deviation across all loadings for a given contrast). The maps are not thresholded.
+Each row in Figures 2 and 3 represent a contrast of one aphasia type (“type #1”) versus 
+another (“type #2”). For example in the bottom row of Figure 2, type #1 is Broca’s aphasia 
+and type #2 is conduction aphasia. Areas shown in blue and green have preference for 
+Broca’s aphasia, with green areas being the most relevant and blue being least relevant to 
+classification. Similarly, yellow areas are most relevant with preference for conduction 
+aphasia, and red areas are the least relevant.
+Examining the brain area loadings on Figure 2, we see that no brain areas are strongly 
+predictive of anomic aphasia in our set of patients. Although anomic aphasia can be easily 
+distinguished from most other aphasia types (Table 1), there appears to be no spatial pattern 
+of brain damage specific for anomic aphasia (and distinguishing it from all other aphasia 
+types). However, all other aphasia types have stronger associations with particular brain 
+areas. Table 3 lists the brain areas for each of these aphasia types. The number alongside 
+each area is its predictive relevance, computed as a weighted average of Z-scores across 
+pairings of aphasia types (see section 2.7; a higher value indicates a more relevant area). 
+Areas with predictive relevance less than 1 are not listed. Figure 4 shows the corresponding 
+brain maps where the colour of each brain area indicates the predictive relevance for a 
+particular aphasia type (again, only areas with predictive relevance of at least 1 are 
+displayed).
+Yourganov et al.
+Page 11
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 12 ===
+As shown in Table 3 and Figure 4 (top row), Broca’s aphasia is strongly associated with 
+damage to pars opercularis of the inferior frontal gyrus, corresponding to Brodmann area 44 
+and generally considered a part of Broca’s area. Its posterior neighbour, rolandic operculum, 
+also has high predictive relevance. The most relevant white-matter tract is the arcuate 
+fasciculus, particularly the long and anterior segments. Conduction aphasia is associated 
+with damage to the posterior segment of the arcuate fasciculus, Heschl’s gyrus, and optical 
+tracts. Global aphasia is associated with extensive cortical damage. Middle and inferior 
+frontal gyri, temporal regions (temporal pole; Heschl’s and superior temporal gyri), insula 
+and rolandic operculum, pre- and postcentral gyri, and putamen all had high predictive 
+relevance for global aphasia. Among the white-matter tracts, uncinate and arcuate fasciculi, 
+particularly the long and anterior segments of the latter, were also found to be predictive of 
+global aphasia. Finally, Wernicke’s aphasia can be predicted from damage to angular, 
+Heschl’s, and superior temporal gyri, as well as temporal pole and putamen.
+4. DISCUSSION
+We have demonstrated that the aphasia types found in our sample (Broca’s, Wernicke’s, 
+conduction, global, and anomic) could be, in most cases, distinguished from each other on 
+the basis of damage to atlas-defined brain areas. In particular, the fluent aphasia types 
+(Wernicke’s, conduction, and anomic aphasia) could be distinguished from non-fluent types 
+(Broca’s and global aphasia), if the novel AALCTS atlas was used to define the brain areas. 
+The classification accuracy for the pairings of fluent versus non-fluent types was 87% and 
+higher, and was significantly above chance for all such pairings. We had less success with 
+pairings of fluent aphasia types: of the three such pairings, only conduction versus anomic 
+aphasia could be resolved at a level of accuracy significantly better than chance. Also, the 
+classification accuracy for the pairing of the two non-fluent aphasia types (global versus 
+Broca’s aphasia) was at chance level. This poor result could be driven by the similarity in 
+the patterns of brain damage in non-fluent aphasia (see Figure 1, second and fourth row). 
+Also, if we look at the areas that are predictive of Broca’s and global aphasia (Table 3), we 
+see that the vast majority of the brain areas that are predictive of Broca’s aphasia are also 
+predictive of global aphasia. Finally, global aphasia often resolves into Broca’s aphasia 
+(Pedersen, 2003), indicating that, for some patients, we are perhaps dealing with two stages 
+of the same process rather than two phenomenologically different neurological conditions.
+The areas where the damage is predictive of the aphasia type (listed in Table 3) are largely 
+consistent with the previous aphasia research (see, for example, reviews by Damasio, 1992; 
+Marshall et al., 1998; and chapter 2 in Davis, 2007). We found that Broca’s aphasia could be 
+predicted from damage to pars opercularis, adjacent white-matter tracts, and globus pallidus. 
+Damage to these areas has previously been reported as critical lesion locations associated 
+with Broca’s aphasia; moreover, Broca’s aphasia is not present when damage is limited to 
+Broca’s area or to the basal ganglia (Damasio, 1992; Alexander et al., 1987, Mohr et al., 
+1978). In addition, we found that damage to supramarginal and Heschl’s gyri predicts 
+Broca’s aphasia, consistent with Fridriksson et al. (2014).
+The group of patients with Wernicke’s aphasia was the smallest (n=7) patient group in our 
+sample. Despite the sample size limitation, the brain areas that we found to predict 
+Yourganov et al.
+Page 12
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 13 ===
+Wernicke’s aphasia include the classical Wernicke’s area and its neighbourhood, which is 
+consistent with the existing literature (Marshall et al., 1998; Lieberman, 2002). In addition, 
+the damage to the temporal poles and the putamen was also associated with Wernicke’s 
+aphasia, which may reflect the idiosyncrasies of our small sample (see the lesion overlay 
+map in Figure 1). Conduction aphasia is thought to be linked to damage of regions in the 
+neighbourhood of temporo-parietal junction (Damasio, 1992; Hickok et al., 2000; Dick & 
+Tremblay, 2012). Our results are consistent with this picture: in our sample, conduction 
+aphasia is associated with damage to Heschl’s gyrus and the adjacent white-matter tracts 
+(posterior segment of the arcuate fasciculus; optic radiations). Global aphasia is the most 
+severe form of aphasia, and has long been associated with extensive cortical damage in the 
+region supplied by the middle cerebral artery. Consistent with previous reports (Damasio, 
+1992; Marshall et al., 1998), we have found this type of aphasia to be associated with 
+damage to areas predictive for Broca’s and Wernicke’s aphasia, as well as insular regions. 
+Finally, anomic aphasia, the least severe of aphasia types, could be easily distinguished, but 
+no brain areas were found to be strongly predictive (a similar result was reported in a voxel-
+based lesion symptoms mapping study of Henseler et al., 2014).
+We achieved the numerically best prediction accuracy with the novel AALCTS atlas, which 
+includes both grey and white matter areas. Interestingly, the CTS atlas, composed solely of 
+white-matter tracts, provided reasonably effective features for aphasia-type prediction, and 
+predicted aphasia type above chance in 6 out of 10 pairings of aphasia types. This suggests 
+that the behavioural deficiencies captured by the WAB scores are to some extent driven by 
+damage to white matter tracts. A similar level of accuracy was achieved with the Brodmann 
+atlas; however, we do not recommend this parcellation because it does not include some 
+areas that are predictive of aphasia type, such as the insula and basal ganglia.
+Traditional classifications of the aphasia syndromes emerged due to the clinically observed 
+consistency of patterns of language impairment related to lesions of specific locations. 
+Although many variations of classifications systems have been proposed over several years, 
+the descriptions of language disorders clustered as syndromes and anatomical substrates 
+have remained relatively stable since the days of Wernicke and Lichtheim (Benson & 
+Ardila, 1996; Goodglass & Kaplan, 1983). While the validity of aphasia classification 
+systems has been challenged (Caplan, 1993; Wertz et al., 1984), reporting classification type 
+remains common in clinical and research settings. Several problems can be pointed out with 
+using a behavioural battery like the WAB for determining patient’s aphasia types. For 
+instance, it is possible that the behavioural assessment might not match the clinical 
+impression. Also, the aphasia type is questionable for a patient whose behavioural score is at 
+the threshold level between two aphasia types (which is particularly problematic for scores 
+that rely on subjective opinion of the clinician completing the assessment). Despite these 
+potential problems, our results suggest that the Western Aphasia Battery provides criteria for 
+consistently classifying aphasia syndromes, some of which can be strongly predicted based 
+on patterns of underlying neural damage.
+A next step will be to predict the expected aphasia type and recovery prognosis based on a 
+patient’s acute symptoms. Identifying prognosis and potential for recovery is critical, as 
+acute patients and caregivers need to know how their future quality of life might be affected 
+Yourganov et al.
+Page 13
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 14 ===
+by the stroke. Some aphasia syndromes are quite resistant to improvement, while others tend 
+to recover more easily (Kertesz & McCabe, 1977; McDermott et al., 1996). For example, 
+acute Broca’s aphasia and conduction aphasia sometimes resolve to anomic aphasia, while 
+Wernicke’s aphasia may develop into either anomic or conduction aphasia (Pashek & 
+Holland, 1988; Benson & Ardila, 1996). We can predict that classification, using the 
+approach described here, would hold up over the course of recovery; as recovery occurs, the 
+type of aphasia manifested in the chronic stage represents the neuroplasticity associated with 
+recovery. Our results demonstrate that chronic aphasia types can, in fact, be distinguished 
+from each other based on damage to atlas-defined brain areas. Importantly, our findings 
+provide support for both historical and current accounts that associate patterns of brain 
+damage with fairly predictable patterns of speech-language impairment.
+Supplementary Material
+Refer to Web version on PubMed Central for supplementary material.
+Acknowledgments
+This research has been supported by the NIH grant (R01 DC009571) to JF and CR.
+References
+Alexander MP, Naeser MA, Palumbo CL. Correlations of subcortical CT lesion sites and aphasia 
+profiles. Brain. 1987; 110:961–991. [PubMed: 3651803] 
+Alexander MP, Hiltbrunner B, Fischer RS. Distributed anatomy of transcortical sensory aphasia. 
+Archives of Neurology. 1989; 46(8):885–892. [PubMed: 2757529] 
+Anderson JM, Gilmore R, Roper S, Crosson B, Bauer RM, Nadeau S, Heilman KM. Conduction 
+aphasia and the arcuate fasciculus: a reexamination of the Wernicke–Geschwind model. Brain and 
+language. 1999; 70(1):1–12. [PubMed: 10534369] 
+Ardila A. A proposed reinterpretation and reclassification of aphasic syndromes. Aphasiology. 2010; 
+24(3):363–394.
+Ashburner J, Friston KJ. Unified segmentation. Neuroimage. 2005; 26(3):839–851. [PubMed: 
+15955494] 
+Basso A, Lecours AR, Moraschini S, Vanier M. Anatomoclinical correlations of the aphasias as 
+defined through computerized tomography: exceptions. Brain and language. 1985; 26(2):201–229. 
+[PubMed: 2417656] 
+Bates E, Wilson SM, Saygin AP, Dick F, Sereno MI, Knight RT, Dronkers NF. Voxel-based lesion–
+symptom mapping. Nature neuroscience. 2003; 6(5):448–450. [PubMed: 12704393] 
+Benson, DF.; Ardila, A. Aphasia: A clinical perspective. New York: Oxford University Press; 1996. 
+Buchsbaum BR, Baldo J, Okada K, Berman KF, Dronkers N, D’Esposito M, Hickok G. Conduction 
+aphasia, sensory-motor integration, and phonological short-term memory–an aggregate analysis of 
+lesion and fMRI data. Brain and language. 2011; 119(3):119–128. [PubMed: 21256582] 
+Caplan, D. Neurolinguistics and linguistic aphasiology: An introduction. Cambridge University Press; 
+1987. 
+Caplan D. Toward a psycholinguistic approach to acquired neurogenic language disorders. American 
+Journal of Speech-Language Pathology. 1993; 2(1):59–83.
+Caramazza A, McCloskey M. The case for single-patient studies. Cognitive Neuropsychology. 1988; 
+5(5):517–527.
+Caramazza A. The logic of neuropsychological research and the problem of patient classification in 
+aphasia. Brain and Language. 1984; 21(1):9–20. [PubMed: 6697172] 
+Yourganov et al.
+Page 14
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 15 ===
+Catani M, Thiebaut de Schotten M. A diffusion tensor imaging tractography atlas for virtual in vivo 
+dissections. Cortex. 2008; 44(8):1105–1132. [PubMed: 18619589] 
+Chang C-C, Lin C-J. LIBSVM : a library for support vector machines. ACM Transactions on 
+Intelligent Systems and Technology. 2011; 2(3):Article # 27.
+Chapey, R. Language intervention strategies in aphasia and related neurogenic communication 
+disorders. Lippincott Williams & Wilkins; 2001. 
+Damasio H, Damasio AR. The anatomical basis of conduction aphasia. Brain. 1980; 103:337–350. 
+[PubMed: 7397481] 
+Damasio AR. Aphasia. New England Journal of Medicine. 1992; 326(8):531–539. [PubMed: 1732792] 
+Davis, GA. Aphasiology: Disorders and clinical practice. Pearson College Division; 2007. 
+Dick AS, Tremblay P. Beyond the arcuate fasciculus: consensus and controversy in the connectional 
+anatomy of language. Brain. 2012; 135(12):3529–3550. [PubMed: 23107648] 
+Faria AV, Joel SE, Zhang Y, Oishi K, van Zjil P, Miller MI, Pekar JJ, Mori S. Atlas-based analysis of 
+resting-state functional connectivity: Evaluation for reproducibility and multi-modal anatomy–
+function correlation studies. Neuroimage. 2012; 61(3):613–621. [PubMed: 22498656] 
+Freedman M, Alexander MP, Naeser MA. Anatomic basis of transcortical motor aphasia. Neurology. 
+1984; 34(4):409–409. [PubMed: 6538298] 
+Freund, J.; Walpole, R. Mathematical statistics. Engiewood Gliffs, NJ: Prentice-Hall; 1980. 
+Fridriksson J, Fillmore P, Guo D, Rorden C. Chronic Broca’s Aphasia Is Caused by Damage to 
+Broca’s and Wernicke’s Areas. Cerebral Cortex. 2014:bhu152.
+Genovese CR, Lazar NA, Nichols T. Thresholding of statistical maps in functional neuroimaging using 
+the false discovery rate. Neuroimage. 2002; 15(4):870–878. [PubMed: 11906227] 
+Geschwind N, Kaplan E. A human cerebral deconnection syndrome. Neurology. 1962; 12(10):675–
+685. [PubMed: 13898109] 
+Geschwind N. Disconnexion syndromes in animals and man. Brain. 1965; 88(3):585–644. [PubMed: 
+5318824] 
+Geschwind N, Fusillo M. Color-naming defects in association with alexia. Archives of Neurology. 
+1966; 15(2):137–146. [PubMed: 5945970] 
+Goodglass, H.; Kaplan, E. Boston Diagnostic Aphasia Examination (BDAE). Philadelphia: Lea & 
+Febiger; Psychological Assessment Resources; Odessa, FL: 1983. 
+Hastie, T.; Tibshirani, R.; Friedman, J. The elements of statistical learning. New York: Springer; 2009. 
+Henseler I, Regenbrecht F, Obrig H. Lesion correlates of patholinguistic profiles in chronic aphasia: 
+comparisons of syndrome-, modality-and symptom-level assessment. Brain. 2014; 137:918–930. 
+[PubMed: 24525451] 
+Hickok G, Erhard P, Kassubek J, Helms-Tillery AK, Naeve-Velguth S, Strupp JP, Strick PL, Ugurbil 
+K. A functional magnetic resonance imaging study of the role of left posterior superior temporal 
+gyrus in speech production: implications for the explanation of conduction aphasia. Neuroscience 
+letters. 2000; 287(2):156–160. [PubMed: 10854735] 
+Hillis AE. Aphasia Progress in the last quarter of a century. Neurology. 2007; 69(2):200–213. 
+[PubMed: 17620554] 
+Keerthi SS, Lin CJ. Asymptotic behaviors of support vector machines with Gaussian kernel. Neural 
+computation. 2003; 15(7):1667–1689. [PubMed: 12816571] 
+Kertesz A, McCabe P. Recovery patterns and prognosis in aphasia. Brain. 1977; 100:1–18. [PubMed: 
+861709] 
+Kertesz, A. Western aphasia battery test manual. Psychological Corp; 1982. 
+Kertesz, A. Recovery of aphasia. In: Feinberg, TE.; Farah, MJ., editors. Behavioral neurology and 
+neuropsychology. New York: McGraw Hill; 1997. p. 167-182.
+Kertesz, A. Western Aphasia Battery–Revised (WAB-R). Pearson; San Antonio: 2006. 
+Kjems U, Hansen LK, Anderson J, Frutiger S, Muley S, Sidtis J, Rotenber D, Strother SC. The 
+quantitative evaluation of functional neuroimaging experiments: Mutual information learning 
+curves. NeuroImage. 2002; 15(4):772–786. [PubMed: 11906219] 
+Kreisler A, Godefroy O, Delmaire C, Debachy B, Leclercq M, Pruvo JP, Leys D. The anatomy of 
+aphasia revisited. Neurology. 2000; 54(5):1117–1123. [PubMed: 10720284] 
+Yourganov et al.
+Page 15
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 16 ===
+LaConte S, Strother S, Cherkassky V, Anderson J, Hu X. Support vector machines for temporal 
+classification of block design fMRI data. NeuroImage. 2005; 26(2):317–329. [PubMed: 15907293] 
+Lichteim L. On aphasia. Brain. 1885; 7(4):433–484.
+Lieberman P. On the nature and evolution of the neural bases of human language. American Journal of 
+Physical Anthropology. 2002; 119(S35):36–62. [PubMed: 12653308] 
+Luria, AR. Traumatic aphasia: Its syndromes, psychology and treatment. Vol. 5. Walter De Gruyter; 
+1970. 
+Mah YH, Husain M, Rees G, Nachev P. Human brain lesion-deficit inference remapped. Brain: a 
+journal of neurology. 2014; 137(9):2522–2531. [PubMed: 24974384] 
+Marshall RS, Lazar RM, Mohr JP. Aphasia. Medical Update for Psychiatrists. 1998; 3(5):132–138.
+Masdeu JC, Schoene WC, Funkenstein H. Aphasia following infarction of the left supplementary 
+motor area. Neurology. 1978; 28(12):1220–1220. [PubMed: 569781] 
+Mazzocchi F, Vignolo LA. Localisation of lesions in aphasia: clinical-CT scan correlations in stroke 
+patients. Cortex. 1979; 15(4):627–653. [PubMed: 95004] 
+Mohr JP, Pessin MS, Finkelstein S, Funkenstein HH, Duncan GW, Davis KR. Broca aphasia: 
+Pathologic and clinical. Neurology. 1978; 28(4):311–311. [PubMed: 565019] 
+Nachev P, Coulthard E, Jäger HR, Kennard C, Husain M. Enantiomorphic normalization of focally 
+lesioned brains. NeuroImage. 2008; 39(3):1215–1226. [PubMed: 18023365] 
+Orrù G, Pettersson-Yeo W, Marquand AF, Sartori G, Mechelli A. Using support vector machine to 
+identify imaging biomarkers of neurological and psychiatric disease: a critical review. 
+Neuroscience & Biobehavioral Reviews. 2012; 36(4):1140–1152. [PubMed: 22305994] 
+Palumbo, CL.; Alexander, MP.; Naeser, MA. CT scan lesion sites associated with conduction aphasia. 
+In: Kohn, SE., editor. Conduction aphasia. Hillsdale: Lawrence Erlbaum; 1992. p. 51-75.
+Pashek GV, Holland AL. Evolution of aphasia in the first year post-onset. Cortex. 1988; 24(3):411–
+423. [PubMed: 3191724] 
+Pedersen P, Vinter K, Olsen TSOJ. Aphasia after stroke: type, severity and prognosis. Cerebrovascular 
+Diseases. 2003; 17(1):35–43. [PubMed: 14530636] 
+Pereira F, Mitchell T, Botvinick M. Machine learning classifiers and fMRI: a tutorial overview. 
+Neuroimage. 2009; 45(1):S199–S209. [PubMed: 19070668] 
+Rasmussen, PM.; Schmah, T.; Madsen, KH.; Lund, TE.; Yourganov, G.; Strother, S.; Hansen, LK. 
+Visualization of nonlinear classification models in neuroimaging— signed sensitivity maps. Paper 
+presented at the Biosignals 2012, International Conference on Bio-inspired Systems and Signal 
+Processing; 2012. 
+Reineck LA, Hillis AE. “Diffusion-Clinical Mismatch” predicts potential for early recovery of aphasia. 
+Stroke. 2004; 35:287.
+Reineck LA, Agarwal S, Hillis AE. “Diffusion-clinical mismatch” is associated with potential for early 
+recovery of aphasia. Neurology. 2005; 64(5):828–833. [PubMed: 15753418] 
+Rorden C, Bonilha L, Fridriksson J, Bender B, Karnath HO. Age-specific CT and MRI templates for 
+spatial normalization. Neuroimage. 2012; 61(4):957–965. [PubMed: 22440645] 
+Rubens, AB. Transcortical motor aphasia. In: Whitaker, H.; Whitaker, H., editors. Studies in 
+neurolinguistics. New York: Academic; 1976. p. 293-306.
+Saur D, Ronneberger O, Kümmerer D, Mader I, Weiller C, Klöppel S. Early functional magnetic 
+resonance imaging activations predict language outcome after stroke. Brain. 2010; 133(4):1252–
+1264. [PubMed: 20299389] 
+Schmah T, Yourganov G, Zemel RS, Hinton GE, Small SL, Strother SC. Comparing classification 
+methods for longitudinal fMRI studies. Neural computation. 2010; 22(11):2729–2762. [PubMed: 
+20804386] 
+Schwartz MF. What the classical aphasia categories can’t do for us, and why. Brain and Language. 
+1984; 21(1):3–8. [PubMed: 6697169] 
+Selnes OA, van Zijl PC, Barker PB, Hillis AE, Mori S. MR diffusion tensor imaging documented 
+arcuate fasciculus lesion in a patient with normal repetition performance. Aphasiology. 2002; 
+16(9):897–902.
+Yourganov et al.
+Page 16
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 17 ===
+Smith DV, Clithero JA, Rorden C, Karnath HO. Decoding the anatomical network of spatial attention. 
+Proc Natl Acad Sci U S A. 2013; 110(4):1518–23. [PubMed: 23300283] 
+Tesak, J.; Code, C. Milestones in the history of aphasia: theories and protagonists. Psychology Press; 
+2008. 
+Tzourio-Mazoyer N, Landeau B, Papathanassiou D, Crivello F, Etard O, Delcroix N, Mazoyer B, 
+Joliot M. Automated anatomical labeling of activations in SPM using a macroscopic anatomical 
+parcellation of the MNI MRI single-subject brain. Neuroimage. 2002; 15(1):273–289. [PubMed: 
+11771995] 
+Willmes K, Poeck K. To what extent can aphasic syndromes be localized? Brain. 1993; 116(6):1527–
+1540. [PubMed: 8293285] 
+Yourganov G, Schmah T, Churchill NW, Berman MG, Grady CL, Strother SC. Pattern classification 
+of fMRI data: Applications for analysis of spatially distributed cortical networks. NeuroImage. 
+2014; 96:117–132. [PubMed: 24705202] 
+Yourganov et al.
+Page 17
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 18 ===
+Figure 1. 
+Overlap of lesions across patients of each aphasia type. A voxel with overlap = 1 indicates 
+that this voxel is lesioned in 100% of the patients.
+Yourganov et al.
+Page 18
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 19 ===
+Figure 2. 
+Brain loadings computed from predicting one aphasia type versus another. See Figure 3 for 
+the remaining 5 pairings of aphasia types.
+Yourganov et al.
+Page 19
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 20 ===
+Figure 3. 
+Brain loadings computed from predicting one aphasia type versus another. See Figure 2 for 
+the remaining 5 pairings of aphasia types.
+Yourganov et al.
+Page 20
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 21 ===
+Figure 4. 
+Areas that are most predictive of each aphasia type (see Table 3) mapped onto a standard 
+brain template. The colour indicates the predictive relevance of a brain area (red being the 
+least predictive, and yellow being the most predictive).
+Yourganov et al.
+Page 21
+Cortex. Author manuscript; available in PMC 2016 December 01.
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+
+=== PAGE 22 ===
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Yourganov et al.
+Page 22
+Table 1
+Accuracy of aphasia type prediction (given as ratio of patients with aphasia type predicted correctly) for each pairing of aphasia types. Five different 
+atlases were used to define brain areas; the proportional damage to the brain areas comprised the input to the classifier.
+contrast
+atlas
+chance
+Brodmann
+JHU
+AAL
+CTS
+AALCTS
+anomic / Broca’s
+0.8475**
+0.8861**
+0.8903**
+0.8491**
+0.8832**
+0.5147
+anomic / conduction
+0.8247**
+0.7989**
+0.7805
+0.8294**
+0.7965*
+0.7292
+anomic / global
+0.9133**
+0.9236**
+0.9479**
+0.8577**
+0.9457**
+0.7778
+anomic / Wernicke’s
+0.7524
+0.7712
+0.8128
+0.7004
+0.7807
+0.8333
+Broca’s / conduction
+0.8277**
+0.8906**
+0.8674**
+0.8585**
+0.9356**
+0.7174
+Broca’s / global
+0.5975
+0.5436
+0.5818
+0.5764
+0.5568
+0.7674
+Broca’s / Wernicke’s
+0.7845
+0.7766
+0.8532
+0.8338
+0.8787**
+0.825
+conduction / global
+0.9541**
+0.9204**
+0.923**
+0.8292**
+0.9512**
+0.5652
+conduction / Wernicke’s
+0.5394
+0.5545
+0.5031
+0.6063
+0.5143
+0.65
+global / Wernicke’s
+0.9104**
+0.9139**
+0.9373**
+0.7585**
+0.9198**
+0.5882
+The last column lists the accuracy of chance, in italics (estimated as the size of the larger group divided by the size of both groups combined). Asterisks indicate accuracies that are significantly better than 
+chance, as estimated with binomial distribution (single asterisk: p<0.05; double asterisk: p<0.01; false discovery rate correction for multiple comparisons).
+Cortex. Author manuscript; available in PMC 2016 December 01.
+
+=== PAGE 23 ===
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Yourganov et al.
+Page 23
+Table 2
+Accuracy of classifying one aphasia type versus another, reported separately for each type (the first type followed by the second type).
+atlas
+contrast
+Brodmann
+JHU
+AAL
+CTS
+AALCTS
+anomic / Broca’s
+0.8246** / 0.8739**
+0.8596** / 0.9101**
+0.8766** / 0.9043**
+0.8749** / 0.8503**
+0.8752** / 0.8896**
+anomic / conduction
+0.8482** / 0.8047**
+0.8511** / 0.7623
+0.8067** / 0.7596
+0.9215** / 0.7957**
+0.8698** / 0.7699*
+anomic / global
+0.8789** / 0.9238**
+0.8736** / 0.9354**
+0.9786** / 0.937**
+0.7809 / 0.8751**
+0.9898** / 0.9325**
+anomic / Wernicke’s
+0.5908 / 0.789
+0.6765 / 0.791
+0.7034 / 0.8166
+0.5798 / 0.7225
+0.6463 / 0.8095
+Broca’s / conduction
+0.8547** / 0.8209**
+0.96** / 0.869**
+0.8751** / 0.8693**
+0.7533 / 0.9053**
+0.9591** / 0.9268**
+Broca’s / global
+0.5526 / 0.5893
+0.5961 / 0.5123
+0.6268 / 0.5696
+0.5511 / 0.5749
+0.6299 / 0.5333
+Broca’s / Wernicke’s
+0.7755 / 0.7813
+0.8549 / 0.7666
+0.9432** / 0.8409
+0.6892 / 0.8725*
+0.8737** / 0.8782**
+conduction / global
+0.9** / 0.9946**
+0.9208** / 0.9306**
+0.9486** / 0.9094**
+0.8923** / 0.7772**
+0.9704** / 0.9328**
+conduction / Wernicke’s
+0.3186 / 0.6782
+0.3803 / 0.6057
+0.3972 / 0.5632
+0.5486 / 0.6309
+0.3829 / 0.5868
+global / Wernicke’s
+0.9276** / 0.8956**
+1** / 0.8499**
+0.9706** / 0.9076**
+0.7084** / 0.803**
+0.9194** / 0.9162**
+Asterisks indicate accuracies that are significantly better than chance, as estimated with binomial distribution (single asterisk: p<0.05; double asterisk: p<0.01; false discovery rate correction for multiple 
+comparisons).
+Cortex. Author manuscript; available in PMC 2016 December 01.
+
+=== PAGE 24 ===
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Author Manuscript
+Yourganov et al.
+Page 24
+Table 3
+Brain areas that are predictive of each aphasia type, with overall predictive relevance given in parentheses. 
+Only areas with predictive relevance > 1 are listed (no such areas were found for anomic aphasia). White-
+matter tracts are given in italics.
+Broca’s aphasia
+Conduction aphasia
+Global aphasia
+Wernicke’s aphasia
+Anterior Segment (3.2)
+Posterior Segment (2.48)
+Middle frontal gyrus (2.51)
+Angular gyrus (1.76)
+Long Segment (2.85)
+Heschl’s gyrus (1.47)
+Inferior frontal gyrus, triangular (2.18)
+Heschl’s gyrus (1.61)
+Inferior frontal gyrus, opercular 
+(2.45)
+Optic Radiations (1.14)
+Temporal pole: mid. temporal gyrus (2.15)
+Temporal pole: mid. temporal 
+gyrus (1.47)
+Rolandic operculum (2.2)
+Precentral gyrus (2.05)
+Temporal pole: sup. temporal 
+gyrus (1.34)
+Superior temporal gyrus (1.99)
+Putamen (2.02)
+Superior temporal gyrus 
+(1.31)
+Arcuate (1.91)
+Rolandic operculum (1.96)
+Putamen (1.3)
+Supramarginal gyrus (1.66)
+Temporal pole: sup. temporal gyrus (1.81)
+Pallidum (1.45)
+Inferior frontal gyrus, opercular (1.78)
+Heschl’s gyrus (1.35)
+Heschl’s gyrus (1.78)
+Precentral gyrus (1.06)
+Uncinate (1.71)
+Insula (1.66)
+Anterior Segment (1.65)
+Long Segment (1.47)
+Superior temporal gyrus (1.31)
+Inferior frontal gyrus, orbital (1.28)
+Arcuate (1.21)
+Superior frontal gyrus (1.21)
+Cortico-Spinal Tract (1.08)
+Cortex. Author manuscript; available in PMC 2016 December 01.
+
