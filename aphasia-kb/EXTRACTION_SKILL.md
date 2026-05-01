@@ -1,17 +1,18 @@
 # Paper-extraction skill — instructions for the agent
 
 > **Purpose.** Take one neuroscience / aphasia paper and produce one or
-> more **draft** knowledge-base entries under schema **v2.1**, plus a
+> more **draft** knowledge-base entries under schema **v2.3**, plus a
 > color-annotated version of the source paper that lets the user
 > visually verify what was extracted from where. The user reviews
 > every draft before it enters the canonical knowledge base. **You
-> never write directly to `regions/`, `impairments/`, or `therapies/`.**
+> never write directly to `regions/`, `impairments/`, `therapies/`,
+> or `predictors/`.**
 
 This file is the agent's instruction manual. It must be read **in full**
-before any extraction. The schema is defined in `schema.md` (v2.1 — read
+before any extraction. The schema is defined in `schema.md` (v2.3 — read
 that too). This file tells you how to *use* the schema responsibly.
 
-## What v2.1 / v2.2 added (since v2.0)
+## What v2.1 / v2.2 / v2.3 added (since v2.0)
 
 From v2.1:
 
@@ -38,6 +39,19 @@ From v2.2:
    reader what kind of claim the finding is making (see "Relationship
    semantics" below). `direction` is the *valence* (likely / unlikely);
    `relationship` is the *type* (causal vs correlational vs …).
+
+From v2.3:
+
+7. **`predictors/` bucket** — new entry kind for measurable variables
+   (behavioural test scores, demographics, clinical characteristics,
+   imaging-derived scalars) that the literature uses to predict
+   outcomes. Each predictor entry declares a `predictor_type`:
+   `behavioural` / `demographic` / `clinical` / `imaging_metric`.
+   See "When to use predictor entries" below.
+8. **`target_kind: predictor`** — findings in any bucket can now point
+   to a predictor. Example: a region finding can claim "damage to
+   left Heschl's gyrus → reduced WAB-AQ" with
+   `target: wab_aq, target_kind: predictor`.
 
 ---
 
@@ -102,6 +116,83 @@ For each paper the user gives you:
 
 7. **Stop and ask** if you encounter any of the conditions in "When to ask
    the user" below.
+
+---
+
+## 1b. When to use predictor entries (v2.3)
+
+A *predictor* is any measurable variable (a number on a chart, a test
+score, a demographic field, an imaging-derived scalar) that papers use
+as an *input* to predict an outcome — distinct from a brain region
+(`regions/`), a clinical syndrome (`impairments/`), or an intervention
+(`therapies/`).
+
+**Use a predictor draft (`drafts/predictors/`) when** the paper's claim
+is "patients with high/low X tend to show outcome Y" and X is measured
+the same way (or by a closely-related family of instruments) across
+patients regardless of lesion location:
+
+- `severity_metric` — overall aphasia severity, from any instrument
+  (WAB-AQ, BDAE severity, CAT, AAT, ASRS). Tag the finding with the
+  exact `instrument` used in that paper. Examples: "Patients with
+  baseline WAB-AQ > 60 responded better to semantic feature analysis
+  (n=42, β=0.41, p=.003)"; "Severe-baseline patients (BDAE 0–1)
+  responded to MIT but moderate-baseline patients did not."
+- `lesion_volume` — "After controlling for lesion location, total
+  lesion volume independently predicted naming severity (R²=.18, p<.001)."
+- `age` — "Younger patients (<55) showed greater post-therapy gains
+  in fluency than older patients (n=68, p=.012)."
+- `time_post_onset` — "Patients enrolled within 6 months post-stroke
+  showed steeper recovery slopes than chronic patients."
+
+**Use the `severity_metric` umbrella, not one entry per battery.**
+Different studies use different instruments to measure the same
+construct. Rather than fragmenting the literature into `wab_aq`,
+`bdae_severity`, `cat_score`, etc. — which would also fragment a
+clinician's prognostic query when the patient was tested with a
+different battery — a single `severity_metric` entry holds findings
+from any instrument and tags each finding with its `instrument`,
+`score_band`, and `interpretation`. The interpreter
+(`interpret_predictors()`) preferentially weights findings whose
+instrument matches the patient's, but still surfaces cross-instrument
+evidence.
+
+**Don't create a predictor entry for** outcome variables that the paper
+just *measures* (post-therapy WAB-AQ as the dependent variable of a
+trial → that's a `direction: likely` finding on `target: severity_metric,
+target_kind: predictor` from a *therapy* draft, not a finding *inside*
+the predictor entry).
+
+**Anchor perspective rule for predictors.**
+
+- The paper's claim is "X predicts Y." Anchor on whichever side has the
+  richer claim space:
+  - If the paper's main finding is about *which lesion patterns make
+    patients responsive* and they happen to also report baseline WAB-AQ
+    as a covariate → the finding belongs in a *region* draft with
+    `target_kind: predictor` (or `target_kind: therapy` if the actual
+    target is the therapy). The predictor entry stays untouched.
+  - If the paper's main finding is "WAB-AQ at baseline predicts
+    responsiveness to therapy" with no lesion-location claim → write
+    the finding *into the predictor entry* (`drafts/predictors/wab_aq__<key>.md`),
+    targeting the therapy.
+
+**File-naming convention for predictor drafts:**
+`drafts/predictors/<predictor_id>__<citation_key>.md`
+(e.g., `drafts/predictors/wab_aq__Schlaug2008.md`).
+
+**Findings inside a predictor entry** follow exactly the same schema as
+findings inside a region/impairment/therapy entry — same identity,
+method, sample, statistics, confounders, source_passages, etc. The only
+difference is the `target` typically points to a therapy, impairment,
+or prognosis, not to another region.
+
+**A predictor entry's findings should rarely have `relationship: causal`.**
+Most behavioural/demographic predictors are `correlational` (the
+predictor co-varies with outcome) or `responder` (the predictor
+moderates therapy response). Only use `causal` if the paper makes a
+genuine causal claim (rare, and almost always restricted to
+`imaging_metric` predictors like lesion-load on a tract).
 
 ---
 
@@ -407,7 +498,7 @@ For each paper:
 
 `drafts/<bucket>/<entry_id>__<citation_key>.md`
 
-- `bucket` ∈ `regions`, `impairments`, `therapies`.
+- `bucket` ∈ `regions`, `impairments`, `therapies`, `predictors`.
 - `entry_id` is the existing entry's `id` (e.g., `ho-cort_44`) or, for a
   new entry, the proposed `id` you assigned.
 - `citation_key` is the paper's `@Key` minus the `@`.
@@ -416,6 +507,7 @@ Examples:
 - `drafts/regions/ho-cort_44__Fridriksson2018.md`
 - `drafts/impairments/naming__Mirman2015.md`
 - `drafts/therapies/mit__Schlaug2008.md`
+- `drafts/predictors/wab_aq__Schlaug2008.md`
 
 ### When the entry already exists
 
@@ -446,6 +538,124 @@ for it from a new paper:
   `citations.md`.** No exceptions.
 - **Always set `status: draft` and `created_by: agent:<your-id>`.**
 - **Always update `extraction_log.md`** in the same run.
+
+## 6b. Naming conventions (decided 2026-05-01)
+
+These are the conventions for target IDs. They were settled after the
+Yourganov / Alyahya / Barbieri extractions and are now binding for
+new drafts. The full rationale is in `schema.md`; the operational
+rules are below.
+
+### Always prefix region target IDs with hemisphere
+
+New region target IDs must include a `left_` or `right_` prefix.
+Examples:
+  - `left_angular_gyrus`, `right_anterior_middle_temporal_gyrus`
+  - `left_posterior_arcuate_fasciculus`, `right_temporal_pole`
+  - `left_heschls_gyrus`, `right_ifg_pars_triangularis`
+
+Treat hemisphere as part of the region's identity, not a separate
+attribute. Legacy IDs without the prefix (e.g., `ho-cort_44`,
+`arcuate_fasciculus`) stay as-is for backward compat — but **do not**
+create new unprefixed region IDs.
+
+This rule applies to *region* target IDs only. Impairment IDs
+(`agrammatism`, `phonological_production`, etc.), therapy IDs
+(`treatment_of_underlying_forms`), and predictor IDs (`severity_metric`)
+are not hemispheric and don't take a prefix.
+
+### Forward-looking target IDs are accepted
+
+You may target an ID that doesn't yet have a canonical file. Pick a
+descriptive snake_case ID, mention in the file-level `notes` that the
+target ID is forward-looking, and proceed. **Don't** add a per-finding
+`provenance.flag` for every non-existent target ID — that just creates
+noise. `promote.py` will create the stub canonical entry on first use.
+
+### Use `VBCM` for VBCM analyses
+
+If the paper cites Tyler et al. 2005 or describes a continuous-intensity
+voxel-based correlation, use `method: VBCM` (not `VLSM`). VBCM was added
+to the controlled vocabulary on 2026-05-01.
+
+### Cross-paper cohort overlap → `provenance.flags`
+
+When the cohort overlaps with another paper already in the KB (or
+expected to be added later), add a flag of the form:
+
+```
+"cohort overlaps with @OtherPaperKey (same n=X subgroup, same trial
+NCTxxxxx); flag for downstream double-counting risk in
+interpret_overlap()."
+```
+
+Identifying overlap is your responsibility — check the paper's
+"Participants" section for references to a parent cohort, registry
+number, or a "subset of a larger study" clause. Common patterns:
+shared NIH grant (e.g., P50DC012283), shared trial registration
+(e.g., NCT01927302), and authors who appear together on multiple
+papers in the same year.
+
+### Treatment-induced reorganization → `relationship: treatment_response`
+
+When a paper reports that a treatment causes activation changes in a
+region (typically pre-vs-post fMRI), use
+`relationship: treatment_response` (not `causal`). This is a v2.3+
+addition that disambiguates "damage → impairment" claims (`causal`)
+from "treatment → activation change" claims (`treatment_response`)
+and from "patients with X respond to therapy Y" claims (`responder`).
+
+### Behavioural-only findings inside an fMRI paper
+
+Common case: a paper is primarily an fMRI study, but the
+treatment-efficacy claim itself is behavioural-only. Code those
+findings as:
+
+  - `method: clinical_RCT` (or `behavioral_only` for non-RCT)
+  - `imaging: none`
+  - `region_definition.kind: not_reported` with a description noting
+    "behavioural-only treatment-efficacy finding — no specific brain
+    region"
+  - `imaging_details.reference_space: not_reported` and
+    `atlases_used: []` (the validator skips imaging-detail checks
+    for these methods)
+
+Then put the imaging-based findings from the same paper in separate
+`f2`, `f3`, … entries with `method: fMRI_activation` (or VBCM, etc.)
+and full `imaging_details`.
+
+### Splitting findings when one paper's analyses disagree
+
+When the same paper reports a positive finding under one analytic
+choice (e.g., voxel-level FWE-corrected) and a null under another
+(e.g., ROI-level with covariates), do **not** code as
+`direction: mixed`. Instead, split into two separate findings:
+
+  - One finding with the positive result (`direction: likely`) and
+    its specific method / threshold.
+  - A second finding with the null result (`direction: no_effect`)
+    and its specific method / threshold.
+
+Each finding carries its own statistics, region_definition, and
+source_passages. The `direction: mixed` value is reserved for cases
+where the *paper itself* reports both supporting and contradicting
+evidence on the same analysis (e.g., subgroup-by-subgroup
+disagreement), not for cross-analysis disagreement within one paper.
+
+### Multi-paper region consolidation (for `promote.py`)
+
+When `promote.py` first encounters a target ID that has findings
+from multiple drafts across multiple papers (e.g., `left_heschls_gyrus`
+from both Yourganov 2015 and Alyahya 2018), it consolidates by:
+
+1. Creating one canonical region entry.
+2. Appending all findings (one per paper) into the entry's `findings:`
+   list, preserving citation + provenance.
+3. Renumbering finding IDs to be unique within the file.
+4. Carrying forward the hemisphere prefix in the canonical `id`.
+
+If two drafts disagree, both findings stay; cross-link via
+`replications` / `contradictions` rather than overwriting.
 
 ---
 

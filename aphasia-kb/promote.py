@@ -63,7 +63,7 @@ def _write(path: Path, fm: dict, body: str):
 
 
 def _bucket_for(draft_path: Path) -> str:
-    """Return regions/impairments/therapies for a draft path."""
+    """Return regions/impairments/therapies/predictors for a draft path."""
     parts = draft_path.parts
     if "drafts" not in parts:
         raise ValueError(f"Not a drafts path: {draft_path}")

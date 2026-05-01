@@ -87,10 +87,14 @@ EVIDENCE_VOCAB = {
     "case-study", "cohort", "RCT", "meta-analysis", "tentative",
 }
 CONFIDENCE_VOCAB = {"high", "medium", "low"}
-TARGET_KIND_VOCAB = {"impairment", "therapy", "region", "prognosis"}
+TARGET_KIND_VOCAB = {"impairment", "therapy", "region", "prognosis", "predictor"}
 REGION_KIND_VOCAB = {"atlas", "classical", "network", "tract"}
+PREDICTOR_TYPE_VOCAB = {"behavioural", "demographic", "clinical", "imaging_metric"}
+DIRECTION_OF_SEVERITY_VOCAB = {
+    "higher_is_worse", "lower_is_worse", "nonmonotonic", "not_applicable",
+}
 METHOD_VOCAB = {
-    "LSM", "VLSM", "MLPA", "MVPA",
+    "LSM", "VLSM", "VBCM", "MLPA", "MVPA",
     "fMRI_activation", "fMRI_FC", "rs_fMRI",
     "DTI", "NODDI", "tractography",
     "lesion_network_mapping", "disconnectome",
@@ -98,6 +102,10 @@ METHOD_VOCAB = {
     "behavioral_only", "clinical_RCT", "meta-analysis",
     "computational_model",
 }
+# Note: this set is intentionally extensible. New analytic methods may
+# be added without a schema_version bump (see schema.md "Vocabulary
+# extensibility" note). Structural changes to the schema (new fields,
+# new bucket types, changed required-ness) DO require a version bump.
 DESIGN_VOCAB = {
     "cross-sectional", "longitudinal", "RCT",
     "case-series", "single-case", "meta-analysis", "systematic-review",
@@ -120,9 +128,10 @@ REFERENCE_SPACE_VOCAB = {
     "MNI152", "MNI305", "Talairach", "native", "other", "not_reported",
 }
 
-# v2.2 additions
+# v2.2 additions; extended 2026-05-01 with `treatment_response`
 RELATIONSHIP_VOCAB = {
     "causal", "correlational", "recruitment", "responder",
+    "treatment_response",
 }
 
 # Color hex per `supports` category — single source of truth shared
@@ -175,13 +184,37 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
         if not entry.get(f):
             err(f"missing required file-level field: {f}")
     sv = entry.get("schema_version")
-    # Accept 2 (legacy v2.0), 2.1, and 2.2 (current).
+    # Accept 2 (legacy v2.0), 2.1, 2.2, and 2.3 (current).
     # v2.1+ entries get the stricter source_passages + imaging_details checks.
     # v2.2+ entries get the relationship + multimodal-method checks.
-    if sv not in (2, 2.1, 2.2, "2", "2.1", "2.2"):
-        err(f"schema_version must be 2, 2.1, or 2.2, got {sv!r}")
-    is_v21 = sv in (2.1, 2.2, "2.1", "2.2")
-    is_v22 = sv in (2.2, "2.2")
+    # v2.3+ entries can use the predictor bucket and target_kind=predictor.
+    if sv not in (2, 2.1, 2.2, 2.3, "2", "2.1", "2.2", "2.3"):
+        err(f"schema_version must be 2, 2.1, 2.2, or 2.3, got {sv!r}")
+    is_v21 = sv in (2.1, 2.2, 2.3, "2.1", "2.2", "2.3")
+    is_v22 = sv in (2.2, 2.3, "2.2", "2.3")
+    is_v23 = sv in (2.3, "2.3")
+
+    # v2.3 predictor entries: validate file-level predictor fields.
+    # (We check kind=='predictor' regardless of bucket so any file that
+    #  declares itself a predictor is held to the same contract.)
+    if entry.get("kind") == "predictor":
+        if not is_v23:
+            err("predictor entries require schema_version 2.3 or higher")
+        ptype = entry.get("predictor_type")
+        if ptype not in PREDICTOR_TYPE_VOCAB:
+            err(f"predictor_type={ptype!r} required; "
+                f"allowed: {sorted(PREDICTOR_TYPE_VOCAB)}")
+        if not entry.get("short_definition"):
+            err("predictor entries require short_definition")
+        if ptype in ("behavioural", "clinical"):
+            assess = entry.get("assessment")
+            if assess is None or not isinstance(assess, list) or not assess:
+                err(f"predictor_type={ptype!r} requires assessment "
+                    f"(non-empty list of test names)")
+        dos = entry.get("direction_of_severity")
+        if dos is not None and dos not in DIRECTION_OF_SEVERITY_VOCAB:
+            err(f"direction_of_severity={dos!r} invalid; "
+                f"allowed: {sorted(DIRECTION_OF_SEVERITY_VOCAB)}")
     if entry.get("status") not in STATUS_VOCAB:
         err(f"unknown status={entry.get('status')!r}; allowed: {sorted(STATUS_VOCAB)}")
     if entry.get("status") == "approved":
@@ -271,6 +304,22 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
             err(f"{prefix}: provenance.confidence={prov.get('confidence')!r} invalid")
         if not isinstance(prov.get("flags"), list):
             err(f"{prefix}: provenance.flags must be a list (use [] if none)")
+
+        # v2.3 predictor-finding fields are an optional triplet:
+        # if any of {instrument, score_band, interpretation} is set,
+        # the others should be too (they're useless individually).
+        if is_v23:
+            triplet = ("instrument", "score_band", "interpretation")
+            present = [k for k in triplet if f.get(k) not in (None, "")]
+            if present and len(present) != len(triplet):
+                missing = [k for k in triplet if k not in present]
+                err(f"{prefix}: predictor triplet partially set "
+                    f"(have {present}, missing {missing}); "
+                    f"fill all three or none")
+            for k in triplet:
+                v = f.get(k)
+                if v is not None and not isinstance(v, str):
+                    err(f"{prefix}: {k} must be a string, got {type(v).__name__}")
 
         # v2.1: source_passages (required) + imaging_details (semi-required)
         if is_v21:
@@ -364,6 +413,7 @@ class KnowledgeBase:
     regions: pd.DataFrame = field(init=False)
     impairments: pd.DataFrame = field(init=False)
     therapies: pd.DataFrame = field(init=False)
+    predictors: pd.DataFrame = field(init=False)
     findings: pd.DataFrame = field(init=False)
     bodies: dict[str, str] = field(init=False)
     issues: list[str] = field(init=False)
@@ -381,7 +431,7 @@ class KnowledgeBase:
     # Load
     # --------------------------------------------------------
     def _walk(self, base: Path) -> dict[str, list[dict]]:
-        out = {"regions": [], "impairments": [], "therapies": []}
+        out = {"regions": [], "impairments": [], "therapies": [], "predictors": []}
         for sub in out:
             d = base / sub
             if not d.is_dir():
@@ -418,7 +468,8 @@ class KnowledgeBase:
             for sub, entries in bucket_entries.items():
                 for e in entries:
                     src = e["_path"]
-                    if e.get("schema_version") == 2:
+                    sv = e.get("schema_version")
+                    if sv in (2, 2.1, 2.2, 2.3, "2", "2.1", "2.2", "2.3"):
                         _validate_v2_entry(e, src, self.issues)
                     else:
                         _validate_v1_entry(e, src, self.issues)
@@ -430,12 +481,14 @@ class KnowledgeBase:
         regions = [e for e in approved["regions"] if keep(e)]
         impairs = [e for e in approved["impairments"] if keep(e)]
         theras  = [e for e in approved["therapies"] if keep(e)]
+        preds   = [e for e in approved["predictors"] if keep(e)]
         # Drafts are admitted only if their status is in `include` AND the
         # caller asked for drafts (typical use: include=['approved', 'draft'])
         for sub_entries, dest in (
             (drafts["regions"], regions),
             (drafts["impairments"], impairs),
             (drafts["therapies"], theras),
+            (drafts["predictors"], preds),
         ):
             for e in sub_entries:
                 if keep(e):
@@ -445,6 +498,7 @@ class KnowledgeBase:
             (legacy["regions"], regions),
             (legacy["impairments"], impairs),
             (legacy["therapies"], theras),
+            (legacy["predictors"], preds),
         ):
             for e in sub_entries:
                 if keep(e):
@@ -453,6 +507,7 @@ class KnowledgeBase:
         self.regions     = pd.DataFrame(regions)
         self.impairments = pd.DataFrame(impairs)
         self.therapies   = pd.DataFrame(theras)
+        self.predictors  = pd.DataFrame(preds)
 
         # Long-format findings table
         rows = []
@@ -460,6 +515,7 @@ class KnowledgeBase:
             (regions, "region"),
             (impairs, "impairment"),
             (theras,  "therapy"),
+            (preds,   "predictor"),
         ):
             for e in sub_entries:
                 for f in e.get("findings") or []:
@@ -484,7 +540,7 @@ class KnowledgeBase:
 
         # Convenience: a separate drafts dataframe for review tooling
         draft_rows = []
-        for sub in ("regions", "impairments", "therapies"):
+        for sub in ("regions", "impairments", "therapies", "predictors"):
             for e in drafts[sub]:
                 draft_rows.append({
                     "bucket":   sub,
@@ -500,7 +556,7 @@ class KnowledgeBase:
 
         # Build alias index
         self._alias_to_id: dict[str, str] = {}
-        for entry in regions + impairs + theras:
+        for entry in regions + impairs + theras + preds:
             ids = {entry.get("id"), entry.get("name")}
             for a in (entry.get("aliases") or []):
                 ids.add(a)
@@ -519,6 +575,14 @@ class KnowledgeBase:
         if not rid or self.regions.empty:
             return None
         sub = self.regions[self.regions["id"] == rid]
+        return sub.iloc[0].to_dict() if not sub.empty else None
+
+    def lookup_predictor(self, name_or_id: str) -> dict | None:
+        """Look up a predictor by id, name, or alias."""
+        pid = self._alias_to_id.get(_normalize(name_or_id))
+        if not pid or self.predictors.empty:
+            return None
+        sub = self.predictors[self.predictors["id"] == pid]
         return sub.iloc[0].to_dict() if not sub.empty else None
 
     def resolve_aliases(self, names: Iterable[str]) -> dict[str, str | None]:
@@ -590,6 +654,137 @@ class KnowledgeBase:
         agg = agg.sort_values("score", key=lambda s: s.abs(), ascending=False)
         return agg.reset_index(drop=True)
 
+    def interpret_predictors(
+        self,
+        scores: dict,
+        instrument_match_bonus: float = 1.5,
+    ) -> pd.DataFrame:
+        """
+        Aggregate findings carried by predictor entries against a patient's
+        measured behavioural / demographic / clinical / imaging scalars.
+
+        Parameters
+        ----------
+        scores : dict
+            Mapping from predictor id (or alias / name) to either:
+              * a bare numeric value (e.g. `{"age": 64}`), or
+              * a dict with `instrument` and `value` keys
+                (e.g. `{"severity_metric": {"instrument": "WAB-AQ",
+                "value": 65}}`).
+            When `instrument` is supplied, findings whose
+            `instrument` matches exactly receive a weighting bonus,
+            and findings with no `instrument` field receive the
+            normal weight. Findings with a different instrument
+            still contribute, but at base weight (no penalty), so
+            cross-instrument evidence remains visible.
+        instrument_match_bonus : float, default 1.5
+            Multiplier applied to findings whose `instrument` exactly
+            matches the patient's reported instrument. Set to 1.0 to
+            disable instrument-aware weighting.
+
+        Returns
+        -------
+        pd.DataFrame with one row per (target, target_kind) aggregating
+        evidence from all matched predictor findings, with citations,
+        contributing predictors, and (when instrument was supplied)
+        the set of instruments that matched.
+        """
+        if not scores or self.findings.empty:
+            return pd.DataFrame()
+
+        # Resolve user-supplied keys to canonical predictor ids,
+        # and capture a per-id "expected instrument" if supplied.
+        resolved: dict[str, str | None] = {}  # pid -> expected_instrument or None
+        for key, raw in scores.items():
+            pid = self._alias_to_id.get(_normalize(key))
+            if pid is None:
+                continue
+            if isinstance(raw, dict):
+                inst = raw.get("instrument")
+            else:
+                inst = None
+            resolved[pid] = inst
+
+        if not resolved:
+            return pd.DataFrame()
+
+        f = self.findings[
+            (self.findings["source_kind"] == "predictor")
+            & (self.findings["source_id"].isin(resolved.keys()))
+        ].copy()
+        if f.empty:
+            return pd.DataFrame()
+
+        f["strength_w"]   = f["strength"].map(_STRENGTH_WEIGHT).fillna(1.0)
+        f["evidence_w"]   = f["evidence_quality"].map(_EVIDENCE_WEIGHT).fillna(1.0)
+        f["confidence_w"] = f["confidence"].map(_CONFIDENCE_WEIGHT).fillna(1.0)
+        f["sign"]         = f["direction"].map(_DIRECTION_SIGN).fillna(0)
+
+        # Instrument-aware weighting: bonus when the finding's instrument
+        # matches the patient's instrument for that predictor; base weight
+        # otherwise (so cross-instrument evidence is still visible).
+        # `instrument` is only present in the long-format findings table
+        # when the schema rolls it in — re-read it from the raw frontmatter
+        # via a lookup keyed on (source_id, finding id).
+        per_finding_instrument = self._build_finding_instrument_index()
+
+        def _instrument_w(row):
+            expected = resolved.get(row["source_id"])
+            if not expected:
+                return 1.0
+            actual = per_finding_instrument.get(
+                (row["source_id"], row["id"]))
+            if actual and _normalize(actual) == _normalize(expected):
+                return instrument_match_bonus
+            return 1.0
+
+        f["instrument"] = f.apply(
+            lambda r: per_finding_instrument.get((r["source_id"], r["id"])),
+            axis=1,
+        )
+        f["instrument_w"] = f.apply(_instrument_w, axis=1)
+        f["weight"]       = 1.0  # patient-value weighting reserved for future
+        f["contribution"] = (
+            f["weight"] * f["strength_w"] * f["evidence_w"]
+            * f["confidence_w"] * f["instrument_w"] * f["sign"]
+        )
+
+        agg = (f
+               .groupby(["target", "target_kind"], as_index=False)
+               .agg(score=("contribution", "sum"),
+                    n_findings=("contribution", "size"),
+                    citations=("citation", lambda s: sorted(set(s))),
+                    contributing_predictors=("source_id",
+                                             lambda s: sorted(set(s))),
+                    instruments=("instrument",
+                                 lambda s: sorted({x for x in s if x}))))
+        agg["direction"] = agg["score"].apply(
+            lambda s: "likely" if s > 0 else ("unlikely" if s < 0 else "ambiguous")
+        )
+        agg = agg.sort_values("score", key=lambda s: s.abs(), ascending=False)
+        return agg.reset_index(drop=True)
+
+    def _build_finding_instrument_index(self) -> dict[tuple, str | None]:
+        """Map (source_id, finding_id) -> the finding's `instrument` field
+        (or None). Used by interpret_predictors() to route around the
+        long-format findings table, which doesn't carry the v2.3
+        predictor-triplet fields by default."""
+        idx: dict[tuple, str | None] = {}
+        for df, kind in (
+            (self.predictors, "predictor"),
+            (self.regions, "region"),
+            (self.impairments, "impairment"),
+            (self.therapies, "therapy"),
+        ):
+            if df is None or df.empty:
+                continue
+            for _, row in df.iterrows():
+                src_id = row.get("id")
+                for fnd in (row.get("findings") or []):
+                    if isinstance(fnd, dict):
+                        idx[(src_id, fnd.get("id"))] = fnd.get("instrument")
+        return idx
+
     # --------------------------------------------------------
     # Convenience
     # --------------------------------------------------------
@@ -600,6 +795,7 @@ class KnowledgeBase:
             f"  regions:     {len(self.regions)}\n"
             f"  impairments: {len(self.impairments)}\n"
             f"  therapies:   {len(self.therapies)}\n"
+            f"  predictors:  {len(self.predictors)}\n"
             f"  findings:    {len(self.findings)}\n"
             f"  drafts:      {len(self.drafts)} pending\n"
             f"  issues:      {len(self.issues)}"
