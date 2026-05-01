@@ -66,39 +66,107 @@ def _hex_to_rgb01(hex_color: str) -> tuple[float, float, float]:
     return tuple(int(h[i:i+2], 16) / 255.0 for i in (0, 2, 4))
 
 
-def _normalize_for_search(s: str) -> str:
-    """Collapse whitespace and strip elision markers so quotes match
-    even when the PDF has line breaks the agent's quote doesn't."""
-    import re
-    s = s.replace("[\u2026]", " ").replace("[...]", " ")
-    s = re.sub(r"\s+", " ", s).strip()
-    return s
+import re
+
+# Translation table: Unicode variants -> ASCII. The single biggest
+# source of "quote not found" misses is hyphen / smart-quote / ligature
+# differences between what the agent wrote and what the PDF contains.
+_UNICODE_NORM = str.maketrans({
+    "\u2010": "-", "\u2011": "-", "\u2012": "-",
+    "\u2013": "-", "\u2014": "-", "\u2015": "-", "\u2212": "-",
+    "\u2018": "'", "\u2019": "'", "\u201A": "'", "\u201B": "'",
+    "\u201C": '"', "\u201D": '"', "\u201E": '"', "\u201F": '"',
+    "\u00B4": "'", "\u02B9": "'",
+    "\u00A0": " ", "\u2009": " ", "\u200A": " ", "\u202F": " ",
+    "\u200B": "",
+    "\u2026": "...",
+})
+
+_LIGATURES = {
+    "\uFB00": "ff", "\uFB01": "fi", "\uFB02": "fl",
+    "\uFB03": "ffi", "\uFB04": "ffl", "\uFB05": "st", "\uFB06": "st",
+}
+
+
+def _normalize(s: str) -> str:
+    """Aggressive normalization: Unicode -> ASCII, ligatures expanded,
+    elision markers stripped, whitespace collapsed."""
+    s = s.translate(_UNICODE_NORM)
+    for lig, repl in _LIGATURES.items():
+        if lig in s:
+            s = s.replace(lig, repl)
+    s = re.sub(r"\s*\[\s*(?:\.\.\.|\u2026)\s*\]\s*", " ", s)
+    s = re.sub(r"\s+", " ", s)
+    return s.strip()
 
 
 def _find_quote_rects(page, quote: str):
-    """Try increasingly forgiving searches; return list of fitz.Rect."""
+    """Try several normalizations + fallbacks; return (rects, label) or
+    ([], None) if nothing matched.
+
+    Strategy, in order:
+      1. Exact raw quote.
+      2. Whitespace-collapsed only.
+      3. Full Unicode-normalized quote.
+      4. Normalized, parenthetical asides removed.
+      5. First sentence only.
+      6. Head of quote (first 120 chars, then 8/6/4 words).
+      7. Last resort: confirm normalized quote IS in normalized page
+         text, then search for progressively shorter prefixes.
+    """
     raw = quote.strip()
-    norm = _normalize_for_search(raw)
-    candidates = [raw, norm]
+    if not raw:
+        return [], None
 
-    # Try the leading chunk (first ~120 chars) — useful when the agent
-    # accidentally pasted slightly more than what's literally on one
-    # PDF line and the longer search fails.
+    candidates = []
+    seen = set()
+
+    def _add(label, text):
+        text = (text or "").strip()
+        if text and text not in seen:
+            seen.add(text)
+            candidates.append((label, text))
+
+    _add("raw", raw)
+    _add("ws", re.sub(r"\s+", " ", raw))
+    norm = _normalize(raw)
+    _add("norm", norm)
+    _add("no-parens", re.sub(r"\s*\([^)]*\)", "", norm))
+    first_sent = re.split(r"[.?!](?:\s|$)", norm, maxsplit=1)[0]
+    if len(first_sent) >= 25:
+        _add("first-sent", first_sent)
     if len(norm) > 120:
-        candidates.append(norm[:120])
-    # Try the leading sentence (everything up to the first . ? !)
-    import re
-    first_sentence = re.split(r"[.?!]\s+", norm, maxsplit=1)[0]
-    if first_sentence and first_sentence != norm:
-        candidates.append(first_sentence + ".")
+        _add("head120", norm[:120])
+    words = norm.split()
+    for n in (8, 6, 4):
+        if len(words) > n:
+            _add(f"head{n}w", " ".join(words[:n]))
 
-    for cand in candidates:
+    for label, cand in candidates:
         try:
             rects = page.search_for(cand, quads=False)
         except Exception:
             rects = []
         if rects:
-            return rects, cand
+            return rects, f"{label}: {cand[:60]}"
+
+    # Last resort: the normalized quote is in the normalized page text,
+    # so the *content* is right. Fall back to progressively shorter
+    # prefixes hoping one survives PyMuPDF's tokenization.
+    try:
+        page_norm = _normalize(page.get_text())
+    except Exception:
+        page_norm = ""
+    if norm and page_norm and norm[:60] in page_norm:
+        for end in range(min(len(norm), 100), 25, -8):
+            chunk = norm[:end]
+            try:
+                rects = page.search_for(chunk, quads=False)
+            except Exception:
+                rects = []
+            if rects:
+                return rects, f"fallback-{end}: {chunk[:60]}"
+
     return [], None
 
 

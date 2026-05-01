@@ -1,4 +1,4 @@
-# Schema v2.2
+# Schema v2.3
 
 Every entry is a single markdown file with **YAML frontmatter** followed by
 **prose**. The frontmatter is the contract that `aphasia_kb.py`,
@@ -6,7 +6,7 @@ Every entry is a single markdown file with **YAML frontmatter** followed by
 Changing field names or controlled vocabularies should be a deliberate,
 documented change to *this file* and the loader together.
 
-> **Status note.** Schema v1 → v2.0 → v2.1 → **v2.2** (current).
+> **Status note.** Schema v1 → v2.0 → v2.1 → v2.2 → **v2.3** (current).
 >
 > - **v2.0** introduced the rich finding object (method/sample/stats/etc.).
 > - **v2.1** made `source_passages` required and added `imaging_details`
@@ -17,9 +17,15 @@ documented change to *this file* and the loader together.
 >   field that disambiguates "damage causes Y" (causal) from "X is
 >   recruited for Y" (correlational/recruitment) from "lesion pattern
 >   predicts Y therapy benefit" (responder).
+> - **v2.3** adds the `predictors/` bucket. Predictor entries describe
+>   a measurable variable (behavioural test, demographic, clinical
+>   characteristic, or imaging-derived metric) that has been shown to
+>   predict an impairment, therapy response, or prognosis. Adds
+>   `target_kind: predictor` so findings in any bucket can target a
+>   predictor (e.g. "damage to Broca's area → low WAB-AQ").
 >
-> New entries must declare `schema_version: 2.2`. The loader reads older
-> entries (v1, v2.0, v2.1) for backwards compatibility.
+> New entries must declare `schema_version: 2.3`. The loader reads older
+> entries (v1, v2.0, v2.1, v2.2) for backwards compatibility.
 
 ## File-level fields (every entry)
 
@@ -70,6 +76,44 @@ In addition to the file-level fields above:
 | `targets_impairments`  | list of strings | yes      | impairment ids this therapy is designed to treat. |
 | `dosage`               | string          | no       | Typical dose, e.g. `3 sessions/week × 8 weeks`. |
 
+## `predictors/` files (introduced v2.3)
+
+A *predictor* is any measurable variable that the literature has linked to
+an outcome (impairment severity, therapy response, recovery trajectory).
+Predictor entries let the KB answer queries like "given this patient's
+WAB-AQ, age, lesion volume, and time post-onset, what does the literature
+say about their prognosis and likely therapy responsiveness?" — i.e.
+combine *imaging* findings (from `regions/`) with *behavioural and
+clinical* findings (from `predictors/`).
+
+| Field                  | Type            | Required | Notes |
+|------------------------|-----------------|----------|-------|
+| `kind`                 | const `predictor` | yes    | |
+| `predictor_type`       | enum            | yes      | `behavioural` \| `demographic` \| `clinical` \| `imaging_metric`. See *Predictor types* below. |
+| `short_definition`     | string          | yes      | One sentence describing what the variable measures. |
+| `assessment`           | list of strings | when `predictor_type=behavioural` or `clinical` | Standard tests, e.g. `["WAB-R", "BNT", "WAB-R Aphasia Quotient"]`. |
+| `units`                | string          | no       | E.g. `"score 0–100"`, `"ml"`, `"years"`, `"months"`, `"% of left hemisphere"`. |
+| `typical_range`        | string          | no       | E.g. `"0–100 (lower = more severe)"`, `"5–250 ml"`, `"30–85 yrs"`. |
+| `direction_of_severity`| enum            | no       | `higher_is_worse` \| `lower_is_worse` \| `nonmonotonic` \| `not_applicable`. Helps the interpreter know which way to read a value. |
+
+### Predictor types
+
+| `predictor_type`  | What it covers                                                      | Examples                                                    |
+|-------------------|---------------------------------------------------------------------|-------------------------------------------------------------|
+| `behavioural`     | Standardised language/cognition test scores measured on the patient | WAB-AQ, BNT, BDAE comprehension, PALPA, semantic fluency    |
+| `demographic`     | Patient characteristics independent of the stroke                   | Age, education, handedness, premorbid bilingualism          |
+| `clinical`        | Stroke-related characteristics measurable at bedside / from chart   | Time post-onset, NIHSS, stroke etiology, prior strokes      |
+| `imaging_metric`  | Scalar imaging-derived measures (NOT regional findings — those go in `regions/`) | Total lesion volume, white-matter hyperintensity load, brain atrophy index, lesion-load on a specific tract |
+
+Findings inside a predictor entry follow the same rules as findings in
+`regions/` / `impairments/` / `therapies/`. Their `target` typically
+points to an impairment, therapy, or prognosis (rarely to a region).
+
+Findings in *other* buckets can also point to a predictor by setting
+`target_kind: predictor`. Example: a region entry can carry the finding
+"damage to left Heschl's gyrus → reduced WAB-AQ" with
+`target: wab_aq, target_kind: predictor`.
+
 ---
 
 ## The `finding` object (the heart of v2)
@@ -84,7 +128,7 @@ ones are **S**; optional ones are **O**.
 |---------------|-------|--------|-------|
 | `id`          | R     | string | Stable id within the file (e.g. `f1`, `f2`). Used by `replications` / `contradictions` to refer to specific findings. |
 | `target`      | R     | string | The other-side `id` (an impairment id from this entry, or a region id from an impairment/therapy entry). |
-| `target_kind` | R     | enum   | `impairment` \| `therapy` \| `region` \| `prognosis`. |
+| `target_kind` | R     | enum   | `impairment` \| `therapy` \| `region` \| `prognosis` \| `predictor`. |
 | `claim`       | R     | string | One sentence stating the finding in plain language. The agent's own prose, not a quote. |
 | `direction`   | R     | enum   | `likely` \| `unlikely` \| `likely_responder` \| `unlikely_responder` \| `no_effect` \| `mixed`. |
 | `citation`    | R     | string | `@Key` referencing `citations.md`. |
@@ -107,10 +151,11 @@ to know what e.g. `direction: likely` actually means.
 
 | `relationship`   | Typical methods                        | "likely" means                                                                                          |
 |------------------|----------------------------------------|---------------------------------------------------------------------------------------------------------|
-| `causal`         | LSM, VLSM, MLPA, lesion_network_mapping, disconnectome | "Damage to this region is associated with the impairment" — the canonical lesion-symptom claim. |
+| `causal`         | LSM, VLSM, VBCM, MLPA, lesion_network_mapping, disconnectome | "Damage to this region is associated with the impairment" — the canonical lesion-symptom claim. |
 | `correlational`  | fMRI_FC, rs_fMRI, DTI, NODDI, EEG, MEG | "Activity / integrity of this region tracks behavior" — no causal claim, just covariation.              |
 | `recruitment`    | fMRI_activation                        | "This region is recruited (active) during this task" — task-functional claim.                           |
 | `responder`      | clinical_RCT, behavioral_only          | "Patients with this lesion / region pattern respond well to this therapy" — a moderator claim.          |
+| `treatment_response` (added 2026-05-01) | fMRI_activation pre/post a treatment   | "This region's activation changes as a *consequence* of the treatment." Distinct from `causal` (damage→impairment) and `responder` (which patients respond). Use for treatment-induced upregulation / functional reorganization findings. |
 
 For `interpret_overlap()` (the per-patient lesion → literature interpretation),
 all four `relationship` values with `direction: likely` get treated as
@@ -231,6 +276,26 @@ there's no visual audit, so they are required.
 | `source_passages[].quote`   | R | Verbatim text. Use `[…]` for elided clauses; never edit the substantive claim. Keep short — 1–3 sentences max per passage. |
 | `source_passages[].supports`| R | One of: `claim` \| `method` \| `sample` \| `statistics` \| `confounders` \| `region_definition` \| `limitation` \| `imaging_details`. Drives which color highlights this passage in the annotated PDF. |
 
+### Predictor-finding fields (introduced v2.3)
+
+These optional fields apply to findings inside a `predictor` entry (or
+findings in any other entry that target a predictor) where the same
+construct is measured by multiple instruments. They let one umbrella
+predictor entry (e.g. `severity_metric`) carry findings from
+WAB-AQ-based, BDAE-based, CAT-based, etc. studies without
+fragmenting the literature.
+
+| Field             | R/S/O | Type   | Notes |
+|-------------------|-------|--------|-------|
+| `instrument`      | O     | string | The exact assessment used in this finding, e.g. `"WAB-AQ"`, `"BDAE severity rating"`, `"CAT"`, `"AAT"`. Pulled from the paper's Methods. |
+| `score_band`      | O     | string | The range or threshold the finding applies to, written naturally. E.g. `"WAB-AQ 50–75 (moderate)"`, `"BDAE severity 2 (severe)"`, `"all severities"`. |
+| `interpretation`  | O     | string | One plain-language sentence stating what falling in that band means clinically (e.g. `"Moderate aphasia, intermediate prognosis"`). |
+
+The three fields are coupled: if you fill one, fill all three. The
+loader does not require them, but `interpret_predictors()` uses them
+when matching a patient's specific instrument + score to literature
+findings.
+
 ### Free notes
 
 | Field   | R/S/O | Notes |
@@ -239,24 +304,35 @@ there's no visual audit, so they are required.
 
 ---
 
-## Controlled vocabularies (frozen for v2.2; change requires a v2.3 bump)
+## Controlled vocabularies
+
+> **Vocabulary extensibility (decided 2026-05-01).** The controlled
+> vocabularies below are *extensible*. Adding a new value (e.g., a
+> new method like `VBCM`) does **not** require a schema version
+> bump — just add the value to the relevant set in `aphasia_kb.py`
+> and document it here. **Structural** changes (new fields, new
+> bucket types, changed required-ness) DO require a version bump.
 
 ```
-schema_version    = 2 | 2.1 | 2.2 (current)
+schema_version    = 2 | 2.1 | 2.2 | 2.3 (current)
 status            = draft | in_review | approved | rejected | legacy_v1
 supports          = claim | method | sample | statistics | confounders
                   | region_definition | limitation | imaging_details
 reference_space   = MNI152 | MNI305 | Talairach | native | other
                   | not_reported
 relationship      = causal | correlational | recruitment | responder
+                  | treatment_response
 direction         = likely | unlikely | likely_responder | unlikely_responder
                   | no_effect | mixed
 strength          = weak | moderate | strong
 evidence_quality  = case-study | cohort | RCT | meta-analysis | tentative
 confidence        = high | medium | low
 region.kind       = atlas | classical | network | tract
-target_kind       = impairment | therapy | region | prognosis
-method            = LSM | VLSM | MLPA | MVPA
+predictor_type    = behavioural | demographic | clinical | imaging_metric
+direction_of_severity = higher_is_worse | lower_is_worse | nonmonotonic
+                      | not_applicable
+target_kind       = impairment | therapy | region | prognosis | predictor
+method            = LSM | VLSM | VBCM | MLPA | MVPA
                   | fMRI_activation | fMRI_FC | rs_fMRI
                   | DTI | NODDI | tractography
                   | lesion_network_mapping | disconnectome
@@ -270,6 +346,96 @@ imaging           = T1 | T2 | FLAIR | CT | DWI | fMRI | multimodal
 region_definition.kind = atlas | manual_ROI | peak_coord_sphere | tract
                        | data_driven_cluster | not_reported
 ```
+
+### Method-vocabulary notes
+
+- **`VBCM`** (Voxel-Based Correlational Methodology, Tyler et al. 2005):
+  a continuous-intensity variant of VLSM. Instead of binarised lesion
+  masks, VBCM correlates per-voxel signal intensity (typically T1) with
+  behavioural scores. Use `VBCM` rather than `VLSM` when the paper
+  explicitly cites Tyler et al. 2005 or describes a continuous-intensity
+  approach.
+
+## Naming conventions for target IDs
+
+### Hemisphere prefixing (decided 2026-05-01)
+
+**Always prefix new region target IDs with `left_` or `right_`.**
+Hemisphere is part of the identity of a region for KB purposes.
+Examples: `left_angular_gyrus`, `right_temporal_pole`,
+`left_posterior_arcuate_fasciculus`. Existing entries that pre-date
+this convention (e.g., `ho-cort_44` with `hemisphere: left` as a
+file-level field) are kept as legacy IDs for backward compatibility,
+but new entries should use the prefixed form.
+
+### Forward-looking target IDs (decided 2026-05-01)
+
+**Draft findings may target IDs that don't yet exist as canonical
+entries.** When `promote.py` first encounters a target ID that has
+no corresponding file in `regions/`, `impairments/`, `therapies/`, or
+`predictors/`, it creates a stub entry on first use rather than
+rejecting the draft. Agents should pick descriptive snake_case IDs
+(e.g., `left_heschls_gyrus`, `agrammatism`) and let the reviewer flesh
+out the canonical file at promotion time.
+
+### Cross-paper cohort overlap (decided 2026-05-01)
+
+When a paper's cohort overlaps with another paper already in the KB
+(or expected to be added), agents must add a flag to
+`provenance.flags` of the form:
+
+```
+"cohort overlaps with @OtherPaperKey (e.g., same n=12 agrammatic
+participants from NCT01927302); flag for downstream double-counting
+risk in interpret_overlap()."
+```
+
+This lets `interpret_overlap()` (or a future deduplication step)
+identify findings that derive from the same individuals and avoid
+counting them as independent evidence.
+
+### Behavioural-only findings inside an fMRI paper (decided 2026-05-01)
+
+A paper that *primarily* uses imaging may also report a
+behavioural-only treatment-efficacy finding (e.g., "treatment
+significantly improved behavioural outcome X" without imaging in the
+analysis). Code these findings as:
+
+  - `method: clinical_RCT` (for treatment-efficacy claims with a
+    randomized design and natural-history controls) or
+    `method: behavioral_only` (for non-RCT behavioural-only claims)
+  - `imaging: none` (NOT `not_reported` — the finding has no imaging
+    component, even though the paper does)
+  - `region_definition.kind: not_reported` with a short
+    `description` noting "behavioural-only treatment-efficacy
+    finding — no specific brain region"
+  - `imaging_details.reference_space: not_reported` and
+    `imaging_details.atlases_used: []` (the validator skips
+    imaging-detail checks for `clinical_RCT` / `behavioral_only` /
+    `meta-analysis` / `computational_model`)
+
+Imaging-based findings from the same paper sit in separate `f2`,
+`f3`, … entries with `method: fMRI_activation` (or VBCM, etc.) and
+their full `imaging_details` block.
+
+### Multi-paper region consolidation (decided 2026-05-01)
+
+When `promote.py` first encounters a target ID (e.g.,
+`left_heschls_gyrus`) that has findings from multiple draft files
+across multiple papers, it should:
+
+1. Create a single canonical region entry.
+2. Append all findings (one per paper) to the entry's `findings:`
+   list, preserving each finding's `citation` and `provenance`.
+3. Renumber finding IDs to be unique within the file (`f1`, `f2`,
+   `f3`, …) without colliding with any pre-existing IDs.
+4. Carry forward each draft's hemisphere prefix into the canonical
+   `id` (so `left_heschls_gyrus` stays `left_heschls_gyrus`, not
+   `heschls_gyrus`).
+
+If two drafts disagree on the same (region, target) pair, both
+findings stay in the file and the disagreement is captured in
+`replications` / `contradictions` of each finding.
 
 ## "Not reported" handling
 

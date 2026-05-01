@@ -1,35 +1,41 @@
-# Aphasia knowledge base (v2)
+# Aphasia knowledge base (v2.3)
 
 A clinician-controlled, agent-extensible knowledge base linking lesion
-locations to aphasia-related impairments and therapy responses. The
-format is **markdown with rich YAML frontmatter**, designed for both
-human review and machine consumption.
+locations to aphasia-related impairments, therapy responses, and
+behavioural / clinical predictors. The format is **markdown with rich
+YAML frontmatter**, designed for both human review and machine
+consumption.
 
 > **The user is always in the loop.** No agent writes directly into the
-> canonical `regions/`, `impairments/`, or `therapies/` folders. Agents
-> write to `drafts/`. A human reviewer promotes drafts to canonical
-> entries via `promote.py`. This separation is the whole point of v2.
+> canonical `regions/`, `impairments/`, `therapies/`, or `predictors/`
+> folders. Agents write to `drafts/`. A human reviewer promotes drafts
+> to canonical entries via `promote.py`. This separation is the whole
+> point of v2.
 
 ## Layout
 
 ```
 aphasia-kb/
 ├── README.md                  # this file
-├── schema.md                  # YAML frontmatter spec (v2 — read first)
+├── schema.md                  # YAML frontmatter spec (v2.3 — read first)
 ├── EXTRACTION_SKILL.md        # agent's instruction manual
 ├── citations.md               # bibliography (@Key references)
 ├── extraction_log.md          # append-only audit log
 ├── aphasia_kb.py              # loader + validator + query module
 ├── promote.py                 # CLI for reviewing/promoting drafts
+├── extract.py                 # CLI for agent-driven paper extraction
+├── annotate_paper.py          # CLI for color-annotated PDFs
 ├── neurosynth_bootstrap.py    # (stage-2) auto-draft from meta-analyses
 │
 ├── regions/                   # APPROVED region entries (canonical)
 ├── impairments/               # APPROVED impairment entries (canonical)
 ├── therapies/                 # APPROVED therapy entries (canonical)
+├── predictors/                # APPROVED predictor entries (canonical, v2.3+)
 ├── drafts/                    # AGENT writes here; HUMAN reviews
 │   ├── regions/
 │   ├── impairments/
-│   └── therapies/
+│   ├── therapies/
+│   └── predictors/
 ├── examples/                  # worked-example entries (NOT loaded by KB)
 ├── papers/                    # PDFs the agent has been given (optional)
 └── _legacy_v1/                # archived v1 entries; loader tags them legacy_v1
@@ -109,5 +115,12 @@ agent to re-extract each of them under v2 from the original papers.
 
 This is a **proof-of-concept**. Every approved entry needs clinician
 sign-off before being relied upon clinically. The schema is frozen for
-v2; expanding it (new methods, new vocabularies) is a v2.1 change that
-must update `schema.md` and `aphasia_kb.py` together.
+v2.3; expanding it (new methods, new vocabularies, new buckets) is a
+v2.4 change that must update `schema.md` and `aphasia_kb.py` together.
+
+### Schema history
+
+- **v2.0** — rich finding object (method, sample, statistics, confounders, region_definition).
+- **v2.1** — required `source_passages` + `imaging_details` for the color-annotated PDF workflow.
+- **v2.2** — `method` as list (multimodal), `imaging_details.modalities` + `task`, required `relationship` field on findings.
+- **v2.3** — new `predictors/` bucket for behavioural / demographic / clinical / imaging-metric variables, plus `target_kind: predictor` so any finding can point at a predictor. Enables querying the KB with scan + behavioural-test data combined.
