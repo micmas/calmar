@@ -1,0 +1,100 @@
+draft_path: drafts/impairments/conduction_aphasia__Yourganov2015Predicting.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-04T11:32:00'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-04T12:01:09'
+  mode: with_llm_review
+  verdict: provisional_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude-sonnet
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'All three claim quotes directly name the targeted regions; the source
+        passages in the full draft include a Discussion passage that explicitly confirms
+        the same three structures (p.13), providing independent corroboration. Strength/confidence
+        ratings are well-calibrated: strong for Z=2.48 (top predictor), moderate for
+        Z=1.47, and weak for f3 (Z=1.14, just above threshold, non-canonical language
+        tract). The f3 weak rating is correct and intentional — the SFT failure is
+        a bookkeeping trigger, not a substantive content problem. The cohort-overlap
+        flag is a routine provenance concern handled in interpret_overlap(), not a
+        blocker for promotion.
+
+        '
+      per_finding:
+      - id: f3
+        concern: 'weak rating is correct: Z=1.14 is marginal, the author limitation
+          explicitly notes optic radiations are not a canonical language structure,
+          and the Discussion attributes the finding to spatial adjacency rather than
+          a functional language contribution. Do not upgrade strength when promoting.
+
+          '
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-04T12:01:09'
+latest_verdict: provisional_approve
+latest_mode: with_llm_review

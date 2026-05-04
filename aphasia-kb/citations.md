@@ -50,11 +50,10 @@ doi:10.1073/pnas.1614038114
 >
 > Also referenced extensively (33 `replications:` links) across the
 > Yourganov, Alyahya, and Barbieri drafts. The canonical
-> `regions/ho-cort_44.md` entry already cites this paper but with
-> `[PLACEHOLDER]` source passages from the original worked example;
-> when promote.py runs, those placeholders should be replaced or
-> superseded by the real source_passages from
-> `drafts/impairments/form_to_articulation__Fridriksson2018.md:f1`.
+> `regions/ho-cort_44.md` entry was emptied of its previous placeholder
+> finding on 2026-05-02 (worked-example artifact) so that
+> `drafts/impairments/form_to_articulation__Fridriksson2018.md:f1`
+> can be promoted into it as the new `f1`.
 
 ## @Yourganov2015Predicting  [extracted]
 Yourganov G, Smith KG, Fridriksson J, Rorden C.

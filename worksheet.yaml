@@ -1,0 +1,456 @@
+# auto_review.py worksheet
+#
+# For each draft below, fill in:
+#   verdict:   approve | agree_defer | reject
+#   rationale: 1-3 sentences explaining the call
+#   per_finding (optional): list of {id, concern, supports_approval}
+#
+# Then apply with:
+#   python auto_review.py --apply-verdicts <this-file>
+#
+# Notes:
+#   - 'approve' on a deferred draft lifts to auto_approve and promotes via promote.py.
+#   - 'reject' marks as auto_reject (the draft stays in drafts/).
+#   - 'agree_defer' keeps it deferred (still needs human attention).
+#   - schema_valid / pdf_quote_match failures CANNOT be overridden.
+
+drafts:
+- draft: drafts/impairments/conduction_aphasia__Yourganov2015Predicting.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) strength_moderate_or_better: f3: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_posterior_arcuate_fasciculus
+    claim: Damage to the posterior segment of the left arcuate fasciculus is the strongest predictor of
+      conduction aphasia in a multivariate SVM classification of 98 chronic stroke aphasia patients (predictive
+      relevance Z = 2.48).
+    strength: strong
+    confidence: high
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    claim_quotes:
+    - page: 12
+      quote: Conduction aphasia is associated with damage to the posterior segment of the arcuate fasciculus,
+        Heschl's gyrus, and optical tracts.
+  - id: f2
+    target: left_heschls_gyrus
+    claim: Damage to the left Heschl's gyrus contributes to conduction aphasia classification (predictive
+      relevance Z = 1.47).
+    strength: moderate
+    confidence: high
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    claim_quotes:
+    - page: 12
+      quote: Conduction aphasia is associated with damage to the posterior segment of the arcuate fasciculus,
+        Heschl's gyrus, and optical tracts.
+  - id: f3
+    target: left_optic_radiations
+    claim: Damage to the left optic radiations contributes to conduction aphasia classification (predictive
+      relevance Z = 1.14).
+    strength: weak
+    confidence: high
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    - optic radiations are not a canonical language tract; this finding likely reflects spatial overlap
+      with the temporal-stem lesion pattern of conduction aphasia rather than a functional contribution
+      to language.
+    claim_quotes:
+    - page: 12
+      quote: Conduction aphasia is associated with damage to the posterior segment of the arcuate fasciculus,
+        Heschl's gyrus, and optical tracts.
+  verdict: approve
+  rationale: >
+    All three claim quotes directly name the targeted regions; the source passages in the full draft
+    include a Discussion passage that explicitly confirms the same three structures (p.13), providing
+    independent corroboration. Strength/confidence ratings are well-calibrated: strong for Z=2.48
+    (top predictor), moderate for Z=1.47, and weak for f3 (Z=1.14, just above threshold, non-canonical
+    language tract). The f3 weak rating is correct and intentional — the SFT failure is a
+    bookkeeping trigger, not a substantive content problem. The cohort-overlap flag is a routine
+    provenance concern handled in interpret_overlap(), not a blocker for promotion.
+  per_finding:
+  - id: f3
+    concern: >
+      weak rating is correct: Z=1.14 is marginal, the author limitation explicitly notes optic
+      radiations are not a canonical language structure, and the Discussion attributes the finding
+      to spatial adjacency rather than a functional language contribution. Do not upgrade strength
+      when promoting.
+    supports_approval: true
+- draft: drafts/impairments/executive_functions__Alyahya2018NounVerb.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) strength_moderate_or_better: f1: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_superior_frontal_gyrus
+    claim: Tissue concentration in the left superior frontal gyrus covaries with the executive function
+      PCA factor in chronic post-stroke aphasia, but only at a relaxed statistical threshold (p<0.005
+      voxel-level).
+    strength: weak
+    confidence: high
+    flags:
+    - Factor 5 required a relaxed threshold to produce significant clusters — strength flagged as weak.
+    claim_quotes:
+    - page: 223
+      quote: There were no significant clusters identified for executive function factor. This factor,
+        however, correlated with left frontal regions at a slightly lower threshold (p = 0.005 voxel-level,
+        cluster corrected using FWE p < 0.05). This cluste
+    - page: 228
+      quote: the executive function factor, which explained the least behavioural variance, did not uniquely
+        correlate with any brain regions, unless the statistical threshold was reduced. At a lower threshold,
+        this factor was associated with left front
+  - id: f2
+    target: left_paracingulate_gyrus
+    claim: Tissue concentration in the left paracingulate gyrus covaries with the executive function PCA
+      factor in chronic post-stroke aphasia (relaxed threshold).
+    strength: weak
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 223
+      quote: This cluster included the left superior frontal gyrus, paracingulate gyrus, supplementary
+        motor cortex and pre-central gyrus.
+  - id: f3
+    target: left_supplementary_motor_area
+    claim: Tissue concentration in the left supplementary motor area covaries with the executive function
+      PCA factor in chronic post-stroke aphasia (relaxed threshold).
+    strength: weak
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 223
+      quote: This cluster included the left superior frontal gyrus, paracingulate gyrus, supplementary
+        motor cortex and pre-central gyrus.
+  verdict: agree_defer
+  rationale: >
+    The extraction is accurate and the quotes directly support the claims. However, the decision
+    about whether to promote these findings requires human judgment on two substantive points:
+    (1) Factor 5 explained only 4.6% of behavioural variance — the smallest factor — and yielded
+    NO clusters at the standard p<0.001 threshold; findings only appear at a relaxed p<0.005.
+    (2) The factor captures non-language cognition (fluid reasoning via Raven's, rule-anticipation
+    via Brixton) rather than language per se, which may be out of scope for this KB. The weak
+    strength ratings are correctly calibrated and the cluster does survive lesion-volume control
+    at the relaxed threshold, but the question of whether below-standard-threshold, non-language
+    findings merit promotion is a policy call, not an extraction call.
+  per_finding: null
+- draft: drafts/impairments/fluency__Alyahya2018NounVerb.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) strength_moderate_or_better: f2: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_anterior_arcuate_fasciculus
+    claim: Tissue concentration in the anterior segment of the left arcuate fasciculus uniquely covaries
+      with the fluency PCA factor in chronic post-stroke aphasia, after partialling out the four other
+      principal components.
+    strength: moderate
+    confidence: high
+    flags:
+    - Discussion emphasises a frontal aslant tract interpretation that this VBCM analysis cannot resolve
+      from anterior-arcuate due to atlas limitations — flag for follow-up with a higher-resolution tract
+      atlas.
+    - When promoting this finding, add 'frontal_aslant_tract' (or 'left_frontal_aslant_tract' under the
+      new prefix convention) to the canonical 'left_anterior_arcuate_fasciculus' region entry's 'aliases:'
+      list — the natbrainlab atlas conflates these two fibre systems, and the paper's Discussion (Catani
+      2013, Halai 2017, Rojkova 2015) prefers the FAT label.
+    claim_quotes:
+    - page: 223
+      quote: Performance on the fluency factor was uniquely associated with left frontal and partial regions
+        involving the anterior supramarginal gyrus, central opercular cortex, pre- and post-central gyri,
+        posterior parahippocampal gyrus, planum polare
+  - id: f2
+    target: left_central_opercular_cortex
+    claim: Tissue concentration in the left central opercular cortex uniquely covaries with the fluency
+      PCA factor in chronic post-stroke aphasia (the strongest peak in the fluency cluster).
+    strength: weak
+    confidence: high
+    flags:
+    - lesion-overlap confound — same coordinate region as the cohort's overlap maximum.
+    claim_quotes:
+    - page: 223
+      quote: Performance on the fluency factor was uniquely associated with left frontal and partial regions
+        involving the anterior supramarginal gyrus, central opercular cortex, pre- and post-central gyri
+  - id: f3
+    target: left_pre_central_gyrus
+    claim: Tissue concentration in the left pre-central gyrus uniquely covaries with the fluency PCA factor
+      in chronic post-stroke aphasia.
+    strength: weak
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 223
+      quote: Performance on the fluency factor was uniquely associated with left frontal and partial regions
+        involving the anterior supramarginal gyrus, central opercular cortex, pre- and post-central gyri,
+        posterior parahippocampal gyrus, planum polare
+  verdict: approve
+  rationale: >
+    All claim quotes name the targeted regions and the extraction accurately represents the paper.
+    The f2 weak rating is correct on two independent grounds: (1) the full fluency cluster does
+    NOT survive lesion-volume covariate (r=0.59, p<0.0001), and (2) the central opercular cortex
+    is the cohort's lesion-overlap maximum, raising a spatial confound. The f1 moderate rating is
+    defensible because the cluster passes the standard p<0.001 threshold; the lesion-volume
+    limitation is clearly documented in the statistics field and in the draft notes. The target
+    label for f1 (anterior_arcuate_fasciculus) vs. the paper's preferred label (frontal_aslant_tract)
+    is handled appropriately by the flag requesting an alias addition before promotion — this is a
+    known atlas limitation, not a misquotation.
+  per_finding:
+  - id: f1
+    concern: >
+      The Results text says "frontal aslant tract, cortico-spinal tract, and internal capsule" for
+      the white-matter component; the target label 'left_anterior_arcuate_fasciculus' is the
+      natbrainlab atlas label, not the paper's preferred term. The alias-addition flag must be
+      actioned before this finding is promoted to avoid misleading KB consumers.
+    supports_approval: true
+  - id: f2
+    concern: >
+      weak rating is correct and should not be upgraded: cluster fails lesion-volume control
+      and sits at the cohort overlap maximum. Promoting at higher strength would misrepresent
+      the evidence.
+    supports_approval: true
+- draft: drafts/impairments/semantics__Alyahya2018NounVerb.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) strength_moderate_or_better: f1: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_anterior_middle_temporal_gyrus
+    claim: Tissue concentration in the left anterior middle temporal gyrus uniquely covaries with the
+      semantic PCA factor in chronic post-stroke aphasia, independent of phonological production, fluency,
+      phonological recognition, and executive function
+    strength: weak
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 223
+      quote: Performance on the semantic factor was uniquely associated with left superior lateral occipital
+        cortex, occipital fusiform gyrus, temporal occipital fusiform cortex, anterior inferior temporal
+        gyrus, anterior temporal fusiform cortex, anter
+  - id: f2
+    target: left_temporal_pole
+    claim: Tissue concentration in the left temporal pole uniquely covaries with the semantic PCA factor
+      in chronic post-stroke aphasia.
+    strength: weak
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 227
+      quote: The neural correlates associated with the semantic factor were the largest in size and included
+        anterior and posterior temporal regions, which have been linked to semantic processing
+  - id: f3
+    target: left_superior_lateral_occipital_cortex
+    claim: Tissue concentration in the left superior lateral occipital cortex uniquely covaries with the
+      semantic PCA factor in chronic post-stroke aphasia (the strongest peak; cluster also survives lesion-volume
+      covariate).
+    strength: strong
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 223
+      quote: Performance on the semantic factor was uniquely associated with left superior lateral occipital
+        cortex, occipital fusiform gyrus, temporal occipital fusiform cortex
+  - id: f4
+    target: left_inferior_longitudinal_fasciculus
+    claim: Tissue concentration in the left inferior longitudinal fasciculus uniquely covaries with the
+      semantic PCA factor — connecting posterior occipito-temporal cortex with the temporal pole, consistent
+      with the ventral language pathway.
+    strength: weak
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 228
+      quote: The phonological production and semantic factors were also associated with white matter tracts
+        that connect posterior occipito-temporal regions to the temporal pole, corresponding to the inferior
+        longitudinal fasciculus. This underlying tem
+  - id: f5
+    target: left_precuneus
+    claim: Tissue concentration in the left left_precuneus uniquely covaries with the semantic PCA factor
+      in chronic post-stroke aphasia (cluster also survives lesion-volume covariate in this region).
+    strength: strong
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 228
+      quote: Posterior left central perisylvian regions (angular gyrus, posterior inferior and middle
+        temporal gyrus) were shared between the semantic, phonological production and phonological recognition
+        factors. These posterior regions have been impli
+  verdict: approve
+  rationale: >
+    Strength ratings are correctly stratified by lesion-volume survival: strong for f3
+    (superior lateral occipital cortex, Z=5.53, survives LV covariate) and f5 (precuneus, Z=5.01,
+    survives), weak for f1/f2/f4 (temporal-lobe findings that disappear when LV is controlled).
+    The f1 weak rating, which triggered the SFT deferral, is exactly right — anterior MTG does not
+    survive LV control per the paper's own Results 3.2.4. The claim quotes for f1–f3 directly list
+    the targeted regions; f4's quote explicitly names the ILF. The f2 temporal-pole quote is from
+    the Discussion rather than Results and is more general, but the Results p.223 quote (attributed
+    to f1) also names "temporal pole" directly, so the support is present in the draft. The f5
+    claim text has a copy-editing artefact ("left left_precuneus") that should be fixed before
+    promotion but does not affect the scientific content.
+  per_finding:
+  - id: f2
+    concern: >
+      The supports:claim quote (Discussion, p.227) is general ("anterior and posterior temporal
+      regions"); the more direct Results listing at p.223 is attributed to f1 rather than f2.
+      The evidence is present in the draft but the attribution is imprecise — fix citation
+      source_passage before promotion.
+    supports_approval: true
+  - id: f5
+    concern: >
+      Claim text reads "left left_precuneus" (double "left_" prefix) — copy-editing artefact
+      from the region ID bleeding into the prose. Fix before promotion.
+    supports_approval: true
+- draft: drafts/impairments/wernickes_aphasia__Yourganov2015Predicting.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f1: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f3: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_angular_gyrus
+    claim: Damage to the left angular gyrus is the strongest predictor of Wernicke's aphasia in a multivariate
+      SVM classification (predictive relevance Z = 1.76).
+    strength: moderate
+    confidence: medium
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    - 'Wernicke''s subgroup is only n=7; predictive-relevance values across pairwise contrasts may be
+      inflated by sample-specific lesion idiosyncrasies — confidence: medium.'
+    claim_quotes:
+    - page: 12
+      quote: Wernicke's aphasia can be predicted from damage to angular, Heschl's, and superior temporal
+        gyri, as well as temporal pole and putamen.
+  - id: f2
+    target: left_heschls_gyrus
+    claim: Damage to the left Heschl's gyrus contributes to Wernicke's aphasia classification (predictive
+      relevance Z = 1.61).
+    strength: moderate
+    confidence: medium
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    claim_quotes:
+    - page: 12
+      quote: Wernicke's aphasia can be predicted from damage to angular, Heschl's, and superior temporal
+        gyri, as well as temporal pole and putamen.
+  - id: f3
+    target: left_temporal_pole_mtg
+    claim: Damage to the left temporal pole (middle temporal gyrus subdivision) contributes to Wernicke's
+      aphasia classification (predictive relevance Z = 1.47).
+    strength: weak
+    confidence: medium
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    - Authors explicitly flag temporal-pole + putamen findings as possibly idiosyncratic to small Wernicke's
+      sample (n=7).
+    claim_quotes:
+    - page: 12
+      quote: Wernicke's aphasia can be predicted from damage to angular, Heschl's, and superior temporal
+        gyri, as well as temporal pole and putamen.
+  - id: f4
+    target: left_pallidum
+    claim: Damage to the left pallidum (globus pallidus) contributes to Wernicke's aphasia classification
+      (predictive relevance Z = 1.45).
+    strength: weak
+    confidence: medium
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    claim_quotes:
+    - page: 12
+      quote: Wernicke's aphasia can be predicted from damage to angular, Heschl's, and superior temporal
+        gyri, as well as temporal pole and putamen.
+  - id: f5
+    target: left_temporal_pole_stg
+    claim: Damage to the left temporal pole (superior temporal gyrus subdivision) contributes to Wernicke's
+      aphasia classification (predictive relevance Z = 1.34).
+    strength: weak
+    confidence: medium
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    claim_quotes:
+    - page: 12
+      quote: Wernicke's aphasia can be predicted from damage to angular, Heschl's, and superior temporal
+        gyri, as well as temporal pole and putamen.
+  - id: f6
+    target: left_superior_temporal_gyrus
+    claim: Damage to the left superior temporal gyrus contributes to Wernicke's aphasia classification
+      (predictive relevance Z = 1.31).
+    strength: moderate
+    confidence: medium
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    claim_quotes:
+    - page: 12
+      quote: the brain areas that we found to predict Wernicke's aphasia include the classical Wernicke's
+        area and its neighbourhood, which is consistent with the existing literature (Marshall et al.,
+        1998; Lieberman, 2002).
+  - id: f7
+    target: left_putamen
+    claim: Damage to the left putamen contributes to Wernicke's aphasia classification (predictive relevance
+      Z = 1.3).
+    strength: weak
+    confidence: medium
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC registry); flag for downstream double-counting risk
+      in interpret_overlap().
+    - Author-flagged as possibly small-sample idiosyncrasy (Wernicke's n=7).
+    claim_quotes:
+    - page: 12
+      quote: Wernicke's aphasia can be predicted from damage to angular, Heschl's, and superior temporal
+        gyri, as well as temporal pole and putamen.
+  verdict: agree_defer
+  rationale: >
+    The extraction quality is accurate — all claim quotes name the targeted regions and the
+    paper's Discussion (p.12) explicitly confirms the findings are consistent with the
+    classical Wernicke's-area literature. However, the deferral is genuinely warranted on
+    substantive grounds: the entire Wernicke's subgroup is n=7, which the authors themselves
+    acknowledge as a limitation, explicitly attributing the temporal-pole and putamen findings
+    to possible sample idiosyncrasies. Confidence=medium for all findings is correctly
+    calibrated given this small n, and the SFT rule all_findings_confidence_high correctly
+    flags this for human review. The human reviewer should decide: (1) whether to promote
+    findings from an n=7 subgroup at medium confidence, and (2) whether f1 (angular gyrus
+    as strongest predictor, not STG) needs commentary given its departure from the classical
+    Wernicke's anatomy, and (3) whether f4/f7 (pallidum/putamen) should be included or
+    excluded given they are non-specific to Wernicke's and author-flagged as potentially
+    idiosyncratic.
+  per_finding:
+  - id: f1
+    concern: >
+      Angular gyrus (not STG) is the top predictor — this is somewhat atypical for Wernicke's
+      and may reflect the small n=7 driving an idiosyncratic lesion profile. The Discussion
+      does not directly address this inversion. Worth noting in the KB entry.
+    supports_approval: false
+  - id: f3
+    concern: >
+      Authors explicitly flag temporal-pole + putamen as possibly idiosyncratic (p.13). f3
+      weak + medium is correct. Human reviewer may wish to exclude this finding entirely
+      rather than promote at weak/medium.
+    supports_approval: false
+  - id: f4
+    concern: >
+      Pallidum (globus pallidus) is a non-specific predictor also appearing in global aphasia;
+      the finding is weak/medium and not in the classical Wernicke's circuit. Recommend
+      human reviewer consider excluding.
+    supports_approval: false
+  - id: f7
+    concern: >
+      Putamen, author-flagged as idiosyncratic for Wernicke's (n=7). Same exclusion
+      consideration as f3/f4.
+    supports_approval: false

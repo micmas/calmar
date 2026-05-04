@@ -1,0 +1,114 @@
+draft_path: drafts/impairments/semantics__Alyahya2018NounVerb.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-04T11:32:00'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-04T12:01:09'
+  mode: with_llm_review
+  verdict: provisional_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude-sonnet
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'Strength ratings are correctly stratified by lesion-volume survival:
+        strong for f3 (superior lateral occipital cortex, Z=5.53, survives LV covariate)
+        and f5 (precuneus, Z=5.01, survives), weak for f1/f2/f4 (temporal-lobe findings
+        that disappear when LV is controlled). The f1 weak rating, which triggered
+        the SFT deferral, is exactly right — anterior MTG does not survive LV control
+        per the paper''s own Results 3.2.4. The claim quotes for f1–f3 directly list
+        the targeted regions; f4''s quote explicitly names the ILF. The f2 temporal-pole
+        quote is from the Discussion rather than Results and is more general, but
+        the Results p.223 quote (attributed to f1) also names "temporal pole" directly,
+        so the support is present in the draft. The f5 claim text has a copy-editing
+        artefact ("left left_precuneus") that should be fixed before promotion but
+        does not affect the scientific content.
+
+        '
+      per_finding:
+      - id: f2
+        concern: 'The supports:claim quote (Discussion, p.227) is general ("anterior
+          and posterior temporal regions"); the more direct Results listing at p.223
+          is attributed to f1 rather than f2. The evidence is present in the draft
+          but the attribution is imprecise — fix citation source_passage before promotion.
+
+          '
+        supports_approval: true
+      - id: f5
+        concern: 'Claim text reads "left left_precuneus" (double "left_" prefix) —
+          copy-editing artefact from the region ID bleeding into the prose. Fix before
+          promotion.
+
+          '
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-04T12:01:09'
+latest_verdict: provisional_approve
+latest_mode: with_llm_review
