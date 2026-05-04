@@ -1,0 +1,147 @@
+draft_path: drafts/impairments/wernickes_aphasia__Yourganov2015Predicting.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-04T11:32:00'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+    - 'f4: confidence=''medium'''
+    - 'f5: confidence=''medium'''
+    - 'f6: confidence=''medium'''
+    - 'f7: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+    - 'f4: strength=''weak'''
+    - 'f5: strength=''weak'''
+    - 'f7: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-04T12:01:09'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+    - 'f4: confidence=''medium'''
+    - 'f5: confidence=''medium'''
+    - 'f6: confidence=''medium'''
+    - 'f7: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+    - 'f4: strength=''weak'''
+    - 'f5: strength=''weak'''
+    - 'f7: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude-sonnet
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'The extraction quality is accurate — all claim quotes name the targeted
+        regions and the paper''s Discussion (p.12) explicitly confirms the findings
+        are consistent with the classical Wernicke''s-area literature. However, the
+        deferral is genuinely warranted on substantive grounds: the entire Wernicke''s
+        subgroup is n=7, which the authors themselves acknowledge as a limitation,
+        explicitly attributing the temporal-pole and putamen findings to possible
+        sample idiosyncrasies. Confidence=medium for all findings is correctly calibrated
+        given this small n, and the SFT rule all_findings_confidence_high correctly
+        flags this for human review. The human reviewer should decide: (1) whether
+        to promote findings from an n=7 subgroup at medium confidence, and (2) whether
+        f1 (angular gyrus as strongest predictor, not STG) needs commentary given
+        its departure from the classical Wernicke''s anatomy, and (3) whether f4/f7
+        (pallidum/putamen) should be included or excluded given they are non-specific
+        to Wernicke''s and author-flagged as potentially idiosyncratic.
+
+        '
+      per_finding:
+      - id: f1
+        concern: 'Angular gyrus (not STG) is the top predictor — this is somewhat
+          atypical for Wernicke''s and may reflect the small n=7 driving an idiosyncratic
+          lesion profile. The Discussion does not directly address this inversion.
+          Worth noting in the KB entry.
+
+          '
+        supports_approval: false
+      - id: f3
+        concern: 'Authors explicitly flag temporal-pole + putamen as possibly idiosyncratic
+          (p.13). f3 weak + medium is correct. Human reviewer may wish to exclude
+          this finding entirely rather than promote at weak/medium.
+
+          '
+        supports_approval: false
+      - id: f4
+        concern: 'Pallidum (globus pallidus) is a non-specific predictor also appearing
+          in global aphasia; the finding is weak/medium and not in the classical Wernicke''s
+          circuit. Recommend human reviewer consider excluding.
+
+          '
+        supports_approval: false
+      - id: f7
+        concern: 'Putamen, author-flagged as idiosyncratic for Wernicke''s (n=7).
+          Same exclusion consideration as f3/f4.
+
+          '
+        supports_approval: false
+    raw_preview: ''
+    error: null
+last_run: '2026-05-04T12:01:09'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review
