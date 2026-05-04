@@ -1,0 +1,98 @@
+draft_path: drafts/impairments/executive_functions__Alyahya2018NounVerb.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-04T11:32:00'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-04T12:01:09'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude-sonnet
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'The extraction is accurate and the quotes directly support the claims.
+        However, the decision about whether to promote these findings requires human
+        judgment on two substantive points: (1) Factor 5 explained only 4.6% of behavioural
+        variance — the smallest factor — and yielded NO clusters at the standard p<0.001
+        threshold; findings only appear at a relaxed p<0.005. (2) The factor captures
+        non-language cognition (fluid reasoning via Raven''s, rule-anticipation via
+        Brixton) rather than language per se, which may be out of scope for this KB.
+        The weak strength ratings are correctly calibrated and the cluster does survive
+        lesion-volume control at the relaxed threshold, but the question of whether
+        below-standard-threshold, non-language findings merit promotion is a policy
+        call, not an extraction call.
+
+        '
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-04T12:01:09'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

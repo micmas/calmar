@@ -1,0 +1,112 @@
+draft_path: drafts/impairments/fluency__Alyahya2018NounVerb.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-04T11:32:00'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-04T12:01:09'
+  mode: with_llm_review
+  verdict: provisional_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/Michele/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude-sonnet
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'All claim quotes name the targeted regions and the extraction accurately
+        represents the paper. The f2 weak rating is correct on two independent grounds:
+        (1) the full fluency cluster does NOT survive lesion-volume covariate (r=0.59,
+        p<0.0001), and (2) the central opercular cortex is the cohort''s lesion-overlap
+        maximum, raising a spatial confound. The f1 moderate rating is defensible
+        because the cluster passes the standard p<0.001 threshold; the lesion-volume
+        limitation is clearly documented in the statistics field and in the draft
+        notes. The target label for f1 (anterior_arcuate_fasciculus) vs. the paper''s
+        preferred label (frontal_aslant_tract) is handled appropriately by the flag
+        requesting an alias addition before promotion — this is a known atlas limitation,
+        not a misquotation.
+
+        '
+      per_finding:
+      - id: f1
+        concern: 'The Results text says "frontal aslant tract, cortico-spinal tract,
+          and internal capsule" for the white-matter component; the target label ''left_anterior_arcuate_fasciculus''
+          is the natbrainlab atlas label, not the paper''s preferred term. The alias-addition
+          flag must be actioned before this finding is promoted to avoid misleading
+          KB consumers.
+
+          '
+        supports_approval: true
+      - id: f2
+        concern: 'weak rating is correct and should not be upgraded: cluster fails
+          lesion-volume control and sits at the cohort overlap maximum. Promoting
+          at higher strength would misrepresent the evidence.
+
+          '
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-04T12:01:09'
+latest_verdict: provisional_approve
+latest_mode: with_llm_review

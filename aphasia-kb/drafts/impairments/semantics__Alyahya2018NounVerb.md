@@ -163,6 +163,10 @@ findings:
       confidence: high
       flags: []
     source_passages:
+      - section: "Results 3.2.3"
+        page: 223
+        supports: claim
+        quote: "Performance on the semantic factor was uniquely associated with left superior lateral occipital cortex, occipital fusiform gyrus, temporal occipital fusiform cortex, anterior inferior temporal gyrus, anterior temporal fusiform cortex, anterior middle temporal gyrus, temporal pole and precuneus."
       - section: "Discussion 4.3"
         page: 227
         supports: claim
@@ -311,7 +315,7 @@ findings:
   - id: f5
     target: left_precuneus
     target_kind: region
-    claim: "Tissue concentration in the left left_precuneus uniquely covaries with the semantic PCA factor in chronic post-stroke aphasia (cluster also survives lesion-volume covariate in this region)."
+    claim: "Tissue concentration in the left precuneus uniquely covaries with the semantic PCA factor in chronic post-stroke aphasia (cluster also survives lesion-volume covariate in this region)."
     direction: likely
     relationship: causal
     citation: "@Alyahya2018NounVerb"
@@ -331,13 +335,13 @@ findings:
       effect_size: "peak Z = 5.01"
     confounders_controlled:
       - "other four PCA factors entered simultaneously"
-      - "lesion volume (left_precuneus survives this covariate)"
+      - "lesion volume (precuneus survives this covariate)"
     confounders_not_controlled:
       - "age, education, aphasia type"
     region_definition:
       kind: atlas
       atlas: "Harvard-Oxford"
-      description: "Left left_precuneus cortex; peak MNI [-18, -56, 26]. Default mode network region implicated in semantic processing."
+      description: "Left precuneus cortex; peak MNI [-18, -56, 26]. Default mode network region implicated in semantic processing."
     imaging_details:
       field_strength: "3T"
       preprocessing_pipeline: "SPM8 + OptiBET + Seghier 2008"
@@ -345,7 +349,7 @@ findings:
       atlases_used:
         - "Harvard-Oxford"
       coordinates_reported:
-        - region: "left_precuneus"
+        - region: "precuneus"
           mni: [-18, -56, 26]
     replications: []
     contradictions: []
@@ -380,7 +384,7 @@ notes: |
   semantic PCA factor (Factor 2: 11.5% variance) is associated with the
   largest cluster in the entire analysis (8326 voxels) spanning
   occipito-temporal cortex, anterior temporal lobe (including the
-  temporal pole), the inferior longitudinal fasciculus, and left_precuneus.
+  temporal pole), the inferior longitudinal fasciculus, and precuneus.
   Five strongest peaks recorded as separate findings.
 
   Loadings (Table 4) used to interpret this factor as "semantics":
@@ -394,7 +398,7 @@ notes: |
   Important caveat: the semantic factor showed mild correlation with
   lesion volume (r=0.37, p=0.01); when lesion volume was partialled
   out, the cluster shrank and was limited to occipital sub-regions
-  (superior + inferior lateral occipital cortex, left_precuneus, occipital
+  (superior + inferior lateral occipital cortex, precuneus, occipital
   fusiform). Temporal-lobe peaks (temporal pole, anterior MTG) did NOT
   survive that covariate. Reviewers should weigh this when promoting
   individual findings.
@@ -437,7 +441,7 @@ with peaks in:
 
 When lesion volume is partialled out, the cluster shrinks substantially
 and survives only in the left superior and inferior lateral occipital
-cortex, left_precuneus, and occipital fusiform gyrus. Temporal-lobe peaks
+cortex, precuneus, and occipital fusiform gyrus. Temporal-lobe peaks
 do not survive that covariate.
 
 ## Notes for next extraction round
