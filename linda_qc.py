@@ -804,6 +804,51 @@ def rerun_subject(t1w_path: Path, linda_out_dir: Path, *,
     return res.returncode
 
 
+# ============================================================
+# HD-BET output discovery
+# ------------------------------------------------------------
+# `run_hd_bet(..., desc=<mode>)` writes BIDS-styled filenames like
+# `<stem>_desc-fast_brain_mask.nii.gz` so multiple modes coexist on
+# disk. These helpers find the "best" available mask/brain for a
+# given subject directory, preferring `accurate` over `fast` over
+# legacy un-descd files.
+# ============================================================
+
+def find_best_hdbet_mask(hdbet_dir, prefer_mode: str | None = None) -> Path | None:
+    """Find the best HD-BET brain mask in `hdbet_dir`.
+    Priority: prefer_mode (if given) → accurate → fast → undescd.
+    Returns None if `hdbet_dir` doesn't exist or no mask is found."""
+    d = Path(hdbet_dir)
+    if not d.exists():
+        return None
+    pats = ([f"*_desc-{prefer_mode}_brain_mask.nii.gz"] if prefer_mode
+            else ["*_desc-accurate_brain_mask.nii.gz",
+                  "*_desc-fast_brain_mask.nii.gz",
+                  "*_brain_mask.nii.gz"])
+    for pat in pats:
+        hits = sorted(d.glob(pat))
+        if hits:
+            return hits[0]
+    return None
+
+
+def find_best_hdbet_brain(hdbet_dir, prefer_mode: str | None = None) -> Path | None:
+    """Same as find_best_hdbet_mask but for the skull-stripped brain T1."""
+    d = Path(hdbet_dir)
+    if not d.exists():
+        return None
+    pats = ([f"*_desc-{prefer_mode}_brain.nii.gz"] if prefer_mode
+            else ["*_desc-accurate_brain.nii.gz",
+                  "*_desc-fast_brain.nii.gz",
+                  "*_brain.nii.gz"])
+    for pat in pats:
+        # *_brain.nii.gz also matches *_brain_mask.nii.gz — exclude masks
+        hits = sorted(f for f in d.glob(pat) if "_mask" not in f.name)
+        if hits:
+            return hits[0]
+    return None
+
+
 # Path to the R stub that calls LINDA with brain_mask= bypass.
 # Lives next to this module.
 _LINDA_R_STUB     = Path(__file__).parent / "linda_predict_with_mask.R"
@@ -1086,13 +1131,23 @@ def run_hd_bet(t1w_path: Path, out_dir: Path,
                extra_args: list[str] | None = None,
                device: str | None = None,
                mode: str = "fast",
-               tta: bool = False) -> dict:
+               tta: bool = False,
+               desc: str | None = None) -> dict:
     """
     Run HD-BET (preferred) or SynthStrip on `t1w_path`.
 
-    Writes:
+    Writes (with no `desc`):
       <out_dir>/<stem>_brain.nii.gz       — skull-stripped image
       <out_dir>/<stem>_brain_mask.nii.gz  — binary brain mask
+
+    Writes (with `desc="fast"` say):
+      <out_dir>/<stem>_desc-fast_brain.nii.gz
+      <out_dir>/<stem>_desc-fast_brain_mask.nii.gz
+
+    The `desc` entity follows BIDS-Derivatives convention so multiple
+    HD-BET modes can coexist on disk (e.g. desc-fast vs desc-accurate).
+    `hdbet_then_linda` / `restrip_and_rerun` default `desc` to the
+    chosen `mode`, so each mode's outputs are kept side-by-side.
 
     Returns a dict with `brain`, `mask`, `tool`, `returncode`. Raises
     `RuntimeError` if neither HD-BET nor SynthStrip is installed.
@@ -1117,8 +1172,10 @@ def run_hd_bet(t1w_path: Path, out_dir: Path,
         stem = stem[:-len(".nii.gz")]
     elif stem.endswith(".nii"):
         stem = stem[:-len(".nii")]
-    brain = out_dir / f"{stem}_brain.nii.gz"
-    mask  = out_dir / f"{stem}_brain_mask.nii.gz"
+    # Final output filenames carry the BIDS desc-<label> entity if set.
+    desc_part = f"_desc-{desc}" if desc else ""
+    brain = out_dir / f"{stem}{desc_part}_brain.nii.gz"
+    mask  = out_dir / f"{stem}{desc_part}_brain_mask.nii.gz"
 
     tool = prefer or detect_brain_extractor()
     if tool is None:
@@ -1408,7 +1465,8 @@ def hdbet_then_linda(t1w_path: Path, linda_out_dir: Path,
         raise RuntimeError(brain_extractor_help_text())
 
     work = Path(work_dir or (linda_out_dir.parent / "_hdbet_work"))
-    bx = run_hd_bet(t1w_path, work, mode=hdbet_mode, device=hdbet_device)
+    bx = run_hd_bet(t1w_path, work, mode=hdbet_mode, device=hdbet_device,
+                    desc=hdbet_mode)
     if bx["returncode"] != 0:
         return {"phase": "brain_extraction", **bx,
                 "linda_returncode": None, "moved": []}
@@ -1516,7 +1574,7 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
     status, and any mask-coverage warnings.
     """
     work = Path(work_dir or (linda_out_dir.parent / "_hdbet_work"))
-    bx = run_hd_bet(t1w_path, work)
+    bx = run_hd_bet(t1w_path, work, desc="fast")  # legacy default mode
     if bx["returncode"] != 0:
         return {"phase": "brain_extraction", **bx, "linda_returncode": None}
 

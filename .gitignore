@@ -60,9 +60,12 @@ __pycache__/
 
 # --- Aphasia-KB scratch ----------------------------------------------
 # Track regions/, impairments/, therapies/, drafts/, examples/.
-# Don't track papers/ (PDFs of source articles — too large + may be
-# copyrighted; keep them locally per machine).
+# Don't track source PDFs (too large + may be copyrighted; keep them
+# locally per machine). DO track annotated PDFs — they're the
+# reviewer's primary verification tool and must travel between
+# machines (~1–2 MB each, agent-generated, not copyrighted).
 aphasia-kb/papers/*.pdf
-aphasia-kb/papers/*_annotated.pdf
+!aphasia-kb/papers/*_annotated.pdf
+!aphasia-kb/papers/*_annotated_v[0-9].pdf
 aphasia-kb/__pycache__/
 aphasia-kb/_neurosynth_cache/

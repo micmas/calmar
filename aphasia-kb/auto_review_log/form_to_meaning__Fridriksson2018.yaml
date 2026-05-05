@@ -32,6 +32,112 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-04T11:32:00'
-latest_verdict: provisional_approve
+- run_id: 2
+  timestamp: '2026-05-05T04:10:05'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 16/41 quotes (39%)
+    - '25 quotes did not match — first 3:'
+    - '  - f1.Results — Cortical Loadings (p.3): Positive loadings of Component 2
+      were associated almost exclusively with tempora…'
+    - '  - f1.Discussion (p.4): this ventral stream is anchored by the posterior MTG
+      and posterior STG (Table S4…'
+    - '  - f1.Experimental Procedures — Participants (p.5): all participants were
+      at least 6 mo poststroke, with a mean age at the time of s…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-05T04:12:03'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 40/41 quotes (98%)
+    - '1 quotes did not match — first 3:'
+    - '  - f3.Conclusion (p.5): The ventral stream involves lateral temporal lobe
+      structures extending to the IP…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:24'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 40/41 quotes (98%)
+    - '1 quotes did not match — first 3:'
+    - '  - f3.Conclusion (p.5): The ventral stream involves lateral temporal lobe
+      structures extending to the IP…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:24'
+latest_verdict: auto_approve
 latest_mode: deterministic_only

@@ -31,9 +31,18 @@ anthropic>=0.40         # Anthropic Python SDK; needs ANTHROPIC_API_KEY env var
 # Notebook validation (used by the workflow)
 nbformat>=5.0
 
-# Optional: for the Stage-2 Neurosynth bootstrap (only needed if you
-# decide to populate the KB from coordinate-based meta-analyses)
-# nimare>=0.1.0
+# NiMARE — coordinate-based meta-analysis (Stage-2 Neurosynth
+# bootstrap + KB-internal meta-analysis). Promoted from optional to
+# required on 2026-05-04 so a single `pip install -r requirements.txt`
+# yields a working install on every machine.
+#
+# NiMARE pulls in scikit-learn, statsmodels, indexed-gzip, tqdm,
+# fuzzywuzzy, requests, etc. We pin the umbrella package; pip resolves
+# the rest. We also pin scikit-learn / statsmodels explicitly so a
+# stale Neurodesk pre-install doesn't get held back.
+nimare>=0.5.0
+scikit-learn>=1.3
+statsmodels>=0.14
 
 # Optional: dataset management. Comes pre-installed in Neurodesk; if
 # you're running this elsewhere you'll need datalad too:

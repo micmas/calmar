@@ -32,6 +32,120 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-04T11:32:00'
-latest_verdict: provisional_approve
+- run_id: 2
+  timestamp: '2026-05-05T04:10:05'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 38/41 quotes (93%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Methods 2.3 — Segmentation (p.7): To segment the brain and compute the
+      damage to each brain area, we used five dif…'
+    - '  - f1.Discussion (p.12): the classification accuracy for the pairing of the
+      two non-fluent aphasia types …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-05T04:12:02'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 38/41 quotes (93%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Methods 2.3 — Segmentation (p.7): To segment the brain and compute the
+      damage to each brain area, we used five dif…'
+    - '  - f1.Discussion (p.12): the classification accuracy for the pairing of the
+      two non-fluent aphasia types …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:23'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 38/41 quotes (93%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Methods 2.3 — Segmentation (p.7): To segment the brain and compute the
+      damage to each brain area, we used five dif…'
+    - '  - f1.Discussion (p.12): the classification accuracy for the pairing of the
+      two non-fluent aphasia types …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:23'
+latest_verdict: auto_approve
 latest_mode: deterministic_only

@@ -90,12 +90,31 @@ _LIGATURES = {
 
 def _normalize(s: str) -> str:
     """Aggressive normalization: Unicode -> ASCII, ligatures expanded,
-    elision markers stripped, whitespace collapsed."""
+    elision markers stripped, soft hyphens joined, whitespace collapsed.
+
+    Soft-hyphen handling (two passes, applied symmetrically to both PDF
+    text and quotes so they compare correctly):
+      1. (\w)-\s+(\w)  \u2014 hyphen at end of line followed by whitespace:
+         the hyphen is a line-break artefact; join the syllables with no
+         separator (e.g. "corre-\nsponding" -> "corresponding",
+         "Harvard-\nOxford" -> "HarvardOxford").
+      2. (\w)-(\w)     \u2014 remaining mid-word hyphens in compound words:
+         also stripped so that a quote written as "Harvard-Oxford" still
+         matches "HarvardOxford" after pass 1 above.
+    Both transformations are applied to every string, so the comparison
+    is symmetric even though it loses the hyphen.
+    """
     s = s.translate(_UNICODE_NORM)
     for lig, repl in _LIGATURES.items():
         if lig in s:
             s = s.replace(lig, repl)
     s = re.sub(r"\s*\[\s*(?:\.\.\.|\u2026)\s*\]\s*", " ", s)
+    # Pass 1: soft hyphen \u2014 line-break artefact (hyphen + whitespace between
+    # word chars).  Join without any separator.
+    s = re.sub(r"(\w)-\s+(\w)", r"\1\2", s)
+    # Pass 2: remaining intra-word hyphens (compound words, acronyms) \u2014 strip
+    # the hyphen so both sides normalise identically.
+    s = re.sub(r"(\w)-(\w)", r"\1\2", s)
     s = re.sub(r"\s+", " ", s)
     return s.strip()
 
