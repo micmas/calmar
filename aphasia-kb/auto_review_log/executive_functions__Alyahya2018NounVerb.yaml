@@ -93,6 +93,118 @@ runs:
       per_finding: []
     raw_preview: ''
     error: null
-last_run: '2026-05-04T12:01:09'
+- run_id: 3
+  timestamp: '2026-05-05T04:10:05'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 6/14 quotes (43%)
+    - '8 quotes did not match — first 3:'
+    - '  - f1.Discussion 4.3 (p.228): the executive function factor, which explained
+      the least behavioural variance, d…'
+    - '  - f1.Methods 2.5 — Analysis of neuroimaging data (p.219): the normalised-smoothed
+      T1-weighted images with continuous signal intensity valu…'
+    - '  - f1.Methods 2.5 (p.220): The standard threshold of p = 0.001 voxel-level,
+      cluster-level corrected using F…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:03'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 14/14 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 5
+  timestamp: '2026-05-05T04:12:23'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 14/14 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:23'
 latest_verdict: defer_to_human
-latest_mode: with_llm_review
+latest_mode: deterministic_only

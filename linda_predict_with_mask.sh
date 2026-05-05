@@ -69,10 +69,18 @@ if [[ -z "${LINDA_SIMG:-}" ]]; then
     LINDA_SIMG="$(grep -oE '/[^ ]*\.(simg|sif)' "$LINDA_WRAPPER" | head -1 || true)"
 fi
 
-if [[ -z "$LINDA_SIMG" || ! -f "$LINDA_SIMG" ]]; then
-    echo "ERROR: LINDA container not found at: '${LINDA_SIMG:-<unset>}'" >&2
-    echo "  Set LINDA_SIMG to the absolute path of the LINDA .simg / .sif file." >&2
+if [[ -z "$LINDA_SIMG" ]]; then
+    echo "ERROR: LINDA container path is empty (couldn't auto-detect)." >&2
+    echo "  Set LINDA_SIMG to the absolute path of the LINDA .simg / .sif." >&2
     exit 1
+fi
+# NOTE: do NOT `[ -f $LINDA_SIMG ]` here. On Neurodesk the container
+# lives on CVMFS and is lazily fetched on first access — a literal -f
+# test fails before the fetch triggers, even though `singularity exec`
+# would succeed. Trust singularity to error if the path is genuinely bad.
+if [[ ! -e "$LINDA_SIMG" ]]; then
+    echo "ℹ LINDA container at $LINDA_SIMG not yet materialized locally" >&2
+    echo "  (likely on CVMFS; singularity will fetch on demand)." >&2
 fi
 
 echo "[linda_predict_with_mask.sh] Dispatching via $SING_CMD into:"

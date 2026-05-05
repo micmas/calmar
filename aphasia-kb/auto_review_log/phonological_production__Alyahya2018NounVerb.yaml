@@ -32,6 +32,112 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-04T11:32:00'
-latest_verdict: provisional_approve
+- run_id: 2
+  timestamp: '2026-05-05T04:10:05'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/24 quotes (29%)
+    - '17 quotes did not match — first 3:'
+    - '  - f1.Results 3.2.3 (p.223): Performance on the phonological production factor
+      was uniquely associated with p…'
+    - '  - f1.Discussion 4.3 (p.227): This factor was also associated with the white
+      matter tracts underlying inferior…'
+    - '  - f1.Methods 2.1 — Participants (p.217): They were recruited on the basis
+      that they had a single left hemispheric stroke …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-05T04:12:03'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 23/24 quotes (96%)
+    - '1 quotes did not match — first 3:'
+    - '  - f2.Results 3.2.3 (p.224): the left angular gyrus was associated with phonological
+      production, phonological…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:25'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 23/24 quotes (96%)
+    - '1 quotes did not match — first 3:'
+    - '  - f2.Results 3.2.3 (p.224): the left angular gyrus was associated with phonological
+      production, phonological…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:25'
+latest_verdict: auto_approve
 latest_mode: deterministic_only

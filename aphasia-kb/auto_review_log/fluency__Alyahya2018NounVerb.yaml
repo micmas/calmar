@@ -107,6 +107,115 @@ runs:
         supports_approval: true
     raw_preview: ''
     error: null
-last_run: '2026-05-04T12:01:09'
-latest_verdict: provisional_approve
-latest_mode: with_llm_review
+- run_id: 3
+  timestamp: '2026-05-05T04:10:05'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 5/15 quotes (33%)
+    - '10 quotes did not match — first 3:'
+    - '  - f1.Results 3.2.3 (p.223): Performance on the fluency factor was uniquely
+      associated with left frontal and …'
+    - '  - f1.Methods 2.5 — Analysis of neuroimaging data (p.219): the normalised-smoothed
+      T1-weighted images with continuous signal intensity valu…'
+    - '  - f1.Methods 2.5 (p.220): The standard threshold of p = 0.001 voxel-level,
+      cluster-level corrected using F…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:03'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 15/15 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 5
+  timestamp: '2026-05-05T04:12:23'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 15/15 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:23'
+latest_verdict: defer_to_human
+latest_mode: deterministic_only

@@ -32,6 +32,106 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-04T11:32:00'
-latest_verdict: provisional_approve
+- run_id: 2
+  timestamp: '2026-05-05T04:10:06'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 9/16 quotes (56%)
+    - '7 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.78): Participants at Johns Hopkins University
+      were recruited if they showed evidence …'
+    - '  - f1.Limitations (p.96): participants were recruited from different research
+      centers because they met cri…'
+    - '  - f2.Results 3.3.2.3.1.1 (p.87): Separate analyses conducted within each
+      group (Table 6) revealed a signiﬁcant in…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-05T04:12:03'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 16/16 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:27'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 16/16 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:27'
+latest_verdict: auto_approve
 latest_mode: deterministic_only

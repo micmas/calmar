@@ -1,3 +1,0 @@
-subject,session,rating,rating_label,issue_tags,notes,reviewer,reviewed_on,marked_for_rerun,n_edits,last_edit_op,sidecar_path
-sub-M2041,ses-872,2.0,acceptable,boundary_too_loose;other,,MMT,2026-04-29,False,0,,/neurodesktop-storage/LINDA-STUFF/ds004884_anat/derivatives/lesion_mask/sub-M2041/ses-872/anat/linda/Lesion_in_MNI.qc.json
-sub-M2040,ses-842,,,,,MMT,2026-04-29,True,1,threshold,/neurodesktop-storage/LINDA-STUFF/ds004884_anat/derivatives/lesion_mask/sub-M2040/ses-842/anat/linda/Lesion_in_MNI.qc.json

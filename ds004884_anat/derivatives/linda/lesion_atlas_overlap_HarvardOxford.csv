@@ -1,0 +1,68 @@
+subject,session,atlas,region,lesion_in_roi_percent,roi_coverage_percent,overlap_voxels,total_region_voxels,total_lesion_voxels
+sub-M2044,ses-3122,HarvardOxford,Frontal Pole,1.7806694632308877,4.052737546275249,624,15397,35043
+sub-M2044,ses-3122,HarvardOxford,Insular Cortex,0.8789201837742202,13.156770610850064,308,2341,35043
+sub-M2044,ses-3122,HarvardOxford,Superior Frontal Gyrus,2.7423451188539794,18.91732283464567,961,5080,35043
+sub-M2044,ses-3122,HarvardOxford,Middle Frontal Gyrus,4.080700853237452,26.89992475545523,1430,5316,35043
+sub-M2044,ses-3122,HarvardOxford,"Inferior Frontal Gyrus, pars triangularis",0.7048483291955597,22.393472348141433,247,1103,35043
+sub-M2044,ses-3122,HarvardOxford,"Inferior Frontal Gyrus, pars opercularis",1.2498929886139885,31.647398843930635,438,1384,35043
+sub-M2044,ses-3122,HarvardOxford,Precentral Gyrus,8.426789943783351,34.44535168552432,2953,8573,35043
+sub-M2044,ses-3122,HarvardOxford,"Superior Temporal Gyrus, anterior division",0.07704819792825957,5.182341650671785,27,521,35043
+sub-M2044,ses-3122,HarvardOxford,"Superior Temporal Gyrus, posterior division",2.22583682903861,42.622950819672134,780,1830,35043
+sub-M2044,ses-3122,HarvardOxford,"Middle Temporal Gyrus, posterior division",2.054618611420255,28.514851485148515,720,2525,35043
+sub-M2044,ses-3122,HarvardOxford,"Middle Temporal Gyrus, temporooccipital part",2.4170305053791057,42.265469061876246,847,2004,35043
+sub-M2044,ses-3122,HarvardOxford,"Inferior Temporal Gyrus, posterior division",1.0387238535513512,18.743563336766222,364,1942,35043
+sub-M2044,ses-3122,HarvardOxford,"Inferior Temporal Gyrus, temporooccipital part",1.7778158262705819,42.38095238095238,623,1470,35043
+sub-M2044,ses-3122,HarvardOxford,Postcentral Gyrus,8.03013440630083,40.81218274111675,2814,6895,35043
+sub-M2044,ses-3122,HarvardOxford,Superior Parietal Lobule,2.725223297092144,32.8404401650619,955,2908,35043
+sub-M2044,ses-3122,HarvardOxford,"Supramarginal Gyrus, anterior division",2.5140541620295065,50.57405281285878,881,1742,35043
+sub-M2044,ses-3122,HarvardOxford,"Supramarginal Gyrus, posterior division",2.6995405644493906,41.87693669765383,946,2259,35043
+sub-M2044,ses-3122,HarvardOxford,Angular Gyrus,2.468395970664612,35.90701535907015,865,2409,35043
+sub-M2044,ses-3122,HarvardOxford,"Lateral Occipital Cortex, superior division",2.1973004594355507,7.874015748031496,770,9779,35043
+sub-M2044,ses-3122,HarvardOxford,"Lateral Occipital Cortex, inferior division",2.183032274634021,18.708730741012474,765,4089,35043
+sub-M2044,ses-3122,HarvardOxford,Intracalcarine Cortex,0.008560910880917729,0.21413276231263384,3,1401,35043
+sub-M2044,ses-3122,HarvardOxford,Juxtapositional Lobule Cortex (formerly Supplementary Motor Cortex),0.03995091744428274,0.9433962264150944,14,1484,35043
+sub-M2044,ses-3122,HarvardOxford,Paracingulate Gyrus,0.20260822418171962,2.411684782608696,71,2944,35043
+sub-M2044,ses-3122,HarvardOxford,"Cingulate Gyrus, posterior division",0.00285363696030591,0.04145936981757877,1,2412,35043
+sub-M2044,ses-3122,HarvardOxford,"Parahippocampal Gyrus, posterior division",0.017121821761835458,0.8450704225352113,6,710,35043
+sub-M2044,ses-3122,HarvardOxford,Lingual Gyrus,0.00570727392061182,0.059154096421177166,2,3381,35043
+sub-M2044,ses-3122,HarvardOxford,"Temporal Fusiform Cortex, posterior division",0.3452900721970151,7.590966122961104,121,1594,35043
+sub-M2044,ses-3122,HarvardOxford,Temporal Occipital Fusiform Cortex,0.5336301115772052,12.729748127978217,187,1469,35043
+sub-M2044,ses-3122,HarvardOxford,Occipital Fusiform Gyrus,0.04851182832520047,0.9413067552602437,17,1806,35043
+sub-M2044,ses-3122,HarvardOxford,Frontal Opercular Cortex,0.07704819792825957,3.930131004366812,27,687,35043
+sub-M2044,ses-3122,HarvardOxford,Central Opercular Cortex,2.4255914162600236,45.06892895015907,850,1886,35043
+sub-M2044,ses-3122,HarvardOxford,Parietal Opercular Cortex,1.643694889136204,51.474530831099194,576,1119,35043
+sub-M2044,ses-3122,HarvardOxford,Planum Polare,0.2054618611420255,9.612817089452603,72,749,35043
+sub-M2044,ses-3122,HarvardOxford,Heschl's Gyrus (includes H1 and H2),0.9103101903375852,52.81456953642384,319,604,35043
+sub-M2044,ses-3122,HarvardOxford,Planum Temporale,1.52098849984305,55.98739495798319,533,952,35043
+sub-M2044,ses-3122,HarvardOxford,Occipital Pole,0.025682732642753187,0.17058377558756635,9,5276,35043
+sub-M2046,ses-2499,HarvardOxford,Insular Cortex,0.5341830279743217,4.869713797522427,114,2341,21341
+sub-M2046,ses-2499,HarvardOxford,Temporal Pole,5.421489152335879,24.559541498620252,1157,4711,21341
+sub-M2046,ses-2499,HarvardOxford,"Superior Temporal Gyrus, anterior division",1.1667681926807554,47.79270633397313,249,521,21341
+sub-M2046,ses-2499,HarvardOxford,"Superior Temporal Gyrus, posterior division",3.1348109273229934,36.557377049180324,669,1830,21341
+sub-M2046,ses-2499,HarvardOxford,"Middle Temporal Gyrus, anterior division",2.057073239304625,51.7688679245283,439,848,21341
+sub-M2046,ses-2499,HarvardOxford,"Middle Temporal Gyrus, posterior division",5.379316808022117,45.46534653465346,1148,2525,21341
+sub-M2046,ses-2499,HarvardOxford,"Middle Temporal Gyrus, temporooccipital part",3.430017337519329,36.52694610778443,732,2004,21341
+sub-M2046,ses-2499,HarvardOxford,"Inferior Temporal Gyrus, anterior division",0.3092638583009231,10.200927357032457,66,647,21341
+sub-M2046,ses-2499,HarvardOxford,"Inferior Temporal Gyrus, posterior division",3.172297455601893,34.860968074150364,677,1942,21341
+sub-M2046,ses-2499,HarvardOxford,"Inferior Temporal Gyrus, temporooccipital part",2.975493182137669,43.197278911564624,635,1470,21341
+sub-M2046,ses-2499,HarvardOxford,Postcentral Gyrus,0.08903050466238696,0.27556200145032633,19,6895,21341
+sub-M2046,ses-2499,HarvardOxford,Superior Parietal Lobule,1.61192071599269,11.829436038514443,344,2908,21341
+sub-M2046,ses-2499,HarvardOxford,"Supramarginal Gyrus, anterior division",0.09371632069724943,1.148105625717566,20,1742,21341
+sub-M2046,ses-2499,HarvardOxford,"Supramarginal Gyrus, posterior division",3.1582400074973056,29.836210712704737,674,2259,21341
+sub-M2046,ses-2499,HarvardOxford,Angular Gyrus,3.8283117004826392,33.91448733914488,817,2409,21341
+sub-M2046,ses-2499,HarvardOxford,"Lateral Occipital Cortex, superior division",12.131577714258938,26.47509970344616,2589,9779,21341
+sub-M2046,ses-2499,HarvardOxford,"Lateral Occipital Cortex, inferior division",6.264936038611124,32.697481046710685,1337,4089,21341
+sub-M2046,ses-2499,HarvardOxford,Intracalcarine Cortex,0.0656014244880746,0.9992862241256245,14,1401,21341
+sub-M2046,ses-2499,HarvardOxford,Precuneous Cortex,0.08434468862752448,0.32011381824648766,18,5623,21341
+sub-M2046,ses-2499,HarvardOxford,Cuneal Cortex,0.09371632069724943,1.6299918500407498,20,1227,21341
+sub-M2046,ses-2499,HarvardOxford,"Parahippocampal Gyrus, posterior division",0.051543976383487185,1.5492957746478873,11,710,21341
+sub-M2046,ses-2499,HarvardOxford,Lingual Gyrus,0.03748652827889977,0.23661638568470866,8,3381,21341
+sub-M2046,ses-2499,HarvardOxford,"Temporal Fusiform Cortex, posterior division",1.4151164425284664,18.946047678795484,302,1594,21341
+sub-M2046,ses-2499,HarvardOxford,Temporal Occipital Fusiform Cortex,1.3073426737266296,18.992511912865893,279,1469,21341
+sub-M2046,ses-2499,HarvardOxford,Occipital Fusiform Gyrus,0.5388688440091842,6.36766334440753,115,1806,21341
+sub-M2046,ses-2499,HarvardOxford,Central Opercular Cortex,0.6232135326367086,7.0519618239660655,133,1886,21341
+sub-M2046,ses-2499,HarvardOxford,Parietal Opercular Cortex,1.410430626493604,26.899016979445936,301,1119,21341
+sub-M2046,ses-2499,HarvardOxford,Planum Polare,1.4244880745981914,40.58744993324433,304,749,21341
+sub-M2046,ses-2499,HarvardOxford,Heschl's Gyrus (includes H1 and H2),0.9652781031816691,34.10596026490066,206,604,21341
+sub-M2046,ses-2499,HarvardOxford,Planum Temporale,2.3194789372569233,51.99579831932773,495,952,21341
+sub-M2046,ses-2499,HarvardOxford,Occipital Pole,1.5088327632257157,6.103108415466262,322,5276,21341
