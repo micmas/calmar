@@ -142,6 +142,159 @@ runs:
         supports_approval: false
     raw_preview: ''
     error: null
-last_run: '2026-05-04T12:01:09'
+- run_id: 3
+  timestamp: '2026-05-05T04:10:05'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 35/38 quotes (92%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Discussion (p.12): The group of patients with Wernicke''s aphasia was
+      the smallest (n=7) patient gro…'
+    - '  - f6.Discussion (p.12): the brain areas that we found to predict Wernicke''s
+      aphasia include the classica…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+    - 'f4: confidence=''medium'''
+    - 'f5: confidence=''medium'''
+    - 'f6: confidence=''medium'''
+    - 'f7: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+    - 'f4: strength=''weak'''
+    - 'f5: strength=''weak'''
+    - 'f7: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:03'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 35/38 quotes (92%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Discussion (p.12): The group of patients with Wernicke''s aphasia was
+      the smallest (n=7) patient gro…'
+    - '  - f6.Discussion (p.12): the brain areas that we found to predict Wernicke''s
+      aphasia include the classica…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+    - 'f4: confidence=''medium'''
+    - 'f5: confidence=''medium'''
+    - 'f6: confidence=''medium'''
+    - 'f7: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+    - 'f4: strength=''weak'''
+    - 'f5: strength=''weak'''
+    - 'f7: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 5
+  timestamp: '2026-05-05T04:12:26'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 35/38 quotes (92%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Discussion (p.12): The group of patients with Wernicke''s aphasia was
+      the smallest (n=7) patient gro…'
+    - '  - f6.Discussion (p.12): the brain areas that we found to predict Wernicke''s
+      aphasia include the classica…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+    - 'f4: confidence=''medium'''
+    - 'f5: confidence=''medium'''
+    - 'f6: confidence=''medium'''
+    - 'f7: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+    - 'f4: strength=''weak'''
+    - 'f5: strength=''weak'''
+    - 'f7: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:26'
 latest_verdict: defer_to_human
-latest_mode: with_llm_review
+latest_mode: deterministic_only

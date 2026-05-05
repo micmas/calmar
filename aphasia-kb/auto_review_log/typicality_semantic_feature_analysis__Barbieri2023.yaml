@@ -32,6 +32,112 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-04T11:32:00'
-latest_verdict: provisional_approve
+- run_id: 2
+  timestamp: '2026-05-05T04:10:06'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 9/19 quotes (47%)
+    - '10 quotes did not match — first 3:'
+    - '  - f1.Methods 2.2 — Treatment (p.80): At Boston University, the participants
+      treated for anomia underwent a typicality…'
+    - '  - f1.Limitations (p.96): participants were recruited from different research
+      centers because they met cri…'
+    - '  - f2.Methods 2.3.2.2 — Data acquisition (p.81): Structural and functional
+      MR images were collected using 3T scanners (Siemens Tr…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-05T04:12:03'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/19 quotes (89%)
+    - '2 quotes did not match — first 3:'
+    - '  - f2.Table 5 — naming treatment post-treatment (p.87): Naming treatment (k  87)…'
+    - '  - f3.Table 6 — naming group (p.88): Time (Post- vs. Pre-treatment)  .016  .025  410.8  .653  .655…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:28'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/19 quotes (89%)
+    - '2 quotes did not match — first 3:'
+    - '  - f2.Table 5 — naming treatment post-treatment (p.87): Naming treatment (k  87)…'
+    - '  - f3.Table 6 — naming group (p.88): Time (Post- vs. Pre-treatment)  .016  .025  410.8  .653  .655…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:28'
+latest_verdict: auto_approve
 latest_mode: deterministic_only

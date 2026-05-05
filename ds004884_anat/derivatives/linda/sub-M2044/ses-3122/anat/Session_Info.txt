@@ -1,0 +1,27 @@
+─ Session info ───────────────────────────────────────────────────────────────
+ setting  value                       
+ version  R version 3.6.1 (2019-07-05)
+ os       Debian GNU/Linux 9 (stretch)
+ system   x86_64, linux-gnu           
+ ui       X11                         
+ language (EN)                        
+ collate  en_US.UTF-8                 
+ ctype    en_US.UTF-8                 
+ tz       Etc/UTC                     
+ date     2026-05-05                  
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ package      * version   date       lib source                          
+ ANTsR          0.5.7.5   2022-06-01 [1] Github (ANTsX/ANTsR@6a1a3eb)    
+ ANTsRCore      0.7.5     2022-06-01 [1] Github (ANTsX/ANTsRCore@caaa6c5)
+ ITKR           0.5.3.3   2022-06-01 [1] Github (stnava/ITKR@bd0e226)    
+ lattice        0.20-38   2018-11-04 [2] CRAN (R 3.6.1)                  
+ LINDA        * 0.5.1     2022-06-01 [1] local                           
+ magrittr       1.5       2014-11-22 [1] CRAN (R 3.6.1)                  
+ Matrix         1.2-17    2019-03-22 [2] CRAN (R 3.6.1)                  
+ randomForest   4.6-14    2018-03-25 [1] CRAN (R 3.6.1)                  
+ Rcpp           1.0.3     2019-11-08 [1] CRAN (R 3.6.1)                  
+ RcppEigen      0.3.3.7.0 2019-11-16 [1] CRAN (R 3.6.1)                  
+
+[1] /usr/local/lib/R/site-library
+[2] /usr/local/lib/R/library

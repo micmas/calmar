@@ -32,6 +32,106 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-04T11:32:00'
-latest_verdict: provisional_approve
+- run_id: 2
+  timestamp: '2026-05-05T04:10:05'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 6/14 quotes (43%)
+    - '8 quotes did not match — first 3:'
+    - '  - f1.Results 3.2.4 — Effect of lesion size (p.225): lesion volume correlated
+      with behavioural performance on all four measures (verb…'
+    - '  - f1.Methods 2.5 (p.220): each patient''s lesion volume (proxy of neurological
+      severity) obtained from the …'
+    - '  - f1.Methods 2.5 (p.220): by partialling out lesion volume there is a high
+      risk for type II error. Hence, …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-05T04:12:03'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 14/14 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-05T04:12:26'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 14/14 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-05T04:12:26'
+latest_verdict: auto_approve
 latest_mode: deterministic_only
