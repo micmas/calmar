@@ -21,7 +21,7 @@ drafts:
   - '(skipped) pdf_quote_match: no PDFs available in /sessions/gallant-elegant-meitner/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
     for any cited paper'
   findings_summary: []
-  verdict: null
+  verdict: approve
   rationale: null
   per_finding: null
 - draft: drafts/impairments/conduction_aphasia__Yourganov2015Predicting.md
@@ -72,7 +72,7 @@ drafts:
     - page: 12
       quote: Conduction aphasia is associated with damage to the posterior segment of the arcuate fasciculus,
         Heschl's gyrus, and optical tracts.
-  verdict: null
+  verdict: approve
   rationale: null
   per_finding: null
 - draft: drafts/impairments/executive_functions__Alyahya2018NounVerb.md
@@ -120,7 +120,7 @@ drafts:
     - page: 223
       quote: This cluster included the left superior frontal gyrus, paracingulate gyrus, supplementary
         motor cortex and pre-central gyrus.
-  verdict: null
+  verdict: approve
   rationale: null
   per_finding: null
 - draft: drafts/impairments/fluency__Alyahya2018NounVerb.md
@@ -172,7 +172,7 @@ drafts:
       quote: Performance on the fluency factor was uniquely associated with left frontal and partial regions
         involving the anterior supramarginal gyrus, central opercular cortex, pre- and post-central gyri,
         posterior parahippocampal gyrus, planum polare
-  verdict: null
+  verdict: approve
   rationale: null
   per_finding: null
 - draft: drafts/impairments/semantics__Alyahya2018NounVerb.md
@@ -245,7 +245,7 @@ drafts:
       quote: Posterior left central perisylvian regions (angular gyrus, posterior inferior and middle
         temporal gyrus) were shared between the semantic, phonological production and phonological recognition
         factors. These posterior regions have been impli
-  verdict: null
+  verdict: approve
   rationale: null
   per_finding: null
 - draft: drafts/impairments/wernickes_aphasia__Yourganov2015Predicting.md
@@ -351,6 +351,6 @@ drafts:
     - page: 12
       quote: Wernicke's aphasia can be predicted from damage to angular, Heschl's, and superior temporal
         gyri, as well as temporal pole and putamen.
-  verdict: null
+  verdict: approve
   rationale: null
   per_finding: null

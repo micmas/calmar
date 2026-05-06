@@ -343,6 +343,26 @@ class QCRecord:
             self.issue_tags = list(s["issue_tags"])
             self.notes      = s["notes"]
 
+    def is_empty(self) -> bool:
+        """True if this sidecar carries no meaningful QC content.
+        That is: no stage rating, no issue tags, no notes, no reviewer,
+        no marked_for_rerun flag, no edit history. An "empty" sidecar
+        was created (file exists on disk) but never actually rated —
+        the startup detector should ignore these so the user isn't
+        confused by phantom "5 existing ratings" messages."""
+        if self.reviewer or self.marked_for_rerun or self.edits:
+            return False
+        for s in (self.stages or {}).values():
+            if not isinstance(s, dict):
+                continue
+            if s.get("rating") is not None:
+                return False
+            if s.get("issue_tags"):
+                return False
+            if (s.get("notes") or "").strip():
+                return False
+        return True
+
     # --------------------------------------------------------
     # I/O
     # --------------------------------------------------------
@@ -856,6 +876,75 @@ _LINDA_R_STUB     = Path(__file__).parent / "linda_predict_with_mask.R"
 # the LINDA singularity container. Used by default on Neurodesk where
 # R only exists inside the container.
 _LINDA_BASH_STUB  = Path(__file__).parent / "linda_predict_with_mask.sh"
+# Bash wrapper that runs antsApplyTransforms (either host or via
+# singularity exec into the LINDA container). Used by warp_native_lesion_to_mni.
+_WARP_BASH_STUB   = Path(__file__).parent / "warp_native_to_mni.sh"
+
+
+def warp_native_lesion_to_mni(linda_out_dir: Path,
+                              *,
+                              native_lesion: Path | None = None,
+                              reviewer: str | None = None) -> int:
+    """
+    After editing the native-space lesion (Prediction3_native.nii.gz),
+    re-warp it to MNI to keep Lesion_in_MNI.nii.gz consistent.
+
+    Reads LINDA's saved transforms from `linda_out_dir` and applies them
+    via antsApplyTransforms (NearestNeighbor, preserves binary). The
+    template reference image (`linda_t1.template`) is pulled from
+    inside the LINDA installation — we use Reg3_registered_to_template
+    as a stand-in reference since it's already in the correct grid.
+
+    Args:
+        linda_out_dir: directory containing LINDA's native + transform outputs
+        native_lesion: optional override; defaults to <out>/Prediction3_native.nii.gz
+        reviewer: free-text reviewer id, logged into the QC sidecar
+
+    Returns the bash wrapper's exit code; 0 = success.
+    """
+    linda_out_dir = Path(linda_out_dir)
+    src    = native_lesion or (linda_out_dir / "Prediction3_native.nii.gz")
+    ref    = linda_out_dir / "Reg3_registered_to_template.nii.gz"
+    warp   = linda_out_dir / "Reg3_sub_to_template_warp.nii.gz"
+    affine = linda_out_dir / "Reg3_sub_to_template_affine.mat"
+    out    = linda_out_dir / "Lesion_in_MNI.nii.gz"
+
+    for p, label in [(src, "native lesion"), (ref, "reference"),
+                     (warp, "warp"), (affine, "affine")]:
+        if not p.exists():
+            raise FileNotFoundError(
+                f"warp_native_lesion_to_mni: {label} not found at {p}.\n"
+                f"  Has LINDA been run for this subject? Expected files in {linda_out_dir}.")
+
+    if not _WARP_BASH_STUB.exists():
+        raise FileNotFoundError(
+            f"warp wrapper missing at {_WARP_BASH_STUB} — git pull?")
+
+    cmd = [
+        "bash", str(_WARP_BASH_STUB),
+        "--input",     str(src),
+        "--reference", str(ref),
+        "--warp",      str(warp),
+        "--affine",    str(affine),
+        "--output",    str(out),
+        "--interp",    "NearestNeighbor",
+    ]
+    print(f"  ▶ (warp native→MNI) bash {_WARP_BASH_STUB.name} ...")
+    res = subprocess.run(cmd)
+
+    if res.returncode == 0 and out.exists():
+        # Log on the lesion's QC sidecar so the audit trail is intact.
+        try:
+            rec = QCRecord.load(out)
+            rec.log_edit(
+                operation="warp_native_to_mni",
+                params={"input": str(src), "output": str(out)},
+                reviewer=reviewer, tool="antsApplyTransforms",
+            )
+            rec.save()
+        except Exception:
+            pass
+    return res.returncode
 
 
 def run_linda_with_mask_via_R(
@@ -1542,7 +1631,9 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
                       use_padding: bool = True,
                       padding_mm: float = 8.0,
                       csf_rim_mm: float = 2.0,
-                      rscript_cmd: str = "Rscript") -> dict:
+                      rscript_cmd: str = "Rscript",
+                      hdbet_mode: str = "fast",
+                      hdbet_device: str | None = None) -> dict:
     """
     One-shot: run HD-BET on `t1w_path`, then re-run LINDA. The original
     LINDA outputs are preserved in `_linda_original/` for revert.
@@ -1574,7 +1665,8 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
     status, and any mask-coverage warnings.
     """
     work = Path(work_dir or (linda_out_dir.parent / "_hdbet_work"))
-    bx = run_hd_bet(t1w_path, work, desc="fast")  # legacy default mode
+    bx = run_hd_bet(t1w_path, work, mode=hdbet_mode, device=hdbet_device,
+                    desc=hdbet_mode)
     if bx["returncode"] != 0:
         return {"phase": "brain_extraction", **bx, "linda_returncode": None}
 

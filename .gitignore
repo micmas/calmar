@@ -55,6 +55,10 @@ __pycache__/
 .idea/
 .vscode/
 
+# --- Virtual environment ---------------------------------------------
+.venv/
+venv/
+
 # --- nilearn cache outside our atlases/ folder, just in case ---------
 .nilearn_data/
 

@@ -1,0 +1,55 @@
+draft_path: drafts/REVIEW_2026-05-06.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T12:28:25'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/drafts/REVIEW_2026-05-06.md:
+      missing required file-level field: id'
+    - '/Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/drafts/REVIEW_2026-05-06.md:
+      missing required file-level field: name'
+    - '/Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/drafts/REVIEW_2026-05-06.md:
+      missing required file-level field: kind'
+    - '/Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/drafts/REVIEW_2026-05-06.md:
+      missing required file-level field: status'
+    - '/Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/drafts/REVIEW_2026-05-06.md:
+      missing required file-level field: created_by'
+    - '/Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/drafts/REVIEW_2026-05-06.md:
+      missing required file-level field: created_on'
+    - '/Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/drafts/REVIEW_2026-05-06.md:
+      schema_version must be 2, 2.1, 2.2, or 2.3, got None'
+    - '/Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/drafts/REVIEW_2026-05-06.md:
+      unknown status=None; allowed: [''approved'', ''draft'', ''in_review'', ''legacy_v1'',
+      ''rejected'']'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-06T12:28:25'
+latest_verdict: auto_reject
+latest_mode: deterministic_only

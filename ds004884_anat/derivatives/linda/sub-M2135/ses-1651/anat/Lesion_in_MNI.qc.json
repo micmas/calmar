@@ -1,26 +1,26 @@
 {
   "schema_version": 2,
-  "subject": null,
-  "session": null,
+  "subject": "sub-M2135",
+  "session": "ses-1651",
   "mask": "Lesion_in_MNI.nii.gz",
   "stages": {
     "skull_strip": {
-      "rating": null,
+      "rating": 1,
       "issue_tags": [],
       "notes": ""
     },
     "lesion": {
-      "rating": null,
+      "rating": 1,
       "issue_tags": [],
       "notes": ""
     }
   },
-  "rating": null,
-  "rating_label": null,
+  "rating": 1,
+  "rating_label": "good",
   "issue_tags": [],
   "notes": "",
   "reviewer": null,
-  "reviewed_on": null,
+  "reviewed_on": "2026-05-05",
   "marked_for_rerun": false,
   "edits": [
     {
@@ -31,6 +31,42 @@
       "tool": "linda_predict_with_mask.R",
       "applied_by": null,
       "applied_on": "2026-05-05T06:46:13"
+    },
+    {
+      "operation": "threshold",
+      "params": {
+        "threshold": 0.9
+      },
+      "tool": "deterministic_ops",
+      "applied_by": null,
+      "applied_on": "2026-05-06T01:32:22"
+    },
+    {
+      "operation": "morph_open",
+      "params": {
+        "radius": 3
+      },
+      "tool": "deterministic_ops",
+      "applied_by": null,
+      "applied_on": "2026-05-06T01:32:22"
+    },
+    {
+      "operation": "morph_close",
+      "params": {
+        "radius": 2
+      },
+      "tool": "deterministic_ops",
+      "applied_by": null,
+      "applied_on": "2026-05-06T01:32:22"
+    },
+    {
+      "operation": "hemisphere_clip",
+      "params": {
+        "hemisphere": "left"
+      },
+      "tool": "deterministic_ops",
+      "applied_by": null,
+      "applied_on": "2026-05-06T01:32:22"
     }
   ]
 }

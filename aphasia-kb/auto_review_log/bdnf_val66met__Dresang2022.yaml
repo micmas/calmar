@@ -1,0 +1,151 @@
+draft_path: drafts/predictors/bdnf_val66met__Dresang2022.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T12:28:27'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-06T02:35:24'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: Schema-valid; @Dresang2022 + replication @Fridriksson2018BDNF both
+        resolve. The f2 source_passage sign-flip (β=−2.86, t=−5.82) was repaired in
+        this same session. Confidence=medium and strength=weak are honest assessments
+        of n=17. The truncated 'Future work may explore...' passage is a NIT, not
+        a blocker. Approve.
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 3
+  timestamp: '2026-05-06T02:35:42'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: Schema-valid; @Dresang2022 + replication @Fridriksson2018BDNF both
+        resolve. The f2 source_passage sign-flip (β=−2.86, t=−5.82) was repaired in
+        this same session. Confidence=medium and strength=weak are honest assessments
+        of n=17. The truncated 'Future work may explore...' passage is a NIT, not
+        a blocker. Approve.
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T02:35:42'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

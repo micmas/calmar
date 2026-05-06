@@ -132,6 +132,37 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-05T04:12:27'
+- run_id: 5
+  timestamp: '2026-05-06T12:28:30'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 16/16 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-06T12:28:30'
 latest_verdict: auto_approve
 latest_mode: deterministic_only
