@@ -1,0 +1,141 @@
+draft_path: drafts/regions/left_extreme_capsule__Saur2008.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T12:28:29'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f2: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-06T02:35:25'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f2: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: Schema-valid; @Saur2008 resolves. Same healthy-volunteer dual-stream
+        paper as the SLF draft, ventral counterpart. f1 correlational/DTI and f2 recruitment/fMRI
+        both correctly coded. Quote 'all temporal and frontal nodes are connected
+        via a strong ventral pathway through the extreme capsule' verified PDF p.3
+        Results. The mid-word fragment in one passage ('poral maps...') is verbatim
+        correct from the OCR; cosmetic NIT. Approve.
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 3
+  timestamp: '2026-05-06T02:35:44'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f2: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: Schema-valid; @Saur2008 resolves. Same healthy-volunteer dual-stream
+        paper as the SLF draft, ventral counterpart. f1 correlational/DTI and f2 recruitment/fMRI
+        both correctly coded. Quote 'all temporal and frontal nodes are connected
+        via a strong ventral pathway through the extreme capsule' verified PDF p.3
+        Results. The mid-word fragment in one passage ('poral maps...') is verbatim
+        correct from the OCR; cosmetic NIT. Approve.
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T02:35:44'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

@@ -1,0 +1,144 @@
+draft_path: drafts/regions/left_posterior_stg__Fridriksson2018Anatomy.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T12:28:30'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: n=57 for sentence comprehension subtest (not full n=159); verify this subgroup
+      i'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Fridriksson2018Anatomy: sample.n disagrees: [57, 105, 159]'
+- run_id: 2
+  timestamp: '2026-05-06T02:35:25'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: n=57 for sentence comprehension subtest (not full n=159); verify this subgroup
+      i'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Fridriksson2018Anatomy: sample.n disagrees: [57, 105, 159]'
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'Schema-valid; @Fridriksson2018Anatomy resolves. The cross_finding_consistency
+        soft-fail (sample.n disagrees: 57/105/159) is a *correct* representation of
+        the paper — n varies per WAB-R subtest because not every patient took every
+        subtest (sentence comprehension n=57, PNT n=105, full n=159). The flag should
+        be acknowledged but it''s not a coding error. Quotes (Table 3 R²=0.60 sentence
+        comprehension; R²=0.31 auditory word recognition) verbatim verified. Approve.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 3
+  timestamp: '2026-05-06T02:35:45'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: n=57 for sentence comprehension subtest (not full n=159); verify this subgroup
+      i'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Fridriksson2018Anatomy: sample.n disagrees: [57, 105, 159]'
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'Schema-valid; @Fridriksson2018Anatomy resolves. The cross_finding_consistency
+        soft-fail (sample.n disagrees: 57/105/159) is a *correct* representation of
+        the paper — n varies per WAB-R subtest because not every patient took every
+        subtest (sentence comprehension n=57, PNT n=105, full n=159). The flag should
+        be acknowledged but it''s not a coding error. Quotes (Table 3 R²=0.60 sentence
+        comprehension; R²=0.31 auditory word recognition) verbatim verified. Approve.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T02:35:45'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

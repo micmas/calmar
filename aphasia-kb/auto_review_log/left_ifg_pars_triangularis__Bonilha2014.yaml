@@ -1,0 +1,156 @@
+draft_path: drafts/regions/left_ifg_pars_triangularis__Bonilha2014.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T12:28:29'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f3: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: DTI acquisition parameters (b-values, directions, voxel size) are in Online
+      Supp'
+    - 'f2: F=4.62 p<0.01 identical to naming model F-value — this appears as coincidental
+      r'
+    - 'f3: disconnection beta reported as ''beta=47'' in the author manuscript (likely
+      OCR/fo'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-06T02:35:25'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f3: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: DTI acquisition parameters (b-values, directions, voxel size) are in Online
+      Supp'
+    - 'f2: F=4.62 p<0.01 identical to naming model F-value — this appears as coincidental
+      r'
+    - 'f3: disconnection beta reported as ''beta=47'' in the author manuscript (likely
+      OCR/fo'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Substantive coding issue: all three findings use relationship=correlational
+        with method=disconnectome, but per schema.md (lines 152–158) disconnectome
+        maps to relationship=causal. Also f3 (BA22 → comprehension, beta=47 in the
+        published manuscript, suspected typo for 0.47) is anatomically about posterior
+        STG, not pars triangularis (BA45) — should split into a separate left_posterior_stg__Bonilha2014.md
+        draft. Defer for these two corrections.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 3
+  timestamp: '2026-05-06T02:35:45'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f3: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: DTI acquisition parameters (b-values, directions, voxel size) are in Online
+      Supp'
+    - 'f2: F=4.62 p<0.01 identical to naming model F-value — this appears as coincidental
+      r'
+    - 'f3: disconnection beta reported as ''beta=47'' in the author manuscript (likely
+      OCR/fo'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Substantive coding issue: all three findings use relationship=correlational
+        with method=disconnectome, but per schema.md (lines 152–158) disconnectome
+        maps to relationship=causal. Also f3 (BA22 → comprehension, beta=47 in the
+        published manuscript, suspected typo for 0.47) is anatomically about posterior
+        STG, not pars triangularis (BA45) — should split into a separate left_posterior_stg__Bonilha2014.md
+        draft. Defer for these two corrections.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T02:35:45'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

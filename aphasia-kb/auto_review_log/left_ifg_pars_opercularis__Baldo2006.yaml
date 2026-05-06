@@ -1,0 +1,142 @@
+draft_path: drafts/regions/left_ifg_pars_opercularis__Baldo2006.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T12:28:29'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: MRI or CT used (not exclusively MRI); CT provides less anatomical detail
+      — verif'
+    - 'f2: Supermarket category showed partial frontal foci (switching demands); fruits
+      and'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-06T02:35:25'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: MRI or CT used (not exclusively MRI); CT provides less anatomical detail
+      — verif'
+    - 'f2: Supermarket category showed partial frontal foci (switching demands); fruits
+      and'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Two real issues: (1) imaging=T1 is wrong — paper used mixed MRI/CT;
+        should be ''multimodal'' or ''not_reported''; (2) f1 replications:@Fridriksson2018
+        likely points to the wrong paper — @Fridriksson2018Anatomy (RLSM, fluency
+        R²=0.40) is the better letter-fluency replication than the dual-streams PNAS
+        paper. Both fixes are simple but warrant human review. Defer.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 3
+  timestamp: '2026-05-06T02:35:45'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: MRI or CT used (not exclusively MRI); CT provides less anatomical detail
+      — verif'
+    - 'f2: Supermarket category showed partial frontal foci (switching demands); fruits
+      and'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Two real issues: (1) imaging=T1 is wrong — paper used mixed MRI/CT;
+        should be ''multimodal'' or ''not_reported''; (2) f1 replications:@Fridriksson2018
+        likely points to the wrong paper — @Fridriksson2018Anatomy (RLSM, fluency
+        R²=0.40) is the better letter-fluency replication than the dual-streams PNAS
+        paper. Both fixes are simple but warrant human review. Defer.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T02:35:45'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

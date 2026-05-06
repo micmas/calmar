@@ -235,6 +235,57 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-05T04:12:26'
-latest_verdict: defer_to_human
-latest_mode: deterministic_only
+- run_id: 6
+  timestamp: '2026-05-06T09:41:13'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/20 quotes (85%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Results 3.2.4 (p.225): the neural correlates for the semantic factor
+      (correlation with lesion volume: r…'
+    - '  - f3.Results 3.2.4 (p.225): the neural correlates for the semantic factor
+      (correlation with lesion volume: r…'
+    - '  - f5.Discussion 4.3 (p.228): Posterior left central perisylvian regions (angular
+      gyrus, posterior inferior an…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: michele
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: (no rationale provided)
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T09:41:13'
+latest_verdict: auto_approve
+latest_mode: with_llm_review
