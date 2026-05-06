@@ -128,6 +128,47 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-05T04:12:22'
-latest_verdict: defer_to_human
-latest_mode: deterministic_only
+- run_id: 5
+  timestamp: '2026-05-06T09:41:10'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: michele
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: (no rationale provided)
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T09:41:10'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

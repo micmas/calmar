@@ -1,0 +1,164 @@
+draft_path: drafts/predictors/lesion_volume__Harvey2022.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T12:28:28'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: false
+    blocker: true
+    details:
+    - f1 has non-empty contradictions
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f2: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: Exact beta coefficient for lesion volume not stated in text — reported
+      as negati'
+    - 'f2: Exact beta coefficient and p-value for ALA participation domain not reported
+      in '
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-06T02:35:24'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: false
+    blocker: true
+    details:
+    - f1 has non-empty contradictions
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f2: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: Exact beta coefficient for lesion volume not stated in text — reported
+      as negati'
+    - 'f2: Exact beta coefficient and p-value for ALA participation domain not reported
+      in '
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Two real issues remaining: (1) f1 statistics.p_value field contains
+        free-text commentary (''exact beta coefficient not reported'') instead of
+        a value or ''not_reported'' — needs to be cleaned up; (2) the deterministic
+        no_contradictions check fired as a blocker because @Basilakos2019 + @Hope2017
+        contradictions are populated. Both citations now resolve in citations.md (added
+        this session), but the value-typed field issue is a real coding fix. Defer
+        for human cleanup.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 3
+  timestamp: '2026-05-06T02:35:43'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: false
+    blocker: true
+    details:
+    - f1 has non-empty contradictions
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f2: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: Exact beta coefficient for lesion volume not stated in text — reported
+      as negati'
+    - 'f2: Exact beta coefficient and p-value for ALA participation domain not reported
+      in '
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Two real issues remaining: (1) f1 statistics.p_value field contains
+        free-text commentary (''exact beta coefficient not reported'') instead of
+        a value or ''not_reported'' — needs to be cleaned up; (2) the deterministic
+        no_contradictions check fired as a blocker because @Basilakos2019 + @Hope2017
+        contradictions are populated. Both citations now resolve in citations.md (added
+        this session), but the value-typed field issue is a real coding fix. Defer
+        for human cleanup.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T02:35:43'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

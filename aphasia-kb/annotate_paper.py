@@ -87,6 +87,23 @@ _LIGATURES = {
     "\uFB03": "ffi", "\uFB04": "ffl", "\uFB05": "st", "\uFB06": "st",
 }
 
+# Reverse map: ASCII pairs \u2192 Unicode ligature, for re-ligaturizing
+# normalized quotes so they match PDFs that store ligature characters.
+_ASCII_TO_LIGATURES = {v: k for k, v in _LIGATURES.items() if len(v) <= 3}
+# Longest first to avoid partial replacements (ffi before fi)
+_ASCII_TO_LIGATURES_SORTED = sorted(
+    _ASCII_TO_LIGATURES.items(), key=lambda x: -len(x[0])
+)
+
+
+def _ligaturize(s: str) -> str:
+    """Convert ASCII ligature pairs back to Unicode ligature characters.
+    Used to produce a search candidate that matches PDFs which store
+    ligatures as single Unicode code points (U+FB00\u2013U+FB06)."""
+    for ascii_seq, lig in _ASCII_TO_LIGATURES_SORTED:
+        s = s.replace(ascii_seq, lig)
+    return s
+
 
 def _normalize(s: str) -> str:
     """Aggressive normalization: Unicode -> ASCII, ligatures expanded,
@@ -150,16 +167,23 @@ def _find_quote_rects(page, quote: str):
     _add("ws", re.sub(r"\s+", " ", raw))
     norm = _normalize(raw)
     _add("norm", norm)
+    # Also try with ASCII ligature pairs converted back to Unicode ligature
+    # characters — needed for PDFs that store ﬁ/ﬂ/ﬀ as single code points.
+    _add("lig", _ligaturize(norm))
     _add("no-parens", re.sub(r"\s*\([^)]*\)", "", norm))
+    _add("no-parens-lig", _ligaturize(re.sub(r"\s*\([^)]*\)", "", norm)))
     first_sent = re.split(r"[.?!](?:\s|$)", norm, maxsplit=1)[0]
     if len(first_sent) >= 25:
         _add("first-sent", first_sent)
+        _add("first-sent-lig", _ligaturize(first_sent))
     if len(norm) > 120:
         _add("head120", norm[:120])
+        _add("head120-lig", _ligaturize(norm[:120]))
     words = norm.split()
     for n in (8, 6, 4):
         if len(words) > n:
             _add(f"head{n}w", " ".join(words[:n]))
+            _add(f"head{n}w-lig", _ligaturize(" ".join(words[:n])))
 
     for label, cand in candidates:
         try:
@@ -179,12 +203,13 @@ def _find_quote_rects(page, quote: str):
     if norm and page_norm and norm[:60] in page_norm:
         for end in range(min(len(norm), 100), 25, -8):
             chunk = norm[:end]
-            try:
-                rects = page.search_for(chunk, quads=False)
-            except Exception:
-                rects = []
-            if rects:
-                return rects, f"fallback-{end}: {chunk[:60]}"
+            for search_text in (chunk, _ligaturize(chunk)):
+                try:
+                    rects = page.search_for(search_text, quads=False)
+                except Exception:
+                    rects = []
+                if rects:
+                    return rects, f"fallback-{end}: {search_text[:60]}"
 
     return [], None
 

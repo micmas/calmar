@@ -1,0 +1,54 @@
+{
+  "schema_version": 2,
+  "subject": null,
+  "session": null,
+  "mask": "Prediction3_native.nii.gz",
+  "stages": {
+    "skull_strip": {
+      "rating": null,
+      "issue_tags": [],
+      "notes": ""
+    },
+    "lesion": {
+      "rating": null,
+      "issue_tags": [],
+      "notes": ""
+    }
+  },
+  "rating": null,
+  "rating_label": null,
+  "issue_tags": [],
+  "notes": "",
+  "reviewer": null,
+  "reviewed_on": null,
+  "marked_for_rerun": false,
+  "edits": [
+    {
+      "operation": "threshold",
+      "params": {
+        "threshold": 0.5
+      },
+      "tool": "deterministic_ops",
+      "applied_by": null,
+      "applied_on": "2026-05-06T02:02:37"
+    },
+    {
+      "operation": "morph_open",
+      "params": {
+        "radius": 3
+      },
+      "tool": "deterministic_ops",
+      "applied_by": null,
+      "applied_on": "2026-05-06T02:02:37"
+    },
+    {
+      "operation": "morph_close",
+      "params": {
+        "radius": 3
+      },
+      "tool": "deterministic_ops",
+      "applied_by": null,
+      "applied_on": "2026-05-06T02:02:37"
+    }
+  ]
+}

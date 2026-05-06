@@ -1,0 +1,963 @@
+# auto_review.py worksheet
+#
+# For each draft below, fill in:
+#   verdict:   approve | agree_defer | reject
+#   rationale: 1-3 sentences explaining the call
+#   per_finding (optional): list of {id, concern, supports_approval}
+#
+# Then apply with:
+#   python auto_review.py --apply-verdicts <this-file>
+#
+# Notes:
+#   - 'approve' on a deferred draft lifts to auto_approve and promotes via promote.py.
+#   - 'reject' marks as auto_reject (the draft stays in drafts/).
+#   - 'agree_defer' keeps it deferred (still needs human attention).
+#   - schema_valid / pdf_quote_match failures CANNOT be overridden.
+
+drafts:
+- draft: drafts/predictors/auditory_temporal_processing__Robson2019.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) strength_moderate_or_better: f1: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: auditory_comprehension
+    claim: Rapid auditory temporal processing ability (40-Hz FM detection threshold) at 2.5 months post-stroke predicts language
+      comprehension outcome at 9 months post-stroke in Wernicke's aphasia, over and above initial comprehension severity.
+    strength: weak
+    confidence: high
+    flags:
+    - df = 6 for the 2.5 MPO → 9 MPO rapid auditory processing correlation indicates approximately 8 participants contributed
+      (some missing data); n is very small for this specific correlation.
+    - Partial correlation controls for 2.5 MPO comprehension but df shrinks substantially; interpret r = −0.94 with caution.
+    claim_quotes:
+    - page: 805
+      quote: 'Rapid auditory temporal processing (40 Hz FM detection: r = −0.94; df = 6; P ≤ .001) and phonological short-term
+        memory (digit span: r = 0.64; df = 8; P = .046) at 2.5 MPO were significantly associated with comprehension at 9 MPO.'
+    - page: 810
+      quote: Rapid auditory temporal processing in the subacute phase was associated with comprehension outcome in the chronic
+        phase, presenting a potential prognostic indicator for individuals with WA
+  - id: f2
+    target: auditory_comprehension
+    claim: Phonological processing (word phonological discrimination) at 5 months post-stroke predicts language comprehension
+      outcome at 9 months in Wernicke's aphasia, over and above initial comprehension severity.
+    strength: weak
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 807
+      quote: Word phonological processing at 5 MPO was significantly associated with comprehension at 9 MPO (r = 0.84; df
+        = 8; P = .002)
+    - page: 810
+      quote: "temporal processing (40-Hz FM detection) at 2.5 \nMPO and word phonological discrimination capacity at 5 \n\
+        MPO."
+  verdict: approve
+  rationale: Schema-valid; primary citation @Robson2019 resolves; PDF quotes (p.805 r=−0.94 cross-lagged correlation; p.807
+    r=0.84 word-phon at 5 MPO) verbatim verified. The strength=weak soft-fail is the agent's honest read of df=6/8 partial
+    correlations on n=12 — that's the right call, not a coding error. Approve.
+  per_finding: null
+- draft: drafts/predictors/bdnf_val66met__Dresang2022.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f1: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f1: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: severity_metric
+    claim: Val/val BDNF genotype is associated with less severe chronic aphasia than val/met genotype, after controlling for
+      lesion volume and time post-stroke; this effect is amplified by interactions with age at stroke, cortical excitability,
+      and st
+    strength: weak
+    confidence: medium
+    flags:
+    - Small sample (n=17) for a genetic predictor study; LASSO cross-validation used to control for overfitting but adjusted
+      R² increases are very small when adding BDNF alone (footnote 1 in paper notes 'small but significant effect').
+    - BDNF groups differed in lesion volume (val/val mean 148.5 cc vs val/met mean 71.3 cc) and time post-stroke, though authors
+      report these did not differ statistically (t=1.78, p=.12; t=0.42, p=.68); large variability.
+    claim_quotes:
+    - page: 371
+      quote: Val66Val carriers showed less aphasia severity than Val66Met carriers, after controlling for lesion volume and
+        time post-stroke.
+  - id: f2
+    target: severity_metric
+    claim: 'Cortical excitability (baseline MEP amplitude) measured at the intact right primary motor cortex interacts with
+      BDNF genotype to predict chronic aphasia severity: higher excitability is associated with less severe aphasia in val/val
+      carrier'
+    strength: weak
+    confidence: medium
+    flags:
+    - 'direction: mixed because the sign of the association differs by genotype group (positive for val/val, negative for
+      val/met); this is not a within-paper analytic disagreement but a genuine genotype-moderated reversal.'
+    claim_quotes:
+    - page: 376
+      quote: Cortical excitability was positively associated with WAB-AQ for Val66Val carriers (β = 14.13, SE = .74, t = 19.22,
+        P < .001), but negatively associated with WAB-AQ for Val66Met carriers (β = −2.86, SE = .49, t = −5.82, P < .001
+  - id: f3
+    target: severity_metric
+    claim: Stimulation-induced neuroplasticity (cTBS-induced MEP suppression at 10 min post-cTBS) interacts with BDNF genotype
+      to predict chronic aphasia severity; greater MEP suppression (expected cTBS response) is associated with less severe
+      aphasia
+    strength: weak
+    confidence: medium
+    flags:
+    - 10-minute post-cTBS timepoint used because it 'showed peak stimulation effects' per ref [34] (Parchure et al.); other
+      timepoints not analyzed here.
+    claim_quotes:
+    - page: 376
+      quote: Less severe aphasia (higher WAB-AQ) was associated with greater MEP suppression (ie, the expected cTBS aftereffects)
+        in both BDNF genotypes. This effect was stronger for Val66Met than Val66Val carriers (β = 3.56, SE = .60, t = 5.93,
+        P < .00
+  verdict: approve
+  rationale: Schema-valid; @Dresang2022 + replication @Fridriksson2018BDNF both resolve. The f2 source_passage sign-flip (β=−2.86,
+    t=−5.82) was repaired in this same session. Confidence=medium and strength=weak are honest assessments of n=17. The truncated
+    'Future work may explore...' passage is a NIT, not a blocker. Approve.
+  per_finding: null
+- draft: drafts/predictors/lesion_volume__Harvey2022.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(blk) no_contradictions: f1 has non-empty contradictions'
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f2: confidence=''medium'''
+  - '(sft) no_human_review_flags: f1: Exact beta coefficient for lesion volume not stated in text — reported as negati'
+  - '(sft) strength_moderate_or_better: f2: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: severity_metric
+    claim: Smaller total lesion volume is associated with greater long-term WAB-R AQ improvement in chronic aphasia patients
+      retested at least one year after initial chronic-stage assessment; lesion volume was the only significant demographic
+      or strok
+    strength: moderate
+    confidence: high
+    flags:
+    - Exact beta coefficient for lesion volume not stated in text — reported as negative, significant; verify from Table 2
+    - 3 of 18 participants had CT not MRI — lesion volume measure heterogeneous
+    claim_quotes:
+    - page: 9
+      quote: 'lesion volume was the only significant predictor of proportion change in AQ. The negative regression weight
+        indicates that smaller lesions yield larger language gains in the long term, after controlling for other predictors
+        included in the '
+  - id: f2
+    target: severity_metric
+    claim: 'Greater satisfaction with life participation (ALA participation domain) is associated with better long-term aphasia
+      recovery (WAB-R AQ gain), independent of lesion volume, in chronic aphasia.
+
+      '
+    strength: weak
+    confidence: medium
+    flags:
+    - Exact beta coefficient and p-value for ALA participation domain not reported in text — verify from Table 3
+    - Psychosocial measures assessed only at follow-up, not at initial assessment — temporal directionality of this predictor
+      is uncertain
+    - Combined model (lesion vol + ALA participation + ALA aphasia) F(4,13)=6.96, p=.003, R²adj=0.58 — strongest model in
+      paper
+    claim_quotes:
+    - page: 9
+      quote: ALA aphasia and participation domain scores significantly related to proportion change in AQ. The positive regression
+        weight for ALA participation domain indicates that greater satisfaction with life participation was related to better
+        long
+  verdict: agree_defer
+  rationale: 'Two real issues remaining: (1) f1 statistics.p_value field contains free-text commentary (''exact beta coefficient
+    not reported'') instead of a value or ''not_reported'' — needs to be cleaned up; (2) the deterministic no_contradictions
+    check fired as a blocker because @Basilakos2019 + @Hope2017 contradictions are populated. Both citations now resolve in
+    citations.md (added this session), but the value-typed field issue is a real coding fix. Defer for human cleanup.'
+  per_finding: null
+- draft: drafts/predictors/severity_metric__Kristinsson2025.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f2: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f2: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_perisylvian_network
+    claim: Damage to left perisylvian regions — particularly the rolandic operculum, superior temporal gyrus, and inferior
+      temporal gyrus — accounts for the largest shared variance across all four WAB-R subtests in chronic post-stroke aphasia,
+      with th
+    strength: moderate
+    confidence: high
+    flags:
+    - cohort overlaps with @Fridriksson2018, @Yourganov2015Predicting (USC/MUSC Aphasia Lab, POLAR trial NCT03416738); flag
+      for downstream double-counting risk.
+    - left_perisylvian_network is a forward-looking target ID — does not yet exist as a canonical entry.
+    claim_quotes:
+    - page: 1
+      quote: damage to regions surrounding the perisylvian fissure accounting for the largest amount of shared variance across
+        Western Aphasia Battery-Revised subtests
+    - page: 10
+      quote: most frequently implicated region, iden
+  - id: f2
+    target: left_perisylvian_network
+    claim: After controlling for shared perisylvian lesion variance, right putamen integrity uniquely and independently predicts
+      naming and repetition performance, while left superior temporal lobe and right precuneus integrity uniquely predict
+      audito
+    strength: weak
+    confidence: medium
+    flags:
+    - post-hoc analysis; not pre-specified; interpret as exploratory.
+    - cohort overlaps with @Fridriksson2018, @Yourganov2015Predicting (USC/MUSC Aphasia Lab, POLAR trial NCT03416738).
+    - right_putamen, left_superior_temporal_lobe, right_precuneus are forward-looking target IDs.
+    claim_quotes:
+    - page: 12
+      quote: the right putamen emerged as the strongest unique predictor of naming and repetition performance (P = 0.013 and
+        0.021, respectively)
+    - page: 12
+      quote: part of the left superior temporal lobe (P = 0.049) and the right precuneus (P = 0.045) emerged as the strongest
+        predictors of auditory comprehension
+  verdict: agree_defer
+  rationale: 'Two source_passages truncated mid-word (''most frequently implicated region, iden''; ''present an exhaustive
+    overview of regions that contribute'') — these will degrade annotate_paper.py output and aren''t sentence-bounded. Also
+    borderline: predictor_type=behavioural with target_kind=region (cross-bucket targeting is allowed but the predictor_type
+    for a brain-network outcome could be imaging_metric). Defer to fix the truncated quotes before promote.'
+  per_finding: null
+- draft: drafts/regions/bilateral_mfg_temporal_recovery__Stefaniak2022.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f3: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f3: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: fluency_recovery
+    claim: Increasing activation in bilateral middle frontal gyri and right temporo-occipital MTG between 2 weeks and 4 months
+      post-stroke is positively associated with fluency component recovery, even after controlling for baseline fluency severity.
+    strength: moderate
+    confidence: high
+    flags:
+    - Dataset previously used in Geranmayeh et al. 2016 (Neurology) and 2017 (Brain) for single-measure analyses; current
+      PCA analyses are entirely new.
+    - Bilateral MFG and right MTG findings are robust pre- and post-baseline-control.
+    - Uncorrected cluster-forming threshold (p<0.005) with FWE at cluster level — standard SPM but not permutation testing.
+    claim_quotes:
+    - page: 1
+      quote: fluency recovery was associated with increasing activation in bilateral middle frontal gyri and right temporo-occipital
+        middle temporal gyrus
+  - id: f2
+    target: semantic_executive_recovery
+    claim: Decreasing activation in bilateral anterior temporal lobes between 2 weeks and 4 months post-stroke is associated
+      with better semantic/executive recovery — a finding revealed only after controlling for baseline semantic/executive
+      severity.
+    strength: moderate
+    confidence: high
+    flags:
+    - 'Key methodological finding: baseline-PC2 control revealed bilateral ATL clusters entirely absent without control —
+      demonstrates importance of proportional-recovery confound adjustment.'
+    claim_quotes:
+    - page: 1
+      quote: semantic/executive recovery was associated with reducing activation in bilateral anterior temporal lobes
+    - page: 9
+      quote: no regions were associated with semantic/executive change before controlling for T1 score, yet bilateral ATL
+        clusters were negatively associated with semantic/executive recovery after controlling for T1 score
+  - id: f3
+    target: phonology_recovery
+    claim: Decreasing activation in bilateral precentral gyri, dorso-medial frontal poles, and precuneus between 2 weeks and
+      4 months is associated with better phonology recovery, particularly in patients with low baseline phonological ability.
+    strength: weak
+    confidence: medium
+    flags:
+    - PC3 phonology did not significantly improve at group level (P=0.38) — findings for phonology recovery correlates are
+      tentative.
+    - vmPFC is a SHARED cluster with f1 (fluency), positively for fluency and negatively for phonology — captures an anti-correlated
+      trade-off.
+    - Multiple significant baseline x activation interactions complicate interpretation.
+    claim_quotes:
+    - page: 1
+      quote: phonology recovery was associated with reducing activation in bilateral precentral gyri, dorso-medial frontal
+        poles and the precuneus
+    - page: 9
+      quote: activation change in the ventromedial prefrontal cortex, dorso-medial frontal poles and precuneus was negatively
+        correlated with phonological recovery
+  - id: f4
+    target: fluency
+    claim: At 2 weeks post-stroke, activation in the right posterior supramarginal gyrus, insular cortex, and temporo-occipital
+      MTG is positively associated with concurrent fluency score, suggesting early right hemisphere compensatory recruitment.
+    strength: moderate
+    confidence: high
+    flags:
+    - 'Convergent evidence: same right temporo-occipital MTG region identified both cross-sectionally at T1 (f4) and longitudinally
+      as predictor of recovery (f1).'
+    claim_quotes:
+    - page: 6
+      quote: T1 activation in a cluster in the right posterior supramarginal gyrus, insular cortex and temporo-occipital middle
+        temporal gyrus (MTG) was positively associated with T1 fluency (PC1) score
+  verdict: agree_defer
+  rationale: Primary citation @Stefaniak2022 was added to citations.md this session. However the draft's imaging_details block
+    has off-vocab subkeys ('software', 'preprocessing', 'contrasts' — schema expects 'preprocessing_pipeline' and 'task.contrasts'),
+    and atlases_used:[] despite the description naming Harvard-Oxford + AAL. The Geranmayeh 2016/2017 cohort-overlap claim
+    is also asserted more strongly than the paper text supports. These are coding cleanups, not findings issues. Defer.
+  per_finding: null
+- draft: drafts/regions/left_angular_gyrus__Breining2022.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) no_human_review_flags: f1: PPA data NOT extracted per extraction rules (non-stroke etiology); only acute st'
+  - '(sft) strength_moderate_or_better: f2: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: object_naming
+    claim: 'Greater damage to the left angular gyrus is independently associated with worse object naming (BNT) performance
+      in acute left hemisphere stroke.
+
+      '
+    strength: moderate
+    confidence: high
+    flags:
+    - PPA data NOT extracted per extraction rules (non-stroke etiology); only acute stroke findings are in this draft
+    - Method coded as MLPA (LASSO is a form of multivariate lesion-symptom mapping) rather than VLSM
+    - ROI-based LASSO, not voxel-wise — region boundaries determined by MRICloud atlas, not data-driven clusters
+    - 'forward-looking target ID: object_naming (check if impairment ID exists in KB)'
+    claim_quotes:
+    - page: 748
+      quote: For the model of object naming, we found that larger percentage of tissue lesioned in the left angular gyrus
+        and left middle temporal gyrus were associated with worse performance on the BNT. Greater damage to the left angular
+        gyrus independ
+  - id: f2
+    target: action_naming
+    claim: Greater damage to the left angular gyrus is associated with worse action naming (HANA) performance in acute left
+      hemisphere stroke; the effect is not independently statistically significant but the region appears in the LASSO-selected
+      model
+    strength: weak
+    confidence: high
+    flags:
+    - PPA data NOT extracted (non-stroke etiology)
+    - Left angular gyrus appears in LASSO action naming model but p=.728 — not independently significant; direction coded
+      as likely because the LASSO coefficient is negative (more damage = worse performance)
+    - 'Left insula also selected by LASSO for action naming (LASSO value=−0.015, p=.92) — forward-looking: consider separate
+      draft for left_insula__Breining2022 if desired'
+    claim_quotes:
+    - page: 748
+      quote: 'For the model of action naming, we found that larger percentage of tissue lesioned in the left angular gyrus
+        and left insula were associated with worse performance on the HANA, as was larger total lesion volume. None of the
+        covariates were '
+  verdict: agree_defer
+  rationale: 'Schema-vocab issue: file-level ''kind: region'' is not a valid value (vocab is atlas | classical | network |
+    tract). Also f2 has direction=likely despite p=.728 (LASSO=−0.405, not independently significant) — should be ''mixed''
+    or ''no_effect''. Both are real fixes; defer for human resolution.'
+  per_finding: null
+- draft: drafts/regions/left_arcuate_fasciculus__Marchina2011.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) strength_moderate_or_better: f5: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: speech_production_rate
+    claim: Lesion load of the left arcuate fasciculus (proportion of the tract damaged by a patient's stroke) significantly
+      predicts rate of speech (words per minute), whereas overall lesion size, extreme capsule lesion load, and uncinate fasciculus
+      l
+    strength: moderate
+    confidence: high
+    flags:
+    - 'Relationship coded as `correlational` per KB rules: DTI tractography + lesion load analysis tracks structural integrity
+      against behavior but is not a strict causal VLSM/LSM approach — the probabilistic tracts come from healthy controls,
+      not directly from the patients'' own DTI.'
+    - Talairach space used in paper (not MNI152); ROI coordinates reported are x-values only (sagittal slice positions).
+    - 10 healthy controls contributed DTI data for probabilistic maps; patient n=30 contributed behavioral and T1 lesion data
+      only.
+    claim_quotes:
+    - page: 1
+      quote: Regression analyses showed that arcuate fasciculus lesion load, but not extreme capsule or uncinate fasciculus
+        lesion load or overall lesion size, significantly predicted rate, informativeness, and overall efficiency of speech
+        as well as na
+  - id: f2
+    target: speech_informativeness
+    claim: 'Lesion load of the left arcuate fasciculus significantly predicts informativeness of speech (%CIUs — correct information
+      units as a proportion of total words), with greater tract damage associated with lower informativeness. Overall lesion '
+    strength: moderate
+    confidence: high
+    flags:
+    - 'Relationship coded as `correlational` per KB rules: DTI tractography + lesion load analysis.'
+    - Strongest statistical result of the paper (partial R²=0.336, p=0.002) — informativeness had the largest AF lesion-load
+      effect size.
+    claim_quotes:
+    - page: 1
+      quote: Regression analyses showed that arcuate fasciculus lesion load, but not extreme capsule or uncinate fasciculus
+        lesion load or overall lesion size, significantly predicted rate, informativeness, and overall efficiency of speech
+        as well as na
+  - id: f3
+    target: speech_efficiency
+    claim: Lesion load of the left arcuate fasciculus is the strongest predictor of overall speech efficiency (CIUs per minute),
+      explaining 45% of unique variance in a regression model that also includes overall lesion size and extreme capsule and
+      unc
+    strength: moderate
+    confidence: high
+    flags:
+    - 'Relationship coded as `correlational` per KB rules: DTI tractography + lesion load analysis.'
+    - Highest partial R² of all four outcomes (0.450); overall model R²=0.610 is strongest in the paper.
+    claim_quotes:
+    - page: 1
+      quote: Regression analyses showed that arcuate fasciculus lesion load, but not extreme capsule or uncinate fasciculus
+        lesion load or overall lesion size, significantly predicted rate, informativeness, and overall efficiency of speech
+        as well as na
+  - id: f4
+    target: confrontation_naming
+    claim: Lesion load of the left arcuate fasciculus significantly predicts confrontation naming ability (Boston Naming Test
+      score), whereas extreme capsule lesion load and overall lesion size do not; uncinate fasciculus lesion load shows a
+      nonsignif
+    strength: moderate
+    confidence: high
+    flags:
+    - Relationship coded as `correlational` per KB rules.
+    - 'Note: paper reports R² (not partial R²) for AF predicting BNT, while earlier outcomes used partial R². The paper text
+      says ''AF lesion load (R²=0.159)'' — coded as stated; may reflect total vs partial R² inconsistency in reporting.'
+    - UF trend (p=0.073) not significant but noted — consistent with dual-stream predictions for naming; not coded as a separate
+      finding given it did not reach threshold.
+    claim_quotes:
+    - page: 1
+      quote: Regression analyses showed that arcuate fasciculus lesion load, but not extreme capsule or uncinate fasciculus
+        lesion load or overall lesion size, significantly predicted rate, informativeness, and overall efficiency of speech
+        as well as na
+  - id: f5
+    target: left_extreme_capsule
+    claim: Extreme capsule lesion load does not significantly predict any measure of speech production (rate, informativeness,
+      efficiency) or naming ability, contrary to predictions from dual-stream models in which the extreme capsule mediates
+      sound-t
+    strength: weak
+    confidence: high
+    flags:
+    - 'Null finding coded for completeness. `direction: no_effect` — absence of significant EmC effect across all four speech
+      outcomes.'
+    - This null result is substantively meaningful as it contrasts with dual-stream predictions for a ventral-stream role
+      of EmC in semantic processing.
+    claim_quotes:
+    - page: 4
+      quote: AF lesion load, but not EmC or UF lesion load, significantly predicted rate, informativeness, and overall efficiency
+        of speech in patients with impairments of speech production after stroke.
+  verdict: approve
+  rationale: Schema-valid; @Marchina2011 resolves; the two replication keys @Hosomi2009 and @Breier2008 — flagged as missing
+    in the earlier review — were added to citations.md this session. PDF quotes verified verbatim (sample n=30, mean 58.5
+    yr; rate-of-speech partial R²=0.175 P=.030). The relationship=correlational call (rather than causal) is reviewer-defensible
+    because the AF map comes from a healthy-control DTI atlas overlaid on patient lesions, not a within-patient LSM; documented
+    in provenance. f5 strength=weak is honest. Approve.
+  per_finding: null
+- draft: drafts/regions/left_arcuate_fasciculus_slf__Saur2008.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f2: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f2: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_posterior_superior_temporal_gyrus
+    claim: The left arcuate fasciculus and superior longitudinal fascicle (AF/SLF) structurally connects the left posterior
+      and anterior superior temporal gyrus to the left premotor cortex (pars opercularis BA44 and dorsal premotor BA6), forming
+      the d
+    strength: moderate
+    confidence: high
+    flags:
+    - Study uses healthy volunteers only — no direct lesion-symptom evidence; causal inference to aphasia is interpretive,
+      not tested
+    - Handedness not fully right-handed (only 18/33); language lateralization variability not addressed
+    - DTI acquisition parameters (voxel size, TR, TE, b-values, n-directions) not reported in main paper — referred to SI
+      Methods which is not available in this PDF
+    claim_quotes:
+    - page: 2
+      quote: 'T1a/T1p) are connected with the premotor seeds (F3op and PMd) via a dorsal route along the AF/SLF system.
+
+        '
+  - id: f2
+    target: speech_repetition
+    claim: The left dorsal pathway (AF/SLF connecting superior temporal gyrus to premotor cortex) is recruited during sublexical
+      speech repetition, and disruption of this network after stroke is speculated to relate to conduction aphasia (impaired
+      rep
+    strength: weak
+    confidence: medium
+    flags:
+    - Impairment inference (conduction aphasia) is speculative — authors state 'may relate to'; no patient data in this study
+    - target ID 'speech_repetition' is forward-looking — no canonical impairment entry yet
+    claim_quotes:
+    - page: 4
+      quote: 'Anatomical connectivity between the temporal and premotor seeds is provided by the dorsal AF/SLF
+
+        '
+    - page: 5
+      quote: 'Disruption of this network (e.g., after stroke) may relate to two aspects ascribed to conduction aphasia: relatively
+        selective impairment of repetition
+
+        '
+  verdict: approve
+  rationale: 'Schema-valid; @Saur2008 resolves. Healthy-volunteer DTI+fMRI study correctly coded: f1 relationship=correlational,
+    f2 relationship=recruitment — NOT causal (patient inferences are Discussion-only). PDF quotes verified verbatim (Results
+    p.2 dorsal pathway via AF/SLF; Methods p.5 participants). f2 confidence=medium and strength=weak reflect the recruitment
+    claim being one of several plausible interpretations of the activation pattern. Approve.'
+  per_finding: null
+- draft: drafts/regions/left_extreme_capsule__Saur2008.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f2: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f2: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_posterior_middle_temporal_gyrus
+    claim: 'The left extreme capsule (EmC) structurally connects the left posterior and anterior middle temporal gyrus and
+      fusiform gyrus to the left ventrolateral prefrontal cortex (pars triangularis BA45 and pars orbitalis BA47), forming
+      the ventral '
+    strength: moderate
+    confidence: high
+    flags:
+    - Study uses healthy volunteers only — no lesion-symptom evidence linking EmC damage to comprehension deficits
+    - DTI acquisition parameters (voxel size, b-values, n-directions, TR, TE) referred to SI Methods — not available in this
+      PDF
+    - 'Coordinates in Table 2 for fMRI use sign convention requiring verification: T2p listed as -48 -60 -18 matches the text
+      description ''posterior middle temporal gyrus'''
+    claim_quotes:
+    - page: 3
+      quote: 'all temporal and frontal nodes are connected via a strong ventral pathway running through the extreme capsule
+        (EmC) and entering medially to the insula into the orbitofrontal cortex.
+
+        '
+    - page: 4
+      quote: 'The ventral pathway along the EmC is in line with DTI findings in humans and autoradiographic tracing studies
+        in monkeys.
+
+        '
+  - id: f2
+    target: auditory_comprehension
+    claim: The left extreme capsule (ventral pathway) is recruited during sentence-level auditory comprehension (sound-to-meaning
+      mapping), and its disruption is speculated to produce transcortical sensory aphasia (poor comprehension with preserved
+      re
+    strength: weak
+    confidence: medium
+    flags:
+    - Auditory comprehension impairment inference is speculative — authors state 'may lead to transcortical sensory aphasia';
+      no patient data
+    - target ID 'auditory_comprehension' is forward-looking — no canonical impairment entry yet
+    claim_quotes:
+    - page: 5
+      quote: 'the contrast between listening to normal sentences and pseudo sentences activated middle and inferior temporal
+        regions and the ventrolateral prefrontal cortex (BA 45, 47)
+
+        '
+    - page: 5
+      quote: 'Disturbance of this ventral pathway may lead to transcortical sensory aphasia, a syndrome characterized by poor
+        comprehension but preserved repetition and production.
+
+        '
+  verdict: approve
+  rationale: Schema-valid; @Saur2008 resolves. Same healthy-volunteer dual-stream paper as the SLF draft, ventral counterpart.
+    f1 correlational/DTI and f2 recruitment/fMRI both correctly coded. Quote 'all temporal and frontal nodes are connected
+    via a strong ventral pathway through the extreme capsule' verified PDF p.3 Results. The mid-word fragment in one passage
+    ('poral maps...') is verbatim correct from the OCR; cosmetic NIT. Approve.
+  per_finding: null
+- draft: drafts/regions/left_frontal_white_matter_bottleneck__Mirman2015.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) no_human_review_flags: f1: MNI coordinates (-19, 28, 4) read from Figure 3 panel labels (x, y, z slices); s'
+  findings_summary:
+  - id: f1
+    target: semantic_recognition_multimodal
+    claim: Lesions in the left deep frontal white matter (medial to the insula, lateral to the basal ganglia), where the uncinate
+      fasciculus, inferior fronto-occipital fasciculus, and anterior thalamic radiations converge, are associated with multimod
+    strength: moderate
+    confidence: high
+    flags:
+    - Semantic Recognition factor used relaxed FDR q = 0.1 (vs q = 0.05 for other factors) — strength rated moderate not strong
+      for this reason.
+    - MNI coordinates (-19, 28, 4) read from Figure 3 panel labels (x, y, z slices); should be verified against supplementary
+      data.
+    - The effect size / t-value colour bar for this factor not clearly specified in text — flagged.
+    - Whether the IFOF/uncinate/ATR cluster overlaps with the external capsule or corona radiata is not specified — future
+      users should cross-reference with atlas.
+    claim_quotes:
+    - page: 4
+      quote: VLSM of the Semantic Recognition factor identiﬁed no voxels in the ATL, even at a relaxed q ¼ 0.1 False Discovery
+        Rate (FDR) threshold (Fig. 3), nor were there voxels in any other cortical region typically associated with semantic
+        processin
+    - page: 6
+      quote: they arise from damage to a frontal white matter bottleneck—a region where the uncinate fasciculus, inferior
+        fronto-occipital fasciculus and anterior thalamic radiations all converge. We suggest that this convergence produces
+        a vulnerable l
+    - page: 4
+      quote: 'The convergence of major white matter tracts in the identiﬁed area creates a ''bottleneck'' where a small amount
+        of damage can cause a large degree of dysfunction in connections between frontal cortices and the rest of the brain.
+
+        '
+  verdict: approve
+  rationale: 'Schema-valid; @Mirman2015 resolves; no missing citations in this draft. relationship=causal/method=VLSM correct
+    (Penn aphasia registry n=99). Headline finding for the paper: ATL-VLSM null at q=0.1 led to discovery of frontal-white-matter
+    bottleneck (quote ''frontal white matter bottleneck'' verified PDF p.6). MNI coords [-19,28,4] read approximately from
+    Fig 3 panel labels — flagged honestly. Approve.'
+  per_finding: null
+- draft: drafts/regions/left_ifg_pars_opercularis__Baldo2006.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) no_human_review_flags: f1: MRI or CT used (not exclusively MRI); CT provides less anatomical detail — verif'
+  findings_summary:
+  - id: f1
+    target: letter_fluency
+    claim: Damage to left frontal cortex including BA 44 (pars opercularis) is associated with impaired letter fluency performance
+      in chronic left-hemisphere stroke patients.
+    strength: moderate
+    confidence: high
+    flags:
+    - VLSM threshold is uncorrected p<.05 — no permutation correction; weaker evidence than permutation-corrected studies
+    - Lesions traced on 2D template (DeArmond 1976), not individual 3D MRI — spatial precision limited
+    - MRI or CT used (not exclusively MRI); CT provides less anatomical detail — verify modality breakdown
+    - Reference space is Talairach (2D atlas), not MNI152 — cross-study comparisons require atlas translation
+    - No peak MNI coordinates reported; only Brodmann areas named
+    claim_quotes:
+    - page: 1
+      quote: VLSM maps revealed that category and letter fluency deficits correlate with lesions in temporal and frontal cortices,
+        respectively.
+    - page: 3
+      quote: VLSM analyses revealed that letter fluency was significantly associated with lesions in frontal regions [Brodmann's
+        Area (BA) 4, 6, and 44
+  - id: f2
+    target: category_fluency
+    claim: Damage to left temporal cortex (BA 22, 37, 41, 42) is associated with impaired category fluency in chronic left-hemisphere
+      stroke patients, whereas frontal damage is less specifically associated with category fluency deficits.
+    strength: moderate
+    confidence: high
+    flags:
+    - VLSM threshold uncorrected — weaker evidence; no permutation correction applied
+    - Category fluency VLSM map also includes insula and putamen — region is broader than pure temporal
+    - Supermarket category showed partial frontal foci (switching demands); fruits and animals did not — verify whether to
+      split
+    claim_quotes:
+    - page: 3
+      quote: Category fluency was associated with lesions in more posterior cortex, including regions of the left temporal
+        lobe (BA 22, 37, 41, 42) and the post-central gyrus.
+    - page: 1
+      quote: Our findings are therefore consistent with the hypothesis that temporal cortex subserves word retrieval constrained
+        by semantics, whereas frontal regions are more critical for strategic word retrieval constrained by phonology.
+  verdict: agree_defer
+  rationale: 'Two real issues: (1) imaging=T1 is wrong — paper used mixed MRI/CT; should be ''multimodal'' or ''not_reported'';
+    (2) f1 replications:@Fridriksson2018 likely points to the wrong paper — @Fridriksson2018Anatomy (RLSM, fluency R²=0.40)
+    is the better letter-fluency replication than the dual-streams PNAS paper. Both fixes are simple but warrant human review.
+    Defer.'
+  per_finding: null
+- draft: drafts/regions/left_ifg_pars_triangularis__Bonilha2014.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f3: confidence=''medium'''
+  - '(sft) no_human_review_flags: f1: DTI acquisition parameters (b-values, directions, voxel size) are in Online Supp'
+  findings_summary:
+  - id: f1
+    target: naming
+    claim: Structural disconnection of left BA 45 (pars triangularis), independent of BA 45 cortical necrosis, is associated
+      with poorer naming performance on the Philadelphia Naming Test in chronic aphasia after left-hemisphere stroke.
+    strength: moderate
+    confidence: high
+    flags:
+    - cohort overlaps with @Fridriksson2018Anatomy (same USC/MUSC lab group; Bonilha 2014 n=39; Fridriksson 2018Anatomy n=159);
+      flag for downstream double-counting risk in interpret_overlap()
+    - DTI acquisition parameters (b-values, directions, voxel size) are in Online Supplement only — verify against supplement
+      for imaging_details completeness
+    - reference_space not explicitly stated in main text — likely native Brodmann-atlas space; verify
+    - disconnection beta (1.21) exceeds necrosis beta (0.43) — paper interprets disconnection as having greater predictive
+      weight than necrosis for naming
+    claim_quotes:
+    - page: 1
+      quote: 'structural disconnection of BA 45 (spared by the necrotic tissue) was independently associated with naming performance,
+        controlling for the extent of BA 45 necrosis (F=4.62, p<0.01; necrosis: beta=0.43; p=0.03; disconnection beta=1.21;
+        p<0.'
+  - id: f2
+    target: fluency
+    claim: Structural disconnection of left BA 45 (pars triangularis), independent of BA 45 cortical necrosis, is independently
+      associated with reduced speech fluency in chronic aphasia after left-hemisphere stroke; BA 45 necrosis alone is not
+      an inde
+    strength: moderate
+    confidence: high
+    flags:
+    - necrosis alone NOT independently associated with fluency (p=0.13); only disconnection significant (p=0.025) — important
+      distinction from the naming finding where necrosis was also significant
+    - cohort overlaps with @Fridriksson2018Anatomy — flag for downstream double-counting risk
+    - F=4.62 p<0.01 identical to naming model F-value — this appears as coincidental rounding in the manuscript; verify against
+      published Table
+    claim_quotes:
+    - page: 5
+      quote: 'we also observed significant relationship between fluency and a model composed by BA 45 necrosis and BA 45 disconnection
+        F=4.62, p<0.01; necrosis: beta=2.89; p=0.13; disconnection beta=7.52; p=0.025). Similarly, in this model, necrosis
+        alon'
+  - id: f3
+    target: auditory_comprehension
+    claim: Structural disconnection of left BA 22 (posterior superior temporal gyrus / Wernicke's area) is independently associated
+      with impaired auditory comprehension of sequential commands; BA 22 cortical necrosis alone is not an independent predic
+    strength: moderate
+    confidence: medium
+    flags:
+    - disconnection beta reported as 'beta=47' in the author manuscript (likely OCR/formatting artifact — probable value is
+      beta=0.47); verify against published Stroke journal PDF
+    - necrosis NOT independently associated with comprehension (p=0.43); only disconnection significant (p=0.01)
+    - cohort overlaps with @Fridriksson2018Anatomy — flag for double-counting risk
+    - f3 is anchored to left_ifg_pars_triangularis file for extraction convenience but the finding is about BA22 (Wernicke's
+      area) — reviewer may wish to split into left_posterior_stg__Bonilha2014.md for canonical promotion
+    claim_quotes:
+    - page: 5
+      quote: 'We also observed a significant relationship between comprehension and a model composed by BA 22 necrosis and
+        BA 22 disconnection (F=3.05, p=0.047; necrosis: beta=-0.35; p=0.43; disconnection beta=47; p=0.01). However, in this
+        model, necrosi'
+  verdict: agree_defer
+  rationale: 'Substantive coding issue: all three findings use relationship=correlational with method=disconnectome, but per
+    schema.md (lines 152–158) disconnectome maps to relationship=causal. Also f3 (BA22 → comprehension, beta=47 in the published
+    manuscript, suspected typo for 0.47) is anatomically about posterior STG, not pars triangularis (BA45) — should split
+    into a separate left_posterior_stg__Bonilha2014.md draft. Defer for these two corrections.'
+  per_finding: null
+- draft: drafts/regions/left_posterior_stg__Fridriksson2018Anatomy.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) no_human_review_flags: f1: n=57 for sentence comprehension subtest (not full n=159); verify this subgroup i'
+  - '(sft) cross_finding_consistency: @Fridriksson2018Anatomy: sample.n disagrees: [57, 105, 159]'
+  findings_summary:
+  - id: f1
+    target: sentence_comprehension
+    claim: Damage to left posterior STG is the strongest independent predictor of sentence comprehension impairment in chronic
+      left-hemisphere stroke aphasia, accounting for 60% of variance in the multivariate RLSM analysis.
+    strength: strong
+    confidence: high
+    flags:
+    - n=57 for sentence comprehension subtest (not full n=159); verify this subgroup is still adequately powered
+    - cohort overlaps with @Fridriksson2018 (same USC Aphasia Lab archival database)
+    - posterior STG is also the top univariate predictor for AQ (Z=7.61, Table 2), auditory word recognition (Z=6.99), reading
+      (Z=5.72), PNT correct (Z=5.13), syllable identification (Z=4.67) — it is by far the most widely-significant region across
+      tests
+    - 'CLSM for sentence comprehension: top connection is MTG <-> ITG (Z=3.92) — MTG-ITG connection more prominent than pSTG
+      in CLSM'
+    claim_quotes:
+    - page: 6
+      quote: 'as predictors of speech and language performance in the univariate RLSM were: (i) pars opercularis; (ii) STG;
+        and (iii) SMG. Damage to each of these three regions was a statistically significant predictor of performance on 14
+        of the 16 spee'
+  - id: f2
+    target: auditory_word_recognition
+    claim: Damage to left STG and posterior STG is the strongest predictor of impaired auditory word recognition in chronic
+      left-hemisphere stroke aphasia, consistent with the ventral stream's role in auditory-to-meaning mapping.
+    strength: strong
+    confidence: high
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC Aphasia Lab archival database)
+    - 'CLSM for auditory word recognition: top univariate connection STG <-> posterior STG (Z=4.75), then AG <-> posterior
+      STG (Z=4.29); predominantly ventral stream links'
+    - 'Multivariate RLSM for auditory word recognition: STG (R2=0.31), AG (R2=0.36), MTG pole (R2=0.39)'
+    claim_quotes:
+    - page: 9
+      quote: Much of the damage associated with 'auditory word recognition' involved the ventral stream with relatively fewer
+        links involving the dorsal stream
+  - id: f3
+    target: naming
+    claim: 'Naming impairment (PNT correct) in chronic left-hemisphere stroke aphasia is associated with damage to an extensive
+      cortical network including both ventral stream (posterior STG) and dorsal stream (precentral gyrus) regions, with no
+      single '
+    strength: moderate
+    confidence: high
+    flags:
+    - n=105 for PNT (not full n=159)
+    - cohort overlaps with @Fridriksson2018 (same USC Aphasia Lab)
+    - paper states 'unlike Wernicke's, Broca's, conduction, or global aphasia, anomic aphasia has no specific lesion location'
+      (citing Yourganov 2015) — this is consistent with low R2 for naming
+    - 'CLSM for PNT correct: top univariate link is PrCG <-> posterior STG (Z=4.21); multivariate CLSM: posterior STG <->
+      PrCG R2=0.18 (first entry), then multiple additional links adding to total R2=0.48'
+    - 'The naming finding illustrates the key claim: many different lesion locations can impair naming because naming relies
+      on both dorsal and ventral stream networks'
+    claim_quotes:
+    - page: 9
+      quote: 'ated by damage that predicts naming impair-
+
+        ment, anomia. In the current study, ''correct naming'' was pre-
+
+        dicted in the univariate analysis by a lesion location mostly
+
+        involving posterior structures, including the posterior STG
+
+        and angular '
+    - page: 9
+      quote: 'unlike
+
+        Wernicke''s, Broca''s, conduction, or global aphasia, anomic
+
+        aphasia has no specific lesion location.'
+  verdict: approve
+  rationale: 'Schema-valid; @Fridriksson2018Anatomy resolves. The cross_finding_consistency soft-fail (sample.n disagrees:
+    57/105/159) is a *correct* representation of the paper — n varies per WAB-R subtest because not every patient took every
+    subtest (sentence comprehension n=57, PNT n=105, full n=159). The flag should be acknowledged but it''s not a coding error.
+    Quotes (Table 3 R²=0.60 sentence comprehension; R²=0.31 auditory word recognition) verbatim verified. Approve.'
+  per_finding: null
+- draft: drafts/regions/left_superior_temporal_gyrus_wernicke__Mirman2015.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) no_human_review_flags: f1: Exact MNI peak coordinates not reported numerically; approximate range read from'
+  findings_summary:
+  - id: f1
+    target: speech_recognition_phonological
+    claim: 'Lesions in the left superior temporal gyrus (including Wernicke''s area) extending deep into the planum temporale,
+      inferior to the Sylvian fissure, are associated with auditory-phonological speech recognition deficits in chronic post-stroke '
+    strength: strong
+    confidence: high
+    flags:
+    - Exact MNI peak coordinates not reported numerically; approximate range read from Figure 4 panel labels.
+    - t-statistic range read from Figure 4 colour bar (red-yellow scale); verify in supplementary.
+    - DeWitt & Rauschecker 2012 cited as convergent meta-analysis — confirm citation key in citations.md.
+    - The factor analysis shows Speech Recognition also had moderate loadings on repetition tests — some cross-factor variance;
+      the VLSM cluster may therefore partially overlap with production-related regions at uncorrected thresholds.
+    claim_quotes:
+    - page: 4
+      quote: VLSM of the Speech Recognition factor identiﬁed a parallel region inferior to the Sylvian ﬁssure, primarily in
+        the superior temporal gyrus, including prominent involvement in Wernicke's area and extending deep into planum temporale
+        (Fig. 4,
+    - page: 5
+      quote: Together, these two factors map the classic peri-Sylvian language regions and the superior-inferior division
+        between production and recognition provides new evidence to reﬁne the dorsal–ventral division in dual-pathway models
+        of speech proc
+    - page: 5
+      quote: Our ﬁndings support the involvement of planum temporale and Wernicke's area in speech recognition, but as components
+        of the ventral route, which our VLSM of Speech Recognition locates deep and inferior to the Sylvian ﬁssure along the
+        length
+  verdict: approve
+  rationale: Schema-valid; @Mirman2015 resolves; the replication @DeWitt2012 — flagged missing in earlier review — was added
+    to citations.md this session. relationship=causal/VLSM correct. Quotes 'VLSM of the Speech Recognition factor identified
+    a parallel region inferior to the Sylvian fissure' (p.4) and 'Together, these two factors map the classic peri-Sylvian
+    language regions' (p.5) verbatim verified. Approve.
+  per_finding: null
+- draft: drafts/regions/left_superior_temporal_gyrus_wernickes__Robson2019.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f1: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f1: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: auditory_comprehension
+    claim: 'Lesions to the left mid-posterior superior temporal gyrus (and adjacent STS and white matter) are associated with
+      the comprehension deficits characterizing Wernicke''s aphasia, with maximal lesion overlap in this region across a group
+      of 12 '
+    strength: weak
+    confidence: medium
+    flags:
+    - No voxel-wise statistical lesion-symptom mapping performed; lesion overlap is a descriptive map only. Finding is inferential
+      from region description, not from formal LSM analysis.
+    - Lesion volumes reported in Table 1 as voxels, not mm³; cannot compute absolute volumes without voxel size information
+      for clinical imaging participants.
+    claim_quotes:
+    - page: 800
+      quote: WA results from lesions to the left temporoparietal region, which supports a range of functions related to language
+        comprehension
+  - id: f2
+    target: auditory_comprehension
+    claim: Language comprehension in Wernicke's aphasia shows strong and consistent recovery from 2.5 to 9 months post-onset,
+      with significant improvement between each successive time point, but residual comprehension impairments remain in all
+      partici
+    strength: weak
+    confidence: high
+    flags: []
+    claim_quotes:
+    - page: 804
+      quote: 'A significant improvement in comprehension over time was found (BDAE: F(2, 20) = 22.2, P < .001, η = 0.69; sWPM:
+        F(2, 20) = 34.5, P < .001, η = 0.78'
+  verdict: agree_defer
+  rationale: 'Internally inconsistent triple on f1: relationship=causal + method=behavioral_only + imaging=multimodal don''t
+    fit together. The paper has only descriptive lesion-overlap maps (no formal LSM); it should be either method=not_reported
+    with relationship=causal, or relationship=correlational. TE_ms=302 is a likely paper typo (TE 302 ms is implausible at
+    3T) but is verbatim from the PDF. Also ''kind: classical'' references forward IDs ventral_language and arcuate_fasciculus
+    that don''t yet exist as canonical entries. Defer.'
+  per_finding: null
+- draft: drafts/regions/left_supramarginal_gyrus_premotor__Mirman2015.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) no_human_review_flags: f1: Exact MNI peak coordinates not reported numerically; approximate range read from'
+  findings_summary:
+  - id: f1
+    target: speech_production_phonological
+    claim: 'Lesions in the left supramarginal gyrus and adjacent supra-Sylvian cortex (extending anteriorly into inferior
+      postcentral, precentral, and premotor cortex) are associated with phonological/articulatory speech production deficits
+      in chronic '
+    strength: strong
+    confidence: high
+    flags:
+    - Exact MNI peak coordinates not reported numerically; approximate range read from Figure 4 panel labels.
+    - t-statistic range read from Figure 4 colour bar (blue-green scale); verify in supplementary.
+    - Replication citations (Schwartz 2012, Buchsbaum 2011, Fridriksson 2010) cited by Mirman et al. in Discussion — check
+      exact citation keys in citations.md.
+    - Note that Broca's area was specifically NOT found in this VLSM — important negative finding documented in region_definition.description.
+    claim_quotes:
+    - page: 4
+      quote: VLSM of the Speech Production factor identiﬁed a region superior to the Sylvian ﬁssure, primarily in the supramarginal
+        gyrus and extending anteriorly into inferior postcentral, pre- central and premotor cortex (Fig. 4, blue–green). These
+        re
+    - page: 5
+      quote: In the present study, the dorsal speech production route extends superior to the Sylvian ﬁssure, from the supramarginal
+        gyrus through inferior postcentral and precentral sensorimotor regions to premotor cortical regions involved in articula
+    - page: 5
+      quote: 'The peri-Sylvian regions involved in phonological processing were further subdivided into supra-Sylvian regions
+        for speech production and infra-Sylvian regions for speech recognition.
+
+        '
+  verdict: approve
+  rationale: Schema-valid; @Mirman2015 resolves; the three replication keys @Schwartz2012, @Buchsbaum2011, @Fridriksson2010
+    — all flagged missing in earlier review — were added to citations.md this session. relationship=causal/VLSM correct. Quote
+    'VLSM of the Speech Production factor identified a region superior to the Sylvian fissure, primarily in the supramarginal
+    gyrus' (p.4) verbatim verified. Approximate MNI coords from Fig 3 panel labels are honestly flagged. Approve.
+  per_finding: null
+- draft: drafts/therapies/phonological_component_analysis__MassonTrottier2021.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) strength_moderate_or_better: f1: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: left_temporal_fusiform_cortex_anterior
+    claim: PCA therapy in French is associated with increased resting-state functional connectivity between the anterior left
+      temporal fusiform cortex and bilateral supracalcarine cortex, and between the left supracalcarine cortex and the anterior
+      lef
+    strength: weak
+    confidence: high
+    flags:
+    - n=10 is very small for rs-fMRI; results should be treated as exploratory
+    - No correlation between rsFC changes and behavioral naming gains — directionality of connectivity finding as therapy
+      mechanism is assumed, not demonstrated
+    - 'forward-looking target IDs used: left_temporal_fusiform_cortex_anterior, left_supracalcarine_cortex, left_inferior_temporal_gyrus_anterior'
+    claim_quotes:
+    - page: 6
+      quote: the anterior division of the left temporal fusiform cortex was more functionally connected to the supracalcarine
+        (SCC) cortex bilaterally. Furthermore, the left SCC cortex was more functionally connected with the anterior division
+        of the le
+  - id: f2
+    target: right_lingual_gyrus
+    claim: PCA therapy in French is associated with decreased resting-state functional connectivity between the right lingual
+      gyrus and right superior frontal gyrus, concurrent with naming improvement, possibly reflecting reduction of maladaptive
+      righ
+    strength: weak
+    confidence: high
+    flags:
+    - Decrease in RH FC interpreted by authors as reduction of maladaptive RH recruitment — this is an inference, not directly
+      tested
+    - 'forward-looking target IDs: right_lingual_gyrus, right_superior_frontal_gyrus'
+    claim_quotes:
+    - page: 7
+      quote: 'the lingual gyrus was less functionally connected with the superior frontal gyrus in the RH.
+
+        '
+    - page: 9
+      quote: going in the same direction as theories regarding maladaptive effects of RH recruitment on language function
+        following aphasia, the results of this work show that naming recovery following Fr-PCA happened concomitantly with
+        a decreased RH f
+  verdict: approve
+  rationale: 'Schema-valid; @MassonTrottier2021 resolves. The two BLOCKERs from the earlier review were repaired this session:
+    file-level short_description and targets_impairments now present, and ''imaging: unimodal'' (off-vocab) replaced with
+    ''imaging: fMRI'' on both findings. The remaining strength=weak soft-fail is the agent''s honest read of n=10 single-arm
+    rs-fMRI with no significant FC↔naming correlation (f1) — appropriate. Approve.'
+  per_finding: null

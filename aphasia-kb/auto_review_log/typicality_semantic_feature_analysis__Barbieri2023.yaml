@@ -138,6 +138,40 @@ runs:
   - name: cross_finding_consistency
     passed: true
     blocker: false
-last_run: '2026-05-05T04:12:28'
+- run_id: 5
+  timestamp: '2026-05-06T12:28:31'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/19 quotes (89%)
+    - '2 quotes did not match — first 3:'
+    - '  - f2.Table 5 — naming treatment post-treatment (p.87): Naming treatment (k  87)…'
+    - '  - f3.Table 6 — naming group (p.88): Time (Post- vs. Pre-treatment)  .016  .025  410.8  .653  .655…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-06T12:28:31'
 latest_verdict: auto_approve
 latest_mode: deterministic_only

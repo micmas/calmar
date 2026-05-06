@@ -603,6 +603,7 @@ class KnowledgeBase:
         region_col: str = "region",
         weight_col: str = "lesion_in_roi_percent",
         min_overlap: float = 1.0,
+        min_confidence: str | None = None,
     ) -> pd.DataFrame:
         """
         Aggregate KB findings against a per-region overlap table and return
@@ -627,6 +628,10 @@ class KnowledgeBase:
             return pd.DataFrame()
 
         f = self.findings[self.findings["source_kind"] == "region"]
+        if min_confidence:
+            order = {"low": 0, "medium": 1, "high": 2}
+            min_rank = order.get(min_confidence, 0)
+            f = f[f["confidence"].map(lambda c: order.get(c, 0) >= min_rank)]
         joined = matched.merge(
             f, left_on="_kb_id", right_on="source_id", how="inner",
             suffixes=("", "_f"),
@@ -658,6 +663,7 @@ class KnowledgeBase:
         self,
         scores: dict,
         instrument_match_bonus: float = 1.5,
+        min_confidence: str | None = None,
     ) -> pd.DataFrame:
         """
         Aggregate findings carried by predictor entries against a patient's
@@ -712,6 +718,10 @@ class KnowledgeBase:
             (self.findings["source_kind"] == "predictor")
             & (self.findings["source_id"].isin(resolved.keys()))
         ].copy()
+        if min_confidence:
+            order = {"low": 0, "medium": 1, "high": 2}
+            min_rank = order.get(min_confidence, 0)
+            f = f[f["confidence"].map(lambda c: order.get(c, 0) >= min_rank)]
         if f.empty:
             return pd.DataFrame()
 
