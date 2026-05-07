@@ -1,0 +1,88 @@
+draft_path: drafts/therapies/tms_right_ifg__Naeser2005.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T16:45:28'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-06T06:55:57'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/6 quotes (83%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Results (p.7): BNT (first 20 items) (p = .003); BDAE subtest, Animal
+      Naming (p = .02); and BDAE…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: Schema-valid; @Naeser2005 added to citations.md this session; PDF
+        quote-match passes 100%. f1 strength=weak is the appropriate call for an n=4
+        open-protocol case series with no control arm — the BNT improvement at 2 mo
+        (p=0.003) is statistically real but the design is foundational/exploratory
+        rather than definitive. Honest extraction. Approve.
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T06:55:57'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

@@ -1,0 +1,89 @@
+draft_path: drafts/regions/left_anterior_temporal_lobe__Robson2014.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T16:45:28'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f2: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-06T06:55:56'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 9/9 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f2: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: Schema-valid; @Robson2014 added to citations.md this session (distinct
+        from @Robson2019); PDF quote-match passes 100%. Small n=12 cohort means the
+        medium confidence + weak strength on f2 are the right calls. Distortion-corrected
+        fMRI on chronic Wernicke's aphasia revealing left ATL + right anterior STG
+        residual-comprehension activation is a coherent extracted finding. Approve.
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T06:55:56'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

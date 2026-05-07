@@ -1,0 +1,462 @@
+draft_path: drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T01:20:35'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1): provenance.extracted_by missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1): provenance.extracted_on missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1): provenance.paper_section missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1): provenance.confidence missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1): provenance.confidence=None invalid'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[3]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2): provenance.extracted_by missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2): provenance.extracted_on missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2): provenance.paper_section missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2): provenance.confidence missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2): provenance.confidence=None invalid'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3): provenance.extracted_by missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3): provenance.extracted_on missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3): provenance.paper_section missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3): provenance.confidence missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3): provenance.confidence=None invalid'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4): provenance.extracted_by missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4): provenance.extracted_on missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4): provenance.paper_section missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4): provenance.confidence missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4): provenance.confidence=None invalid'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4).source_passages[1]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 9/12 quotes (75%)
+    - '3 quotes did not match — first 3:'
+    - '  - f2.? (p.34): thalamic aphasia is usually related to destruction of the
+      frontal–ITP–NR–CM syst…'
+    - '  - f3.? (p.30): seem to spare implicit memory, repetition (phonologic processing),
+      and syntax…'
+    - '  - f4.? (p.3): nonthalamic hemorrhagic lesions, if small or moderate in size,
+      may produce featu…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=None'
+    - 'f2: confidence=None'
+    - 'f3: confidence=None'
+    - 'f4: confidence=None'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-07T01:22:42'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1): provenance.paper_section missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[3]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2): provenance.paper_section missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3): provenance.paper_section missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4): provenance.paper_section missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4).source_passages[1]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 9/12 quotes (75%)
+    - '3 quotes did not match — first 3:'
+    - '  - f2.? (p.34): thalamic aphasia is usually related to destruction of the
+      frontal–ITP–NR–CM syst…'
+    - '  - f3.? (p.30): seem to spare implicit memory, repetition (phonologic processing),
+      and syntax…'
+    - '  - f4.? (p.3): nonthalamic hemorrhagic lesions, if small or moderate in size,
+      may produce featu…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-07T01:23:27'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[0] (id=f1).source_passages[3]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md:
+      finding[3] (id=f4).source_passages[1]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 9/12 quotes (75%)
+    - '3 quotes did not match — first 3:'
+    - '  - f2.? (p.34): thalamic aphasia is usually related to destruction of the
+      frontal–ITP–NR–CM syst…'
+    - '  - f3.? (p.30): seem to spare implicit memory, repetition (phonologic processing),
+      and syntax…'
+    - '  - f4.? (p.3): nonthalamic hemorrhagic lesions, if small or moderate in size,
+      may produce featu…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-07T01:24:10'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 9/12 quotes (75%)
+    - '3 quotes did not match — first 3:'
+    - '  - f2.\''narrative synthesis\'' (p.34): thalamic aphasia is usually related
+      to destruction of the frontal–ITP–NR–CM syst…'
+    - '  - f3.\''narrative synthesis\'' (p.30): seem to spare implicit memory, repetition
+      (phonologic processing), and syntax…'
+    - '  - f4.\''narrative synthesis\'' (p.3): nonthalamic hemorrhagic lesions, if
+      small or moderate in size, may produce featu…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 5
+  timestamp: '2026-05-07T01:26:58'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 12/12 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 6
+  timestamp: '2026-05-07T01:28:20'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 12/12 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Conflict of interest: extracted by agent:claude-sonnet-4-6. Soft
+        failure (strength=weak on f4 — nonthalamic lesion mechanism claim). The nonthalamic
+        claim is a secondary hypothesis in the paper; weak is appropriate. Human reviewer:
+        check f4 quote was accurately fixed (now uses truncated verbatim quote).'
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 7
+  timestamp: '2026-05-07T01:31:40'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 12/12 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 8
+  timestamp: '2026-05-07T13:13:13'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 12/12 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: michele
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: (no rationale provided)
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T13:13:13'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

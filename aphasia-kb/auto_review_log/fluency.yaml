@@ -1,0 +1,147 @@
+draft_path: impairments/fluency.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T00:12:13'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 15/15 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: anthropic SDK not installed (pip install anthropic)
+- run_id: 2
+  timestamp: '2026-05-07T00:14:33'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 15/15 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: ANTHROPIC_API_KEY not set in environment
+- run_id: 3
+  timestamp: '2026-05-07T00:31:15'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 15/15 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: The soft-check failure is f2 (left central opercular cortex, strength=weak).
+        The fluency cluster does NOT survive lesion-volume control (r=0.59 with lesion
+        volume, p<0.0001 — the strongest lesion-volume confound across all five PCA
+        factors). This is a genuine methodological limitation and the draft documents
+        it explicitly in source_passages, confounders_not_controlled, and the notes
+        section. The strength=weak label for f2 accurately reflects the lesion-volume
+        confound. f1 (anterior arcuate, strength=moderate) is supported at standard
+        threshold and its source_passage directly quotes the paper. No blockers fail.
+        The draft is conservatively and accurately labeled.
+      per_finding:
+      - id: f1
+        concern: lesion-volume confound documented; strength=moderate reasonable given
+          it cleared standard threshold
+        supports_approval: true
+      - id: f2
+        concern: strength=weak correctly labeled; cluster did not survive lesion-volume
+          covariate (well documented)
+        supports_approval: true
+      - id: f3
+        concern: strength=weak correctly labeled; same lesion-volume concern as f2
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T00:31:15'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

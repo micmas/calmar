@@ -1,0 +1,325 @@
+# auto_review.py worksheet
+#
+# For each draft below, fill in:
+#   verdict:   approve | agree_defer | reject
+#   rationale: 1-3 sentences explaining the call
+#   per_finding (optional): list of {id, concern, supports_approval}
+#
+# Then apply with:
+#   python auto_review.py --apply-verdicts <this-file>
+#
+# Notes:
+#   - 'approve' on a deferred draft lifts to auto_approve and promotes via promote.py.
+#   - 'reject' marks as auto_reject (the draft stays in drafts/).
+#   - 'agree_defer' keeps it deferred (still needs human attention).
+#   - schema_valid / pdf_quote_match failures CANNOT be overridden.
+
+drafts:
+- draft: drafts/impairments/syntactic_processing__DenOuden2019.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f3: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f3: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: morphosyntactic_production_deficit
+    claim: Lesions to the left IFG pars triangularis (BA 45) predict morphosyntactically reduced speech
+      output (agrammatic production) after left-hemisphere stroke.
+    strength: moderate
+    confidence: high
+    flags:
+    - USC/MUSC cohort (n=71); overlaps with @Fridriksson2018, @Yourganov2015Predicting, @Basilakos2015
+      (same lab)
+    - PD-MR classification based on single speech sample (Cookie-Theft) — limited ecological validity
+    - CLSM results not corrected for lesion size; treated as supplementary evidence
+    claim_quotes:
+    - page: 17
+      quote: identification of morphosyntactic production problems in descriptive speech was most strongly
+        predicted by structural lesions in the triangular part of the IFG
+  - id: f2
+    target: verb_argument_structure_production
+    claim: Lesions to the left posterior superior temporal gyrus (pSTG) and angular gyrus predict impaired
+      verb argument structure production on the NAVS ASPT-A subtest.
+    strength: moderate
+    confidence: high
+    flags:
+    - USC/MUSC cohort; overlaps with other USC papers
+    - Angular gyrus result may reflect semantic-syntactic interface rather than pure syntax
+    claim_quotes:
+    - page: 12
+      quote: ASPT-A scores were negatively correlated with damage to the angular gyrus, extending into
+        middle occipital gyrus
+    - page: 18
+      quote: location of this region makes a lot of sense. If "syntactic processing" is not exclusively
+        a function of the dorsal stream
+  - id: f3
+    target: sentence_comprehension_production
+    claim: Reduced structural connectivity in a ventral pathway between left IFG and temporal regions
+      (especially IFG-pars-triangularis to pSTG/MTG) predicts impaired noncanonical sentence production
+      on the NAVS SPPT.
+    strength: weak
+    confidence: medium
+    flags:
+    - USC/MUSC cohort; overlaps with other USC papers
+    - CLSM results not corrected for lesion size — lower reliability than VLSM findings
+    - Ventral stream connectivity finding is unexpected given prior literature emphasizing dorsal stream
+    claim_quotes:
+    - page: 18
+      quote: preserved noncanonical sentence production on this priming task was strongly reliant on the
+        integrity of ventral-stream connections to IFG
+  verdict: null
+  rationale: null
+  per_finding: null
+- draft: drafts/predictors/stroke_severity__Pedersen2004.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) no_human_review_flags: f1: SSS subsample (n=82–84) smaller than total cohort (n=203); subsample
+    representat'
+  - '(sft) cross_finding_consistency: @Pedersen2004: sample.n disagrees: [84, 203]'
+  findings_summary:
+  - id: f1
+    target: prognosis
+    claim: Initial aphasia severity (WAB-AQ) and neurological stroke severity (modified SSS) together
+      predict 60% of variance in 1-year WAB-AQ; initial WAB-AQ and modified SSS were both retained in
+      the final model, while age and sex were not.
+    strength: moderate
+    confidence: high
+    flags:
+    - 'Two predictors retained: initial WAB-AQ and modified SSS. Type of aphasia, age, and sex not significant.'
+    - SSS subsample (n=82–84) smaller than total cohort (n=203); subsample representativeness uncertain.
+    - Figure 1 (scattergram of AQ admission vs 1-year AQ) shows R²=0.47 for simple regression; full model
+      R²=0.60.
+    claim_quotes:
+    - page: 1
+      quote: The outcome for language function was predicted by initial severity of the aphasia and by
+        the initial stroke severity (assessed by the Scandinavian Stroke Scale), but not by age, sex or
+        type of aphasia
+    - page: 8
+      quote: the inclusion of neurological stroke severity on admission improved the accuracy of the prognosis
+        of aphasia
+  - id: f2
+    target: initial_aphasia_severity
+    claim: Initial WAB-AQ alone accounts for 47% of variance in 1-year WAB-AQ (R²=0.47). When combined
+      with modified SSS this rises to 60%. Type of aphasia on admission does not independently predict
+      degree of recovery beyond its correlation with init
+    strength: moderate
+    confidence: high
+    flags:
+    - 'R²=0.47 for simple regression initial AQ → 1-year AQ; formula: initial AQ = 45.3 + 0.65 × (1-year
+      AQ) — note this is AQ-at-admission as dependent variable in the printed formula; interpret carefully.'
+    - Type of aphasia not an independent predictor after controlling for initial AQ.
+    claim_quotes:
+    - page: 8
+      quote: Numerous studies have shown initial severity of aphasia to be far more important for the
+        final outcome of aphasia than any other factor
+    - page: 8
+      quote: We did two types of analyses to compensate for this and found no effect of type of aphasia
+        on improvement in AQ in either case
+    - page: 9
+      quote: the initial type of aphasia does not predict the degree of recovery beyond its association
+        with aphasia severity
+  verdict: null
+  rationale: null
+  per_finding: null
+- draft: drafts/regions/left_anterior_temporal_lobe__Robson2014.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f2: confidence=''medium'''
+  - '(sft) strength_moderate_or_better: f2: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: semantic_comprehension_residual
+    claim: In chronic Wernicke's aphasia (left posterior temporoparietal lesions), the left anterior temporal
+      lobe — including the anterior fusiform gyrus, temporal pole, and anterior middle temporal gyrus
+      — shows significantly greater activation than
+    strength: moderate
+    confidence: high
+    flags:
+    - Whole-brain threshold p<0.005 uncorrected — not corrected for multiple comparisons; interpret with
+      caution.
+    - ROI results are one-tailed one-sample t-tests (significance of activation within group) — not a
+      between-group test for the activation itself.
+    - Spin-echo EPI used specifically to enable ATL coverage — results may differ with gradient-echo sequences
+      (usual limitation of ATL fMRI).
+    - Five participants < 1 year post-stroke — some may not represent stable chronic state.
+    - Overactivation interpretation is theory-laden; alternative account (de-inhibition) is not ruled
+      out.
+    claim_quotes:
+    - page: 1
+      quote: Wernicke's aphasia group displayed an 'over-activation' in comparison with control participants,
+        indicating that anterior temporal lobe regions become increasingly influential following reduction
+        in posterior semantic resources
+    - page: 6
+      quote: main effect of group was reflected in significantly greater activation in the Wernicke's
+        aphasia group than the control group throughout the ventral and middle temporal lobes
+    - page: 10
+      quote: activation increased in the anterior temporal lobe and other regions following lesions to
+        posterior temporal regions classically associated with semantic representation access
+    - page: 12
+      quote: patients' reduction in posterior temporal semantic and phonological processing resources
+        increased reliance on extra-sylvian temporal regions
+  - id: f2
+    target: right_anterior_superior_temporal_gyrus
+    claim: Written word semantic processing in Wernicke's aphasia — but not picture processing — additionally
+      recruits the right anterior superior temporal gyrus and sulcus, a region associated with recovery
+      from auditory-verbal comprehension impairme
+    strength: weak
+    confidence: medium
+    flags:
+    - Modality-specific effect (words only, not pictures) is theoretically interesting but based on a
+      single ROI t-test; needs replication.
+    - No Group × Condition interaction at whole-brain level despite hypothesis; ROI finding may not generalise.
+    claim_quotes:
+    - page: 8
+      quote: Wernicke's aphasia group displayed additional activation in the right anterior superior temporal
+        gyrus/sulcus for word stimuli [t(11) = 2.27, P = 0.022]
+    - page: 10
+      quote: importance of the right anterior superior temporal gyrus/sulcus in language comprehension
+        subsequent to left posterior temporal lesions has been demonstrated in previous studies
+    - page: 1
+      quote: Semantic processing of written words in Wernicke's aphasia was additionally supported by
+        recruitment of the right anterior superior temporal lobe, a region previously associated with
+        recovery from auditory-verbal comprehension impairments
+  verdict: null
+  rationale: null
+  per_finding: null
+- draft: drafts/regions/left_precentral_gyrus__Itabashi2015.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) all_findings_confidence_high: f2: confidence=''medium'''
+  findings_summary:
+  - id: f1
+    target: apraxia_of_speech
+    claim: Damage to the posterior wall of the left precentral gyrus (central sulcus face area) is the
+      critical lesion site for AOS in acute ischemic stroke, particularly for pure AOS without accompanying
+      aphasia.
+    strength: moderate
+    confidence: high
+    flags:
+    - Japanese-speaking cohort; acute/subacute phase (median 7 days); no cohort overlap with USC papers
+    - Qualitative AOS assessment only; no standardized rating scale (unlike Basilakos 2015)
+    - Independent replication of Basilakos (2015) left precentral gyrus finding
+    claim_quotes:
+    - page: 3
+      quote: regions associated with all AOS were centered on the posterior wall of the left precentral
+        gyrus in the central sulcus
+    - page: 3
+      quote: posterior wall of the left precentral gyrus predicted the presence of AOS in the comparison
+        between pure AOS and non-AOS
+    - page: 4
+      quote: regions associated with pure AOS were confined to the left precentral gyrus in the VLSM analysis
+  - id: f2
+    target: apraxia_of_speech_with_aphasia
+    claim: AOS co-occurring with aphasia (AOS-aphasia) is associated with more widespread subcortical
+      lesions (basal ganglia, corona radiata, centrum semiovale) in addition to precentral gyrus damage,
+      reflecting larger total lesion burden.
+    strength: moderate
+    confidence: medium
+    flags:
+    - AOS+aphasia finding reflects lesion size confound; interpret with caution
+    - Subcortical involvement may indicate white matter pathway disruption rather than grey matter specificity
+    claim_quotes:
+    - page: 4
+      quote: AOS-aphasia and non-AOS indicated scattered lesions, including the basal ganglia, corona
+        radiata
+    - page: 4
+      quote: patients who have both AOS and aphasia tend to have larger size of lesions and greater involvement
+        of subcortical structures
+  verdict: null
+  rationale: null
+  per_finding: null
+- draft: drafts/regions/left_superior_temporal_gyrus__Leff2009.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(blk) no_contradictions: f1 has non-empty contradictions'
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  findings_summary:
+  - id: f1
+    target: auditory_short_term_memory_capacity
+    claim: Structural integrity of a focal region of the left posterior superior temporal gyrus and sulcus,
+      lateral and posterior to Heschl's gyrus and overlapping with the inferior planum temporale, is causally
+      necessary for auditory short-term memor
+    strength: strong
+    confidence: high
+    flags:
+    - Scanner was 1.5T; reference space reported as MNI but method uses unified segmentation — likely
+      MNI305 (SPM5 default).
+    - Analysis 1 STG peak is listed as Z=Inf in Table 1, indicating saturation; actual Z not recoverable
+      from paper.
+    - All analyses used SPM5 VBM on continuous grey matter images, NOT binary lesion maps — methodology
+      distinct from VLSM studies.
+    claim_quotes:
+    - page: 1
+      quote: structural integrity of a posterior region of the superior temporal gyrus and sulcus predicted
+        auditory short-term memory capacity
+    - page: 6
+      quote: identified a cortical region where grey matter density covaried with digit span despite the
+        inclusion of these five extra control regressors
+  - id: f2
+    target: spoken_sentence_comprehension
+    claim: Structural integrity of the left posterior superior temporal gyrus (same region supporting
+      auditory STM capacity) also predicts spoken sentence comprehension ability, but NOT single spoken
+      word comprehension or written sentence comprehensio
+    strength: moderate
+    confidence: high
+    flags:
+    - Correlation r=0.22 is statistically significant but modest; effect size is smaller than the primary
+      digit-span finding.
+    - Dissociation from written sentence comprehension (r=0.05, ns) is a key theoretical claim — supports
+      auditory-specific storage.
+    claim_quotes:
+    - page: 6
+      quote: significant correlation between the structural integrity of this region and spoken sentence
+        comprehension score, r(199) = 0.22, P = 0.002
+    - page: 6
+      quote: grey matter density in a region important for auditory short-term memory capacity correlated
+        more strongly with comprehension of spoken sentences than with comprehension of either single
+        words or written sentences
+    - page: 9
+      quote: identified the left posterior superior temporal gyrus and sulcus as the substrate mediating
+        the capacity of auditory short-term memory
+  verdict: null
+  rationale: null
+  per_finding: null
+- draft: drafts/therapies/tms_right_ifg__Naeser2005.md
+  current_verdict: defer_to_human
+  failure_reasons:
+  - '(skipped) pdf_quote_match: no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    for any cited paper'
+  - '(sft) strength_moderate_or_better: f1: strength=''weak'''
+  findings_summary:
+  - id: f1
+    target: right_pars_triangularis_ba45
+    claim: Inhibitory 1 Hz rTMS applied daily for 10 days (1200 pulses/day at 90% motor threshold) to
+      the right pars triangularis (anterior Broca homologue, immediately rostral to the ascending ramus
+      of the Sylvian fissure) produces significant lastin
+    strength: weak
+    confidence: high
+    flags:
+    - Open-protocol design — no sham control; evidence_quality set to case-series per schema instructions.
+    - The rTMS target (right pars triangularis, BA45) is defined by anatomical landmark (gyrus rostral
+      to ascending Sylvian ramus), not Talairach/MNI coordinates — reference_space set to native.
+    - Immediate post-rTMS naming improvement (S&V, p=0.0028) is a separate secondary measure from the
+      primary BNT/BDAE outcomes.
+    - P3 (moderate nonfluent) showed improvement at 2 months but returned to near-baseline by 8 months
+      — mixed responder.
+    - Paradoxical functional facilitation (PFF) mechanism hypothesised but not confirmed with neuroimaging.
+    claim_quotes:
+    - page: 1
+      quote: Significant improvement was observed in picture naming at 2 months post-rTMS, with lasting
+        benefit at 8 months in three patients
+    - page: 7
+      quote: This is the first study to report lasting, improved naming at 2 months and 8 months following
+        application of rTMS in chronic aphasia
+  verdict: null
+  rationale: null
+  per_finding: null

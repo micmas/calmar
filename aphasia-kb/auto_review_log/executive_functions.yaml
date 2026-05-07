@@ -1,0 +1,150 @@
+draft_path: impairments/executive_functions.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T00:12:12'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 14/14 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: anthropic SDK not installed (pip install anthropic)
+- run_id: 2
+  timestamp: '2026-05-07T00:14:32'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 14/14 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: ANTHROPIC_API_KEY not set in environment
+- run_id: 3
+  timestamp: '2026-05-07T00:31:15'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 14/14 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: The soft-check failure is f1 (left SFG, strength=weak). All three
+        findings rest on a relaxed threshold (p<0.005 voxel-level) because the standard
+        p<0.001 threshold yielded no clusters for Factor 5. The draft is transparently
+        honest about this — the paper text itself states 'There were no significant
+        clusters identified for executive function factor.' The strength=weak label
+        is correct. Factor 5 explains only 4.6% of variance (smallest factor) and
+        lesion volume is not a confound (r=0.14, p=0.33). Source_passages support
+        all claims at the cited threshold. Confidence is high for all findings. Including
+        weak-strength findings with appropriate labels is proper KB practice. No blockers
+        fail.
+      per_finding:
+      - id: f1
+        concern: strength=weak correctly labeled; relaxed threshold, but lesion-volume
+          independent
+        supports_approval: true
+      - id: f2
+        concern: strength=weak correctly labeled; same cluster as f1
+        supports_approval: true
+      - id: f3
+        concern: strength=weak correctly labeled; same cluster as f1
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T00:31:15'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

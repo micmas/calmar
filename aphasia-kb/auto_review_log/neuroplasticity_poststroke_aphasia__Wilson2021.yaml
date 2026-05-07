@@ -1,0 +1,442 @@
+draft_path: drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T01:20:35'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1): unknown target_kind=''biomarker'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1): unknown direction=''reduced_activation'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2): unknown target_kind=''biomarker'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2): unknown direction=''positive_correlation'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3): unknown target_kind=''biomarker'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3): unknown direction=''equivocal'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4): unknown target_kind=''biomarker'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4): unknown direction=''null_evidence'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[2]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/12 quotes (58%)
+    - '5 quotes did not match — first 3:'
+    - '  - f1.? (p.39): decreases were more prevalent than increases throughout the
+      left IFG and left po…'
+    - '  - f1.? (p.39): statistically significant after correction for multiple comparisons
+      in the pars …'
+    - '  - f2.? (p.49): three methodologically robust analyses have yielded positive
+      correlations betwee…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-07T01:22:42'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[2]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/12 quotes (58%)
+    - '5 quotes did not match — first 3:'
+    - '  - f1.? (p.39): decreases were more prevalent than increases throughout the
+      left IFG and left po…'
+    - '  - f1.? (p.39): statistically significant after correction for multiple comparisons
+      in the pars …'
+    - '  - f2.? (p.49): three methodologically robust analyses have yielded positive
+      correlations betwee…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-07T01:23:27'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md:
+      finding[3] (id=f4).source_passages[2]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/12 quotes (58%)
+    - '5 quotes did not match — first 3:'
+    - '  - f1.? (p.39): decreases were more prevalent than increases throughout the
+      left IFG and left po…'
+    - '  - f1.? (p.39): statistically significant after correction for multiple comparisons
+      in the pars …'
+    - '  - f2.? (p.49): three methodologically robust analyses have yielded positive
+      correlations betwee…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-07T01:24:10'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/12 quotes (58%)
+    - '5 quotes did not match — first 3:'
+    - '  - f1.\''narrative synthesis\'' (p.39): decreases were more prevalent than
+      increases throughout the left IFG and left po…'
+    - '  - f1.\''narrative synthesis\'' (p.39): statistically significant after correction
+      for multiple comparisons in the pars …'
+    - '  - f2.\''narrative synthesis\'' (p.49): three methodologically robust analyses
+      have yielded positive correlations betwee…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 5
+  timestamp: '2026-05-07T01:26:58'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 12/12 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 6
+  timestamp: '2026-05-07T01:28:20'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 12/12 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Conflict of interest: extracted by agent:claude-sonnet-4-6. Soft
+        failure (strength=weak on f3 re right-hemisphere recruitment equivocal evidence).
+        This is Wilson 2021 — a methodologically rigorous systematic review that itself
+        concludes evidence for RH recruitment is weak. The weak label is appropriate.
+        Human reviewer: straightforward approve.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 7
+  timestamp: '2026-05-07T01:31:40'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 12/12 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 8
+  timestamp: '2026-05-07T13:13:13'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 12/12 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: michele
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: (no rationale provided)
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T13:13:13'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

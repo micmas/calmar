@@ -1,0 +1,64 @@
+                                                 Brain and Language 93 (2005) 95–105
+                                                                                                                www.elsevier.com/locate/b&l
+
+
+
+
+     Improved picture naming in chronic aphasia after TMS to part
+            of right BrocaÕs area: An open-protocol study
+       Margaret A. Naesera,*, Paula I. Martina, Marjorie Nicholasa, Errol H. Bakera,
+          Heidi Seekinsa, Masahito Kobayashib, Hugo Theoretb,c, Felipe Fregnib,
+     Jose Maria-Tormosd, Jacquie Kurlanda, Karl W. Dorona, Alvaro Pascual-Leoneb,d
+         a
+           Department of Neurology, Harold Goodglass Boston University Aphasia Research Center, Boston University School of Medicine
+                                             and the Veterans Aﬀairs Boston Healthcare System, USA
+ b
+   Center for Non invasive Brain Stimulation, Department of Neurology, Harvard Medical School and Beth Israel Deaconess Medical Center, USA
+                               c
+                                 Départment de Psychologie and Hôpital Ste-Justine, Université de Montréal, Canada
+                  d
+                    Institut Guttmann de Neurorehabilitación, Instituto Universitario, Universidad Autónoma de Barcelona, Spain
+
+                                                          Accepted 20 August 2004
+                                                        Available online 7 October 2004
+
+
+
+
+Abstract
+
+   Functional imaging studies with nonﬂuent aphasia patients have observed ‘‘over-activation’’ in right (R) language homologues.
+This may represent a maladaptive strategy; suppression may result in language improvement. We applied slow, 1 Hz repetitive trans-
+cranial magnetic stimulation (rTMS) to an anterior portion of R BrocaÕs homologue daily, for 10 days in four aphasia patients who
+were 5–11 years poststroke. Signiﬁcant improvement was observed in picture naming at 2 months post-rTMS, with lasting beneﬁt at
+8 months in three patients. This preliminary, open trial suggests that rTMS may provide a novel treatment approach for aphasia by
+possibly modulating the distributed, bi-hemispheric language network.
+Published by Elsevier Inc.
+
+Keywords: Aphasia; TMS; Naming; Stroke rehabilitation
+
+
+1. Introduction                                                           elli, Grassi, and Mariotti (1989) reported that patients
+                                                                          who had partially recovered from aphasia after LH le-
+   Brain re-organization for language recovery after left                 sion showed worsening of language functions after sub-
+hemisphere (LH) stroke in patients with aphasia remains                   sequent RH lesion.
+unknown. Evidence suggesting a right hemisphere (RH)                          Some studies have suggested that both RH and LH
+role dates back to the late 1800s (Barlow, 1877; Gowers,                  participation is beneﬁcial in aphasia recovery. In func-
+1886). Nearly a century later, this was further supported                 tional imaging studies with WernickeÕs aphasia patients,
+by amobarbital studies with aphasia patients where                        increased activation in the right posterior superior tem-
+injection into the R carotid produced speech arrest in                    poral gyrus region (and some remaining LH language
+most patients, whereas injection into the left side pro-                  areas) has been associated with improvement (Musso
+duced almost no alteration on aphasic speech (Czopf,                      et al., 1999; Weiller et al., 1995). Areas of RH activation
+1972; Kinsbourne, 1971). More recently, Basso, Gard-                      during language tasks may be limited to homologous
+                                                                          areas that were damaged in the LH (Calvert et al.,
+  *
+                                                                          2000; Lazar et al., 2000; Thulborn, Carpenter, & Just,
+    Corresponding author. Present address: V.A. Boston Healthcare
+System (12A), 150 So. Huntington Avenue, Boston, MA 02130, USA.
+                                                                          1999). Kim, Ko, Parrish, and Kim (2002) have suggested
+Fax: +1 617 739 8926.                                                     that right frontal reorganization may depend on intact
+   E-mail address: mnaeser@bu.edu (M.A. Naeser).                          left basal ganglia. Other studies have suggested that
+
+0093-934X/$ - see front matter. Published by Elsevier Inc.
+doi:10.1016/j.bandl.2004.08.004
+

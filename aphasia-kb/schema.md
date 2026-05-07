@@ -1,4 +1,4 @@
-# Schema v2.3
+# Schema v2.4
 
 Every entry is a single markdown file with **YAML frontmatter** followed by
 **prose**. The frontmatter is the contract that `aphasia_kb.py`,
@@ -6,7 +6,7 @@ Every entry is a single markdown file with **YAML frontmatter** followed by
 Changing field names or controlled vocabularies should be a deliberate,
 documented change to *this file* and the loader together.
 
-> **Status note.** Schema v1 → v2.0 → v2.1 → v2.2 → **v2.3** (current).
+> **Status note.** Schema v1 → v2.0 → v2.1 → v2.2 → v2.3 → **v2.4** (current).
 >
 > - **v2.0** introduced the rich finding object (method/sample/stats/etc.).
 > - **v2.1** made `source_passages` required and added `imaging_details`
@@ -23,9 +23,21 @@ documented change to *this file* and the loader together.
 >   predict an impairment, therapy response, or prognosis. Adds
 >   `target_kind: predictor` so findings in any bucket can target a
 >   predictor (e.g. "damage to Broca's area → low WAB-AQ").
+> - **v2.4** adds the `reviews/` bucket and `method: narrative_review`
+>   for qualitative synthesis entries. Review findings capture
+>   consensus positions and theoretical claims from narrative reviews
+>   and systematic reviews where no primary dataset is analysed.
+>   These findings use `relationship: synthesis`, `evidence_quality:
+>   narrative-review`, and omit `sample`, `statistics`, `confounders`,
+>   and `region_definition`. A new optional field
+>   `primary_papers_cited` lists the citation keys of primary studies
+>   the review synthesizes. `source_passages` and `author_limitations`
+>   remain required. Downstream tools should weight `narrative-review`
+>   evidence distinctly from quantitative findings and may filter it
+>   out by default.
 >
-> New entries must declare `schema_version: 2.3`. The loader reads older
-> entries (v1, v2.0, v2.1, v2.2) for backwards compatibility.
+> New entries must declare `schema_version: 2.4`. The loader reads older
+> entries (v1, v2.0–v2.3) for backwards compatibility.
 
 ## File-level fields (every entry)
 
@@ -138,7 +150,7 @@ ones are **S**; optional ones are **O**.
 | Field      | R/S/O | Type   | Notes |
 |------------|-------|--------|-------|
 | `method`   | R     | enum or list | **v2.2:** can be a string (single method) or a list of strings (multimodal paper). E.g. `LSM` or `[fMRI_activation, DTI]`. |
-| `design`   | S     | enum   | `cross-sectional` \| `longitudinal` \| `RCT` \| `case-series` \| `single-case` \| `meta-analysis` \| `systematic-review`. |
+| `design`   | S     | enum   | `cross-sectional` \| `longitudinal` \| `RCT` \| `case-series` \| `single-case` \| `meta-analysis` \| `systematic-review` \| `narrative-review` (v2.4). |
 | `imaging`  | S     | enum   | `T1` \| `T2` \| `FLAIR` \| `CT` \| `DWI` \| `fMRI` \| `multimodal` \| `none` \| `not_reported`. |
 | `relationship` | R | enum | **v2.2:** what kind of relationship the finding describes. See *Relationship semantics* below. |
 
@@ -156,6 +168,7 @@ to know what e.g. `direction: likely` actually means.
 | `recruitment`    | fMRI_activation                        | "This region is recruited (active) during this task" — task-functional claim.                           |
 | `responder`      | clinical_RCT, behavioral_only          | "Patients with this lesion / region pattern respond well to this therapy" — a moderator claim.          |
 | `treatment_response` (added 2026-05-01) | fMRI_activation pre/post a treatment   | "This region's activation changes as a *consequence* of the treatment." Distinct from `causal` (damage→impairment) and `responder` (which patients respond). Use for treatment-induced upregulation / functional reorganization findings. |
+| `synthesis` (added v2.4)    | narrative_review                       | "This is the consensus or majority position of the review literature." No primary measurement — a synthesized claim with `evidence_quality: narrative-review`. |
 
 For `interpret_overlap()` (the per-patient lesion → literature interpretation),
 all four `relationship` values with `direction: likely` get treated as
@@ -249,7 +262,7 @@ reports.
 
 | Field                 | R/S/O | Notes |
 |-----------------------|-------|-------|
-| `evidence_quality`    | R     | `case-study` \| `cohort` \| `RCT` \| `meta-analysis` \| `tentative`. Reflects the *paper*. |
+| `evidence_quality`    | R     | `case-study` \| `cohort` \| `RCT` \| `meta-analysis` \| `tentative` \| `narrative-review` (v2.4). Reflects the *paper*. Use `narrative-review` for any `method: narrative_review` finding. |
 | `strength`            | R     | `weak` \| `moderate` \| `strong`. The agent's read of how robustly this paper supports the claim. |
 
 ### Audit trail (provenance)
@@ -314,18 +327,19 @@ findings.
 > bucket types, changed required-ness) DO require a version bump.
 
 ```
-schema_version    = 2 | 2.1 | 2.2 | 2.3 (current)
+schema_version    = 2 | 2.1 | 2.2 | 2.3 | 2.4 (current)
 status            = draft | in_review | approved | rejected | legacy_v1
 supports          = claim | method | sample | statistics | confounders
                   | region_definition | limitation | imaging_details
 reference_space   = MNI152 | MNI305 | Talairach | native | other
                   | not_reported
 relationship      = causal | correlational | recruitment | responder
-                  | treatment_response
+                  | treatment_response | synthesis              # v2.4
 direction         = likely | unlikely | likely_responder | unlikely_responder
                   | no_effect | mixed
 strength          = weak | moderate | strong
 evidence_quality  = case-study | cohort | RCT | meta-analysis | tentative
+                  | narrative-review                            # v2.4
 confidence        = high | medium | low
 region.kind       = atlas | classical | network | tract
 predictor_type    = behavioural | demographic | clinical | imaging_metric
@@ -339,8 +353,10 @@ method            = LSM | VLSM | VBCM | MLPA | MVPA
                   | EEG | MEG | TMS | tDCS
                   | behavioral_only | clinical_RCT | meta-analysis
                   | computational_model
+                  | narrative_review                            # v2.4
 design            = cross-sectional | longitudinal | RCT | case-series
                   | single-case | meta-analysis | systematic-review
+                  | narrative-review                            # v2.4
 imaging           = T1 | T2 | FLAIR | CT | DWI | fMRI | multimodal
                   | none | not_reported
 region_definition.kind = atlas | manual_ROI | peak_coord_sphere | tract
@@ -348,6 +364,22 @@ region_definition.kind = atlas | manual_ROI | peak_coord_sphere | tract
 ```
 
 ### Method-vocabulary notes
+
+- **`narrative_review`** (v2.4): Use when the paper is a narrative review,
+  systematic review (without formal meta-analytic pooling), or opinion
+  article with substantive synthesized claims. Findings with this method
+  use `relationship: synthesis`, `evidence_quality: narrative-review`, and
+  **omit** `sample`, `statistics`, `confounders_controlled`,
+  `confounders_not_controlled`, and `region_definition` (these are not
+  applicable to review findings). `source_passages` (verbatim quotes) and
+  `author_limitations` remain required. An optional top-level field
+  `primary_papers_cited` (list of citation keys) documents the primary
+  studies the review synthesizes.
+
+  These findings are stored in `drafts/reviews/` and should be weighted
+  lower than quantitative findings by downstream tools. Use `strength:
+  weak` unless the review is explicitly based on a large evidence base
+  with little contradictory evidence.
 
 - **`VBCM`** (Voxel-Based Correlational Methodology, Tyler et al. 2005):
   a continuous-intensity variant of VLSM. Instead of binarised lesion
