@@ -1,0 +1,66 @@
+doi:10.1093/brain/awt373                                                                                                               Brain 2014: 137; 931–943              | 931
+
+
+BRAIN
+A JOURNAL OF NEUROLOGY
+
+
+
+
+The anterior temporal lobes support residual
+comprehension in Wernicke’s aphasia
+Holly Robson,1,2 Roland Zahn,1,3 James L. Keidel,4 Richard J. Binney,1 Karen Sage1,5 and
+Matthew A. Lambon Ralph1
+
+
+
+
+                                                                                                                                                                                          Downloaded from https://academic.oup.com/brain/article/137/3/931/398220 by guest on 06 May 2026
+1 Neuroscience and Aphasia Research Unit, School Psychological Sciences, University of Manchester, UK
+2 School of Psychology and Clinical Language Sciences, University of Reading, UK
+3 Department of Psychological Medicine, Institute of Psychiatry, King’s College London, UK
+4 School of Psychology, Bangor University, UK
+5 Faculty of Health and Social Care, University of the West of England, Bristol, UK
+
+
+
+
+Wernicke’s aphasia occurs after a stroke to classical language comprehension regions in the left temporoparietal cortex.
+Consequently, auditory–verbal comprehension is significantly impaired in Wernicke’s aphasia but the capacity to comprehend
+visually presented materials (written words and pictures) is partially spared. This study used functional magnetic resonance
+imaging to investigate the neural basis of written word and picture semantic processing in Wernicke’s aphasia, with the wider
+aim of examining how the semantic system is altered after damage to the classical comprehension regions. Twelve participants
+with chronic Wernicke’s aphasia and 12 control participants performed semantic animate–inanimate judgements and a visual
+height judgement baseline task. Whole brain and region of interest analysis in Wernicke’s aphasia and control participants
+found that semantic judgements were underpinned by activation in the ventral and anterior temporal lobes bilaterally. The
+Wernicke’s aphasia group displayed an ‘over-activation’ in comparison with control participants, indicating that anterior tem-
+poral lobe regions become increasingly influential following reduction in posterior semantic resources. Semantic processing of
+written words in Wernicke’s aphasia was additionally supported by recruitment of the right anterior superior temporal lobe, a
+region previously associated with recovery from auditory-verbal comprehension impairments. Overall, the results provide sup-
+port for models in which the anterior temporal lobes are crucial for multimodal semantic processing and that these regions may
+be accessed without support from classic posterior comprehension regions.
+
+
+Keywords: Wernicke’s aphasia; semantic processing; language comprehension; anterior temporal lobe; Wernicke’s area
+Abbreviation: PALPA = psycholinguistic assessment of language processing in aphasia
+
+
+
+
+Introduction                                                                                   The comprehension impairment in Wernicke’s aphasia is modu-
+                                                                                               lated by the degree of phonological analysis required (Robson
+Wernicke’s aphasia is the classical aphasic syndrome associated                                et al., 2012b). Spoken language comprehension, which requires
+with impaired language comprehension. Wernicke’s aphasia results                               a high degree of phonological analysis for word recognition, is
+from lesions to the left posterior temporoparietal cortex (Bogen                               severely impaired in Wernicke’s aphasia. Written word compre-
+and Bogen, 1976; Dronkers et al., 1995), thereby affecting core                                hension, which is mediated by both phonological and visual pro-
+elements of the phonological and semantic systems (Robson et al.,                              cesses, is significantly less impaired in Wernicke’s aphasia in
+2012a, 2013) that interact during language comprehension.                                      comparison with spoken word comprehension. Comprehension
+
+
+
+
+Received April 12, 2013. Revised November 16, 2013. Accepted November 25, 2013
+ß The Author (2014). Published by Oxford University Press on behalf of the Guarantors of Brain.
+This is an Open Access article distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/3.0/), which permits unrestricted reuse,
+distribution, and reproduction in any medium, provided the original work is properly cited.
+

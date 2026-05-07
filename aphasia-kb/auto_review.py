@@ -105,6 +105,14 @@ from typing import Any
 
 import yaml
 
+# Load .env file if present (python-dotenv optional dependency)
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(dotenv_path=Path(__file__).parent / ".env", override=False)
+    _load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env", override=False)
+except ImportError:
+    pass
+
 # ============================================================
 # Paths and constants
 # ============================================================
@@ -1141,6 +1149,14 @@ def _cli(argv: list[str] | None = None) -> int:
             require_pdf_match=args.require_pdf_match,
             provisional_without_pdf=args.provisional_without_pdf,
         )
+        # Delete the worksheet once verdicts have been applied — it's a
+        # one-shot artifact and leaving it around risks accidental re-use.
+        if summary["skipped"]:
+            print(f"\n⚠ {len(summary['skipped'])} item(s) were skipped "
+                  f"(see above). Worksheet kept at: {args.apply_verdicts}")
+        else:
+            args.apply_verdicts.unlink()
+            print(f"✓ worksheet deleted: {args.apply_verdicts}")
         return 0
 
     drafts = select_drafts(draft=args.draft, all_drafts=args.all,

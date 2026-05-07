@@ -109,52 +109,140 @@ def _slugify(s: str) -> str:
 # ============================================================
 # Pipeline (skeleton — see TODOs)
 # ============================================================
-def run(terms, atlas_path, labels_csv, out_dir, hemisphere="left"):
+def run(terms, atlas_path, labels_csv, out_dir, hemisphere="left",
+        neurosynth_cache=None, tfidf_threshold=0.001):
+    """Generate draft KB region entries from Neurosynth coordinate-based meta-analysis.
+
+    Implements the formerly-stub pipeline using the lightweight coordinate-binning
+    approach in ``decode_lesion.py`` (no NiMARE Dataset object constructed; avoids
+    OOM on memory-constrained machines). Downloads Neurosynth v7 files (~14.7 MB)
+    on first run and caches them.
+
+    For each (atlas region, term) pair with meaningful overlap the function emits
+    a draft ``.md`` file under ``out_dir/`` using the TEMPLATE above.  Each draft
+    should be reviewed by a clinician before promotion to ``regions/``.
+
+    Parameters
+    ----------
+    terms : list of str
+        Neurosynth vocabulary terms to query.
+    atlas_path : str
+        Path to a 3-D atlas NIfTI (integer labels).  Ignored if ``labels_csv``
+        is provided alongside nilearn's HarvardOxford atlas (recommended).
+    labels_csv : str
+        CSV with columns ``index,label`` matching the atlas NIfTI label integers.
+    out_dir : str
+        Output folder for draft ``.md`` files (will be created).
+    hemisphere : str
+        ``"left"`` (default) | ``"right"`` | ``"bilateral"``.
+        Filters output to regions in the specified hemisphere.
+    neurosynth_cache : str, optional
+        Directory for Neurosynth v7 files.  Defaults to
+        ``<this file's parent>/_neurosynth_cache``.
+    tfidf_threshold : float
+        Minimum tfidf weight for a study to be included in a term's activation map.
     """
-    Skeleton implementation. The TODOs below are intentional — running this
-    requires choosing a Neurosynth client (NiMARE recommended) and downloading
-    the dataset, which is too large/slow to embed by default.
+    import nibabel as nib
+    import numpy as np
+    import pandas as pd
+    import scipy.sparse as sp
+    from scipy.ndimage import gaussian_filter
+    from pathlib import Path as _Path
 
-    Steps:
-      1. Load Neurosynth dataset via NiMARE: `nimare.extract.fetch_neurosynth(...)`
-         then `nimare.io.convert_neurosynth_to_dataset(...)`.
-      2. For each term in `terms`, run a meta-analysis (e.g. Chi-squared) to get
-         a thresholded z-map of regions associated with the term.
-      3. Resample the z-map to the atlas grid; for each atlas region, compute
-         the max z and the count of supra-threshold peaks inside it.
-      4. For each (region, term) pair with a non-trivial overlap, append one
-         finding entry to a per-region draft markdown file using TEMPLATE.
-    """
-    import nibabel as nib              # noqa: F401  (intentional: surface ImportError early)
-    import numpy as np                 # noqa: F401
-    import pandas as pd                # noqa: F401
+    here = _Path(__file__).parent
+    if str(here) not in sys.path:
+        sys.path.insert(0, str(here))
 
-    print(f"Bootstrapping with terms: {terms}")
-    print(f"Atlas:    {atlas_path}")
-    print(f"Labels:   {labels_csv}")
-    print(f"Out dir:  {out_dir}")
+    from decode_lesion import (
+        ensure_neurosynth_files, _load_neurosynth,
+        _mni_to_vox, build_term_map,
+    )
 
+    print(f"Bootstrap: terms={terms}, hemisphere={hemisphere}")
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # TODO 1: load Neurosynth via NiMARE -----------------------
-    raise NotImplementedError(
-        "Implement the NiMARE pipeline here. The TEMPLATE / _emit_finding "
-        "helpers above are ready to be called once you have, for each "
-        "(atlas region, term) pair, a peak count and max z-score.\n\n"
-        "Skeleton:\n"
-        "  from nimare.extract import fetch_neurosynth\n"
-        "  from nimare.io import convert_neurosynth_to_dataset\n"
-        "  from nimare.meta.cbma import MKDAChi2\n"
-        "  ds_files = fetch_neurosynth(data_dir='./_neurosynth_cache')\n"
-        "  ds = convert_neurosynth_to_dataset(ds_files['coordinates'][0],\n"
-        "                                     ds_files['metadata'][0])\n"
-        "  for term in terms:\n"
-        "      sub_ids = ds.get_studies_by_label(f'terms_abstract_tfidf__{term}', 0.001)\n"
-        "      meta = MKDAChi2().fit(ds.slice(sub_ids))\n"
-        "      zmap = meta.results.get_map('z_desc-association')\n"
-        "      # then resample to atlas grid, count peaks per region…"
-    )
+    # ── Load Neurosynth files ────────────────────────────────────────────
+    cache = ensure_neurosynth_files(neurosynth_cache)
+    vocab, feat, meta_df, coords_ns = _load_neurosynth(cache)
+    missing = [t for t in terms if t not in vocab]
+    if missing:
+        print(f"  ⚠ Terms not in vocabulary (skipped): {missing}", file=sys.stderr)
+    terms = [t for t in terms if t in vocab]
+
+    # ── Load atlas ───────────────────────────────────────────────────────
+    atlas_img   = nib.load(atlas_path)
+    atlas_data  = atlas_img.get_fdata().astype(np.int16)
+    affine      = atlas_img.affine
+    inv_affine  = np.linalg.inv(affine)
+    shape       = atlas_img.shape[:3]
+
+    labels_df   = pd.read_csv(labels_csv)
+    label_map   = dict(zip(labels_df.iloc[:, 0], labels_df.iloc[:, 1]))
+
+    # ── Build activation maps and find atlas overlaps ────────────────────
+    term_map_dir = str(_Path(cache) / "term_maps")
+    today        = dt.date.today().isoformat()
+    written      = 0
+
+    for term in terms:
+        print(f"  Processing term: '{term}' …")
+        tmap = build_term_map(
+            term, vocab, feat, meta_df, coords_ns,
+            inv_affine, shape,
+            tfidf_threshold=tfidf_threshold,
+            term_map_cache_dir=term_map_dir,
+        )
+
+        target_imp = TERM_TO_IMPAIRMENT.get(term.lower(), _slugify(term))
+
+        # Collect per-region stats
+        for label_idx, label_name in label_map.items():
+            region_mask = atlas_data == int(label_idx)
+            if not region_mask.any():
+                continue
+
+            # Hemisphere filter
+            overlap_vox = np.argwhere(region_mask)
+            mni_x = overlap_vox[:, 0] * affine[0, 0] + affine[0, 3]
+            mean_x = mni_x.mean()
+            if hemisphere == "left"  and mean_x >= 0:
+                continue
+            if hemisphere == "right" and mean_x <= 0:
+                continue
+
+            region_vals = tmap[region_mask]
+            n_peaks     = int((region_vals > 0.01).sum())
+            max_z       = float(region_vals.max())
+
+            if n_peaks < 3 or max_z < 0.05:
+                continue
+
+            # Emit draft file
+            id_  = f"{hemisphere}_{_slugify(label_name)}"
+            fname = out_dir / f"{id_}.md"
+
+            finding_str = _emit_finding(target_imp, term, n_peaks, max_z)
+            term_summary = f"- **{term}**: {n_peaks} supra-threshold voxels, max z={max_z:.2f}"
+
+            with open(fname, "a") as fh:
+                if fname.stat().st_size == 0 if fname.exists() else True:
+                    fh.write(TEMPLATE.format(
+                        id_=id_,
+                        name=f"{label_name} ({hemisphere.title()})",
+                        atlas_name=Path(atlas_path).stem,
+                        atlas_index=label_idx,
+                        hemisphere=hemisphere,
+                        findings=finding_str,
+                        term_summary=term_summary,
+                        today=today,
+                    ))
+                else:
+                    # Append finding to existing file
+                    fh.write(finding_str)
+            written += 1
+
+    print(f"Done. Wrote {written} draft finding entries to {out_dir}/")
 
 
 def main(argv=None):

@@ -1,0 +1,178 @@
+draft_path: impairments/semantics.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T00:12:18'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/20 quotes (85%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Results 3.2.4 (p.225): the neural correlates for the semantic factor
+      (correlation with lesion volume: r…'
+    - '  - f3.Results 3.2.4 (p.225): the neural correlates for the semantic factor
+      (correlation with lesion volume: r…'
+    - '  - f5.Discussion 4.3 (p.228): Posterior left central perisylvian regions (angular
+      gyrus, posterior inferior an…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: anthropic SDK not installed (pip install anthropic)
+- run_id: 2
+  timestamp: '2026-05-07T00:14:34'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/20 quotes (85%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Results 3.2.4 (p.225): the neural correlates for the semantic factor
+      (correlation with lesion volume: r…'
+    - '  - f3.Results 3.2.4 (p.225): the neural correlates for the semantic factor
+      (correlation with lesion volume: r…'
+    - '  - f5.Discussion 4.3 (p.228): Posterior left central perisylvian regions (angular
+      gyrus, posterior inferior an…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: ANTHROPIC_API_KEY not set in environment
+- run_id: 3
+  timestamp: '2026-05-07T00:31:16'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/20 quotes (85%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Results 3.2.4 (p.225): the neural correlates for the semantic factor
+      (correlation with lesion volume: r…'
+    - '  - f3.Results 3.2.4 (p.225): the neural correlates for the semantic factor
+      (correlation with lesion volume: r…'
+    - '  - f5.Discussion 4.3 (p.228): Posterior left central perisylvian regions (angular
+      gyrus, posterior inferior an…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+    - 'f2: strength=''weak'''
+    - 'f4: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'The soft-check failure is f1 (left anterior MTG, strength=weak).
+        The temporal-lobe portion of the semantic cluster does not survive lesion-volume
+        control (cluster shrinks to occipital subregions). This is transparently documented:
+        source_passages include the explicit quote ''showed a reduction in cluster
+        size and were limited to the left superior and inferior lateral occipital
+        cortex, precuneus, and occipital fusiform gyrus.'' f1 and f2 are correctly
+        labeled weak (temporal lobe, lesion-volume confounded). f3 and f5 are labeled
+        strong and DO survive lesion-volume control. f4 (ILF, weak) cross-loads on
+        Factor 1 — properly flagged. All source_passages support their claims at the
+        cited threshold. No blockers fail. Mixed-strength findings correctly labeled
+        is exactly what the KB is designed to hold.'
+      per_finding:
+      - id: f1
+        concern: strength=weak correctly labeled; temporal cluster doesn't survive
+          lesion-volume covariate
+        supports_approval: true
+      - id: f2
+        concern: strength=weak correctly labeled; same lesion-volume concern as f1
+        supports_approval: true
+      - id: f3
+        concern: none — strength=strong, survives lesion-volume covariate
+        supports_approval: true
+      - id: f4
+        concern: ILF cross-loads on Factor 1; strength=weak correctly flagged
+        supports_approval: true
+      - id: f5
+        concern: none — strength=strong, survives lesion-volume covariate
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T00:31:16'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

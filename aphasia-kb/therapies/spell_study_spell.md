@@ -18,6 +18,63 @@ targets_impairments:
 - dysgraphia
 dosage: 12 weeks, 2 sessions/week, 1.5 h/session (Barbieri et al. 2023; Purcell et
   al. 2019; Wiley & Rapp 2019 protocol). 40-word individually tailored training list.
+atf_id: null
+atf_evidence_level: null
+evidence_level: level_II
+atf_aliases:
+  - SSS
+  - spell-study-spell procedure
+icf_domain:
+  - body_function
+tidier:
+  brief_name: Spell-Study-Spell (SSS)
+  rationale: |-
+    Acquired dysgraphia/agraphia involves impaired access to graphemic output
+        representations. SSS applies the test-study-test (retrieval practice) paradigm:
+        initial retrieval attempts create desirable difficulty that enhances encoding;
+        studying the correct form after a retrieval failure reinforces the orthographic
+        representation; re-testing consolidates it. Spaced practice across sessions
+        further potentiates retention.
+  materials: |-
+    Target word list (tailored to patient's orthographic error profile); letter tiles,
+        anagram boards, or keyboard; SSS protocol card; Barbieri 2023 supplementary
+        protocol materials.
+  procedures: |-
+    Three-phase trial per item: (1) Spell — patient attempts to spell target word from
+        picture/spoken cue; (2) Study — patient views and copies correct spelling with
+        feedback; (3) Spell — patient attempts target word again after a brief interval.
+        Session ends with delayed probe on all items. Items meeting >80% accuracy
+        criterion are retired and replaced.
+  who_provides: |-
+    Speech-language pathologist or trained clinician assistant (individual sessions).
+  delivery_mode: face_to_face or computer-assisted
+  setting: Outpatient clinic or home (with computer delivery).
+  dosage: |-
+    Barbieri 2023: 2 sessions/week × 8 weeks; approximately 45 min per session
+        (approximately 12 hours total treatment).
+  tailoring: |-
+    Target word list individualised to patient's orthographic error profile from
+        standardised spelling assessment. Item set refreshed when >80% mastery criterion
+        reached. Spacing intervals between study and re-test adjusted by patient learning
+        rate.
+  modifications: |-
+    Tablet-delivered SSS validated for home practice. Spaced-retrieval variant increases
+        inter-trial intervals progressively. Related procedures: Copy-and-Recall Treatment
+        (CART), Anagram and Copy Treatment (ACT).
+  fidelity_planned: |-
+    Per-session accuracy logs; 80% mastery criterion operationalised and logged. Session
+        completion tracking.
+  fidelity_actual: |-
+    Barbieri 2023: item-level completion rates and probe trajectories reported per
+        participant; formal fidelity coding NR.
+  confidence: medium
+  flags:
+    - Barbieri 2023 is an RCT with a dysgraphia arm — SSS is one arm, not the full trial.
+        Not formally extracted from papers/.
+rtss_ingredients:
+  - listen_repeat_cycle
+  - retrieval_practice
+  - massed_practice
 findings:
 - id: f1
   target: dysgraphia

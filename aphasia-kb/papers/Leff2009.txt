@@ -1,0 +1,64 @@
+doi:10.1093/brain/awp273                                                                                          Brain 2009: 132; 3401–3410           | 3401
+
+
+BRAIN
+A JOURNAL OF NEUROLOGY
+
+
+
+
+The left superior temporal gyrus is a shared
+substrate for auditory short-term memory and
+speech comprehension: evidence from 210 patients
+
+
+
+
+                                                                                                                                                                    Downloaded from https://academic.oup.com/brain/article/132/12/3401/491691 by guest on 06 May 2026
+with stroke
+Alexander P. Leff,1 Thomas M. Schofield,1 Jennifer T. Crinion,2 Mohamed L. Seghier,1
+Alice Grogan,1,3 David W. Green4 and Cathy J. Price1
+
+1 Wellcome Trust Centre for Neuroimaging, Institute of Neurology, UCL, London WC1N 3BG, UK
+2 Institute of Cognitive Neuroscience, UCL, London, WC1N 3AR, UK
+3 Department of Human Communication Sciences, University of Sheffield, S10 2TA, UK
+4 Research Department of Cognitive, Perceptual and Brain Sciences, UCL, London WC1E 6BT, UK
+
+Correspondence to: Alexander P. Leff,
+Wellcome Trust Centre for Neuroimaging,
+Institute of Neurology,
+UCL,12 Queen Square,
+London WC1N 3BG,
+UK
+E-mail: address: a.leff@fil.ion.ucl.ac.uk
+
+
+Competing theories of short-term memory function make specific predictions about the functional anatomy of auditory short-
+term memory and its role in language comprehension. We analysed high-resolution structural magnetic resonance images from
+210 stroke patients and employed a novel voxel based analysis to test the relationship between auditory short-term memory and
+speech comprehension. Using digit span as an index of auditory short-term memory capacity we found that the structural
+integrity of a posterior region of the superior temporal gyrus and sulcus predicted auditory short-term memory capacity, even
+when performance on a range of other measures was factored out. We show that the integrity of this region also predicts the
+ability to comprehend spoken sentences. Our results therefore support cognitive models that posit a shared substrate between
+auditory short-term memory capacity and speech comprehension ability. The method applied here will be particularly useful
+for modelling structure–function relationships within other complex cognitive domains.
+
+
+Keywords: auditory short-term memory; digit span; speech comprehension; stroke; voxel-based morphometry.
+Abbreviation: MNI = Montreal Neurological Institute
+
+
+
+Introduction                                                                       Spoken discourse therefore may depend on auditory short-term
+                                                                                   memory. Most models of auditory short-term memory make a
+Normal speech consists of sequences of spoken representations of                   distinction between the processes involved in representing the
+words, conveyed from the speaker to the listener. Successfully                     to-be-remembered items and the processes involved in main-
+comprehending the meaning of discourse depends upon the ability                    taining these representations. Baddeley’s influential model of
+of the listener to maintain these representations for sufficient                   short-term memory dedicates discrete components to each of
+time to allow for their combination into meaningful sentences.                     these processes; the ‘phonological short-term store’ acting as a
+
+Received June 10, 2009. Revised August 25, 2009. Accepted September 16, 2009. Advance Access publication November 5, 2009
+ß The Author(s) 2009. Published by Oxford University Press on behalf of Brain.
+This is an Open Access article distributed under the terms of the Creative Commons Attribution Non-Commercial License (http://creativecommons.org/licenses/by-nc/
+2.5/uk/) which permits unrestricted non-commercial use, distribution, and reproduction in any medium, provided the original work is properly cited.
+

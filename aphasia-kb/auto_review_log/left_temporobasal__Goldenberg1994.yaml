@@ -1,0 +1,272 @@
+draft_path: drafts/regions/left_temporobasal__Goldenberg1994.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T01:20:34'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/11 quotes (91%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Results (p.692): the two groups did not significantly differ in the
+      amount of spontaneous re- cov…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: 1994 PDF has occasional character errors (e.g., ''Jess'' for
+      ''less'', ''pa'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-07T01:22:42'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/11 quotes (91%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Results (p.692): the two groups did not significantly differ in the
+      amount of spontaneous re- cov…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: 1994 PDF has occasional character errors (e.g., ''Jess'' for
+      ''less'', ''pa'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-07T01:23:27'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/11 quotes (91%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Results (p.692): the two groups did not significantly differ in the
+      amount of spontaneous re- cov…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: 1994 PDF has occasional character errors (e.g., ''Jess'' for
+      ''less'', ''pa'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-07T01:24:10'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/11 quotes (91%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Results (p.692): the two groups did not significantly differ in the
+      amount of spontaneous re- cov…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: 1994 PDF has occasional character errors (e.g., ''Jess'' for
+      ''less'', ''pa'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 5
+  timestamp: '2026-05-07T01:26:57'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/11 quotes (91%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Results (p.692): the two groups did not significantly differ in the
+      amount of spontaneous re- cov…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: 1994 PDF has occasional character errors (e.g., ''Jess'' for
+      ''less'', ''pa'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 6
+  timestamp: '2026-05-07T01:28:19'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/11 quotes (91%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Results (p.692): the two groups did not significantly differ in the
+      amount of spontaneous re- cov…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: 1994 PDF has occasional character errors (e.g., ''Jess'' for
+      ''less'', ''pa'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f1: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'Three soft-check failures: confidence=medium, no_human_review_flags
+        (OCR), strength=weak. All three are correctly labeled. The OCR flag is a bookkeeping
+        note (same as companion draft). Confidence=medium is appropriate: the most
+        controlled comparison rests on n=3 vs n=5 and the authors themselves call
+        the interpretation ''highly speculative.'' Strength=weak is appropriate: exploratory,
+        small subsamples, uncorrected tests. The finding is genuinely interesting
+        (therapy-specific deficit sparing spontaneous recovery) and is directly supported
+        by verbatim table and text quotes. Belongs in KB as a weak/medium finding
+        awaiting replication. No blockers fail.'
+      per_finding:
+      - id: f1
+        concern: weak/medium correctly labeled; OCR flag is bookkeeping; n=3/5 most
+          controlled subgroup
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T01:28:19'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

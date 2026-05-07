@@ -1,0 +1,152 @@
+draft_path: impairments/conduction_aphasia.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T00:12:12'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/18 quotes (94%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: anthropic SDK not installed (pip install anthropic)
+- run_id: 2
+  timestamp: '2026-05-07T00:14:31'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/18 quotes (94%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: ANTHROPIC_API_KEY not set in environment
+- run_id: 3
+  timestamp: '2026-05-07T00:31:14'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 17/18 quotes (94%)
+    - '1 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: The single soft-check failure is f3 (left optic radiations, strength=weak,
+        Z=1.14). This weakness is correctly labeled and the extraction explicitly
+        flags the finding as likely incidental — optic radiations are not a canonical
+        language tract and the Z value barely clears the threshold. The source_passages
+        for f3 unambiguously support the claim ('posterior segment of the arcuate
+        fasciculus; optic radiations'). f1 (posterior arcuate, Z=2.48, strong) and
+        f2 (Heschl's gyrus, Z=1.47, moderate) are robustly supported. Including a
+        weak-strength, accurately-flagged finding is exactly the purpose of the strength
+        field. No blockers fail. Safe to approve.
+      per_finding:
+      - id: f1
+        concern: none
+        supports_approval: true
+      - id: f2
+        concern: none
+        supports_approval: true
+      - id: f3
+        concern: strength=weak correctly labeled; optic-radiation finding is likely
+          incidental (flagged)
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T00:31:14'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

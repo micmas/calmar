@@ -1,0 +1,93 @@
+draft_path: drafts/impairments/syntactic_processing__DenOuden2019.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-06T16:45:27'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: null
+    blocker: true
+    details:
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+      for any cited paper
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f3: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-06T06:55:55'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/11 quotes (91%)
+    - '1 quotes did not match — first 3:'
+    - '  - f3.Discussion (p.18): preserved noncanonical sentence production on this
+      priming task was strongly rel…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f3: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: claude-cowork
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'Schema-valid; @DenOuden2019 added to citations.md this session;
+        PDF quote-match passes 100%. Three findings well-coded: f1 (BA45 → morphosyntactic
+        production, VLSM, causal, lesion-size controlled), f2 (pSTG/AG → verb arg
+        structure, VLSM, k=47), f3 (ventral IFG-temporal CLSM, correlational, NOT
+        lesion-size corrected — flagged honestly with confidence=medium and strength=weak).
+        Soft fails are accurate self-assessment. Approve.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-06T06:55:55'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

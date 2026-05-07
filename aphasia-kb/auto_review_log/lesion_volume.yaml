@@ -1,0 +1,190 @@
+draft_path: predictors/lesion_volume.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T00:12:22'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: false
+    blocker: true
+    details:
+    - f7 has non-empty contradictions
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 28/28 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f8: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f8: Psychosocial measures assessed only at follow-up, not at initial assessment
+      — te'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f8: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: anthropic SDK not installed (pip install anthropic)
+- run_id: 2
+  timestamp: '2026-05-07T00:14:36'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: false
+    blocker: true
+    details:
+    - f7 has non-empty contradictions
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 28/28 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f8: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f8: Psychosocial measures assessed only at follow-up, not at initial assessment
+      — te'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f8: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: ANTHROPIC_API_KEY not set in environment
+- run_id: 3
+  timestamp: '2026-05-07T00:31:17'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: false
+    blocker: true
+    details:
+    - f7 has non-empty contradictions
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 33/36 quotes (92%)
+    - '3 quotes did not match — first 3:'
+    - '  - f7.Methods – Neuroimaging Data (p.6): Lesions obtained via MRI were manually
+      segmented on the structural image by a tr…'
+    - '  - f8.Results – Regression results (p.9): ALA aphasia and participation domain
+      scores significantly related to proportion …'
+    - '  - f8.Results – Regression results (p.10): The final model explained 68.2%
+      (unadjusted R2) of the variance, F(4, 13) = 6.96…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f8: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f8: Psychosocial measures assessed only at follow-up, not at initial assessment
+      — te'
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f8: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Two independent reasons to defer. (1) HARD BLOCKER: f7 has non-empty
+        contradictions (@Basilakos2019, @Hope2017 challenge the lesion-volume predictor
+        finding). These cannot be overridden — human review must resolve whether these
+        contradictions are adequately addressed before promotion. (2) SOFT CONCERNS
+        on f8: the psychosocial predictor finding (life participation → recovery)
+        has strength=weak, confidence=medium, and a legitimate temporal-directionality
+        concern (ALA collected only at follow-up, not initial assessment). f1–f6 (lesion
+        volume → naming/fluency/phonological_production from Alyahya 2018) are well-supported
+        with strong/moderate strength and high confidence; those findings are clean.
+        Human reviewer should (a) resolve the f7 contradictions and (b) confirm f8
+        is worth including as a standalone weak finding.'
+      per_finding:
+      - id: f1
+        concern: none — strong, high confidence, well-cited
+        supports_approval: true
+      - id: f2
+        concern: none — strong, lesion-volume → fluency elimination is a clear documented
+          finding
+        supports_approval: true
+      - id: f3
+        concern: none — moderate, negative finding correctly labeled
+        supports_approval: true
+      - id: f4
+        concern: duplicate of f1 (same claim, same citation) — merge before promotion
+        supports_approval: false
+      - id: f5
+        concern: duplicate of f2 — merge before promotion
+        supports_approval: false
+      - id: f6
+        concern: duplicate of f3 — merge before promotion
+        supports_approval: false
+      - id: f7
+        concern: 'BLOCKER: non-empty contradictions (@Basilakos2019, @Hope2017); human
+          must resolve'
+        supports_approval: false
+      - id: f8
+        concern: strength=weak; confidence=medium; psychosocial predictor with temporal-directionality
+          uncertainty
+        supports_approval: false
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T00:31:17'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

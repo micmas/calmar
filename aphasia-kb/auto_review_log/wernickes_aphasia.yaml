@@ -1,0 +1,210 @@
+draft_path: impairments/wernickes_aphasia.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T00:12:19'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 35/38 quotes (92%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Discussion (p.12): The group of patients with Wernicke''s aphasia was
+      the smallest (n=7) patient gro…'
+    - '  - f6.Discussion (p.12): the brain areas that we found to predict Wernicke''s
+      aphasia include the classica…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+    - 'f4: confidence=''medium'''
+    - 'f5: confidence=''medium'''
+    - 'f6: confidence=''medium'''
+    - 'f7: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+    - 'f4: strength=''weak'''
+    - 'f5: strength=''weak'''
+    - 'f7: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: anthropic SDK not installed (pip install anthropic)
+- run_id: 2
+  timestamp: '2026-05-07T00:14:35'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 35/38 quotes (92%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Discussion (p.12): The group of patients with Wernicke''s aphasia was
+      the smallest (n=7) patient gro…'
+    - '  - f6.Discussion (p.12): the brain areas that we found to predict Wernicke''s
+      aphasia include the classica…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+    - 'f4: confidence=''medium'''
+    - 'f5: confidence=''medium'''
+    - 'f6: confidence=''medium'''
+    - 'f7: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+    - 'f4: strength=''weak'''
+    - 'f5: strength=''weak'''
+    - 'f7: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: null
+    verdict_override: null
+    parsed: null
+    raw_preview: ''
+    error: ANTHROPIC_API_KEY not set in environment
+- run_id: 3
+  timestamp: '2026-05-07T00:31:16'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 35/38 quotes (92%)
+    - '3 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Discussion (p.12): The group of patients with Wernicke''s aphasia was
+      the smallest (n=7) patient gro…'
+    - '  - f6.Discussion (p.12): the brain areas that we found to predict Wernicke''s
+      aphasia include the classica…'
+  - name: all_findings_confidence_high
+    passed: false
+    blocker: false
+    details:
+    - 'f1: confidence=''medium'''
+    - 'f2: confidence=''medium'''
+    - 'f3: confidence=''medium'''
+    - 'f4: confidence=''medium'''
+    - 'f5: confidence=''medium'''
+    - 'f6: confidence=''medium'''
+    - 'f7: confidence=''medium'''
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+    - 'f4: strength=''weak'''
+    - 'f5: strength=''weak'''
+    - 'f7: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'The entire entry rests on a Wernicke''s subgroup of n=7 patients
+        — all findings carry confidence=medium on this basis. While f1 (angular gyrus),
+        f2 (Heschl''s), and f6 (STG) are consistent with classical Wernicke''s area
+        literature and moderate strength, the authors themselves explicitly flag temporal
+        pole and putamen findings (f3, f4, f5, f7) as ''possibly reflecting the idiosyncrasies
+        of our small sample.'' This combination of pervasive medium confidence and
+        explicit author uncertainty warrants human confirmation before promotion.
+        Recommend human reviewer either: (a) approve but annotate the n=7 limitation
+        prominently, or (b) split the entry — promote the STG/angular/Heschl''s findings
+        separately after adding higher-quality citations.'
+      per_finding:
+      - id: f1
+        concern: confidence=medium; n=7 subgroup; angular gyrus is literature-consistent
+          but thin evidence
+        supports_approval: false
+      - id: f2
+        concern: confidence=medium; n=7 subgroup; Heschl's gyrus consistent but non-specific
+        supports_approval: false
+      - id: f3
+        concern: confidence=medium; strength=weak; author-flagged as possibly sample-idiosyncratic
+        supports_approval: false
+      - id: f4
+        concern: confidence=medium; strength=weak; basal ganglia non-specific
+        supports_approval: false
+      - id: f5
+        concern: confidence=medium; strength=weak; author-flagged as possibly sample-idiosyncratic
+        supports_approval: false
+      - id: f6
+        concern: confidence=medium; STG is classic Wernicke's area — closest to approvable
+        supports_approval: false
+      - id: f7
+        concern: confidence=medium; strength=weak; author-flagged as possibly sample-idiosyncratic
+        supports_approval: false
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T00:31:16'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review
