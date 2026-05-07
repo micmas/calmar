@@ -196,6 +196,110 @@ genuine causal claim (rare, and almost always restricted to
 
 ---
 
+## 1c. When to use narrative review entries (v2.4)
+
+A *narrative review entry* captures a synthesized theoretical claim or
+consensus position from a review article (narrative review, systematic
+review without formal meta-analytic pooling, or an opinion piece with a
+well-supported argument). It is **not** a primary data finding — it
+describes what the review author says the field believes.
+
+**Use `method: narrative_review` when:**
+- The paper is a narrative or systematic review with explicit, citable
+  claims about brain regions, syndromes, therapy effects, or prognosis.
+- The claims are not simply reportable by extracting from the primary
+  papers (e.g., the review offers a theoretical synthesis, identifies a
+  consensus across heterogeneous methods, or argues for a particular
+  model that is not captured in any single primary paper).
+- The review covers older or harder-to-access primary literature that is
+  unlikely to be extracted separately.
+
+**Do NOT use `method: narrative_review` when:**
+- The claims are directly traceable to a primary paper already in the KB.
+  In that case, add the claim to the primary paper's entry instead.
+- The paper is a pure opinion piece with no structured treatment of
+  evidence (refuse instead).
+- The paper is a formal meta-analysis with pooled effect size tables
+  (use `method: meta-analysis` instead).
+
+**Draft location:** `drafts/reviews/` (new bucket in v2.4).
+
+**Filename:** `{topic}__{CitationKey}.md`
+e.g. `subcortical_aphasia__NadeauCrosson1997.md`
+
+**Required fields per finding:**
+- `method: narrative_review`
+- `design: narrative-review` (or `systematic-review` if PRISMA-registered)
+- `relationship: synthesis`
+- `evidence_quality: narrative-review`
+- `strength: weak` (default; upgrade to `moderate` only if the review
+  explicitly synthesizes a large, consistent body of evidence)
+- `source_passages` (verbatim quotes as usual — annotation still works)
+- `author_limitations`
+- `provenance`
+
+**Omitted fields** (not applicable to reviews):
+- `sample` — omit entirely
+- `statistics` — omit entirely
+- `confounders_controlled` / `confounders_not_controlled` — omit
+- `region_definition` — omit
+- `imaging_details` — omit
+
+**Optional field:**
+```yaml
+primary_papers_cited:
+  - "@Smith2010"
+  - "@Jones2012"
+```
+
+**Minimal example:**
+```yaml
+---
+schema_version: 2.4
+id: subcortical_aphasia_thalamus
+name: "Subcortical Aphasia — Thalamic Mechanisms"
+kind: classical
+status: draft
+created_by: "agent:claude-sonnet-4-6"
+created_on: 2026-05-06
+hemisphere: left
+
+findings:
+  - id: f1
+    target: subcortical_aphasia
+    target_kind: impairment
+    claim: >
+      Thalamic aphasia arises from disruption of a lexical-semantic
+      activation-gating mechanism, not from direct language-area
+      destruction; thalamic nuclei modulate cortical activation during
+      word retrieval.
+    direction: likely
+    relationship: synthesis
+    citation: "@NadeauCrosson1997"
+    method: narrative_review
+    design: narrative-review
+    evidence_quality: narrative-review
+    strength: weak
+    primary_papers_cited:
+      - "@Crosson1999"
+    author_limitations:
+      - "Synthesis based on small case series; no voxel-level evidence available at time of publication."
+    provenance:
+      extracted_by: "agent:claude-sonnet-4-6"
+      extracted_on: 2026-05-06
+      paper_section: "Discussion, pages 380-395"
+      confidence: high
+      flags: []
+    source_passages:
+      - section: "Discussion"
+        page: 12
+        quote: "thalamic aphasia arises not from direct destruction"
+        supports: claim
+---
+```
+
+---
+
 ## 2. Refusal rules
 
 Refuse to produce a draft (and explain why) when:
@@ -209,8 +313,13 @@ Refuse to produce a draft (and explain why) when:
   `method` value from the controlled vocabulary, you do not understand the
   paper well enough.
 - The **direction of the claim is ambiguous** in the paper. Don't guess.
-- The paper is a **review/meta-analysis without primary tables**. If it
-  cites other papers' findings, extract from those papers instead.
+- The paper is an **opinion piece or letter** (no systematic treatment of
+  the evidence). These offer no extractable claims.
+- The paper is a **meta-analysis with only aggregate statistics** and the
+  primary papers it synthesises are already (or should be) in the KB. If
+  the meta-analysis has primary quantitative tables (pooled effect sizes,
+  pooled coordinates) that add new synthesised knowledge, extract as
+  `method: meta-analysis` instead.
 - The paper makes claims about **non-human models** or **non-stroke
   etiologies** unless the user has scoped the request to those.
 
@@ -352,6 +461,10 @@ limitations — if the paper claims none, write `[]` and add a flag.
 - `case-study`: a single subject or 2–3 subjects.
 - `tentative`: preliminary, exploratory, or methodologically limited
   findings (e.g., uncorrected statistics, very small samples).
+- `narrative-review` (v2.4): a synthesized claim from a narrative or
+  systematic review. Always paired with `method: narrative_review` and
+  `relationship: synthesis`. Downstream tools weight this evidence
+  lower than quantitative findings.
 
 ### `strength` (the *agent's* read)
 - `strong`: large sample, robust correction, large effect, replicated

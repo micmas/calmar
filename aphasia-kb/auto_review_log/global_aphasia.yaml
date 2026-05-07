@@ -1,0 +1,43 @@
+draft_path: impairments/global_aphasia.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T00:12:16'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 80/84 quotes (95%)
+    - '4 quotes did not match — first 3:'
+    - '  - f1.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+    - '  - f1.Discussion (p.12): the classification accuracy for the pairing of the
+      two non-fluent aphasia types …'
+    - '  - f9.Methods 2.1 — Participants (p.6): Of the 98 participants whose data
+      constituted the final study sample, 5 aphasia …'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-07T00:12:16'
+latest_verdict: auto_approve
+latest_mode: deterministic_only

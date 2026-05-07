@@ -1,0 +1,13 @@
+subject,session,rating,rating_label,issue_tags,notes,reviewer,reviewed_on,marked_for_rerun,n_edits,last_edit_op,sidecar_path
+,,,,,,,,False,3,morph_close,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2058/ses-3471/anat/Prediction3_native.qc.json
+sub-M2058,ses-3471,2.0,acceptable,boundary_too_loose,,,2026-05-05,False,9,morph_close,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2058/ses-3471/anat/Lesion_in_MNI.qc.json
+,,,,,,,,False,1,rerun_with_mask_bypass_via_R,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2042/ses-1953/anat/Lesion_in_MNI.qc.json
+sub-M2044,ses-3122,1.0,good,,,,2026-05-05,False,1,rerun_with_mask_bypass_via_R,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2044/ses-3122/anat/Lesion_in_MNI.qc.json
+sub-M2118,ses-4047,2.0,acceptable,false_positive_cluster,,,2026-05-05,False,7,rerun_with_mask_bypass_from_queue,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2118/ses-4047/anat/Lesion_in_MNI.qc.json
+sub-M2135,ses-1651,1.0,good,,,,2026-05-05,False,5,hemisphere_clip,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2135/ses-1651/anat/Lesion_in_MNI.qc.json
+sub-M2134,ses-1026,2.0,acceptable,boundary_too_loose,,,2026-05-05,True,5,hemisphere_clip,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2134/ses-1026/anat/Lesion_in_MNI.qc.json
+,,,,,,,,False,2,rerun_with_mask_bypass_via_R,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2105/ses-964/anat/Lesion_in_MNI.qc.json
+,,,,,,,,False,1,external_edit,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2084/ses-222/anat/Prediction3_native.qc.json
+sub-M2084,ses-222,2.0,acceptable,,,,,False,6,morph_close,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2084/ses-222/anat/Lesion_in_MNI.qc.json
+sub-M2046,ses-2499,1.0,good,,,,2026-05-05,False,1,rerun_with_mask_bypass_via_R,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2046/ses-2499/anat/Lesion_in_MNI.qc.json
+,,,,,,,,False,1,rerun_with_mask_bypass_via_R,/neurodesktop-storage/aphasia-lesion-pipeline/ds004884_anat/derivatives/linda/sub-M2013/ses-136/anat/Lesion_in_MNI.qc.json

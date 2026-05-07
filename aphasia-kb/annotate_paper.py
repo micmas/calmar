@@ -26,10 +26,17 @@ Usage
 Writes:
     papers/Fridriksson2018_annotated.pdf
 
+By default the source PDF is renamed to `papers/<CitationKey>.pdf`
+(taken from the draft's `citation: "@Key"`) before annotation. This
+keeps the canonical-name expected by `auto_review.py`'s PDF
+quote-match lookup in sync with whatever filename the publisher
+gave you. Pass `--no-rename` to keep the original filename.
+
 Optional:
     --out PATH        explicit output path
     --no-legend       skip the color-legend page
     --fail-on-missing exit non-zero if any quote couldn't be located
+    --no-rename       skip the canonical-name rename step
 
 Color scheme is the single source of truth in `aphasia_kb.SUPPORTS_COLORS`.
 
@@ -215,6 +222,107 @@ def _find_quote_rects(page, quote: str):
 
 
 # ============================================================
+# Canonical PDF naming
+# ============================================================
+def _citation_key_from_drafts(draft_paths) -> str | None:
+    """Return a single bare citation key (no '@' prefix) shared by every
+    finding across all drafts. If drafts disagree or no key is found,
+    return None.
+
+    The key drives the canonical PDF filename — `auto_review.py` looks
+    for `papers/<Key>.pdf` so quote-match works without extra setup."""
+    keys = set()
+    for dp in (draft_paths if not isinstance(draft_paths, (str, Path))
+               else [draft_paths]):
+        fm, _ = parse_markdown(Path(dp))
+        if not fm:
+            continue
+        for f in (fm.get("findings") or []):
+            cite = f.get("citation")
+            if isinstance(cite, str) and cite.startswith("@"):
+                keys.add(cite[1:])
+    if len(keys) == 1:
+        return keys.pop()
+    return None
+
+
+def _ensure_canonical_pdf(pdf_path: Path, draft_paths,
+                          *, rename: bool = True,
+                          verbose: bool = True) -> Path:
+    """Rename `pdf_path` to `papers/<CitationKey>.pdf` if it isn't
+    already there. Returns the path to use for annotation.
+
+    Behaviour matrix:
+      - rename=False                                      → no-op, return pdf_path
+      - drafts have no/conflicting citation keys           → no-op, return pdf_path
+      - pdf_path is already at the canonical name          → no-op, return pdf_path
+      - canonical name exists AND is the same inode        → no-op, return canonical
+      - canonical name exists but is a stale symlink       → replace symlink, rename pdf
+      - canonical name doesn't exist                       → rename pdf to it
+      - canonical name exists as a different real file     → return canonical (don't clobber)
+
+    On filesystems where rename is denied (e.g. some sandboxed mounts)
+    we fall back to copying the file.
+    """
+    if not rename:
+        return pdf_path
+    key = _citation_key_from_drafts(draft_paths)
+    if not key:
+        if verbose:
+            print("  ℹ no single citation @Key in drafts — skipping rename")
+        return pdf_path
+
+    canonical = pdf_path.with_name(f"{key}.pdf")
+
+    # Already canonically named — nothing to do.
+    if canonical == pdf_path:
+        return canonical
+
+    # Canonical name exists. Decide whether it's "ours" or a different
+    # real file we shouldn't clobber.
+    if canonical.exists() or canonical.is_symlink():
+        try:
+            same_target = canonical.resolve() == pdf_path.resolve()
+        except OSError:
+            same_target = False
+        if same_target:
+            # canonical is a symlink (or hardlink) pointing at pdf_path
+            # — already wired up; just use canonical going forward.
+            if verbose:
+                print(f"  ℹ {canonical.name} already points to {pdf_path.name}")
+            return canonical
+        if canonical.is_symlink():
+            # stale symlink — safe to remove and overwrite below.
+            try:
+                canonical.unlink()
+            except OSError as e:
+                if verbose:
+                    print(f"  ⚠ couldn't remove stale symlink "
+                          f"{canonical.name}: {e}; using existing canonical")
+                return canonical
+        else:
+            # real file at canonical location — don't clobber.
+            if verbose:
+                print(f"  ℹ {canonical.name} already exists; using it "
+                      f"(source {pdf_path.name} kept as-is)")
+            return canonical
+
+    # Move pdf_path → canonical (try rename, fall back to copy on EPERM).
+    try:
+        pdf_path.rename(canonical)
+        if verbose:
+            print(f"  → renamed {pdf_path.name} → {canonical.name}")
+    except OSError as e:
+        if verbose:
+            print(f"  ⚠ rename failed ({e}); falling back to copy")
+        import shutil
+        shutil.copy2(pdf_path, canonical)
+        if verbose:
+            print(f"  → copied {pdf_path.name} → {canonical.name}")
+    return canonical
+
+
+# ============================================================
 # Main
 # ============================================================
 def annotate(
@@ -382,6 +490,12 @@ def main(argv=None):
                    help="Skip the color-legend page.")
     p.add_argument("--fail-on-missing", action="store_true",
                    help="Exit non-zero if any quote couldn't be located.")
+    p.add_argument("--no-rename", action="store_true",
+                   help="Skip the rename step. By default the source PDF "
+                        "is renamed to papers/<CitationKey>.pdf (matching "
+                        "the @Key in the draft's findings) before the "
+                        "annotated copy is written, so auto_review.py "
+                        "and other tools can find it by citation key.")
     args = p.parse_args(argv)
 
     for d in args.draft:
@@ -390,7 +504,13 @@ def main(argv=None):
     if not args.pdf.exists():
         p.error(f"pdf not found: {args.pdf}")
 
-    annotate(args.draft, args.pdf, args.out,
+    # Rename the source PDF to its canonical <CitationKey>.pdf name first,
+    # so the annotated copy lands at <CitationKey>_annotated.pdf and
+    # downstream tools (auto_review.py) find it by @Key lookup.
+    pdf_path = _ensure_canonical_pdf(args.pdf, args.draft,
+                                     rename=not args.no_rename)
+
+    annotate(args.draft, pdf_path, args.out,
              add_legend=not args.no_legend,
              fail_on_missing=args.fail_on_missing)
 

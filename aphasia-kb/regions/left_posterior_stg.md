@@ -457,9 +457,550 @@ findings:
     supports: limitation
     quote: It is also possible that error responses on individual tasks reflected
       impaired processes rooted in different cortical locations.
+- id: f4
+  target: auditory_comprehension
+  target_kind: impairment
+  claim: Structural disconnection of left BA 22 (posterior superior temporal gyrus
+    / Wernicke's area) is independently associated with impaired auditory comprehension
+    of sequential commands; BA 22 cortical necrosis alone is not an independent predictor
+    of comprehension.
+  direction: likely
+  relationship: causal
+  citation: '@Bonilha2014'
+  method: disconnectome
+  design: cross-sectional
+  imaging: multimodal
+  sample:
+    n: 39
+    population: chronic left-hemisphere ischemic stroke survivors with aphasia
+    time_post_onset: '>=6 months'
+    age_range: mean 62.7 years (SD 12.8)
+    handedness: all right-handed
+    language: not_reported
+    recruitment: MUSC and USC local community.
+  statistics:
+    threshold: p<0.05 Bonferroni-corrected
+    cluster_extent: not_reported
+    effect_size: 'necrosis: beta=-0.35, p=0.43 (not independently significant); disconnection:
+      beta=0.47 [see flag], p=0.01'
+    ci_95: not_reported
+    p_value: F=3.05, p=0.047 (overall model)
+  confounders_controlled:
+  - BA 22 cortical necrosis (entered simultaneously)
+  - Bonferroni correction
+  confounders_not_controlled:
+  - overall lesion volume
+  - age
+  - time post-onset
+  region_definition:
+    kind: atlas
+    atlas: Brodmann area atlas (probabilistic grey matter segmentation)
+    description: BA 22 (posterior superior temporal gyrus / Wernicke's area) defined
+      via probabilistic Brodmann parcellation; connectivity as normalized DTI streamlines.
+  imaging_details:
+    field_strength: 3T
+    acquisition:
+      sequence: T1-weighted MPRAGE + DTI deterministic tractography
+      voxel_size_mm: not_reported
+      TR_ms: not_reported
+      TE_ms: not_reported
+    preprocessing_pipeline: SPM-based Brodmann parcellation; deterministic tractography
+      connectome; necrotic tissue excluded
+    reference_space: not_reported
+    atlases_used:
+    - Brodmann area atlas (probabilistic)
+    coordinates_reported: []
+  replications: []
+  contradictions: []
+  author_limitations:
+  - BA 22 necrosis was NOT independently associated with comprehension (p=0.43) —
+    only disconnection reached significance.
+  - Small sample (n=39).
+  evidence_quality: cohort
+  strength: moderate
+  provenance:
+    extracted_by: agent:claude-sonnet-4-6
+    extracted_on: 2026-05-06
+    paper_section: Results – Regional necrosis and connectivity and language impairment
+    confidence: medium
+    flags:
+    - disconnection beta reported as 'beta=47' in the author manuscript (likely OCR/formatting
+      artifact — probable value is beta=0.47); verify against published Stroke journal
+      PDF
+    - necrosis NOT independently associated with comprehension (p=0.43); only disconnection
+      significant (p=0.01)
+    - cohort overlaps with @Fridriksson2018Anatomy and @Bonilha2014 (left_ifg_pars_triangularis
+      draft) — flag for double-counting risk
+    - split out from drafts/regions/left_ifg_pars_triangularis__Bonilha2014.md (originally
+      f3) on 2026-05-06 because the finding is anatomically about BA22, not BA45
+  source_passages:
+  - section: Results – Regional necrosis and connectivity and language impairment
+    page: 5
+    supports: claim
+    quote: 'We also observed a significant relationship between comprehension and
+      a model composed by BA 22 necrosis and BA 22 disconnection (F=3.05, p=0.047;
+      necrosis: beta=-0.35; p=0.43; disconnection beta=47; p=0.01). However, in this
+      model, necrosis was not independently associated with comprehension.'
+  - section: Methods – Subjects
+    page: 2
+    supports: sample
+    quote: We studied thirty-nine individuals (mean age 62.7 +/-12.8 years, 22 male,
+      16 female) who suffered a left hemisphere ischemic stroke at least six months
+      prior to enrolling in this study
+  - section: Methods – Statistical Analyses
+    page: 4
+    supports: method
+    quote: 'We performed multiple linear regression analyses with the performance
+      on naming measures defined as the dependent variable, with the following independent
+      variables: 1) percentage of damage to each BA area, 2) percentage number of
+      fibers of each BA area.'
+  - section: Methods – MRI acquisition
+    page: 3
+    supports: imaging_details
+    quote: MRI scanning was performed using the same type of MRI scanner, i.e., a
+      3T Siemens Trio equipped with a 12-channel head coil.
+  - section: Discussion
+    page: 7
+    supports: limitation
+    quote: cortical disconnection is an independent form of damage, which may not
+      be readily appreciated by measurement of cortical necrosis
+- id: f5
+  target: sentence_comprehension
+  target_kind: impairment
+  claim: Damage to left posterior STG is the strongest independent predictor of sentence
+    comprehension impairment in chronic left-hemisphere stroke aphasia, accounting
+    for 60% of variance in the multivariate RLSM analysis.
+  direction: likely
+  relationship: causal
+  citation: '@Fridriksson2018Anatomy'
+  method: LSM
+  design: cross-sectional
+  imaging: multimodal
+  sample:
+    n: 57
+    population: chronic left-hemisphere stroke survivors with aphasia (subset completing
+      sentence comprehension battery)
+    time_post_onset: '>=6 months (mean 36.4 months, SD 43.1 for full sample)'
+    age_range: mean 60.0 years (SD 11.2) for full sample
+    handedness: not_reported
+    language: English (native speakers)
+    recruitment: Archival database, Aphasia Lab, University of South Carolina and
+      Medical University of South Carolina.
+    inclusion_criteria: Single left-hemisphere stroke >=6 months prior; native English
+      speaker; completed sentence comprehension battery.
+    exclusion_criteria: History of dementia or other neurological problems.
+  statistics:
+    threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed (univariate);
+      stepwise regression p<0.05 for entry (multivariate)
+    cluster_extent: not_reported
+    effect_size: R2=0.60 (posterior STG as first entry in multivariate RLSM for sentence
+      comprehension); total model R2=0.63 (posterior STG + IFG orbitalis)
+    ci_95: not_reported
+    p_value: not_reported
+  confounders_controlled:
+  - time post-stroke (verified non-significant correlation with all 16 tests)
+  confounders_not_controlled:
+  - age
+  - education
+  - lesion volume
+  region_definition:
+    kind: atlas
+    atlas: Faria et al. 2012 (118 grey matter regions)
+    description: Posterior STG defined as a region of interest within the 118-region
+      Faria et al. atlas used for RLSM analyses. Lesion load computed as proportion
+      of intact voxels within the posterior STG grey matter region.
+  imaging_details:
+    field_strength: 3T
+    acquisition:
+      sequence: T1-weighted MP-RAGE (1mm isotropic) + T2 3D-SPACE + DTI EPI
+      voxel_size_mm:
+      - 1
+      - 1
+      - 1
+      TR_ms: 2250
+      TE_ms: 4.52
+    modalities:
+    - modality: T1
+      sequence: MP-RAGE
+      voxel_size_mm:
+      - 1
+      - 1
+      - 1
+      TR_ms: 2250
+      TE_ms: 4.52
+    - modality: T2
+      sequence: 3D-SPACE (TSE)
+      TR_ms: 2800
+      TE_ms: 402
+    - modality: DTI
+      sequence: EPI
+      voxel_size_mm:
+      - 2.7
+      - 2.7
+      - 2.7
+      TR_ms: 6100
+      TE_ms: 101
+      n_directions: 30
+      b_values:
+      - 0
+      - 1000
+      - 2000
+    preprocessing_pipeline: Enantiomorphic normalization via SPM12; SPM12 unified
+      segmentation-normalization to MNI152; Faria 2012 118-region atlas parcellation;
+      FSL FDT probabilistic tractography (BEDPOST + probtrackX)
+    reference_space: MNI152
+    atlases_used:
+    - Faria et al. 2012 (118 grey matter regions)
+    coordinates_reported: []
+  replications: []
+  contradictions: []
+  author_limitations:
+  - Number of participants who completed sentence comprehension assessment was 57
+    out of 159 total — reduced statistical power compared to tests administered to
+    the full sample.
+  - The sentence comprehension task used here may not capture the full range of comprehension
+    impairments; more sensitive measures exist.
+  - Univariate and multivariate results should be considered complementary.
+  evidence_quality: cohort
+  strength: strong
+  provenance:
+    extracted_by: agent:claude-sonnet-4-6
+    extracted_on: 2026-05-06
+    paper_section: Results – RLSM; Table 2; Table 3; Discussion
+    confidence: high
+    flags:
+    - n=57 for sentence comprehension subtest (not full n=159); verify this subgroup
+      is still adequately powered
+    - cohort overlaps with @Fridriksson2018 (same USC Aphasia Lab archival database)
+    - posterior STG is also the top univariate predictor for AQ (Z=7.61, Table 2),
+      auditory word recognition (Z=6.99), reading (Z=5.72), PNT correct (Z=5.13),
+      syllable identification (Z=4.67) — it is by far the most widely-significant
+      region across tests
+    - 'CLSM for sentence comprehension: top connection is MTG <-> ITG (Z=3.92) — MTG-ITG
+      connection more prominent than pSTG in CLSM'
+  source_passages:
+  - section: Table 3
+    page: 9
+    supports: statistics
+    quote: 'Sentence Comprehension
+
+      Posterior STG
+
+      0.60
+
+      0.60
+
+      IFG orbitalis
+
+      0.63
+
+      0.03'
+  - section: Table 2
+    page: 7
+    supports: statistics
+    quote: 'Sentence Comprehension
+
+      Posterior STG'
+  - section: Results – RLSM
+    page: 6
+    supports: claim
+    quote: 'as predictors of speech and language performance in the univariate RLSM
+      were: (i) pars opercularis; (ii) STG; and (iii) SMG. Damage to each of these
+      three regions was a statistically significant predictor of performance on 14
+      of the 16 speech and language tests.'
+  - section: Methods – Participants
+    page: 3
+    supports: sample
+    quote: 'The total sample size was 159 chronic stroke survivors and
+
+      the number of tested participants varied across the different'
+  - section: Methods – Brain imaging
+    page: 4
+    supports: imaging_details
+    quote: 'T1-weighted MRI using an
+
+      MP-RAGE sequence with 1
+
+      mm isotropic voxels'
+  - section: Methods – Data analyses
+    page: 5
+    supports: method
+    quote: 'The univariate lesion analyses relied on conventional lesion symptom mapping:
+      General Linear Model (GLM) (pooled variance t-test) with P < 0.05 (one-tailed)
+      and control for multiple comparisons used permutation threshholding (4000 permutations).'
+  - section: Discussion
+    page: 11
+    supports: limitation
+    quote: the number of participants who completed each test or task varied. Therefore,
+      statistical power was not equal across all univariate analyses.
+- id: f6
+  target: auditory_word_recognition
+  target_kind: impairment
+  claim: Damage to left STG and posterior STG is the strongest predictor of impaired
+    auditory word recognition in chronic left-hemisphere stroke aphasia, consistent
+    with the ventral stream's role in auditory-to-meaning mapping.
+  direction: likely
+  relationship: causal
+  citation: '@Fridriksson2018Anatomy'
+  method: LSM
+  design: cross-sectional
+  imaging: multimodal
+  sample:
+    n: 159
+    population: chronic left-hemisphere stroke survivors with aphasia
+    time_post_onset: '>=6 months (mean 36.4 months, SD 43.1)'
+    age_range: mean 60.0 years (SD 11.2)
+    handedness: not_reported
+    language: English (native speakers)
+    recruitment: USC/MUSC Aphasia Lab archival database.
+  statistics:
+    threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed
+    cluster_extent: not_reported
+    effect_size: STG R2=0.31 (first entry multivariate RLSM); total model R2=0.39
+      (STG + AG + MTG pole)
+    ci_95: not_reported
+    p_value: not_reported
+  confounders_controlled:
+  - time post-stroke (verified non-significant)
+  confounders_not_controlled:
+  - age
+  - lesion volume
+  - education
+  region_definition:
+    kind: atlas
+    atlas: Faria et al. 2012 (118 grey matter regions)
+    description: STG and posterior STG as separate regions in the 118-region atlas;
+      lesion load computed per region.
+  imaging_details:
+    field_strength: 3T
+    acquisition:
+      sequence: T1-weighted MP-RAGE + T2 3D-SPACE + DTI EPI
+      voxel_size_mm:
+      - 1
+      - 1
+      - 1
+      TR_ms: 2250
+      TE_ms: 4.52
+    preprocessing_pipeline: Enantiomorphic normalization SPM12; Faria 2012 atlas parcellation;
+      FSL FDT tractography
+    reference_space: MNI152
+    atlases_used:
+    - Faria et al. 2012
+    coordinates_reported: []
+  replications: []
+  contradictions: []
+  author_limitations:
+  - Auditory word recognition relied on a 60-point pointing-to-picture task (WAB Auditory
+    Word Recognition subtest) — may not capture subtle comprehension deficits.
+  evidence_quality: cohort
+  strength: strong
+  provenance:
+    extracted_by: agent:claude-sonnet-4-6
+    extracted_on: 2026-05-06
+    paper_section: Results – RLSM; Table 2; Table 3
+    confidence: high
+    flags:
+    - cohort overlaps with @Fridriksson2018 (same USC Aphasia Lab archival database)
+    - 'CLSM for auditory word recognition: top univariate connection STG <-> posterior
+      STG (Z=4.75), then AG <-> posterior STG (Z=4.29); predominantly ventral stream
+      links'
+    - 'Multivariate RLSM for auditory word recognition: STG (R2=0.31), AG (R2=0.36),
+      MTG pole (R2=0.39)'
+  source_passages:
+  - section: Table 3
+    page: 9
+    supports: statistics
+    quote: 'Auditory Word Recognition
+
+      STG
+
+      0.31
+
+      0.31
+
+      AG
+
+      0.36
+
+      0.05
+
+      MTG p'
+  - section: Table 2
+    page: 7
+    supports: statistics
+    quote: 'Auditory Word Recognition
+
+      STG'
+  - section: Discussion
+    page: 9
+    supports: claim
+    quote: Much of the damage associated with 'auditory word recognition' involved
+      the ventral stream with relatively fewer links involving the dorsal stream
+  - section: Methods – Participants
+    page: 3
+    supports: sample
+    quote: The total sample size was 159 chronic stroke survivors
+  - section: Methods – Brain imaging
+    page: 4
+    supports: imaging_details
+    quote: T1-weighted MRI using an MP-RAGE sequence with 1 mm isotropic voxels
+  - section: Methods – Data analyses
+    page: 5
+    supports: method
+    quote: 'The univariate lesion analyses relied on conventional lesion symptom mapping:
+      General Linear Model (GLM) (pooled variance t-test) with P < 0.05 (one-tailed)
+      and control for multiple comparisons used permutation threshholding (4000 permutations).'
+  - section: Discussion
+    page: 11
+    supports: limitation
+    quote: The reading and writing subtests on the Western Aphasia Battery provide
+      a somewhat shallow picture of alexia and agraphia, respectively.
+- id: f7
+  target: naming
+  target_kind: impairment
+  claim: Naming impairment (PNT correct) in chronic left-hemisphere stroke aphasia
+    is associated with damage to an extensive cortical network including both ventral
+    stream (posterior STG) and dorsal stream (precentral gyrus) regions, with no single
+    dominant lesion location.
+  direction: likely
+  relationship: causal
+  citation: '@Fridriksson2018Anatomy'
+  method: LSM
+  design: cross-sectional
+  imaging: multimodal
+  sample:
+    n: 105
+    population: chronic left-hemisphere stroke survivors with aphasia (subset completing
+      PNT)
+    time_post_onset: '>=6 months (mean 36.4 months, SD 43.1 for full sample)'
+    age_range: mean 60.0 years (SD 11.2) for full sample
+    handedness: not_reported
+    language: English (native speakers)
+    recruitment: USC/MUSC Aphasia Lab archival database.
+  statistics:
+    threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed
+    cluster_extent: not_reported
+    effect_size: Posterior STG R2=0.22 (first entry multivariate RLSM for PNT correct);
+      PrCG adds R2=0.29 total
+    ci_95: not_reported
+    p_value: not_reported
+  confounders_controlled:
+  - time post-stroke (verified non-significant)
+  confounders_not_controlled:
+  - age
+  - lesion volume
+  region_definition:
+    kind: atlas
+    atlas: Faria et al. 2012 (118 grey matter regions)
+    description: Region-wise RLSM and CLSM across 20 dorsal/ventral stream ROIs.
+  imaging_details:
+    field_strength: 3T
+    acquisition:
+      sequence: T1-weighted MP-RAGE + T2 3D-SPACE + DTI EPI
+      voxel_size_mm:
+      - 1
+      - 1
+      - 1
+      TR_ms: 2250
+      TE_ms: 4.52
+    preprocessing_pipeline: Enantiomorphic normalization SPM12; Faria 2012 atlas parcellation;
+      FSL FDT tractography
+    reference_space: MNI152
+    atlases_used:
+    - Faria et al. 2012
+    coordinates_reported: []
+  replications:
+  - '@Yourganov2015Predicting'
+  contradictions: []
+  author_limitations:
+  - Anomia (as captured by PNT correct) relies on an extensive cortical network —
+    different lesion locations can cause similar naming impairment.
+  - Multivariate RLSM for PNT correct explains only 29% of variance; much variance
+    remains unexplained by region-level damage alone.
+  evidence_quality: cohort
+  strength: moderate
+  provenance:
+    extracted_by: agent:claude-sonnet-4-6
+    extracted_on: 2026-05-06
+    paper_section: Results – RLSM; Results – CLSM; Table 2; Table 3; Discussion
+    confidence: high
+    flags:
+    - n=105 for PNT (not full n=159)
+    - cohort overlaps with @Fridriksson2018 (same USC Aphasia Lab)
+    - paper states 'unlike Wernicke's, Broca's, conduction, or global aphasia, anomic
+      aphasia has no specific lesion location' (citing Yourganov 2015) — this is consistent
+      with low R2 for naming
+    - 'CLSM for PNT correct: top univariate link is PrCG <-> posterior STG (Z=4.21);
+      multivariate CLSM: posterior STG <-> PrCG R2=0.18 (first entry), then multiple
+      additional links adding to total R2=0.48'
+    - 'The naming finding illustrates the key claim: many different lesion locations
+      can impair naming because naming relies on both dorsal and ventral stream networks'
+  source_passages:
+  - section: Table 3
+    page: 9
+    supports: statistics
+    quote: 'PNT Correct
+
+      Posterior STG
+
+      0.22
+
+      0.22
+
+      PrCG
+
+      0.29
+
+      0.06'
+  - section: Table 2
+    page: 7
+    supports: statistics
+    quote: 'PNT Correct
+
+      Posterior STG'
+  - section: Discussion
+    page: 9
+    supports: claim
+    quote: 'ated by damage that predicts naming impair-
+
+      ment, anomia. In the current study, ''correct naming'' was pre-
+
+      dicted in the univariate analysis by a lesion location mostly
+
+      involving posterior structures, including the posterior STG
+
+      and angular gyrus.'
+  - section: Discussion
+    page: 9
+    supports: claim
+    quote: 'unlike
+
+      Wernicke''s, Broca''s, conduction, or global aphasia, anomic
+
+      aphasia has no specific lesion location.'
+  - section: Methods – Participants
+    page: 3
+    supports: sample
+    quote: The total sample size was 159 chronic stroke survivors and the number of
+      tested participants varied across the different assessment batteries
+  - section: Methods – Brain imaging
+    page: 4
+    supports: imaging_details
+    quote: T1-weighted MRI using an MP-RAGE sequence with 1 mm isotropic voxels
+  - section: Methods – Data analyses
+    page: 5
+    supports: method
+    quote: The lesion and connectome analyses focused on grey matter regions of interest
+      within the dual streams defined in Fridriksson et al. (2016).
+  - section: Discussion
+    page: 11
+    supports: limitation
+    quote: It is also possible that error responses on individual tasks reflected
+      impaired processes rooted in different cortical locations.
 source: draft
 reviewer: claude-cowork
 reviewed_on: '2026-05-06'
+last_reviewed: '2026-05-06'
 ---
 # Left Posterior STG — Fridriksson 2018 Anatomy (RLSM + CLSM)
 

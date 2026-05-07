@@ -223,7 +223,7 @@ After both passes, every draft has a verdict in its sidecar YAML.
 ## 5. Generate a worksheet, fill in verdicts, apply
 
 ```bash
-python aphasia-kb/auto_review.py --emit-worksheet worksheet.yaml
+python aphasia-kb/auto_review.py --all --emit-worksheet worksheet.yaml
 ```
 
 This produces `worksheet.yaml` at the repo root with one entry per

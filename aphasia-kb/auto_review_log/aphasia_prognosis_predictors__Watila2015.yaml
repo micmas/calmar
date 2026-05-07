@@ -1,0 +1,398 @@
+draft_path: drafts/reviews/aphasia_prognosis_predictors__Watila2015.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T01:20:34'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1): unknown direction=''negative_predictor'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2): unknown direction=''negative_predictor'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3): unknown direction=''null_predictor'''
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/9 quotes (78%)
+    - '2 quotes did not match — first 3:'
+    - '  - f1.? (p.2): lesions in the superior temporal gyrus (STG) produce a more
+      persistent global ap…'
+    - '  - f3.? (p.4): studies have not shown any influence between handedness and
+      aphasia recovery…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-07T01:22:42'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3): provenance.flags missing'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3): provenance.flags must be a list (use [] if none)'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/9 quotes (78%)
+    - '2 quotes did not match — first 3:'
+    - '  - f1.? (p.2): lesions in the superior temporal gyrus (STG) produce a more
+      persistent global ap…'
+    - '  - f3.? (p.4): studies have not shown any influence between handedness and
+      aphasia recovery…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-07T01:23:27'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[0] (id=f1).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[1] (id=f2).source_passages[2]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[0]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[1]: missing section'
+    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+      finding[2] (id=f3).source_passages[2]: missing section'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/9 quotes (78%)
+    - '2 quotes did not match — first 3:'
+    - '  - f1.? (p.2): lesions in the superior temporal gyrus (STG) produce a more
+      persistent global ap…'
+    - '  - f3.? (p.4): studies have not shown any influence between handedness and
+      aphasia recovery…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-07T01:24:10'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/9 quotes (78%)
+    - '2 quotes did not match — first 3:'
+    - '  - f1.\''narrative synthesis\'' (p.2): lesions in the superior temporal gyrus
+      (STG) produce a more persistent global ap…'
+    - '  - f3.\''narrative synthesis\'' (p.4): studies have not shown any influence
+      between handedness and aphasia recovery…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 5
+  timestamp: '2026-05-07T01:26:57'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 9/9 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 6
+  timestamp: '2026-05-07T01:28:19'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 9/9 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: null
+    parsed:
+      overall_verdict: agree_defer
+      rationale: 'Conflict of interest: this draft was extracted by agent:claude-sonnet-4-6
+        (same model as reviewer). Self-review deferred to human. Soft-check failures
+        (strength=weak on f3) are appropriate for a narrative_review entry synthesising
+        heterogeneous prognosis literature. Human reviewer: if f1/f2 (moderate) and
+        f3 (weak, labeled) are satisfactory, this entry can be approved without concern.'
+      per_finding: []
+    raw_preview: ''
+    error: null
+- run_id: 7
+  timestamp: '2026-05-07T01:31:39'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 9/9 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 8
+  timestamp: '2026-05-07T13:13:11'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 9/9 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: false
+    blocker: false
+    details:
+    - 'f3: strength=''weak'''
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: michele
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: (no rationale provided)
+      per_finding: []
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T13:13:11'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

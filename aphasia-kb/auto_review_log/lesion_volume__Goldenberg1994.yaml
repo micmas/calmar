@@ -1,0 +1,229 @@
+draft_path: drafts/predictors/lesion_volume__Goldenberg1994.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T01:20:34'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 7/7 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: occasional character errors in the 1994 PDF (e.g., ''Selves''
+      for ''Selne'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 2
+  timestamp: '2026-05-07T01:22:42'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 7/7 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: occasional character errors in the 1994 PDF (e.g., ''Selves''
+      for ''Selne'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 3
+  timestamp: '2026-05-07T01:23:27'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 7/7 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: occasional character errors in the 1994 PDF (e.g., ''Selves''
+      for ''Selne'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 4
+  timestamp: '2026-05-07T01:24:10'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 7/7 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: occasional character errors in the 1994 PDF (e.g., ''Selves''
+      for ''Selne'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 5
+  timestamp: '2026-05-07T01:26:57'
+  mode: deterministic_only
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 7/7 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: occasional character errors in the 1994 PDF (e.g., ''Selves''
+      for ''Selne'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+- run_id: 6
+  timestamp: '2026-05-07T01:28:18'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 7/7 quotes (100%)
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: OCR scan: occasional character errors in the 1994 PDF (e.g., ''Selves''
+      for ''Selne'
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  llm_review:
+    model: cowork-claude:sonnet-4-6
+    verdict_override: approve
+    parsed:
+      overall_verdict: override_approve
+      rationale: 'Single soft-check failure: no_human_review_flags on f1, triggered
+        by an OCR-quality bookkeeping flag (''occasional character errors in the 1994
+        PDF''). This is a false positive — the flag is a methodological note-to-self,
+        not a quality concern. All source_passages match the PDF. The core finding
+        (larger lesion → worse recovery across all phases, r=−0.47 to −0.75) is one
+        of the most robust findings in aphasia prognosis and is directly quoted verbatim
+        from the Results section. Strength=moderate is appropriate for uncorrected
+        Pearson correlations on n=18. No blockers fail.'
+      per_finding:
+      - id: f1
+        concern: OCR flag triggers no_human_review_flags — bookkeeping note, not quality
+          issue
+        supports_approval: true
+    raw_preview: ''
+    error: null
+last_run: '2026-05-07T01:28:18'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

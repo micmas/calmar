@@ -1,0 +1,41 @@
+draft_path: therapies/treatment_of_underlying_forms.md
+runs:
+- run_id: 1
+  timestamp: '2026-05-07T00:12:21'
+  mode: deterministic_only
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 44/46 quotes (96%)
+    - '2 quotes did not match — first 3:'
+    - '  - f2.Methods 2.3.2.2 — Data acquisition (p.81): Structural and functional
+      MR images were collected using 3T scanners (Siemens Tr…'
+    - '  - f5.Methods 2.3.2.2 — Data acquisition (p.81): Structural and functional
+      MR images were collected using 3T scanners (Siemens Tr…'
+  - name: all_findings_confidence_high
+    passed: true
+    blocker: false
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: strength_moderate_or_better
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+last_run: '2026-05-07T00:12:21'
+latest_verdict: auto_approve
+latest_mode: deterministic_only

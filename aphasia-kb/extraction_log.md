@@ -48,6 +48,12 @@ add an `EXTRACTED` line for every run.
 2026-05-06 | EXTRACTED | @Bonilha2014 | left_ifg_pars_triangularis (naming, fluency, auditory_comprehension via BA45/BA22 disconnection) | 1 draft (region-anchored) | 3 findings (f1: BA45 disconnection->naming beta=1.21 p<0.001; f2: BA45 disconnection->fluency beta=7.52 p=0.025; f3: BA22 disconnection->comprehension p=0.01) | confidence: high (f1,f2) / medium (f3: beta value suspect OCR artifact) | flags: cohort overlaps @Fridriksson2018Anatomy (same USC/MUSC lab); DTI params in Online Supplement only; disconnection beta for BA22 (f3) printed as '47' in author manuscript (likely 0.47); reference_space not stated in main text | agent: claude-sonnet-4-6
 2026-05-06 | EXTRACTED | @Fridriksson2018Anatomy | left_ifg_pars_opercularis (speech_fluency, aphasia_quotient), left_posterior_stg (sentence_comprehension, auditory_word_recognition, naming) | 2 drafts (region-anchored) | 5 findings (IFG opercularis f1: speech fluency R2=0.40 multivariate RLSM; f2: AQ CLSM hub; posterior STG f1: sentence comprehension R2=0.60; f2: auditory word recognition R2=0.31; f3: naming network RLSM+CLSM) | confidence: high (all) | flags: cohort overlaps @Fridriksson2018 (same USC Aphasia Lab archival database; n=138 vs n=159); n varies per test (sentence comprehension n=57, PNT n=105, full n=159); method coded as LSM (RLSM arm) — CLSM arm coded as disconnectome in imaging_details notes; PCA-derived component maps not separately extracted (would require additional drafts for speech production/comprehension components) | agent: claude-sonnet-4-6
 2026-05-06 | EXTRACTED | @MassonTrottier2021 | phonological_component_analysis (therapy) | 1 draft (therapy-anchored) | 2 findings (f1: increased LH visual-semantic rsFC ant. temporal fusiform bilateral SCC and SCC ant. ITG, relationship: treatment_response; f2: decreased RH rsFC lingual gyrus SFG, relationship: treatment_response) | confidence: high | annotation: 9/9 (100%) | agent: claude-sonnet-4-6
+2026-05-06 | REFUSED | @Radanovic2017 | 1-s2.0-S0093934X16301717-main.pdf | reason: Comprehensive narrative review of aphasia in basal ganglia vascular lesions — no primary dataset; secondary synthesis of published case reports and studies.
+2026-05-06 | REFUSED | @NadeauCrosson1997 | 1-s2.0-S0093934X97917077-main.pdf | reason: 48-page critical review of subcortical aphasia literature — no primary patient cohort; purely secondary synthesis.
+2026-05-06 | REFUSED | @Crosson1999 | 1-s2.0-S0278262699910886-main.pdf | reason: Review of four previously-published thalamic lesion cases — secondary re-analysis of own published data; no new primary dataset.
+2026-05-06 | REFUSED | @Wallentin | file.pdf | reason: Meta-analysis and database query on sex differences in post-stroke aphasia rates — no primary patient cohort; aggregate statistical synthesis only.
+2026-05-06 | FLAGGED | UNKNOWN | 1-s2.0-S0093934X84710637-main.pdf | reason: Scanned PDF — no extractable text; OCR required before extraction can proceed. Paper appears to be a 1984 Brain and Language article (15 pages). User action needed.
+2026-05-06 | FLAGGED | @Pflugshaupt2009 | awp141.pdf | reason: Pure alexia paper (visual field defects in pure alexia) — may be outside KB scope (aphasia vs. reading disorders). User decision needed on whether to include.
 2026-05-06 | EXTRACTED | @Harvey2022 | lesion_volume (predictor) | 1 draft (predictor-anchored; 2 findings) | f1: smaller lesion volume → greater long-term WAB-R AQ gain [R2=0.52 F(4,13)=3.51 p=.037]; f2: ALA participation satisfaction → better long-term outcome [combined model R2=0.68 p=.003] | confidence: high (f1) medium (f2) | annotation: 8/8 (100%) | agent: claude-sonnet-4-6
 2026-05-06 | EXTRACTED | @Breining2022 | left_angular_gyrus (region) | 1 draft (region-anchored) | 2 findings (f1: left AG → object naming LASSO=-0.524 p<.001; f2: left AG → action naming LASSO=-0.405 p=.728 in model not independent) | PPA EXCLUDED (non-stroke etiology documented in provenance.flags) | confidence: high | annotation: 8/8 (100%) | agent: claude-sonnet-4-6
 2026-05-06 | EXTRACTED | @Kristinsson2025 | severity_metric (predictor; WAB-R subtest scores) | 1 draft (predictor-anchored) | 2 findings (f1: shared left perisylvian network R2=0.22–0.25 across WAB-R subtests, best DTI r=0.45 auditory comprehension; f2: right putamen uniquely predicts naming/repetition p=0.013/0.021, left STL+right precuneus predict comprehension p=0.049/0.045) | confidence: high (f1) medium (f2: post-hoc exploratory) | annotation: 14/14 (100%) | flags: POLAR trial (NCT03416738) USC/MUSC cohort overlaps @Fridriksson2018, @Yourganov2015Predicting | agent: claude-sonnet-4-6
@@ -92,3 +98,69 @@ add an `EXTRACTED` line for every run.
 2026-05-06 | AUTO-APPROVED | @Mirman2015 | left_superior_temporal_gyrus_wernicke | reviewer: claude-cowork
 2026-05-06 | AUTO-APPROVED | @Mirman2015 | left_supramarginal_gyrus_premotor | reviewer: claude-cowork
 2026-05-06 | AUTO-APPROVED | @MassonTrottier2021 | phonological_component_analysis | reviewer: claude-cowork
+2026-05-06 | AUTO-APPROVED | @Robson2019 | auditory_temporal_processing | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Dresang2022 | bdnf_val66met | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Harvey2022 | lesion_volume | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Kristinsson2025 | severity_metric | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Stefaniak2022 | bilateral_middle_frontal_gyrus_recovery | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Breining2022 | left_angular_gyrus | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Marchina2011 | left_arcuate_fasciculus | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Saur2008 | left_arcuate_fasciculus_slf | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Saur2008 | left_extreme_capsule | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Mirman2015 | left_frontal_white_matter_bottleneck | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Baldo2006 | left_ifg_pars_opercularis | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Bonilha2014 | left_ifg_pars_triangularis | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Bonilha2014 | left_posterior_stg | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Fridriksson2018Anatomy | left_posterior_stg | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Mirman2015 | left_superior_temporal_gyrus_wernicke | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Robson2019 | left_superior_temporal_gyrus_wernickes | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @Mirman2015 | left_supramarginal_gyrus_premotor | reviewer: michele
+2026-05-06 | AUTO-APPROVED | @MassonTrottier2021 | phonological_component_analysis | reviewer: michele
+2026-05-06 | EXTRACTED | @Dronkers1996 | left_precentral_gyrus_insula | Lesion-overlap double dissociation: left precentral gyrus of insula necessary for apraxia of speech (n=44, 25 AoS vs 19 controls); 100% overlap in AoS group, 0% in controls; Talairach -41,-2,10 | annotation: 8/8 | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED | @Lazar2010 | initial_aphasia_severity | Initial WAB composite (WABinitial, 0-30) predicts 81% of variance in 90-day aphasia change (R2=0.81, p<0.001); proportional recovery 0.73 of maximal potential regardless of therapy (n=21, mild-moderate aphasia) | annotation: 7/7 | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED | @Pedersen2004 | stroke_severity_sss | Initial WAB-AQ + modified SSS predict R2=0.60 of 1-year WAB-AQ; WAB-AQ alone R2=0.47; age, sex, aphasia type not significant (n=203 first-ever stroke, Copenhagen Aphasia Study) | annotation: 12/12 | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED | @Leff2009 | left_superior_temporal_gyrus__Leff2009 | n=210 UCL stroke cohort; VBM (VBCM) identifies left posterior STG/STS [-66,-32,4] as shared substrate for auditory STM (digit span) and spoken sentence comprehension; 2 findings | annotation: 8/9 | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED | @DenOuden2019 | syntactic_processing (impairment) | n=71 LH stroke (68 LSM); VLSM+CLSM; 3 findings: f1 left IFG pars triangularis (BA45) → morphosyntactic production deficit (causal, VLSM, lesion-size controlled); f2 left pSTG/angular gyrus → verb argument structure production deficit (causal, VLSM, k=47); f3 ventral IFG-temporal connectivity → noncanonical sentence production (correlational, CLSM, not lesion-size corrected) | COHORT_OVERLAP: USC/MUSC; overlaps @Fridriksson2018 @Yourganov2015Predicting @Basilakos2015 | annotation: 11/11 (100%) | schema: 0 issues | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED | @Basilakos2015 | left_precentral_gyrus (region) | n=43 chronic LH stroke, USC cohort; VLSM (continuous T1-signal); 2 findings: f1 left precentral/postcentral gyrus → AOS-specific errors (causal, 2508 voxels); f2 left temporal/inferior prefrontal → aphasia-related speech errors (causal, dissociated from AOS) | Refutes Dronkers (1996) insula localization; no insula prediction of AOS | COHORT_OVERLAP: USC/MUSC | annotation: 8/8 (100%) | schema: 0 issues | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED | @Itabashi2015 | left_precentral_gyrus (region) | n=136 acute/subacute LH MCA stroke (Kohnan Hospital, Japan); VLSM (Liebermeister); 2 findings: f1 left precentral gyrus posterior wall → pure AOS (causal, Z_max=3.482); f2 basal ganglia/corona radiata/precentral → AOS+aphasia (causal, larger lesion burden) | Independent replication of @Basilakos2015 in acute Japanese cohort | NO cohort overlap with USC papers | annotation: 8/8 (100%) | schema: 0 issues | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED | @Robson2014 | left_anterior_temporal_lobe__Robson2014 | n=12 chronic Wernicke's aphasia; distortion-corrected fMRI reveals left ATL overactivation (anterior fusiform, temporal pole) + right aSTG for written words as residual comprehension substrate; 2 findings | annotation: 5/9 | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED | @Naeser2005 | tms_right_ifg__Naeser2005 | n=4 open-protocol; 1Hz rTMS to right pars triangularis (BA45) for 10 days; significant BNT improvement at 2mo (p=0.003) lasting at 8mo in 3/4; 1 finding | annotation: 3/6 | agent: claude-sonnet-4-6
+2026-05-06 | AUTO-APPROVED | @Lazar2010 | initial_aphasia_severity | reviewer: auto-reviewer
+2026-05-06 | AUTO-APPROVED | @Dronkers1996 | left_precentral_gyrus_insula | reviewer: auto-reviewer
+2026-05-06 | AUTO-APPROVED | @Basilakos2015 | left_precentral_gyrus | reviewer: auto-reviewer
+2026-05-06 | AUTO-APPROVED | @DenOuden2019 | syntactic_processing | reviewer: claude-cowork
+2026-05-06 | AUTO-APPROVED | @Pedersen2004 | stroke_severity_sss | reviewer: claude-cowork
+2026-05-06 | AUTO-APPROVED | @Robson2014 | left_anterior_temporal_lobe | reviewer: claude-cowork
+2026-05-06 | AUTO-APPROVED | @Itabashi2015 | left_precentral_gyrus | reviewer: claude-cowork
+2026-05-06 | AUTO-APPROVED | @Leff2009 | left_superior_temporal_gyrus | reviewer: claude-cowork
+2026-05-06 | AUTO-APPROVED | @Naeser2005 | tms_right_ifg__Naeser2005 | reviewer: claude-cowork
+2026-05-07 | EXTRACTED_REVIEW | @Raymer | constraint_induced_language_therapy | 3 findings | annotation: 9/9 | agent: claude-sonnet-4-6
+2026-05-07 | EXTRACTED_REVIEW | @Shekari2022 | aphasia_therapy_neuroplasticity_fmri | 3 findings | annotation: 9/9 | agent: claude-sonnet-4-6
+2026-05-07 | EXTRACTED_REVIEW | @Simic2023 | treatment_neuroplasticity_aphasia | 3 findings | annotation: 9/9 | agent: claude-sonnet-4-6
+2026-05-07 | EXTRACTED_REVIEW | @Watila2015 | aphasia_prognosis_predictors | 3 findings | annotation: 9/9 | agent: claude-sonnet-4-6
+2026-05-07 | EXTRACTED_REVIEW | @Wilson2021 | neuroplasticity_poststroke_aphasia | 4 findings | annotation: 12/12 | agent: claude-sonnet-4-6
+2026-05-06 | EXTRACTED_REVIEW | @NadeauCrosson1997 | subcortical_aphasia | 4 findings | annotation: 12/12 | agent: claude-sonnet-4-6
+2026-05-06 | RE-EXTRACTED_AS_REVIEW | @NadeauCrosson1997 | previously REFUSED 2026-05-06; re-extracted under schema v2.4 narrative_review conventions; draft: drafts/reviews/subcortical_aphasia__NadeauCrosson1997.md
+2026-05-06 | EXTRACTED_REVIEW | @Radanovic2017 | basal_ganglia_aphasia | 4 findings | annotation: 9/9 | agent: claude-sonnet-4-6
+2026-05-06 | RE-EXTRACTED_AS_REVIEW | @Radanovic2017 | previously REFUSED 2026-05-06; re-extracted under schema v2.4 narrative_review conventions; draft: drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md
+2026-05-06 | EXTRACTED_REVIEW | @Crosson1999 | thalamic_language_mechanisms | 3 findings | annotation: 8/8 | agent: claude-sonnet-4-6
+2026-05-06 | RE-EXTRACTED_AS_REVIEW | @Crosson1999 | previously REFUSED 2026-05-06; re-extracted under schema v2.4 narrative_review conventions; draft: drafts/reviews/thalamic_language_mechanisms__Crosson1999.md
+2026-05-06 | EXTRACTED_REVIEW | @MirmanThye2018 | lsm_language_systems_review | 4 findings | annotation: 11/11 | agent: claude-sonnet-4-6
+2026-05-07 | IDENTIFIED-VIA-OCR | @Goldenberg1994 | 1-s2.0-S0093934X84710637-main.pdf -> Goldenberg1994.pdf | OCR via tesseract 4.1.1 + ocrmypdf 16.13.0 (4 pages, ~10s, 100% text recovery on title page). Resolves the 2026-05-06 FLAGGED entry. Paper: Goldenberg G, Spatt J. (1994). Influence of size and site of cerebral lesions on spontaneous recovery of aphasia and on success of language therapy. Brain Lang 47(4):684-698. doi:10.1006/brln.1994.1067. Filename's "84" is an Elsevier internal sequence, NOT the year. Searchable PDF (image+invisible OCR layer, PDF/A-2b) saved at papers/Goldenberg1994.pdf. Citation added to citations.md as [cited] (referenced as primary in drafts/reviews/aphasia_prognosis_predictors__Watila2015.md). Original publisher-named PDF could not be deleted from sandbox due to ACL — user can rm on their Mac.
+2026-05-07 | APPROVED | @DenOuden2019 | syntactic_processing | reviewer: cowork-claude:sonnet-4-6
+2026-05-07 | APPROVED | @Pedersen2004 | stroke_severity_sss | reviewer: cowork-claude:sonnet-4-6
+2026-05-07 | APPROVED | @Robson2014 | left_anterior_temporal_lobe__Robson2014 | reviewer: cowork-claude:sonnet-4-6
+2026-05-07 | APPROVED | @Itabashi2015 | left_precentral_gyrus | reviewer: cowork-claude:sonnet-4-6
+2026-05-07 | APPROVED | @Leff2009 | left_superior_temporal_gyrus__Leff2009 | reviewer: cowork-claude:sonnet-4-6
+2026-05-07 | APPROVED | @Naeser2005 | tms_right_ifg__Naeser2005 | reviewer: cowork-claude:sonnet-4-6
+2026-05-07 | AUTO-APPROVED | @Goldenberg1994 | lesion_volume__Goldenberg1994 | reviewer: cowork-claude:sonnet-4-6
+2026-05-07 | AUTO-APPROVED | @Goldenberg1994 | left_temporobasal__Goldenberg1994 | reviewer: cowork-claude:sonnet-4-6
+2026-05-07 | AUTO-APPROVED | @Watila2015 | aphasia_prognosis_predictors__Watila2015 | reviewer: michele
+2026-05-07 | AUTO-APPROVED | @Shekari2022 | aphasia_therapy_neuroplasticity_fmri__Shekari2022 | reviewer: michele
+2026-05-07 | AUTO-APPROVED | @Radanovic2017 | basal_ganglia_aphasia__Radanovic2017 | reviewer: michele
+2026-05-07 | AUTO-APPROVED | @Raymer | constraint_induced_language_therapy__Raymer | reviewer: michele
+2026-05-07 | AUTO-APPROVED | @MirmanThye2018 | lsm_language_systems_review__MirmanThye2018 | reviewer: michele
+2026-05-07 | AUTO-APPROVED | @Wilson2021 | neuroplasticity_poststroke_aphasia__Wilson2021 | reviewer: michele
+2026-05-07 | AUTO-APPROVED | @NadeauCrosson1997 | subcortical_aphasia__NadeauCrosson1997 | reviewer: michele
+2026-05-07 | AUTO-APPROVED | @Crosson1999 | thalamic_language_mechanisms__Crosson1999 | reviewer: michele
+2026-05-07 | AUTO-APPROVED | @Simic2023 | treatment_neuroplasticity_aphasia__Simic2023 | reviewer: michele
