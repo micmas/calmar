@@ -596,14 +596,42 @@ def log_paint_edit(mask_path: Path, before_data: np.ndarray,
 # ============================================================
 # QC summary
 # ============================================================
-def summarize_qc(deriv_dir: Path) -> pd.DataFrame:
-    """Walk `deriv_dir` for *.qc.json sidecars and return a DataFrame."""
+def summarize_qc(deriv_dir: Path,
+                 *, include_empty: bool = False) -> pd.DataFrame:
+    """Walk `deriv_dir` for *.qc.json sidecars and return a DataFrame.
+
+    Empty sidecars (file exists but has no rating, no issue tags, no
+    notes, no reviewer, no marked_for_rerun, no edits) are filtered
+    out by default — these are leftovers from runs that touched the
+    sidecar without ever rating it. Pass `include_empty=True` to keep
+    them (useful for debugging stale state)."""
     rows = []
     for sp in Path(deriv_dir).rglob("*.qc.json"):
         try:
             d = json.loads(sp.read_text())
         except Exception:
             continue
+
+        if not include_empty:
+            # Mirror QCRecord.is_empty(): record is "empty" iff it has
+            # no reviewer, no marked_for_rerun, no edits, and no stage
+            # carries any rating / issue_tags / notes.
+            if d.get("reviewer") or d.get("marked_for_rerun") or d.get("edits"):
+                pass   # has top-level signal — keep
+            else:
+                stages = d.get("stages") or {}
+                has_signal = False
+                for s in stages.values():
+                    if not isinstance(s, dict):
+                        continue
+                    if s.get("rating") is not None: has_signal = True; break
+                    if s.get("issue_tags"):         has_signal = True; break
+                    if (s.get("notes") or "").strip(): has_signal = True; break
+                # v1 sidecars carry rating at the top level, not in stages.
+                if not has_signal and d.get("rating") is None and \
+                        not d.get("issue_tags") and not (d.get("notes") or "").strip():
+                    continue   # → empty, drop
+
         rows.append({
             "subject":          d.get("subject"),
             "session":          d.get("session"),
