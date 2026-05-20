@@ -1,0 +1,90 @@
+<div style="font-family:sans-serif;max-width:1100px">
+<h2>Lesion-segmentation benchmark</h2>
+<p style='color:#555'>Pilot: 2 chronic + 2 acute. Atlas: cort-maxprob-thr25-2mm. Predictions resampled (nearest-neighbour) to the reference grid before comparison.</p>
+<h3>Summary by dataset × tool</h3>
+<table class="dataframe bench">
+  <thead>
+    <tr style="text-align: right;">
+      <th>dataset</th>
+      <th>tool</th>
+      <th>n</th>
+      <th>dice_mean</th>
+      <th>dice_median</th>
+      <th>iou_mean</th>
+      <th>vol_diff_ml_mean</th>
+      <th>vol_diff_pct_mean</th>
+      <th>hd95_mean</th>
+      <th>mean_surf_mean</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>chronic_ds004884</td>
+      <td>linda</td>
+      <td>2</td>
+      <td>0.578</td>
+      <td>0.578</td>
+      <td>0.406</td>
+      <td>26.479</td>
+      <td>49.711</td>
+      <td>21.792</td>
+      <td>6.643</td>
+    </tr>
+  </tbody>
+</table>
+<h3>chronic_ds004884</h3>
+<table class="dataframe bench">
+  <thead>
+    <tr style="text-align: right;">
+      <th>dataset</th>
+      <th>subject</th>
+      <th>session</th>
+      <th>tool</th>
+      <th>dice</th>
+      <th>iou</th>
+      <th>vol_diff_ml</th>
+      <th>vol_diff_pct</th>
+      <th>hd95_mm</th>
+      <th>mean_surf_mm</th>
+      <th>ref_vol_ml</th>
+      <th>pred_vol_ml</th>
+      <th>ref_voxels</th>
+      <th>pred_voxels</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>chronic_ds004884</td>
+      <td>sub-M2109</td>
+      <td>ses-364</td>
+      <td>linda</td>
+      <td>0.566</td>
+      <td>0.395</td>
+      <td>21.105</td>
+      <td>22.977</td>
+      <td>22.136</td>
+      <td>6.867</td>
+      <td>91.851</td>
+      <td>112.956</td>
+      <td>91851</td>
+      <td>112956</td>
+    </tr>
+    <tr>
+      <td>chronic_ds004884</td>
+      <td>sub-M2120</td>
+      <td>ses-749</td>
+      <td>linda</td>
+      <td>0.589</td>
+      <td>0.418</td>
+      <td>31.853</td>
+      <td>76.445</td>
+      <td>21.448</td>
+      <td>6.419</td>
+      <td>41.668</td>
+      <td>73.521</td>
+      <td>41668</td>
+      <td>73521</td>
+    </tr>
+  </tbody>
+</table>
+<style>.bench { border-collapse:collapse; font-size:0.88em; margin:8px 0 }.bench th { background:#2c3e50; color:#fff; padding:5px 8px;            text-align:left }.bench td { padding:4px 8px; border-bottom:1px solid #eee }</style></div>

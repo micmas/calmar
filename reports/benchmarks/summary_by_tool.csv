@@ -1,0 +1,2 @@
+dataset,tool,n,dice_mean,dice_median,iou_mean,vol_diff_ml_mean,vol_diff_pct_mean,hd95_mean,mean_surf_mean
+chronic_ds004884,linda,2,0.578,0.578,0.406,26.479,49.711,21.792,6.643
