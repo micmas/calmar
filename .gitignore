@@ -15,6 +15,12 @@ ds004884/
 # Any other OpenNeuro-style raw dataset folders you might add later
 ds[0-9][0-9][0-9][0-9][0-9][0-9][0-9]/
 
+# --- ISLES 2022 (Zenodo zip + extracted dataset; reproducible) -------
+# The benchmark notebook re-downloads the zip from doi:10.5281/zenodo.7153326
+# (1.7 GB) and re-extracts it on each machine, so neither should travel.
+ISLES-2022/
+ISLES-2022.zip
+
 # --- Anatomical inputs (symlinks/copies of datalad data) -------------
 # Keep the folder structure for reference but skip the heavy NIfTIs.
 ds004884_anat/sub-*/ses-*/anat/*_T1w.nii.gz
