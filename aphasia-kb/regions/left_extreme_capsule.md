@@ -10,6 +10,12 @@ aliases:
 - left EmC
 - left extreme capsule fiber system (ECFS)
 - left ventral language pathway
+- External capsule L
+- External capsule left
+- Sagittal stratum (include ILF and IFOF) L
+- Sagittal stratum left
+- Uncinate fasciculus L
+- Uncinate fasciculus left
 hemisphere: left
 members:
 - left_posterior_middle_temporal_gyrus

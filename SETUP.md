@@ -130,7 +130,7 @@ git pull
 
 | Item                                          | Syncs via git? | How to recreate                              |
 |-----------------------------------------------|----------------|----------------------------------------------|
-| `linda-example.ipynb`                         | ✅             | n/a                                          |
+| `lesion-interpretation-pipeline.ipynb`        | ✅             | n/a                                          |
 | `linda_qc.py`                                 | ✅             | n/a                                          |
 | `aphasia-kb/` (code, KB, drafts, examples)    | ✅             | n/a                                          |
 | `*.qc.json` sidecars                          | ✅             | n/a                                          |
