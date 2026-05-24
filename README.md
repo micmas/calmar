@@ -7,16 +7,15 @@ literature knowledge base for clinical interpretation.
 
 | Path                                     | Purpose                                                                 |
 |------------------------------------------|-------------------------------------------------------------------------|
-| `linda-example.ipynb`                    | Main working notebook. Source of truth — edit it directly.              |
-| `linda-example.original-20260421.ipynb`  | Immutable seed (template author's original). Don't modify.              |
+| `lesion-interpretation-pipeline.ipynb`   | Main working notebook. Source of truth — edit it directly.              |
 | `linda_qc.py`                            | Helper module imported by the notebook (QC, fixes, HD-BET, sidecars).   |
 | `QC_RUBRIC.md`                           | Reference rubric for stage-aware mask QC.                               |
+| `lesion-segmentation-benchmark.ipynb`    | Benchmarks LINDA / OpenADS / SynthStroke across chronic and acute data. |
 | `aphasia-kb/`                            | Aphasia literature knowledge base (separate provenance regime — see below). |
 | `qc_edits/`                              | Round-trip folder for ITK-SNAP / FSLeyes edits.                         |
-| `ds004884/`                              | Demo OpenNeuro dataset (datalad-installed).                             |
-| `ds004884_anat/`                         | Anatomicals + LINDA derivatives for ds004884.                           |
+| `data/ds004884/`                         | Demo OpenNeuro dataset (datalad-installed).                             |
+| `data/ISLES-2022/`                       | ISLES 2022 acute stroke dataset (Zenodo 7153326).                       |
 | `atlases/`                               | Cached HarvardOxford / AAL / Destrieux / Schaefer400 atlases.           |
-| `anat_inputs/`                           | Leftover from an early build attempt — safe to delete if unused.        |
 
 ## Two kinds of provenance
 
@@ -26,9 +25,7 @@ This folder has **two distinct provenance regimes**, deliberately separated:
 
 The notebook is a research artifact iteratively developed with an agent.
 Treat it like ordinary code: edit it directly, use git for change
-tracking, keep `linda-example.original-20260421.ipynb` around as a
-known-good restore point. No build pipeline, no SHA hashes, no
-ceremonial change logs needed.
+tracking. No build pipeline, no SHA hashes, no ceremonial change logs needed.
 
 If you're not using git here, the simplest safety net is a local copy of
 the notebook before any risky session — that's the same protection a
@@ -50,7 +47,7 @@ that downstream conclusions depend on.
 
 ## Recommended workflow
 
-1. Open `linda-example.ipynb`. Edit cells directly.
+1. Open `lesion-interpretation-pipeline.ipynb`. Edit cells directly.
 2. For changes to `linda_qc.py`, edit and save — the notebook cells
    reload it automatically (`importlib.reload(q)` is wired in).
 3. When you ask an agent to extract from a paper, point it at
@@ -61,7 +58,7 @@ that downstream conclusions depend on.
    ```bash
    cd LINDA-STUFF
    git init                                          # first time
-   git add linda-example.ipynb linda_qc.py QC_RUBRIC.md README.md
+   git add lesion-interpretation-pipeline.ipynb linda_qc.py QC_RUBRIC.md README.md
    git commit -m "WIP: stage-aware QC"
    ```
    Or just keep a manual copy before risky changes.
