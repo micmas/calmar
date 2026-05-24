@@ -6,6 +6,8 @@ aliases:
 - arcuate fasciculus (left)
 - left AF
 - left superior longitudinal fasciculus (arcuate component)
+- Superior longitudinal fasciculus L
+- Superior longitudinal fasciculus left
 kind: tract
 status: approved
 created_by: agent:claude-sonnet-4-6

@@ -11,6 +11,12 @@ aliases:
 - left deep frontal white matter
 - left periinsular white matter (medial to insula, lateral to basal ganglia)
 - left uncinate/IFOF/ATR convergence zone
+- Anterior corona radiata L
+- Anterior corona radiata left
+- Posterior limb of internal capsule L
+- Posterior limb of internal capsule left
+- Anterior limb of internal capsule L
+- Anterior limb of internal capsule left
 networks:
 - ventral_semantic
 - frontal_semantic_control

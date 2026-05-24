@@ -1,0 +1,3 @@
+phase,tool,n,dice_mean,dice_std,dice_median,dice_min,dice_max,iou_mean,iou_std,iou_median,iou_min,iou_max,vol_diff_ml_mean,vol_diff_ml_std,vol_diff_ml_median,vol_diff_ml_min,vol_diff_ml_max,hd95_mm_mean,hd95_mm_std,hd95_mm_median,hd95_mm_min,hd95_mm_max
+chronic,linda,4,0.207,0.24,0.206,0.0,0.418,0.131,0.151,0.13,0.0,0.264,17.799,82.977,30.785,-82.025,91.652,36.976,10.903,41.243,24.585,45.1
+chronic,synthstroke,4,0.276,0.328,0.201,0.006,0.695,0.195,0.249,0.123,0.003,0.532,-26.373,38.089,-13.914,-81.75,4.087,20.815,15.635,15.477,8.602,43.704

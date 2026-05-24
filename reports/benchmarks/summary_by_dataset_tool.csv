@@ -1,0 +1,5 @@
+dataset,tool,n,dice_mean,dice_std,dice_median,iou_mean,vol_diff_ml_mean,hd95_mean
+chronic_ds004884,linda,2,0.415,0.004,0.415,0.262,85.965,34.842
+chronic_ds004884,synthstroke,2,0.537,0.223,0.537,0.383,-2.48,11.397
+chronic_ds006533,linda,2,0.0,0.0,0.0,0.0,-50.367,41.243
+chronic_ds006533,synthstroke,2,0.014,0.011,0.014,0.007,-50.265,30.233

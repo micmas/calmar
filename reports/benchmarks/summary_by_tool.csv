@@ -1,2 +1,4 @@
 dataset,tool,n,dice_mean,dice_median,iou_mean,vol_diff_ml_mean,vol_diff_pct_mean,hd95_mean,mean_surf_mean
-chronic_ds004884,linda,2,0.578,0.578,0.406,26.479,49.711,21.792,6.643
+acute_isles2022,openads,2,0.008,0.008,0.004,21.472,704.688,77.447,39.946
+chronic_ds004884,linda,2,0.415,0.415,0.262,85.965,216.629,34.842,10.312
+chronic_ds004884,synthstroke,2,0.537,0.537,0.383,-2.48,-3.521,11.397,3.92

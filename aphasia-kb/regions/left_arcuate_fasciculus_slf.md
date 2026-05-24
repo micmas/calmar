@@ -12,6 +12,8 @@ aliases:
 - left dorsal language pathway
 - left arcuate fascicle
 - left SLF/AF system
+- Superior longitudinal fasciculus L
+- Superior longitudinal fasciculus left
 hemisphere: left
 members:
 - left_posterior_superior_temporal_gyrus
