@@ -9,41 +9,41 @@ runs:
     passed: false
     blocker: true
     details:
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1): unknown direction=''negative_predictor'''
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2): unknown direction=''negative_predictor'''
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3): unknown direction=''null_predictor'''
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[2]: missing section'
   - name: no_low_confidence_findings
     passed: true
@@ -84,35 +84,35 @@ runs:
     passed: false
     blocker: true
     details:
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[2]: missing section'
   - name: no_low_confidence_findings
     passed: true
@@ -153,23 +153,23 @@ runs:
     passed: false
     blocker: true
     details:
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[0] (id=f1).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[1] (id=f2).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/aphasia_prognosis_predictors__Watila2015.md:
       finding[2] (id=f3).source_passages[2]: missing section'
   - name: no_low_confidence_findings
     passed: true

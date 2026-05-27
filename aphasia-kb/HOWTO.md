@@ -87,10 +87,10 @@ and a line in `extraction_log.md`.
 ### Option A — Cowork (subscription, no API charge)
 
 Open Claude in the Cowork desktop app. Make sure your workspace
-folder includes `aphasia-lesion-pipeline/`. Then say something like:
+folder includes `calmar/`. Then say something like:
 
 > Please extract findings from
-> `/Users/me/aphasia-lesion-pipeline/aphasia-kb/papers/Foo2024.pdf`
+> `/Users/me/calmar/aphasia-kb/papers/Foo2024.pdf`
 > following `aphasia-kb/EXTRACTION_SKILL.md`. Write draft markdown
 > files into `aphasia-kb/drafts/`, run annotate_paper.py to produce
 > the annotated PDF, append to `extraction_log.md`, and update

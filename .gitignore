@@ -5,3 +5,5 @@ __pycache__/
 *.zip
 *.RData
 qc_edits/
+.fuse_hidden*
+aphasia-kb/papers/
