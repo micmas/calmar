@@ -191,11 +191,12 @@ QC_SCHEMA_VERSION = 2          # bumped: per-stage ratings + HD-BET hooks
 # lesion-stage observation anyway. So the workflow is two stages:
 # skull strip + lesion. Re-add "registration" here if you want it back.
 # ============================================================
-STAGES = ("skull_strip", "lesion")
+STAGES = ("skull_strip", "lesion", "synthstroke_lesion")
 
 STAGE_LABELS = {
-    "skull_strip":  "Skull strip / brain extraction",
-    "lesion":       "Lesion mask",
+    "skull_strip":        "Skull strip / brain extraction",
+    "lesion":             "LINDA lesion mask",
+    "synthstroke_lesion": "SynthStroke lesion mask",
 }
 
 STAGE_RATING_DEFINITIONS = {
@@ -210,7 +211,8 @@ STAGE_RATING_DEFINITIONS = {
             "with HD-BET and re-run LINDA before evaluating downstream "
             "stages — they are not trustworthy until this is fixed.**"),
     },
-    "lesion": RATING_DEFINITIONS,
+    "lesion":             RATING_DEFINITIONS,
+    "synthstroke_lesion": RATING_DEFINITIONS,
 }
 
 SKULL_STRIP_TAG_DEFINITIONS = {
@@ -261,8 +263,9 @@ SKULL_STRIP_TAG_DEFINITIONS = {
 
 # Public dict: stage → (tag_dict, rating_dict)
 STAGE_VOCAB = {
-    "skull_strip":  (SKULL_STRIP_TAG_DEFINITIONS,  STAGE_RATING_DEFINITIONS["skull_strip"]),
-    "lesion":       (ISSUE_TAG_DEFINITIONS,        STAGE_RATING_DEFINITIONS["lesion"]),
+    "skull_strip":        (SKULL_STRIP_TAG_DEFINITIONS, STAGE_RATING_DEFINITIONS["skull_strip"]),
+    "lesion":             (ISSUE_TAG_DEFINITIONS,       STAGE_RATING_DEFINITIONS["lesion"]),
+    "synthstroke_lesion": (ISSUE_TAG_DEFINITIONS,       STAGE_RATING_DEFINITIONS["synthstroke_lesion"]),
 }
 
 
