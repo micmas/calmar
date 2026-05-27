@@ -191,12 +191,31 @@ QC_SCHEMA_VERSION = 2          # bumped: per-stage ratings + HD-BET hooks
 # lesion-stage observation anyway. So the workflow is two stages:
 # skull strip + lesion. Re-add "registration" here if you want it back.
 # ============================================================
-STAGES = ("skull_strip", "lesion", "synthstroke_lesion")
+STAGES = ("skull_strip", "lesion", "synthstroke_lesion", "expert_mni_warp")
 
 STAGE_LABELS = {
     "skull_strip":        "Skull strip / brain extraction",
     "lesion":             "LINDA lesion mask",
     "synthstroke_lesion": "SynthStroke lesion mask",
+    "expert_mni_warp":    "Expert mask → MNI warp",
+}
+
+# Rubric for the MNI-warp QC stage. Distinct from the lesion-mask rubric:
+# here the question is "is the warped MNI mask trustworthy for cohort-level
+# analyses (group overlap maps, atlas decoding)?" rather than "is the
+# prediction itself correct?"
+EXPERT_WARP_RATING_DEFINITIONS = {
+    1: ("Expert mask and LINDA's MNI lesion overlap or are co-located in "
+        "the same lobe and hemisphere. Warp is trustworthy for cohort-"
+        "level MNI analyses."),
+    2: ("Same hemisphere and roughly the same brain region as LINDA, but "
+        "noticeably displaced or distorted. Usable with caveats — flag "
+        "the subject and consider per-subject inspection before trusting "
+        "MNI-space results."),
+    3: ("Expert mask is in entirely wrong territory (contralateral "
+        "hemisphere, cerebellum/brainstem when the lesion is cortical, "
+        "or empty after warp). **Do NOT use this subject's "
+        "ExpertMask_in_MNI for MNI-space analyses without manual fixing.**"),
 }
 
 STAGE_RATING_DEFINITIONS = {
@@ -213,6 +232,57 @@ STAGE_RATING_DEFINITIONS = {
     },
     "lesion":             RATING_DEFINITIONS,
     "synthstroke_lesion": RATING_DEFINITIONS,
+    "expert_mni_warp":    EXPERT_WARP_RATING_DEFINITIONS,
+}
+
+# Tags specific to MNI-warp failure modes. Failure modes seen so far:
+# expert mask landing in the cerebellum/brainstem (rigid registration
+# failing on subjects with large asymmetric lesions), or shrunken /
+# distorted output from a misapplied affine.
+EXPERT_WARP_TAG_DEFINITIONS = {
+    "wrong_lobe": (
+        "Displacement",
+        "Expert mask is in a different lobe than LINDA's MNI prediction "
+        "(but same hemisphere).",
+        "Usually a sign that the affine + CoM offset didn't fully align "
+        "with LINDA's nonlinear warp. May be a rating-2 if the lobe is "
+        "adjacent and there's still some overlap.",
+    ),
+    "wrong_hemisphere": (
+        "Displacement",
+        "Expert mask landed in the contralateral hemisphere.",
+        "Almost always a rating-3 — the warp picked up a mirror-image "
+        "transform. Check whether the source native mask itself is on "
+        "the correct side first.",
+    ),
+    "in_cerebellum_brainstem": (
+        "Displacement",
+        "Mask landed in the posterior fossa (cerebellum or brainstem) "
+        "when the actual lesion is supratentorial.",
+        "Classic SimpleITK-rigid failure: Mattes MI latched onto a "
+        "feature in the posterior fossa instead of the cortex. Confirm "
+        "the new LINDA-affine + CoM recipe was actually used (re-warp "
+        "with _OVERWRITE_EXPERT_WARP=True if not).",
+    ),
+    "shrunken_or_distorted": (
+        "Shape",
+        "Mask is the wrong size or shape after warp (much smaller, "
+        "stretched, or rotated relative to LINDA's prediction).",
+        "Often a sign that the CoM offset was misapplied or that the "
+        "T2→T1 step (if used) produced a degenerate transform.",
+    ),
+    "missing_after_warp": (
+        "Coverage",
+        "Mask is empty (zero voxels) after warp.",
+        "Either the native mask was empty to begin with, the affine "
+        "transformed it off the MNI grid, or nearest-neighbor "
+        "interpolation lost a very small mask.",
+    ),
+    "other": (
+        "Other",
+        "Something else — describe in Notes.",
+        "Use only when no other tag fits.",
+    ),
 }
 
 SKULL_STRIP_TAG_DEFINITIONS = {
@@ -263,9 +333,10 @@ SKULL_STRIP_TAG_DEFINITIONS = {
 
 # Public dict: stage → (tag_dict, rating_dict)
 STAGE_VOCAB = {
-    "skull_strip":        (SKULL_STRIP_TAG_DEFINITIONS, STAGE_RATING_DEFINITIONS["skull_strip"]),
-    "lesion":             (ISSUE_TAG_DEFINITIONS,       STAGE_RATING_DEFINITIONS["lesion"]),
-    "synthstroke_lesion": (ISSUE_TAG_DEFINITIONS,       STAGE_RATING_DEFINITIONS["synthstroke_lesion"]),
+    "skull_strip":        (SKULL_STRIP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["skull_strip"]),
+    "lesion":             (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["lesion"]),
+    "synthstroke_lesion": (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["synthstroke_lesion"]),
+    "expert_mni_warp":    (EXPERT_WARP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["expert_mni_warp"]),
 }
 
 
