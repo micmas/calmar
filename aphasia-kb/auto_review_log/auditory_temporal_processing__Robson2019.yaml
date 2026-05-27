@@ -18,7 +18,7 @@ runs:
     passed: null
     blocker: true
     details:
-    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/calmar/aphasia-kb/papers
       for any cited paper
   - name: all_findings_confidence_high
     passed: true
@@ -53,7 +53,7 @@ runs:
     passed: null
     blocker: true
     details:
-    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/calmar/aphasia-kb/papers
       for any cited paper
   - name: all_findings_confidence_high
     passed: true
@@ -101,7 +101,7 @@ runs:
     passed: null
     blocker: true
     details:
-    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    - no PDFs available in /sessions/youthful-affectionate-cray/mnt/calmar/aphasia-kb/papers
       for any cited paper
   - name: all_findings_confidence_high
     passed: true
@@ -149,7 +149,7 @@ runs:
     passed: null
     blocker: true
     details:
-    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/calmar/aphasia-kb/papers
       for any cited paper
   - name: all_findings_confidence_high
     passed: true
@@ -184,7 +184,7 @@ runs:
     passed: null
     blocker: true
     details:
-    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/aphasia-lesion-pipeline/aphasia-kb/papers
+    - no PDFs available in /Users/uqmmasso/neurodesktop-storage/calmar/aphasia-kb/papers
       for any cited paper
   - name: all_findings_confidence_high
     passed: true
