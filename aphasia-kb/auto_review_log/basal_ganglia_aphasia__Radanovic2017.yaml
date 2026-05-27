@@ -9,79 +9,79 @@ runs:
     passed: false
     blocker: true
     details:
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1): provenance.extracted_by missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1): provenance.extracted_on missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1): provenance.paper_section missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1): provenance.confidence missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1): provenance.confidence=None invalid'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2): provenance.extracted_by missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2): provenance.extracted_on missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2): provenance.paper_section missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2): provenance.confidence missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2): provenance.confidence=None invalid'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3): provenance.extracted_by missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3): provenance.extracted_on missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3): provenance.paper_section missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3): provenance.confidence missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3): provenance.confidence=None invalid'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4): provenance.extracted_by missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4): provenance.extracted_on missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4): provenance.paper_section missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4): provenance.confidence missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4): provenance.flags missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4): provenance.confidence=None invalid'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4): provenance.flags must be a list (use [] if none)'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4).source_passages[0]: missing section'
   - name: no_low_confidence_findings
     passed: true
@@ -128,31 +128,31 @@ runs:
     passed: false
     blocker: true
     details:
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1): provenance.paper_section missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2): provenance.paper_section missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3): provenance.paper_section missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4): provenance.paper_section missing'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4).source_passages[0]: missing section'
   - name: no_low_confidence_findings
     passed: true
@@ -194,23 +194,23 @@ runs:
     passed: false
     blocker: true
     details:
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[0] (id=f1).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[1] (id=f2).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[0]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[1]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[2] (id=f3).source_passages[2]: missing section'
-    - '/sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
+    - '/sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/drafts/reviews/basal_ganglia_aphasia__Radanovic2017.md:
       finding[3] (id=f4).source_passages[0]: missing section'
   - name: no_low_confidence_findings
     passed: true

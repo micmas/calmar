@@ -18,7 +18,7 @@ runs:
     passed: null
     blocker: true
     details:
-    - no PDFs available in /sessions/sweet-upbeat-pascal/mnt/aphasia-lesion-pipeline/aphasia-kb/papers
+    - no PDFs available in /sessions/sweet-upbeat-pascal/mnt/calmar/aphasia-kb/papers
       for any cited paper
   - name: all_findings_confidence_high
     passed: true

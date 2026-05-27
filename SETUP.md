@@ -1,15 +1,15 @@
-# Setting up aphasia-lesion-pipeline on a new machine
+# Setting up CALMaR on a new machine
 
 This is a step-by-step for getting the notebook + KB workflow running
 on a second Mac with Neurodesk installed (the typical scenario:
 syncing your work between two computers via a git remote).
 
 > **Note on the local folder name.** The GitHub repo is
-> `aphasia-lesion-pipeline`. Throughout this doc we use the same name
+> `calmar`. Throughout this doc we use the same name
 > for the local folder under `~/neurodesktop-storage/`. If you have an
 > older folder called `LINDA-STUFF` from earlier work on the primary
 > machine, you can rename it once with
-> `mv ~/neurodesktop-storage/LINDA-STUFF ~/neurodesktop-storage/aphasia-lesion-pipeline`
+> `mv ~/neurodesktop-storage/LINDA-STUFF ~/neurodesktop-storage/calmar`
 > (the code uses relative paths, so nothing else needs to change).
 
 ## Pre-flight (once per machine)
@@ -23,8 +23,8 @@ syncing your work between two computers via a git remote).
 
 ```bash
 cd ~/neurodesktop-storage          # the persistent storage Neurodesk mounts
-git clone <YOUR_REMOTE_URL> aphasia-lesion-pipeline
-cd aphasia-lesion-pipeline
+git clone <YOUR_REMOTE_URL> calmar
+cd calmar
 ```
 
 `<YOUR_REMOTE_URL>` is the GitHub / GitLab / Bitbucket URL you set up
@@ -33,7 +33,7 @@ on the primary machine (see "Pushing from machine A" below).
 ## Re-installing the dataset (datalad)
 
 The raw dataset is *not* tracked in git. On each machine you reinstall
-it from OpenNeuro via datalad. From inside `aphasia-lesion-pipeline/`:
+it from OpenNeuro via datalad. From inside `calmar/`:
 
 ```bash
 datalad install -d . https://github.com/OpenNeuroDatasets/ds004884.git
@@ -90,21 +90,21 @@ Neurodesk-affiliated org.
 
 1. On github.com (logged in as `micmas`), create a new **private** repo
    (recommended; you can flip to public later). Suggested name:
-   `aphasia-lesion-pipeline`. **Do not** let GitHub add a
+   `calmar`. **Do not** let GitHub add a
    README, license, or .gitignore — we already have those locally.
 2. From the primary machine, set the remote and push:
    ```bash
-   cd ~/neurodesktop-storage/aphasia-lesion-pipeline
-   git remote add origin git@github.com:micmas/aphasia-lesion-pipeline.git
+   cd ~/neurodesktop-storage/calmar
+   git remote add origin git@github.com:micmas/calmar.git
    # or, if you use HTTPS instead of SSH:
-   # git remote add origin https://github.com/micmas/aphasia-lesion-pipeline.git
+   # git remote add origin https://github.com/micmas/calmar.git
    git branch -M main
    git push -u origin main
    ```
 3. On machine B, clone with:
    ```bash
    cd ~/neurodesktop-storage
-   git clone git@github.com:micmas/aphasia-lesion-pipeline.git aphasia-lesion-pipeline
+   git clone git@github.com:micmas/calmar.git calmar
    ```
 
 ## Day-to-day sync
@@ -112,7 +112,7 @@ Neurodesk-affiliated org.
 On the machine you've been working on:
 
 ```bash
-cd ~/neurodesktop-storage/aphasia-lesion-pipeline
+cd ~/neurodesktop-storage/calmar
 git status                          # see what changed
 git add -A                          # stage everything tracked
 git commit -m "QC ratings for sub-M2040..M2049"
@@ -122,7 +122,7 @@ git push
 On the other machine:
 
 ```bash
-cd ~/neurodesktop-storage/aphasia-lesion-pipeline
+cd ~/neurodesktop-storage/calmar
 git pull
 ```
 
