@@ -1049,6 +1049,89 @@ def warp_native_lesion_to_mni(linda_out_dir: Path,
     return res.returncode
 
 
+def coregister_t2_mask_to_t1(
+    t1_path: Path,
+    t2_path: Path,
+    mask_path: Path,
+    out_mask_path: Path,
+    *,
+    t2_out_path: Path | None = None,
+    overwrite: bool = False,
+) -> Path:
+    """
+    Bring a lesion mask drawn on a T2w/FLAIR image into the subject's
+    native T1w space via a robust multi-resolution rigid registration.
+
+    This is the SAME registration the interactive comparison cell uses:
+    center-of-geometry init, Mattes MI, a 4->2->1 shrink pyramid with
+    2.0->1.0->0.0 smoothing, and physical-shift optimizer scales. It
+    replaces the weaker single-resolution rigid alignment that the batch
+    expert->MNI warp did inline, which drifted on cross-session
+    sagittal-T2 -> axial-T1 pairs and dropped the mask into the wrong
+    tissue.
+
+    The mask is resampled with NearestNeighbor (preserves the binary
+    label). When `t2_out_path` is given the registered T2 itself is also
+    written (linear interp) as a registration sanity check.
+
+    Returns the path to the mask in T1 space (`out_mask_path`).
+    """
+    import SimpleITK as sitk
+
+    t1_path       = Path(t1_path)
+    t2_path       = Path(t2_path)
+    mask_path     = Path(mask_path)
+    out_mask_path = Path(out_mask_path)
+    out_mask_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if (out_mask_path.exists() and out_mask_path.stat().st_size > 0
+            and not overwrite):
+        return out_mask_path
+
+    t1_sitk   = sitk.ReadImage(str(t1_path),   sitk.sitkFloat32)
+    t2_sitk   = sitk.ReadImage(str(t2_path),   sitk.sitkFloat32)
+    mask_sitk = sitk.ReadImage(str(mask_path), sitk.sitkUInt8)
+
+    init_tx = sitk.CenteredTransformInitializer(
+        t1_sitk, t2_sitk,
+        sitk.Euler3DTransform(),
+        sitk.CenteredTransformInitializerFilter.GEOMETRY,
+    )
+
+    reg = sitk.ImageRegistrationMethod()
+    reg.SetMetricAsMattesMutualInformation(numberOfHistogramBins=50)
+    reg.SetMetricSamplingStrategy(reg.RANDOM)
+    reg.SetMetricSamplingPercentage(0.10, sitk.sitkWallClock)
+    reg.SetInterpolator(sitk.sitkLinear)
+    reg.SetOptimizerAsRegularStepGradientDescent(
+        learningRate=2.0, minStep=1e-4,
+        numberOfIterations=200,
+        gradientMagnitudeTolerance=1e-8,
+    )
+    reg.SetOptimizerScalesFromPhysicalShift()
+    reg.SetShrinkFactorsPerLevel([4, 2, 1])
+    reg.SetSmoothingSigmasPerLevel([2.0, 1.0, 0.0])
+    reg.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
+    reg.SetInitialTransform(init_tx, inPlace=False)
+
+    final_tx = reg.Execute(t1_sitk, t2_sitk)
+
+    mask_in_t1 = sitk.Resample(
+        mask_sitk, t1_sitk, final_tx,
+        sitk.sitkNearestNeighbor, 0, mask_sitk.GetPixelID())
+    sitk.WriteImage(mask_in_t1, str(out_mask_path))
+
+    if t2_out_path is not None:
+        t2_out_path = Path(t2_out_path)
+        t2_out_path.parent.mkdir(parents=True, exist_ok=True)
+        t2_in_t1 = sitk.Resample(
+            t2_sitk, t1_sitk, final_tx,
+            sitk.sitkLinear, 0.0, t2_sitk.GetPixelID())
+        sitk.WriteImage(t2_in_t1, str(t2_out_path))
+
+    return out_mask_path
+
+
 def run_linda_with_mask_via_R(
     t1w_path: Path,
     brain_mask: Path,
