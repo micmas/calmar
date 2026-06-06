@@ -1,9 +1,11 @@
-# Python dependencies for the LINDA notebook + aphasia-kb tooling.
+# Python dependencies for CALMaR.
 # Install on a new machine with:
 #     pip install -r requirements.txt
 #
-# (Most of these come pre-installed in Neurodesk; this file is the
-# reproducibility contract.)
+# Most of these come pre-installed in Neurodesk; this file is the
+# reproducibility contract for running outside Neurodesk.
+# SimpleITK is the main package NOT pre-installed — the notebook pip-installs
+# it automatically in the Setup cell.
 
 # Core neuroimaging
 nibabel>=5.0
@@ -17,7 +19,10 @@ ipywidgets>=8.0
 ipyniivue>=2.0
 matplotlib>=3.7
 
-# DICOM / extras used by the original template cells
+# Coregistration (T2w → T1w, expert mask warping)
+SimpleITK>=2.3
+
+# DICOM / extras
 pydicom
 
 # Knowledge-base loader + annotator
