@@ -119,7 +119,7 @@ CALMaR separates two kinds of work:
 If you use CALMaR in your research, please cite it using the metadata in `CITATION.cff`:
 
 ```
-Michele Mancusi (2025). CALMaR: Co-designed, Automated Lesion Mapping and Reporting (v1.0.0).
+Michele Masson-Trottier (2025). CALMaR: Co-designed, Automated Lesion Mapping and Reporting (v1.0.0).
 GitHub: https://github.com/micmas/calmar
 ```
 
