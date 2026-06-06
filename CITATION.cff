@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use CALMaR in your research, please cite it as below."
+type: software
+title: "CALMaR: Co-designed, Automated Lesion Mapping and Reporting"
+version: 1.0.0
+date-released: "2025-06-06"
+license: MIT
+repository-code: "https://github.com/micmas/calmar"
+abstract: >
+  CALMaR is an open-source Jupyter notebook pipeline for automated lesion
+  segmentation, quality control, and clinician-facing interpretation of
+  stroke lesion MRI data. It combines HD-BET skull stripping, LINDA lesion
+  segmentation, SynthStroke, and BCBToolkit disconnectome analysis with an
+  aphasia knowledge base to generate per-patient clinical reports including
+  predicted impairments, atlas-based regional overlap, Neurosynth decoding,
+  and evidence-based therapy recommendations.
+authors:
+  - family-names: "Mancusi"
+    given-names: "Michele"
+    email: "michelemt8@gmail.com"
+    orcid: ""   # add your ORCID if you have one: https://orcid.org
+keywords:
+  - stroke
+  - aphasia
+  - lesion segmentation
+  - neuroimaging
+  - LINDA
+  - SynthStroke
+  - HD-BET
+  - MRI
+  - clinical decision support
+  - BIDS
