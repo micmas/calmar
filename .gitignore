@@ -26,3 +26,4 @@ __pycache__/
 # Knowledge base raw papers (large, not redistributed)
 aphasia-kb/papers/
 aphasia-kb/_neurosynth_cache/
+.ipynb_checkpoints/
