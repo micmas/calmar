@@ -983,6 +983,87 @@ _LINDA_BASH_STUB  = Path(__file__).parent / "linda_predict_with_mask.sh"
 _WARP_BASH_STUB   = Path(__file__).parent / "warp_native_to_mni.sh"
 
 
+def warp_native_mask_to_mni(linda_out_dir: Path,
+                            native_mask: Path,
+                            out_path: Path,
+                            *,
+                            interp: str = "NearestNeighbor",
+                            reviewer: str | None = None,
+                            tool_label: str = "antsApplyTransforms") -> int:
+    """
+    Warp ANY native-space mask (LINDA / SynthStroke / expert) into MNI
+    space using LINDA's OWN transforms — the subject→template *affine*
+    PLUS the *nonlinear warp* — via antsApplyTransforms. This is the
+    single, precise method shared by every "<mask>_in_MNI" producer in
+    the notebook.
+
+    Because every mask is sampled onto the same reference grid
+    (Reg3_registered_to_template.nii.gz, the grid LINDA itself used to
+    make Lesion_in_MNI), the LINDA, SynthStroke and expert masks
+    coregister by construction. Using the full affine+warp (rather than
+    affine-only with a centre-of-mass nudge) is what makes this accurate
+    on brains with large, asymmetric lesions.
+
+    The input mask must be in the subject's native T1 space (the space
+    LINDA's transforms map *from*).
+
+    Args:
+        linda_out_dir: dir with LINDA transforms (Reg3_*_warp/affine + ref)
+        native_mask:   mask to warp, in native T1 space
+        out_path:      destination for the MNI-space mask
+        interp:        antsApplyTransforms interpolator
+                       (NearestNeighbor preserves a binary mask)
+
+    Returns the bash wrapper's exit code; 0 = success. Raises
+    FileNotFoundError if a required transform or the input is missing.
+    """
+    linda_out_dir = Path(linda_out_dir)
+    src    = Path(native_mask)
+    ref    = linda_out_dir / "Reg3_registered_to_template.nii.gz"
+    warp   = linda_out_dir / "Reg3_sub_to_template_warp.nii.gz"
+    affine = linda_out_dir / "Reg3_sub_to_template_affine.mat"
+    out    = Path(out_path)
+
+    for p, label in [(src, "native mask"), (ref, "reference"),
+                     (warp, "warp"), (affine, "affine")]:
+        if not p.exists():
+            raise FileNotFoundError(
+                f"warp_native_mask_to_mni: {label} not found at {p}.\n"
+                f"  Has LINDA been run for this subject? Expected files in {linda_out_dir}.")
+
+    if not _WARP_BASH_STUB.exists():
+        raise FileNotFoundError(
+            f"warp wrapper missing at {_WARP_BASH_STUB} — git pull?")
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    cmd = [
+        "bash", str(_WARP_BASH_STUB),
+        "--input",     str(src),
+        "--reference", str(ref),
+        "--warp",      str(warp),
+        "--affine",    str(affine),
+        "--output",    str(out),
+        "--interp",    interp,
+    ]
+    print(f"  ▶ (warp native→MNI) bash {_WARP_BASH_STUB.name} "
+          f"{src.name} → {out.name} ...")
+    res = subprocess.run(cmd)
+
+    if res.returncode == 0 and out.exists():
+        # Log on the mask's QC sidecar so the audit trail is intact.
+        try:
+            rec = QCRecord.load(out)
+            rec.log_edit(
+                operation="warp_native_to_mni",
+                params={"input": str(src), "output": str(out)},
+                reviewer=reviewer, tool=tool_label,
+            )
+            rec.save()
+        except Exception:
+            pass
+    return res.returncode
+
+
 def warp_native_lesion_to_mni(linda_out_dir: Path,
                               *,
                               native_lesion: Path | None = None,
@@ -991,62 +1072,14 @@ def warp_native_lesion_to_mni(linda_out_dir: Path,
     After editing the native-space lesion (Prediction3_native.nii.gz),
     re-warp it to MNI to keep Lesion_in_MNI.nii.gz consistent.
 
-    Reads LINDA's saved transforms from `linda_out_dir` and applies them
-    via antsApplyTransforms (NearestNeighbor, preserves binary). The
-    template reference image (`linda_t1.template`) is pulled from
-    inside the LINDA installation — we use Reg3_registered_to_template
-    as a stand-in reference since it's already in the correct grid.
-
-    Args:
-        linda_out_dir: directory containing LINDA's native + transform outputs
-        native_lesion: optional override; defaults to <out>/Prediction3_native.nii.gz
-        reviewer: free-text reviewer id, logged into the QC sidecar
-
-    Returns the bash wrapper's exit code; 0 = success.
+    Thin wrapper around `warp_native_mask_to_mni` (the shared precise
+    affine+warp method) pinned to LINDA's own native lesion → Lesion_in_MNI.
     """
     linda_out_dir = Path(linda_out_dir)
-    src    = native_lesion or (linda_out_dir / "Prediction3_native.nii.gz")
-    ref    = linda_out_dir / "Reg3_registered_to_template.nii.gz"
-    warp   = linda_out_dir / "Reg3_sub_to_template_warp.nii.gz"
-    affine = linda_out_dir / "Reg3_sub_to_template_affine.mat"
-    out    = linda_out_dir / "Lesion_in_MNI.nii.gz"
-
-    for p, label in [(src, "native lesion"), (ref, "reference"),
-                     (warp, "warp"), (affine, "affine")]:
-        if not p.exists():
-            raise FileNotFoundError(
-                f"warp_native_lesion_to_mni: {label} not found at {p}.\n"
-                f"  Has LINDA been run for this subject? Expected files in {linda_out_dir}.")
-
-    if not _WARP_BASH_STUB.exists():
-        raise FileNotFoundError(
-            f"warp wrapper missing at {_WARP_BASH_STUB} — git pull?")
-
-    cmd = [
-        "bash", str(_WARP_BASH_STUB),
-        "--input",     str(src),
-        "--reference", str(ref),
-        "--warp",      str(warp),
-        "--affine",    str(affine),
-        "--output",    str(out),
-        "--interp",    "NearestNeighbor",
-    ]
-    print(f"  ▶ (warp native→MNI) bash {_WARP_BASH_STUB.name} ...")
-    res = subprocess.run(cmd)
-
-    if res.returncode == 0 and out.exists():
-        # Log on the lesion's QC sidecar so the audit trail is intact.
-        try:
-            rec = QCRecord.load(out)
-            rec.log_edit(
-                operation="warp_native_to_mni",
-                params={"input": str(src), "output": str(out)},
-                reviewer=reviewer, tool="antsApplyTransforms",
-            )
-            rec.save()
-        except Exception:
-            pass
-    return res.returncode
+    src = native_lesion or (linda_out_dir / "Prediction3_native.nii.gz")
+    out = linda_out_dir / "Lesion_in_MNI.nii.gz"
+    return warp_native_mask_to_mni(
+        linda_out_dir, src, out, interp="NearestNeighbor", reviewer=reviewer)
 
 
 def coregister_t2_mask_to_t1(
