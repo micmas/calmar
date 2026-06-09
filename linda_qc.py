@@ -197,22 +197,22 @@ STAGE_LABELS = {
     "skull_strip":        "Skull strip / brain extraction",
     "lesion":             "LINDA lesion mask",
     "synthstroke_lesion": "SynthStroke lesion mask",
-    "expert_mni_warp":    "Expert mask → MNI warp",
+    "expert_mni_warp":    "Manual mask → MNI warp",
 }
 
 # Rubric for the MNI-warp QC stage. Distinct from the lesion-mask rubric:
 # here the question is "is the warped MNI mask trustworthy for cohort-level
 # analyses (group overlap maps, atlas decoding)?" rather than "is the
 # prediction itself correct?"
-EXPERT_WARP_RATING_DEFINITIONS = {
-    1: ("Expert mask and LINDA's MNI lesion overlap or are co-located in "
+MANUAL_WARP_RATING_DEFINITIONS = {
+    1: ("Manual mask and LINDA's MNI lesion overlap or are co-located in "
         "the same lobe and hemisphere. Warp is trustworthy for cohort-"
         "level MNI analyses."),
     2: ("Same hemisphere and roughly the same brain region as LINDA, but "
         "noticeably displaced or distorted. Usable with caveats — flag "
         "the subject and consider per-subject inspection before trusting "
         "MNI-space results."),
-    3: ("Expert mask is in entirely wrong territory (contralateral "
+    3: ("Manual mask is in entirely wrong territory (contralateral "
         "hemisphere, cerebellum/brainstem when the lesion is cortical, "
         "or empty after warp). **Do NOT use this subject's "
         "ExpertMask_in_MNI for MNI-space analyses without manual fixing.**"),
@@ -232,17 +232,17 @@ STAGE_RATING_DEFINITIONS = {
     },
     "lesion":             RATING_DEFINITIONS,
     "synthstroke_lesion": RATING_DEFINITIONS,
-    "expert_mni_warp":    EXPERT_WARP_RATING_DEFINITIONS,
+    "expert_mni_warp":    MANUAL_WARP_RATING_DEFINITIONS,
 }
 
 # Tags specific to MNI-warp failure modes. Failure modes seen so far:
-# expert mask landing in the cerebellum/brainstem (rigid registration
+# manual mask landing in the cerebellum/brainstem (rigid registration
 # failing on subjects with large asymmetric lesions), or shrunken /
 # distorted output from a misapplied affine.
-EXPERT_WARP_TAG_DEFINITIONS = {
+MANUAL_WARP_TAG_DEFINITIONS = {
     "wrong_lobe": (
         "Displacement",
-        "Expert mask is in a different lobe than LINDA's MNI prediction "
+        "Manual mask is in a different lobe than LINDA's MNI prediction "
         "(but same hemisphere).",
         "Usually a sign that the affine + CoM offset didn't fully align "
         "with LINDA's nonlinear warp. May be a rating-2 if the lobe is "
@@ -250,7 +250,7 @@ EXPERT_WARP_TAG_DEFINITIONS = {
     ),
     "wrong_hemisphere": (
         "Displacement",
-        "Expert mask landed in the contralateral hemisphere.",
+        "Manual mask landed in the contralateral hemisphere.",
         "Almost always a rating-3 — the warp picked up a mirror-image "
         "transform. Check whether the source native mask itself is on "
         "the correct side first.",
@@ -262,7 +262,7 @@ EXPERT_WARP_TAG_DEFINITIONS = {
         "Classic SimpleITK-rigid failure: Mattes MI latched onto a "
         "feature in the posterior fossa instead of the cortex. Confirm "
         "the new LINDA-affine + CoM recipe was actually used (re-warp "
-        "with _OVERWRITE_EXPERT_WARP=True if not).",
+        "with _OVERWRITE_MANUAL_WARP=True if not).",
     ),
     "shrunken_or_distorted": (
         "Shape",
@@ -336,7 +336,7 @@ STAGE_VOCAB = {
     "skull_strip":        (SKULL_STRIP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["skull_strip"]),
     "lesion":             (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["lesion"]),
     "synthstroke_lesion": (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["synthstroke_lesion"]),
-    "expert_mni_warp":    (EXPERT_WARP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["expert_mni_warp"]),
+    "expert_mni_warp":    (MANUAL_WARP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["expert_mni_warp"]),
 }
 
 
@@ -991,7 +991,7 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
                             reviewer: str | None = None,
                             tool_label: str = "antsApplyTransforms") -> int:
     """
-    Warp ANY native-space mask (LINDA / SynthStroke / expert) into MNI
+    Warp ANY native-space mask (LINDA / SynthStroke / manual) into MNI
     space using LINDA's OWN transforms — the subject→template *affine*
     PLUS the *nonlinear warp* — via antsApplyTransforms. This is the
     single, precise method shared by every "<mask>_in_MNI" producer in
@@ -999,7 +999,7 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
 
     Because every mask is sampled onto the same reference grid
     (Reg3_registered_to_template.nii.gz, the grid LINDA itself used to
-    make Lesion_in_MNI), the LINDA, SynthStroke and expert masks
+    make Lesion_in_MNI), the LINDA, SynthStroke and manual masks
     coregister by construction. Using the full affine+warp (rather than
     affine-only with a centre-of-mass nudge) is what makes this accurate
     on brains with large, asymmetric lesions.
@@ -1099,7 +1099,7 @@ def coregister_t2_mask_to_t1(
     center-of-geometry init, Mattes MI, a 4->2->1 shrink pyramid with
     2.0->1.0->0.0 smoothing, and physical-shift optimizer scales. It
     replaces the weaker single-resolution rigid alignment that the batch
-    expert->MNI warp did inline, which drifted on cross-session
+    manual->MNI warp did inline, which drifted on cross-session
     sagittal-T2 -> axial-T1 pairs and dropped the mask into the wrong
     tissue.
 
