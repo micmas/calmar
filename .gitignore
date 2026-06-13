@@ -27,3 +27,4 @@ __pycache__/
 aphasia-kb/papers/
 aphasia-kb/_neurosynth_cache/
 .ipynb_checkpoints/
+.claude/settings.local.json
