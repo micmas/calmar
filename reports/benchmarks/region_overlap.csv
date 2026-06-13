@@ -1,4 +1,69 @@
 region,overlap_voxels,overlap_pct,dataset,subject,session,source
+Middle Frontal Gyrus,261,4.39,chronic_ds004884,sub-M2005,ses-2446,reference
+Insular Cortex,234,3.94,chronic_ds004884,sub-M2005,ses-2446,reference
+Frontal Pole,191,3.21,chronic_ds004884,sub-M2005,ses-2446,reference
+Frontal Opercular Cortex,191,3.21,chronic_ds004884,sub-M2005,ses-2446,reference
+"Inferior Frontal Gyrus, pars triangularis",88,1.48,chronic_ds004884,sub-M2005,ses-2446,reference
+"Inferior Frontal Gyrus, pars opercularis",69,1.16,chronic_ds004884,sub-M2005,ses-2446,reference
+Superior Frontal Gyrus,31,0.52,chronic_ds004884,sub-M2005,ses-2446,reference
+Paracingulate Gyrus,31,0.52,chronic_ds004884,sub-M2005,ses-2446,reference
+Precentral Gyrus,30,0.5,chronic_ds004884,sub-M2005,ses-2446,reference
+Frontal Orbital Cortex,26,0.44,chronic_ds004884,sub-M2005,ses-2446,reference
+Central Opercular Cortex,22,0.37,chronic_ds004884,sub-M2005,ses-2446,reference
+Frontal Pole,2520,12.88,chronic_ds004884,sub-M2005,ses-2446,linda
+Paracingulate Gyrus,763,3.9,chronic_ds004884,sub-M2005,ses-2446,linda
+Superior Frontal Gyrus,659,3.37,chronic_ds004884,sub-M2005,ses-2446,linda
+Frontal Orbital Cortex,578,2.96,chronic_ds004884,sub-M2005,ses-2446,linda
+Insular Cortex,454,2.32,chronic_ds004884,sub-M2005,ses-2446,linda
+Middle Frontal Gyrus,429,2.19,chronic_ds004884,sub-M2005,ses-2446,linda
+"Cingulate Gyrus, anterior division",310,1.58,chronic_ds004884,sub-M2005,ses-2446,linda
+Juxtapositional Lobule Cortex (formerly Supplementary Motor Cortex),232,1.19,chronic_ds004884,sub-M2005,ses-2446,linda
+Central Opercular Cortex,217,1.11,chronic_ds004884,sub-M2005,ses-2446,linda
+Frontal Opercular Cortex,210,1.07,chronic_ds004884,sub-M2005,ses-2446,linda
+"Inferior Frontal Gyrus, pars triangularis",140,0.72,chronic_ds004884,sub-M2005,ses-2446,linda
+"Cingulate Gyrus, posterior division",84,0.43,chronic_ds004884,sub-M2005,ses-2446,linda
+"Inferior Frontal Gyrus, pars opercularis",65,0.33,chronic_ds004884,sub-M2005,ses-2446,linda
+Precentral Gyrus,46,0.24,chronic_ds004884,sub-M2005,ses-2446,linda
+Subcallosal Cortex,18,0.09,chronic_ds004884,sub-M2005,ses-2446,linda
+Temporal Pole,17,0.09,chronic_ds004884,sub-M2005,ses-2446,linda
+Planum Temporale,17,0.09,chronic_ds004884,sub-M2005,ses-2446,linda
+Parietal Opercular Cortex,6,0.03,chronic_ds004884,sub-M2005,ses-2446,linda
+Heschl's Gyrus (includes H1 and H2),4,0.02,chronic_ds004884,sub-M2005,ses-2446,linda
+Frontal Medial Cortex,3,0.02,chronic_ds004884,sub-M2005,ses-2446,linda
+Precuneous Cortex,3,0.02,chronic_ds004884,sub-M2005,ses-2446,linda
+Paracingulate Gyrus,201,4.24,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+Frontal Orbital Cortex,184,3.88,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+Frontal Pole,115,2.42,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+"Cingulate Gyrus, anterior division",41,0.86,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+Frontal Opercular Cortex,37,0.78,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+Insular Cortex,24,0.51,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+Middle Frontal Gyrus,12,0.25,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+Temporal Pole,5,0.11,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+Subcallosal Cortex,4,0.08,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+Central Opercular Cortex,3,0.06,chronic_ds004884,sub-M2005,ses-2446,synthstroke
+"Cingulate Gyrus, anterior division",321,7.52,chronic_ds004884,sub-M2156,ses-2653,reference
+Insular Cortex,73,1.71,chronic_ds004884,sub-M2156,ses-2653,reference
+Paracingulate Gyrus,72,1.69,chronic_ds004884,sub-M2156,ses-2653,reference
+Frontal Pole,47,1.1,chronic_ds004884,sub-M2156,ses-2653,reference
+Frontal Opercular Cortex,33,0.77,chronic_ds004884,sub-M2156,ses-2653,reference
+Frontal Pole,1245,8.76,chronic_ds004884,sub-M2156,ses-2653,linda
+"Cingulate Gyrus, anterior division",1099,7.73,chronic_ds004884,sub-M2156,ses-2653,linda
+Paracingulate Gyrus,1015,7.14,chronic_ds004884,sub-M2156,ses-2653,linda
+Insular Cortex,362,2.55,chronic_ds004884,sub-M2156,ses-2653,linda
+Superior Frontal Gyrus,300,2.11,chronic_ds004884,sub-M2156,ses-2653,linda
+Frontal Opercular Cortex,250,1.76,chronic_ds004884,sub-M2156,ses-2653,linda
+Central Opercular Cortex,114,0.8,chronic_ds004884,sub-M2156,ses-2653,linda
+"Inferior Frontal Gyrus, pars opercularis",17,0.12,chronic_ds004884,sub-M2156,ses-2653,linda
+"Inferior Frontal Gyrus, pars triangularis",15,0.11,chronic_ds004884,sub-M2156,ses-2653,linda
+"Parahippocampal Gyrus, posterior division",13,0.09,chronic_ds004884,sub-M2156,ses-2653,linda
+Middle Frontal Gyrus,6,0.04,chronic_ds004884,sub-M2156,ses-2653,linda
+"Cingulate Gyrus, anterior division",343,7.28,chronic_ds004884,sub-M2156,ses-2653,synthstroke
+Paracingulate Gyrus,142,3.01,chronic_ds004884,sub-M2156,ses-2653,synthstroke
+Frontal Pole,90,1.91,chronic_ds004884,sub-M2156,ses-2653,synthstroke
+Middle Frontal Gyrus,37,0.78,chronic_ds004884,sub-M2156,ses-2653,synthstroke
+"Cingulate Gyrus, posterior division",25,0.53,chronic_ds004884,sub-M2156,ses-2653,synthstroke
+Frontal Opercular Cortex,6,0.13,chronic_ds004884,sub-M2156,ses-2653,synthstroke
+"Inferior Frontal Gyrus, pars triangularis",3,0.06,chronic_ds004884,sub-M2156,ses-2653,synthstroke
 Middle Frontal Gyrus,55,19.78,acute_isles2022,sub-strokecase0004,ses-0001,reference
 Precentral Gyrus,45,16.19,acute_isles2022,sub-strokecase0004,ses-0001,reference
 "Inferior Frontal Gyrus, pars opercularis",18,6.47,acute_isles2022,sub-strokecase0004,ses-0001,reference
@@ -33,3 +98,75 @@ Middle Frontal Gyrus,120,3.22,acute_isles2022,sub-strokecase0121,ses-0001,openad
 Paracingulate Gyrus,10,0.27,acute_isles2022,sub-strokecase0121,ses-0001,openads
 Lingual Gyrus,4,0.11,acute_isles2022,sub-strokecase0121,ses-0001,openads
 Insular Cortex,3,0.08,acute_isles2022,sub-strokecase0121,ses-0001,openads
+"Temporal Fusiform Cortex, posterior division",630,26.69,acute_synthetic_acute,sub-synacu000,,reference
+"Superior Temporal Gyrus, posterior division",270,11.44,acute_synthetic_acute,sub-synacu000,,reference
+"Parahippocampal Gyrus, posterior division",199,8.43,acute_synthetic_acute,sub-synacu000,,reference
+"Middle Temporal Gyrus, posterior division",159,6.74,acute_synthetic_acute,sub-synacu000,,reference
+Temporal Occipital Fusiform Cortex,101,4.28,acute_synthetic_acute,sub-synacu000,,reference
+"Inferior Temporal Gyrus, posterior division",49,2.08,acute_synthetic_acute,sub-synacu000,,reference
+"Parahippocampal Gyrus, anterior division",27,1.14,acute_synthetic_acute,sub-synacu000,,reference
+"Temporal Fusiform Cortex, posterior division",710,8.52,acute_synthetic_acute,sub-synacu000,,linda
+Temporal Occipital Fusiform Cortex,330,3.96,acute_synthetic_acute,sub-synacu000,,linda
+"Parahippocampal Gyrus, posterior division",308,3.7,acute_synthetic_acute,sub-synacu000,,linda
+Lingual Gyrus,252,3.02,acute_synthetic_acute,sub-synacu000,,linda
+Occipital Fusiform Gyrus,239,2.87,acute_synthetic_acute,sub-synacu000,,linda
+"Inferior Temporal Gyrus, posterior division",109,1.31,acute_synthetic_acute,sub-synacu000,,linda
+"Parahippocampal Gyrus, anterior division",84,1.01,acute_synthetic_acute,sub-synacu000,,linda
+"Inferior Temporal Gyrus, temporooccipital part",82,0.98,acute_synthetic_acute,sub-synacu000,,linda
+"Temporal Fusiform Cortex, anterior division",13,0.16,acute_synthetic_acute,sub-synacu000,,linda
+"Temporal Fusiform Cortex, posterior division",651,25.92,acute_synthetic_acute,sub-synacu000,,openads
+"Superior Temporal Gyrus, posterior division",281,11.19,acute_synthetic_acute,sub-synacu000,,openads
+"Parahippocampal Gyrus, posterior division",204,8.12,acute_synthetic_acute,sub-synacu000,,openads
+"Middle Temporal Gyrus, posterior division",169,6.73,acute_synthetic_acute,sub-synacu000,,openads
+Temporal Occipital Fusiform Cortex,120,4.78,acute_synthetic_acute,sub-synacu000,,openads
+"Inferior Temporal Gyrus, posterior division",60,2.39,acute_synthetic_acute,sub-synacu000,,openads
+"Parahippocampal Gyrus, anterior division",31,1.23,acute_synthetic_acute,sub-synacu000,,openads
+"Middle Temporal Gyrus, anterior division",316,15.21,acute_synthetic_acute,sub-synacu003,,reference
+"Parahippocampal Gyrus, posterior division",150,7.22,acute_synthetic_acute,sub-synacu003,,reference
+Temporal Pole,118,5.68,acute_synthetic_acute,sub-synacu003,,reference
+"Temporal Fusiform Cortex, posterior division",116,5.58,acute_synthetic_acute,sub-synacu003,,reference
+"Superior Temporal Gyrus, anterior division",115,5.54,acute_synthetic_acute,sub-synacu003,,reference
+"Parahippocampal Gyrus, anterior division",27,1.3,acute_synthetic_acute,sub-synacu003,,reference
+"Inferior Temporal Gyrus, anterior division",3,0.14,acute_synthetic_acute,sub-synacu003,,reference
+Lingual Gyrus,170,3.6,acute_synthetic_acute,sub-synacu003,,linda
+Occipital Fusiform Gyrus,166,3.52,acute_synthetic_acute,sub-synacu003,,linda
+Temporal Occipital Fusiform Cortex,67,1.42,acute_synthetic_acute,sub-synacu003,,linda
+"Inferior Temporal Gyrus, temporooccipital part",22,0.47,acute_synthetic_acute,sub-synacu003,,linda
+"Parahippocampal Gyrus, posterior division",10,0.21,acute_synthetic_acute,sub-synacu003,,linda
+"Temporal Fusiform Cortex, anterior division",4,0.08,acute_synthetic_acute,sub-synacu003,,linda
+"Inferior Temporal Gyrus, anterior division",3,0.06,acute_synthetic_acute,sub-synacu003,,linda
+"Middle Temporal Gyrus, anterior division",298,13.01,acute_synthetic_acute,sub-synacu003,,openads
+"Parahippocampal Gyrus, posterior division",156,6.81,acute_synthetic_acute,sub-synacu003,,openads
+Temporal Pole,137,5.98,acute_synthetic_acute,sub-synacu003,,openads
+"Temporal Fusiform Cortex, posterior division",133,5.81,acute_synthetic_acute,sub-synacu003,,openads
+"Superior Temporal Gyrus, anterior division",122,5.33,acute_synthetic_acute,sub-synacu003,,openads
+"Parahippocampal Gyrus, anterior division",34,1.48,acute_synthetic_acute,sub-synacu003,,openads
+Occipital Pole,310,38.51,chronic_synthetic_chronic,sub-synchr000,,reference
+Lingual Gyrus,295,36.65,chronic_synthetic_chronic,sub-synchr000,,reference
+Occipital Fusiform Gyrus,29,3.6,chronic_synthetic_chronic,sub-synchr000,,reference
+Lingual Gyrus,357,5.53,chronic_synthetic_chronic,sub-synchr000,,linda
+Occipital Fusiform Gyrus,326,5.05,chronic_synthetic_chronic,sub-synchr000,,linda
+Temporal Occipital Fusiform Cortex,215,3.33,chronic_synthetic_chronic,sub-synchr000,,linda
+"Inferior Temporal Gyrus, temporooccipital part",132,2.04,chronic_synthetic_chronic,sub-synchr000,,linda
+"Parahippocampal Gyrus, posterior division",79,1.22,chronic_synthetic_chronic,sub-synchr000,,linda
+"Parahippocampal Gyrus, anterior division",38,0.59,chronic_synthetic_chronic,sub-synchr000,,linda
+"Temporal Fusiform Cortex, anterior division",31,0.48,chronic_synthetic_chronic,sub-synchr000,,linda
+"Inferior Temporal Gyrus, anterior division",24,0.37,chronic_synthetic_chronic,sub-synchr000,,linda
+Temporal Pole,22,0.34,chronic_synthetic_chronic,sub-synchr000,,linda
+"Inferior Temporal Gyrus, posterior division",9,0.14,chronic_synthetic_chronic,sub-synchr000,,linda
+"Middle Temporal Gyrus, posterior division",7,0.11,chronic_synthetic_chronic,sub-synchr000,,linda
+"Temporal Fusiform Cortex, posterior division",7,0.11,chronic_synthetic_chronic,sub-synchr000,,linda
+"Middle Temporal Gyrus, temporooccipital part",6,0.09,chronic_synthetic_chronic,sub-synchr000,,linda
+"Cingulate Gyrus, posterior division",522,23.46,chronic_synthetic_chronic,sub-synchr003,,reference
+"Cingulate Gyrus, anterior division",347,15.6,chronic_synthetic_chronic,sub-synchr003,,reference
+Precentral Gyrus,245,11.01,chronic_synthetic_chronic,sub-synchr003,,reference
+Juxtapositional Lobule Cortex (formerly Supplementary Motor Cortex),162,7.28,chronic_synthetic_chronic,sub-synchr003,,reference
+Lingual Gyrus,109,2.64,chronic_synthetic_chronic,sub-synchr003,,linda
+Occipital Fusiform Gyrus,103,2.5,chronic_synthetic_chronic,sub-synchr003,,linda
+"Cingulate Gyrus, posterior division",72,1.75,chronic_synthetic_chronic,sub-synchr003,,linda
+"Cingulate Gyrus, anterior division",60,1.45,chronic_synthetic_chronic,sub-synchr003,,linda
+Temporal Occipital Fusiform Cortex,24,0.58,chronic_synthetic_chronic,sub-synchr003,,linda
+Precentral Gyrus,16,0.39,chronic_synthetic_chronic,sub-synchr003,,linda
+Juxtapositional Lobule Cortex (formerly Supplementary Motor Cortex),10,0.24,chronic_synthetic_chronic,sub-synchr003,,linda
+"Inferior Temporal Gyrus, temporooccipital part",8,0.19,chronic_synthetic_chronic,sub-synchr003,,linda
+"Parahippocampal Gyrus, posterior division",5,0.12,chronic_synthetic_chronic,sub-synchr003,,linda
