@@ -150,25 +150,21 @@ predicted impairments, outcome predictions, and therapy recommendations
 (with RTSS ingredient badges) that appear in the per-subject report. The
 KB can also be used standalone via the CLIs above.
 
-## What changed from v1
+## What each finding captures
 
-| Concern                               | v1                       | v2                                            |
-|---------------------------------------|--------------------------|-----------------------------------------------|
-| Method (LSM/fMRI/DTI/etc.)            | not captured             | required                                      |
-| Sample (n, demographics, criteria)    | only `sample_n`          | structured `sample.*` block                   |
-| Statistical thresholding & effect size| not captured             | `statistics.threshold`, `effect_size`, etc.   |
-| Confounders controlled / not          | not captured             | two required lists                            |
-| How the *paper* defined the region    | not captured             | `region_definition.*` block                   |
-| Author-acknowledged limitations       | not captured             | required list                                 |
-| Replications / contradictions         | not captured             | optional cross-study links                    |
-| Verbatim source quotes                | not captured             | optional `source_passages` (encouraged)       |
-| Provenance (who extracted, when, how) | not captured             | required `provenance.*` block + flags         |
-| Review workflow                       | none                     | `drafts/` + `status` + `promote.py`           |
-| Schema validation                     | minimal                  | full v2 vocab + required-field check          |
+Every finding is a structured object, not just a free-text note:
 
-v1 has been fully superseded by the v2.3 schema; all canonical entries in
-this repo are v2. (Earlier v1 drafts were re-extracted from the original
-papers under v2 rather than shipped as a legacy bucket.)
+- **Method** — LSM / fMRI / DTI / etc. (required)
+- **Sample** — n, demographics, inclusion criteria (`sample.*`)
+- **Statistics** — thresholding and effect size (`statistics.*`)
+- **Confounders** — controlled and uncontrolled (two lists)
+- **Region definition** — how the *paper* itself defined the region (`region_definition.*`)
+- **Limitations** — author-acknowledged caveats (required)
+- **Replications / contradictions** — optional cross-study links
+- **Verbatim quotes** — `source_passages` anchoring each claim (encouraged)
+- **Provenance** — who extracted it, when, and how (`provenance.*` + flags)
+
+See `schema.md` for the full field specification.
 
 ## Status
 
