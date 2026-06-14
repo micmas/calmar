@@ -7,10 +7,10 @@ YAML frontmatter**, designed for both human review and machine
 consumption.
 
 > **The user is always in the loop.** No agent writes directly into the
-> canonical `regions/`, `impairments/`, `therapies/`, or `predictors/`
-> folders. Agents write to `drafts/`. A human reviewer promotes drafts
-> to canonical entries via `promote.py`. This separation is the whole
-> point of v2.
+> canonical `regions/`, `impairments/`, `therapies/`, `predictors/`, or
+> `ingredients/` folders. Agents write to `drafts/`. A human reviewer
+> promotes drafts to canonical entries via `promote.py`. This separation
+> is the whole point of v2.
 
 ## Layout
 
@@ -18,28 +18,73 @@ consumption.
 aphasia-kb/
 ├── README.md                  # this file
 ├── schema.md                  # YAML frontmatter spec (v2.3 — read first)
-├── EXTRACTION_SKILL.md        # agent's instruction manual
+├── HOWTO.md                   # end-to-end walkthrough: one PDF → approved entry
+├── EXTRACTION_SKILL.md        # the agent's instruction manual
 ├── citations.md               # bibliography (@Key references)
 ├── extraction_log.md          # append-only audit log
-├── aphasia_kb.py              # loader + validator + query module
-├── promote.py                 # CLI for reviewing/promoting drafts
-├── extract.py                 # CLI for agent-driven paper extraction
-├── annotate_paper.py          # CLI for color-annotated PDFs
-├── neurosynth_bootstrap.py    # (stage-2) auto-draft from meta-analyses
 │
-├── regions/                   # APPROVED region entries (canonical)
-├── impairments/               # APPROVED impairment entries (canonical)
-├── therapies/                 # APPROVED therapy entries (canonical)
-├── predictors/                # APPROVED predictor entries (canonical, v2.3+)
+│   # ---- code: loaders, CLIs, and the imaging bridge ----
+├── aphasia_kb.py              # loader + validator + query module
+├── promote.py                 # CLI: review / promote / reject drafts
+├── extract.py                 # CLI: agent-driven paper extraction (Anthropic API)
+├── auto_review.py             # CLI: agentic first-pass review of pending drafts
+├── annotate_paper.py          # CLI: color-highlight a PDF from a draft's quotes
+├── batch_ocr.py               # CLI: OCR image-only PDFs in papers/
+├── decode_lesion.py           # lesion mask → HarvardOxford overlap + Neurosynth terms
+├── aphasia_kb_rag.py          # imaging-driven RAG: lesion mask → cited report (+ LLM)
+├── neurosynth_bootstrap.py    # (stage-2) scaffold to auto-draft from meta-analyses
+│
+│   # ---- canonical content (APPROVED; loaded by the KB) ----
+├── regions/                   # approved region entries
+├── impairments/               # approved impairment entries
+├── therapies/                 # approved therapy entries
+├── predictors/                # approved predictor entries (v2.3+)
+├── ingredients/               # RTSS active-ingredient entries (referenced by therapies)
+│
+│   # ---- workflow & supporting material ----
 ├── drafts/                    # AGENT writes here; HUMAN reviews
 │   ├── regions/
 │   ├── impairments/
 │   ├── therapies/
 │   └── predictors/
+├── reviews/                   # longer-form narrative reviews of review papers
 ├── examples/                  # worked-example entries (NOT loaded by KB)
-├── papers/                    # PDFs the agent has been given (optional)
-└── _legacy_v1/                # archived v1 entries; loader tags them legacy_v1
+├── auto_review_log/           # sidecar audit reports written by auto_review.py
+├── papers/                    # source PDFs (NOT tracked — available on request; see below)
+└── _neurosynth_cache/         # Neurosynth v7 data + term maps (NOT tracked; regenerated)
 ```
+
+### What each script does (in the order you'd use them)
+
+The scripts split into two phases: **building** the KB from papers
+(top), and **using** the finished KB on a lesion (bottom).
+
+| Script                   | Role                                                                                       | Network   |
+|--------------------------|-------------------------------------------------------------------------------------------|-----------|
+| `batch_ocr.py`           | (Run first) detect and OCR any image-only PDFs in `papers/` so their text is searchable.   | local     |
+| `extract.py`             | Drive an LLM to turn a PDF into draft entries + an annotated PDF.                          | API       |
+| `annotate_paper.py`      | Render a color-coded PDF from a draft's `source_passages` so you can check the quotes.      | local     |
+| `auto_review.py`         | Deterministic safety checks (+ optional LLM second opinion) on pending drafts.             | local/API |
+| `aphasia_kb.py`          | Load, validate, and query the KB; `--check` validates drafts before promotion.             | local     |
+| `promote.py`             | Human review gate: list / diff / show / approve / reject drafts into the canonical folders. | local     |
+| `neurosynth_bootstrap.py`| (Alternative to `extract.py`) scaffold region drafts from Neurosynth meta-analyses.        | local     |
+| `decode_lesion.py`       | Correlate an MNI lesion mask with Neurosynth v7 term maps + HarvardOxford regions.          | local     |
+| `aphasia_kb_rag.py`      | Join `decode_lesion` output to KB findings → a deterministic cited report (+ optional LLM). | local/API |
+
+The validator, deterministic auto-review, annotation, OCR, decoding, and
+`promote.py` are all local Python and free. Steps marked **API** read an
+`ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) from the environment and bill
+per call — see `HOWTO.md` for cost notes.
+
+## Accessing the annotated papers
+
+The source and color-annotated PDFs in `papers/` are **not redistributed
+in this repository** for copyright reasons. What the KB ships instead is
+the structured findings and full citations (`citations.md`, with DOIs) —
+fetch any paper yourself via its DOI through your usual access. If you
+need the annotated PDFs themselves (e.g. to verify `source_passages`
+against the highlights), **contact the repository owner to request
+access.**
 
 ## The two workflows
 
@@ -56,6 +101,9 @@ aphasia-kb/
    or reject with `--reject <path> --reviewer "you" --reason "…"`.
 6. `promote.py` validates the draft, stamps approval, merges/moves it
    into the canonical folder, and appends an `APPROVED` log line.
+
+For the full operational walkthrough — including the Cowork-vs-CLI
+choice, OCR, annotation, and auto-review — see `HOWTO.md`.
 
 ### B. Direct human curation (for entries you write yourself)
 
@@ -88,7 +136,19 @@ python promote.py --reject drafts/regions/ho-cort_44__Fridriksson2018.md \
 
 # Lookup a region by name / alias / id
 python aphasia_kb.py --lookup "Broca's area"
+
+# Decode a lesion mask and write a cited KB report
+python aphasia_kb_rag.py /path/to/Lesion_in_MNI.nii.gz -o report.md
 ```
+
+## How this connects to the CALMaR pipeline
+
+The main `lesion-interpretation-pipeline.ipynb` calls into this KB at its
+clinical-interpretation stage: it decodes each lesion mask
+(`decode_lesion.py`), retrieves matching findings, and renders the
+predicted impairments, outcome predictions, and therapy recommendations
+(with RTSS ingredient badges) that appear in the per-subject report. The
+KB can also be used standalone via the CLIs above.
 
 ## What changed from v1
 
@@ -106,15 +166,16 @@ python aphasia_kb.py --lookup "Broca's area"
 | Review workflow                       | none                     | `drafts/` + `status` + `promote.py`           |
 | Schema validation                     | minimal                  | full v2 vocab + required-field check          |
 
-The v1 entries are preserved under `_legacy_v1/` and surface in the
-loader with `status: legacy_v1` so the LINDA notebook can choose to
-ignore them. They are kept as a starting point — the intent is for the
-agent to re-extract each of them under v2 from the original papers.
+v1 has been fully superseded by the v2.3 schema; all canonical entries in
+this repo are v2. (Earlier v1 drafts were re-extracted from the original
+papers under v2 rather than shipped as a legacy bucket.)
 
 ## Status
 
-This is a **proof-of-concept**. Every approved entry needs clinician
-sign-off before being relied upon clinically. The schema is frozen for
+This is a **proof-of-concept** (~60 entries from ~40 papers). Every
+approved entry needs clinician sign-off before being relied upon
+clinically; both the deterministic and LLM report paths carry a
+research-only, not-clinical-advice caveat. The schema is frozen for
 v2.3; expanding it (new methods, new vocabularies, new buckets) is a
 v2.4 change that must update `schema.md` and `aphasia_kb.py` together.
 
