@@ -14,7 +14,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 
 ## Requirements
 
-- [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides LINDA, HD-BET, SynthStroke, BCBToolkit, and all Python/R dependencies
+- [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools the notebooks load via `module.load`: LINDA, HD-BET, SynthStroke, BCBToolkit, DeepDisco, ANTs, FSL, FreeSurfer (and OpenADS, used only by the benchmark), plus all Python/R dependencies
 - A BIDS-formatted dataset (the notebook fetches `ds004884` from OpenNeuro via datalad by default)
 - Python packages listed in `requirements.txt` (pre-installed in Neurodesktop; run the pip cell in the notebook if anything is missing)
 
@@ -25,11 +25,15 @@ Given a BIDS-formatted dataset, CALMaR will:
 | Path | Purpose |
 |------|---------|
 | `lesion-interpretation-pipeline.ipynb` | Main pipeline notebook — run this |
-| `linda_qc.py` | Helper module for QC, mask edits, coregistration, and sidecars |
-| `QC_RUBRIC.md` | Stage-aware QC rating reference (acute / subacute / chronic) |
 | `lesion-segmentation-benchmark.ipynb` | Benchmarks LINDA / SynthStroke across chronic and acute datasets |
+| `linda_qc.py` | Helper module (imported by both notebooks) for QC, mask edits, coregistration, and sidecars |
+| `synthetic_stroke.py` | Synthetic DWI/ADC/T1w phantom generator with ground-truth lesions (used by the benchmark) |
+| `linda_predict_with_mask.sh` | Host-side wrapper that runs LINDA's mask-bypass via the container (called by `linda_qc.py`) |
+| `linda_predict_with_mask.R` | R stub baked into the LINDA container — calls `linda_predict(..., brain_mask=)` |
+| `warp_native_to_mni.sh` | Warps a native-space mask into MNI via the container (called by `linda_qc.py`) |
+| `QC_RUBRIC.md` | Stage-aware QC rating reference (acute / subacute / chronic) |
 | `aphasia-kb/` | Aphasia literature knowledge base (see `aphasia-kb/README.md`) |
-| `container/` | Docker/Singularity wrappers for containerised tool calls |
+| `container/` | In-container LINDA wrapper source (baked into the Neurodesk image) |
 | `requirements.txt` | Python dependencies |
 
 Runtime directories (created automatically, excluded from git):
@@ -79,7 +83,7 @@ Dataset (BIDS)
             ├─ Schaefer 7-network summary
             ├─ Per-subject interactive report
             │
-            ├─ BCBToolkit disconnectome + Tractotron
+            ├─ Disconnectome — BCBToolkit + Tractotron, and DeepDisco (deep-learning)
             ├─ Neurosynth lesion decoding
             │
             └─ KB-driven clinical interpretation
