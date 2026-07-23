@@ -30,8 +30,12 @@ PyYAML>=6.0
 pymupdf>=1.23           # for annotate_paper.py (PDF highlight annotations)
                         # AND extract.py (PDF text extraction)
 
-# CLI extraction (aphasia-kb/extract.py)
-anthropic>=0.40         # Anthropic Python SDK; needs ANTHROPIC_API_KEY env var
+# LLM steps (extract.py, auto_review.py --llm-review, aphasia_kb_rag.py --llm)
+#   All run locally via Ollama over plain HTTP. No SDK, no API key, no
+#   cloud provider dependency at all.
+#   Setup:  ollama serve  &&  ollama pull gemma4:26b
+#   Which model each step uses: aphasia-kb/models.yaml
+#   Check it:  python aphasia-kb/model_config.py
 
 # Notebook validation (used by the workflow)
 nbformat>=5.0

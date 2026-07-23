@@ -62,7 +62,8 @@ Usage (CLI)
     #   * Drafts whose quotes don't match    → auto_reject (LLM was fooled)
     #   * Drafts where PDFs are STILL missing → defer (loud failure)
 
-    # Cowork / human-reviewer workflow (no Anthropic API spend):
+    # Cowork / human-reviewer workflow (nothing runs locally; a human or
+    # a Cowork session supplies the verdicts):
     #
     #   1. Generate a worksheet listing the drafts you want reviewed:
     #        python auto_review.py --deferred --emit-worksheet worksheet.yaml
@@ -95,6 +96,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import os
 import re
 import subprocess
@@ -123,8 +125,34 @@ REPORTS_DIR = ROOT / "auto_review_log"
 PROMOTE_PY = ROOT / "promote.py"
 LOG_PATH = ROOT / "extraction_log.md"
 
-DEFAULT_LLM_MODEL = "claude-sonnet-4-6"
+# Which model reviews drafts lives in models.yaml — see model_config.py.
+from model_config import resolve as resolve_model  # noqa: E402
+
+_REVIEW_CFG = resolve_model("review")
+DEFAULT_LLM_MODEL = _REVIEW_CFG["model"]
 PDF_MATCH_THRESHOLD = 0.80   # >= this fraction of quotes must match
+
+# --- Local-model guardrails -------------------------------------------
+# The LLM second opinion can PROMOTE a draft into the canonical KB. That
+# makes a wrong `override_approve` the most costly error this script can
+# make, and a mid-size local model is more likely to make it than a
+# frontier model — small models are agreeable, and this prompt actively
+# invites them to bless something a deterministic check already flagged.
+#
+# So local review is asymmetric by default:
+#   * escalate_reject / agree_defer  → honoured (both fail SAFE)
+#   * override_approve               → downgraded to agree_defer,
+#                                      unless --allow-local-override
+# Enabling the override flag is reasonable once you've spot-checked the
+# model's rationales on a batch you already know the answer to.
+ALLOW_LOCAL_OVERRIDE_DEFAULT = False
+
+# Self-consistency: with votes>1 the review runs N times at nonzero
+# temperature and an override is honoured ONLY if every run agrees.
+# Disagreement across runs is itself the signal — it means the model is
+# guessing, which is exactly when you don't want it promoting anything.
+DEFAULT_VOTES = 3
+VOTE_TEMPERATURE = 0.4
 
 # Soft import of the existing validator + parser
 sys.path.insert(0, str(ROOT))
@@ -322,8 +350,14 @@ def check_pdf_quote_match(fm: dict, papers_dir: Path = PAPERS_DIR,
             if not quote:
                 continue
             total += 1
-            qnorm = _normalize(quote)
-            if qnorm in norm_text:
+            # Case-insensitive: `_normalize` deliberately preserves case
+            # (annotate_paper needs it to locate highlight rects), but for
+            # a containment test case only produces false failures — a
+            # curator quoting mid-sentence writes "the two groups…" where
+            # the paper has "The two groups…". This is a BLOCKER check, so
+            # a false failure auto-rejects a perfectly good draft.
+            qnorm = _normalize(quote).casefold()
+            if qnorm in norm_text.casefold():
                 matched += 1
             else:
                 misses.append(
@@ -421,83 +455,235 @@ def compute_verdict(checks: list[Check],
 # LLM second-opinion (optional)
 # ============================================================
 LLM_SYSTEM_PROMPT = """\
-You are a skeptical second reviewer of an extraction draft from an aphasia-research
-knowledge base. The first-pass deterministic review flagged this draft for human
-review. Your job is to decide whether the deferral was warranted, or whether the
-draft is actually safe to auto-approve despite the flag.
+You review draft entries for a stroke/aphasia research knowledge base.
 
-Be conservative. Default to "agree_defer" unless the draft is plainly fine.
+An automated checker already flagged this draft. You decide one thing:
+was that flag correct, or is the draft actually fine?
 
-You CANNOT override these — they will stay deferred or rejected regardless of
-your verdict:
-  - schema_valid failure
-  - pdf_quote_match failure
-  - no_low_confidence_findings failure
-  - no_contradictions failure
+Answer with exactly one verdict:
 
-You CAN override these soft criteria when justified:
-  - all_findings_confidence_high (medium confidence may still be sound)
-  - no_human_review_flags (some flag-words are false positives)
-  - strength_moderate_or_better (a weak finding may still be honestly weak-but-correct)
-  - cross_finding_consistency (per-finding sample.n differences may be intentional
-    sub-sample reporting)
+  agree_defer      The flag was fair. A human should look. CHOOSE THIS
+                   WHEN UNSURE. This is the safe, expected answer.
+  override_approve The flag was a false alarm and the draft is clearly
+                   correct. Only when you are certain.
+  escalate_reject  The draft has a real error the checker missed.
 
-For each finding, evaluate:
-  1. Do the source_passages tagged `supports: claim` plainly support the claim text?
-  2. Does the strength rating match the evidence in the quotes?
-  3. Are the provenance flags substantive concerns or routine bookkeeping?
+How to decide, per finding:
+  1. Read each quote marked [claim]. Does that quote, ON ITS OWN, state
+     what the claim says? If you have to infer or fill gaps, it does not.
+  2. Does `strength` match the quotes? A quote describing a correlation
+     does not support a causal claim.
+  3. Is the flag routine bookkeeping, or a real problem?
 
-Respond ONLY in this YAML format inside a ```yaml block:
-```yaml
-overall_verdict: agree_defer | override_approve | escalate_reject
-rationale: |
-  <2-4 sentences explaining the decision>
-per_finding:
-  - id: f1
-    concern: <brief concern, or 'none'>
-    supports_approval: true | false
-```
+If ANY finding fails any of these, answer agree_defer.
+
+Important: the draft being well-written, well-formatted, or confident is
+NOT evidence that it is correct. Judge only whether the quotes support
+the claims.
+
+Give one entry in `per_finding` for EVERY finding id listed, using the
+exact ids given. Do not invent ids. Keep `rationale` under 60 words and
+make it specific — name the finding and the quote you relied on.
 """
 
 
-def llm_second_opinion(fm: dict, det_checks: list[Check],
-                       model: str = DEFAULT_LLM_MODEL) -> dict:
-    """Call Anthropic API for a skeptical review of a deferred draft.
+# JSON Schema for constrained decoding. Ollama restricts the sampler to
+# tokens that keep the output schema-valid, so the model cannot emit a
+# verdict outside the enum or skip a required key. This is the single
+# biggest reliability win for a mid-size local model — far more robust
+# than asking politely for a fenced YAML block.
+LLM_RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "overall_verdict": {
+            "type": "string",
+            "enum": ["agree_defer", "override_approve", "escalate_reject"],
+        },
+        "rationale": {"type": "string"},
+        "per_finding": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "quotes_support_claim": {"type": "boolean"},
+                    "concern": {"type": "string"},
+                    "supports_approval": {"type": "boolean"},
+                },
+                "required": ["id", "quotes_support_claim", "concern",
+                             "supports_approval"],
+            },
+        },
+    },
+    "required": ["overall_verdict", "rationale", "per_finding"],
+}
 
-    Returns a dict with `model`, `raw_response`, `parsed`, and an
-    interpreted `verdict_override` ∈ {'approve', 'reject', None}.
+
+def _validate_llm_payload(parsed: dict | None,
+                          expected_ids: list[str]) -> list[str]:
+    """Return a list of structural problems with the model's response.
+
+    Any problem here means we do NOT trust the verdict. Catching a
+    confabulated or incomplete response is cheap; acting on one is not.
     """
-    try:
-        from anthropic import Anthropic
-    except ImportError:
-        return {"error": "anthropic SDK not installed (pip install anthropic)"}
+    problems: list[str] = []
+    if not isinstance(parsed, dict):
+        return ["response was not a JSON object"]
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        return {"error": "ANTHROPIC_API_KEY not set in environment"}
+    verdict = parsed.get("overall_verdict")
+    if verdict not in ("agree_defer", "override_approve", "escalate_reject"):
+        problems.append(f"unknown overall_verdict {verdict!r}")
+
+    pf = parsed.get("per_finding")
+    if not isinstance(pf, list):
+        problems.append("per_finding missing or not a list")
+        return problems
+
+    got_ids = [str(x.get("id")) for x in pf if isinstance(x, dict)]
+    missing = [i for i in expected_ids if i not in got_ids]
+    invented = [i for i in got_ids if i not in expected_ids]
+    if missing:
+        problems.append(f"did not review finding(s): {missing}")
+    if invented:
+        problems.append(f"invented finding id(s) not in the draft: {invented}")
+
+    # Internal coherence: approving overall while flagging a finding as
+    # unsupported means the model contradicted itself.
+    if verdict == "override_approve":
+        bad = [str(x.get("id")) for x in pf if isinstance(x, dict)
+               and (x.get("quotes_support_claim") is False
+                    or x.get("supports_approval") is False)]
+        if bad:
+            problems.append(
+                f"said override_approve but marked {bad} as unsupported")
+
+    rationale = (parsed.get("rationale") or "").strip()
+    if len(rationale) < 15:
+        problems.append("rationale empty or too short to audit")
+
+    return problems
+
+
+def _one_llm_pass(prompt: str, model: str, host: str, expected_ids: list[str],
+                  temperature: float, seed: int | None) -> dict:
+    """Single review pass. Returns {verdict, parsed, raw, problems, error}."""
+    from ollama_client import OllamaError, chat
+    try:
+        res = chat(prompt, model=model, system=LLM_SYSTEM_PROMPT,
+                   max_tokens=2000, host=host, temperature=temperature,
+                   seed=seed, fmt=LLM_RESPONSE_SCHEMA, verbose=False)
+    except OllamaError as e:
+        return {"error": str(e), "verdict": None, "parsed": None, "raw": "",
+                "problems": ["transport error"]}
+
+    raw = res["text"]
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        parsed = _parse_llm_yaml(raw)   # legacy/fallback path
+
+    # A model that answers in prose yields a str (or None) here, not a
+    # dict. Coerce so downstream never has to care.
+    if not isinstance(parsed, dict):
+        parsed = None
+
+    problems = _validate_llm_payload(parsed, expected_ids)
+    if res.get("truncated_output"):
+        problems.append("response truncated at num_predict")
+    return {"error": None,
+            "verdict": (parsed or {}).get("overall_verdict"),
+            "parsed": parsed, "raw": raw, "problems": problems}
+
+
+def llm_second_opinion(fm: dict, det_checks: list[Check],
+                       model: str = DEFAULT_LLM_MODEL,
+                       host: str | None = None,
+                       votes: int = DEFAULT_VOTES,
+                       allow_override: bool = ALLOW_LOCAL_OVERRIDE_DEFAULT
+                       ) -> dict:
+    """Ask a LOCAL model for a skeptical second opinion on a deferred draft.
+
+    Runs entirely against Ollama — draft text and verbatim quotes never
+    leave the machine.
+
+    Guardrails, in order of application:
+      1. Schema-constrained decoding (verdict must be in the enum).
+      2. Structural validation — must review exactly the real finding
+         ids, must not contradict itself, must give an auditable
+         rationale. Any failure ⇒ verdict discarded, draft stays deferred.
+      3. Self-consistency — with votes>1, all runs must agree.
+      4. Override lockout — `override_approve` is downgraded to
+         agree_defer unless `allow_override` is True.
+
+    Every guardrail fails toward "leave it deferred for a human", which
+    is the cheap error. Returns the usual dict plus `guardrails`, which
+    records anything that fired so the sidecar YAML stays auditable.
+    """
+    from ollama_client import DEFAULT_HOST, is_local
+    host = host or DEFAULT_HOST
+
+    expected_ids = [str(f.get("id")) for f in (fm.get("findings") or [])]
+    if not expected_ids:
+        return {"error": "draft has no findings to review", "model": model}
 
     prompt = _build_llm_prompt(fm, det_checks)
-    client = Anthropic(api_key=api_key)
-    try:
-        response = client.messages.create(
-            model=model,
-            max_tokens=2000,
-            system=LLM_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-        )
-    except Exception as e:
-        return {"error": f"Anthropic API call failed: {e}"}
+    guardrails: list[str] = []
+    if not is_local(host):
+        guardrails.append(f"WARNING: host {host} is not local")
 
-    raw = "".join(b.text for b in response.content if hasattr(b, "text"))
-    parsed = _parse_llm_yaml(raw)
+    votes = max(1, votes)
+    passes = [
+        _one_llm_pass(prompt, model, host, expected_ids,
+                      temperature=(0.0 if votes == 1 else VOTE_TEMPERATURE),
+                      seed=(None if votes == 1 else 1000 + i))
+        for i in range(votes)
+    ]
+
+    transport_errs = [p["error"] for p in passes if p["error"]]
+    if len(transport_errs) == len(passes):
+        return {"model": model, "error": transport_errs[0],
+                "verdict_override": None, "parsed": None,
+                "guardrails": ["all passes failed to reach Ollama"]}
+
+    good = [p for p in passes if not p["error"] and not p["problems"]]
+    rejected = [p for p in passes if p["problems"] and not p["error"]]
+    for p in rejected:
+        guardrails.append(f"discarded a pass: {'; '.join(p['problems'])}")
+
+    if not good:
+        return {"model": model, "parsed": (passes[0] or {}).get("parsed"),
+                "raw_response": passes[0].get("raw", ""),
+                "verdict_override": None,
+                "error": "no structurally valid response; leaving deferred",
+                "guardrails": guardrails}
+
+    verdicts = {p["verdict"] for p in good}
+    unanimous = len(verdicts) == 1 and len(good) == votes
+    if not unanimous:
+        guardrails.append(
+            f"votes disagreed or were incomplete ({[p['verdict'] for p in good]}"
+            f" over {votes} run(s)) — no override applied")
+
+    best = good[0]
+    verdict = best["verdict"]
+
     override = None
-    v = (parsed or {}).get("overall_verdict")
-    if v == "override_approve":
-        override = "approve"
-    elif v == "escalate_reject":
-        override = "reject"
-    return {"model": model, "raw_response": raw, "parsed": parsed,
-            "verdict_override": override}
+    if unanimous:
+        if verdict == "escalate_reject":
+            override = "reject"          # fails safe — always honoured
+        elif verdict == "override_approve":
+            if allow_override:
+                override = "approve"
+            else:
+                guardrails.append(
+                    "model said override_approve; downgraded to agree_defer "
+                    "(local override disabled — pass --allow-local-override "
+                    "to trust it)")
+
+    return {"model": model, "raw_response": best["raw"],
+            "parsed": best["parsed"], "verdict_override": override,
+            "votes": votes, "vote_verdicts": [p["verdict"] for p in passes],
+            "unanimous": unanimous, "guardrails": guardrails, "error": None}
 
 
 def _build_llm_prompt(fm: dict, det_checks: list[Check]) -> str:
@@ -515,37 +701,64 @@ def _build_llm_prompt(fm: dict, det_checks: list[Check]) -> str:
     if not any_failed:
         parts.append("(none — escalation path)")
 
-    parts.append("\n## Findings")
-    for f in fm.get("findings") or []:
-        parts.append(f"\n### {f.get('id')}")
+    findings = fm.get("findings") or []
+    ids = [str(f.get("id")) for f in findings]
+
+    # State the id list up front AND require it back. A mid-size model
+    # skipping a finding is a common failure; making the checklist
+    # explicit both reduces it and makes it detectable downstream.
+    parts.append(f"\n## Findings to review ({len(ids)} total)")
+    parts.append(f"You must return exactly these ids in `per_finding`: "
+                 f"{', '.join(ids)}")
+
+    for f in findings:
+        parts.append(f"\n### Finding id: {f.get('id')}")
         parts.append(f"- citation: {f.get('citation')}")
         parts.append(f"- target: {f.get('target')} ({f.get('target_kind')})")
-        parts.append(f"- claim: {f.get('claim')}")
+        parts.append(f"- CLAIM: {f.get('claim')}")
         parts.append(f"- strength: {f.get('strength')}  ·  "
                      f"confidence: {(f.get('provenance') or {}).get('confidence')}")
         flags = (f.get('provenance') or {}).get('flags') or []
         if flags:
             parts.append(f"- flags: {flags}")
-        parts.append("- source_passages:")
+        # Full quotes, not truncated: a quote clipped mid-sentence can
+        # look like it fails to support a claim it actually supports.
+        # Quote text is the entire basis for the judgement, so it is the
+        # last thing that should be shortened to save context.
+        parts.append("- QUOTES FROM THE PAPER:")
         for sp in f.get("source_passages") or []:
-            q = (sp.get("quote") or "")[:240]
-            parts.append(f"    - [{sp.get('supports','?')}] (p.{sp.get('page','?')}) {q}")
+            q = (sp.get("quote") or "").strip()
+            parts.append(f"    - [{sp.get('supports','?')}] "
+                         f"(p.{sp.get('page','?')}) \"{q}\"")
+        if not (f.get("source_passages") or []):
+            parts.append("    (none — a claim with no quotes cannot be "
+                         "approved)")
+
+    parts.append(f"\n## Your task")
+    parts.append(f"For each of {', '.join(ids)}: do the [claim] quotes above, "
+                 f"read literally, state what CLAIM says? Then give one "
+                 f"overall verdict. When in doubt, answer agree_defer.")
     return "\n".join(parts)
 
 
 def _parse_llm_yaml(raw: str) -> dict | None:
-    """Find the first ```yaml block in `raw` and parse it."""
-    m = re.search(r"```ya?ml\s*\n(.*?)\n```", raw, re.DOTALL | re.IGNORECASE)
-    if not m:
-        # Fallback: maybe the model emitted bare YAML
+    """Find the first ```yaml block in `raw` and parse it.
+
+    Always returns a dict or None — never a bare str. `yaml.safe_load`
+    happily parses a prose sentence into a string, which would otherwise
+    sail downstream and blow up on `.get`.
+    """
+    def _load(text: str) -> dict | None:
         try:
-            return yaml.safe_load(raw)
+            out = yaml.safe_load(text)
         except Exception:
             return None
-    try:
-        return yaml.safe_load(m.group(1))
-    except Exception:
-        return None
+        return out if isinstance(out, dict) else None
+
+    m = re.search(r"```ya?ml\s*\n(.*?)\n```", raw, re.DOTALL | re.IGNORECASE)
+    if m:
+        return _load(m.group(1))
+    return _load(raw)   # fallback: maybe the model emitted bare YAML
 
 
 # ============================================================
@@ -583,10 +796,19 @@ def write_report(draft_path: Path, verdict: str, checks: list[Check],
         raw = llm_result.get("raw_response", "")
         run["llm_review"] = {
             "model":             llm_result.get("model"),
+            "backend":           "ollama (local)",
             "verdict_override":  llm_result.get("verdict_override"),
             "parsed":            llm_result.get("parsed"),
             "raw_preview":       (raw or "")[:800],
             "error":             llm_result.get("error"),
+            # Guardrail audit trail: which safety nets fired, how the
+            # votes split, and whether they agreed. Keep this — it's how
+            # you decide later whether the local model is trustworthy
+            # enough to hand it --allow-local-override.
+            "votes":             llm_result.get("votes"),
+            "vote_verdicts":     llm_result.get("vote_verdicts"),
+            "unanimous":         llm_result.get("unanimous"),
+            "guardrails":        llm_result.get("guardrails") or [],
         }
     report["runs"].append(run)
     report["last_run"]        = run["timestamp"]
@@ -643,11 +865,16 @@ def review_one(draft_path: Path,
                model: str = DEFAULT_LLM_MODEL,
                papers_dir: Path = PAPERS_DIR,
                dry_run: bool = False,
-               write_sidecar: bool = True
+               write_sidecar: bool = True,
+               ollama_host: str | None = None,
+               votes: int = DEFAULT_VOTES,
+               allow_local_override: bool = ALLOW_LOCAL_OVERRIDE_DEFAULT
                ) -> tuple[str, list[Check], dict | None]:
     """Review one draft and return (verdict, checks, llm_result_or_None).
 
-    See module docstring for what `provisional_without_pdf` does.
+    See module docstring for what `provisional_without_pdf` does, and
+    the guardrail notes on `llm_second_opinion` for `votes` /
+    `allow_local_override`.
     """
     fm, _ = parse_markdown(draft_path)
     checks = run_deterministic_checks(fm, draft_path, papers_dir=papers_dir)
@@ -663,7 +890,9 @@ def review_one(draft_path: Path,
     # still downgrade to PROVISIONAL (LLM can't substitute for quote
     # verification against the source PDF).
     if llm_review and verdict == Verdict.DEFER:
-        llm_result = llm_second_opinion(fm, checks, model=model)
+        llm_result = llm_second_opinion(
+            fm, checks, model=model, host=ollama_host, votes=votes,
+            allow_override=allow_local_override)
         ov = (llm_result or {}).get("verdict_override")
         if ov == "approve":
             verdict = Verdict.APPROVE
@@ -983,6 +1212,9 @@ def review_many(drafts: list[Path], *,
                 reviewer: str = "auto-reviewer",
                 dry_run: bool = False,
                 promote: bool = True,
+                ollama_host: str | None = None,
+                votes: int = DEFAULT_VOTES,
+                allow_local_override: bool = ALLOW_LOCAL_OVERRIDE_DEFAULT,
                 verbose: bool = True) -> dict:
     """Review many drafts. Returns a summary dict.
 
@@ -1005,7 +1237,8 @@ def review_many(drafts: list[Path], *,
                 require_pdf_match=require_pdf_match,
                 provisional_without_pdf=provisional_without_pdf,
                 model=model, papers_dir=papers_dir,
-                dry_run=dry_run,
+                dry_run=dry_run, ollama_host=ollama_host, votes=votes,
+                allow_local_override=allow_local_override,
             )
         except Exception as e:
             if verbose:
@@ -1103,11 +1336,27 @@ def _cli(argv: list[str] | None = None) -> int:
                         "--pending-pdf to choose which drafts go in.")
 
     p.add_argument("--llm-review", action="store_true",
-                   help="Enable LLM second opinion (requires "
-                        "ANTHROPIC_API_KEY in env)")
-    p.add_argument("--model",      default=DEFAULT_LLM_MODEL,
-                   help=f"Anthropic model for LLM review (default: "
-                        f"{DEFAULT_LLM_MODEL})")
+                   help="Enable LLM second opinion using a LOCAL model via "
+                        "Ollama (needs `ollama serve` running). Nothing is "
+                        "sent off-machine.")
+    p.add_argument("--model",      default=None,
+                   help=f"Ollama model tag for LLM review. Default comes "
+                        f"from models.yaml (currently {DEFAULT_LLM_MODEL}). "
+                        f"Run `python model_config.py` to see it resolved.")
+    p.add_argument("--ollama-host", default=None,
+                   help="Ollama base URL (default: http://localhost:11434, "
+                        "or OLLAMA_HOST).")
+    p.add_argument("--votes", type=int, default=DEFAULT_VOTES, metavar="N",
+                   help=f"Run the review N times and require unanimity "
+                        f"before honouring an override (default: "
+                        f"{DEFAULT_VOTES}). N=1 disables self-consistency "
+                        f"checking and is faster but less safe.")
+    p.add_argument("--allow-local-override", action="store_true",
+                   help="Let the local model's `override_approve` actually "
+                        "promote a draft into the KB. OFF by default: a "
+                        "mid-size local model is agreeable, and a wrong "
+                        "approval silently corrupts the KB. escalate_reject "
+                        "and agree_defer are always honoured regardless.")
     p.add_argument("--require-pdf-match", action="store_true",
                    help="Refuse to auto-approve when PDF unavailable. "
                         "Default is to skip the PDF check if no papers/ files.")
@@ -1183,6 +1432,28 @@ def _cli(argv: list[str] | None = None) -> int:
               f"{args.emit_worksheet} --reviewer <your-name>")
         return 0
 
+    # Preflight the local model once, so a long --all run doesn't fail
+    # on draft 1 of 60.
+    if args.llm_review:
+        from ollama_client import check_model_available, is_local
+        _cfg = resolve_model("review", args.model)
+        args.model = _cfg["model"]
+        host = args.ollama_host or os.environ.get(
+            "OLLAMA_HOST", "http://localhost:11434")
+        if not is_local(host):
+            print(f"⚠ OLLAMA_HOST points at {host}, which is not this "
+                  f"machine. Draft quotes WILL leave your computer.")
+        ok, msg = check_model_available(args.model, host)
+        if not ok:
+            p.error(msg)
+        print(f"✓ {msg}  (model from {_cfg['source']})")
+        if args.allow_local_override:
+            note = "ENABLED — the local model can promote drafts"
+        else:
+            note = ("disabled — override_approve will be downgraded to "
+                    "agree_defer")
+        print(f"  votes={args.votes}  ·  local override {note}")
+
     # Mode C (default): full review pipeline.
     summary = review_many(
         drafts,
@@ -1194,6 +1465,9 @@ def _cli(argv: list[str] | None = None) -> int:
         reviewer=args.reviewer,
         dry_run=args.dry_run,
         promote=not args.no_promote,
+        ollama_host=args.ollama_host,
+        votes=args.votes,
+        allow_local_override=args.allow_local_override,
     )
     return 0 if summary["n_failed_promote"] == 0 else 1
 

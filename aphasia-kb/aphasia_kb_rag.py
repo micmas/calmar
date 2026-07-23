@@ -11,7 +11,7 @@ Given a binary lesion mask in MNI space, this module:
      ``term_decoding.impairment`` already names a KB impairment id.
   3. Produces TWO outputs from the *same* retrieved evidence:
        a. a deterministic, fully-cited markdown report  (always; offline),
-       b. an optional LLM narrative grounded in (a)      (Anthropic/OpenAI).
+       b. an optional LLM narrative grounded in (a)      (local, via Ollama).
 
 Design notes
 ------------
@@ -22,9 +22,10 @@ Design notes
   The deterministic report never invents anything; the LLM step is
   instructed to use ONLY the provided evidence and to cite entry ids. Both
   carry a research-only, not-clinical-advice caveat.
-* The LLM step reads its API key from the environment
-  (``ANTHROPIC_API_KEY`` or ``OPENAI_API_KEY``). This module never asks for
-  or stores a key.
+* The LLM step runs entirely locally against Ollama — no API key, no
+  network. Patient-derived lesion data never leaves the machine, which
+  matters more here than anywhere else in this repo.
+* Which model it uses comes from ``models.yaml`` (role: ``rag``).
 
 CLI
 ---
@@ -48,10 +49,12 @@ from typing import Any, Optional
 # Default KB root = the directory this file lives in.
 DEFAULT_KB_ROOT = Path(__file__).resolve().parent
 
-# Default model for the (optional) LLM synthesis step. Override with the
-# APHASIA_RAG_MODEL env var or the `model=` argument. This is just a string
-# passed to the provider SDK — change it to whatever your account exposes.
-DEFAULT_MODEL = os.environ.get("APHASIA_RAG_MODEL", "claude-sonnet-4-6")
+# Model for the (optional) LLM synthesis step comes from models.yaml
+# (role: `rag`). Override per-run with --model or APHASIA_RAG_MODEL.
+sys.path.insert(0, str(DEFAULT_KB_ROOT))
+from model_config import resolve as resolve_model  # noqa: E402
+
+DEFAULT_MODEL = resolve_model("rag")["model"]
 
 # Relative confidence weight by `direction` value (unknown -> 0.5). Used only
 # to RANK findings for display; it never changes their wording.
@@ -426,82 +429,50 @@ def build_llm_prompt(retrieval: dict) -> tuple[str, str]:
 
 def llm_summary(retrieval: dict, *,
                 model: str | None = None,
-                backend: str = "auto",
-                max_tokens: int = 900) -> dict:
-    """Generate a grounded narrative. Returns
-    ``{"text": str|None, "backend": str|None, "model": str|None, "error": str|None}``.
+                host: str | None = None,
+                max_tokens: int | None = None) -> dict:
+    """Generate a grounded narrative with a LOCAL model via Ollama.
 
-    Never raises for missing keys/SDKs — returns an ``error`` string instead,
-    so the deterministic report path is never blocked.
+    Returns ``{"text": str|None, "backend": str|None, "model": str|None,
+    "error": str|None}``.
+
+    Never raises — returns an ``error`` string instead, so a missing or
+    unreachable model never blocks the deterministic report path, which
+    is the actual product here. The narrative is a convenience layer on
+    top of evidence that has already been retrieved and cited.
     """
-    model = model or DEFAULT_MODEL
+    cfg = resolve_model("rag", model)
+    model = cfg["model"]
+    max_tokens = max_tokens or cfg["max_tokens"]
     system, user = build_llm_prompt(retrieval)
 
-    def _try_anthropic() -> dict:
-        key = os.environ.get("ANTHROPIC_API_KEY")
-        if not key:
-            return {"text": None, "backend": None, "model": None,
-                    "error": "ANTHROPIC_API_KEY not set"}
-        try:
-            import anthropic
-        except ImportError:
-            return {"text": None, "backend": None, "model": None,
-                    "error": "anthropic SDK not installed (pip install anthropic)"}
-        try:
-            client = anthropic.Anthropic(api_key=key)
-            msg = client.messages.create(
-                model=model, max_tokens=max_tokens, system=system,
-                messages=[{"role": "user", "content": user}],
-            )
-            text = "".join(
-                blk.text for blk in msg.content if getattr(blk, "type", "") == "text"
-            )
-            return {"text": text.strip(), "backend": "anthropic",
-                    "model": model, "error": None}
-        except Exception as ex:  # noqa: BLE001
-            return {"text": None, "backend": "anthropic", "model": model,
-                    "error": f"{type(ex).__name__}: {ex}"}
+    try:
+        from ollama_client import DEFAULT_HOST, OllamaError, chat
+    except ImportError as ex:
+        return {"text": None, "backend": None, "model": model,
+                "error": f"ollama_client unavailable: {ex}"}
 
-    def _try_openai() -> dict:
-        key = os.environ.get("OPENAI_API_KEY")
-        if not key:
-            return {"text": None, "backend": None, "model": None,
-                    "error": "OPENAI_API_KEY not set"}
-        try:
-            from openai import OpenAI
-        except ImportError:
-            return {"text": None, "backend": None, "model": None,
-                    "error": "openai SDK not installed (pip install openai)"}
-        try:
-            client = OpenAI(api_key=key)
-            oai_model = model if not model.startswith("claude") else "gpt-4o"
-            resp = client.chat.completions.create(
-                model=oai_model, max_tokens=max_tokens,
-                messages=[{"role": "system", "content": system},
-                          {"role": "user", "content": user}],
-            )
-            return {"text": resp.choices[0].message.content.strip(),
-                    "backend": "openai", "model": oai_model, "error": None}
-        except Exception as ex:  # noqa: BLE001
-            return {"text": None, "backend": "openai", "model": model,
-                    "error": f"{type(ex).__name__}: {ex}"}
+    try:
+        res = chat(user, model=model, system=system, max_tokens=max_tokens,
+                   host=host or DEFAULT_HOST, temperature=0.2,
+                   num_ctx=cfg["num_ctx"], verbose=False)
+    except OllamaError as ex:
+        return {"text": None, "backend": "ollama", "model": model,
+                "error": str(ex)}
+    except Exception as ex:  # noqa: BLE001
+        return {"text": None, "backend": "ollama", "model": model,
+                "error": f"{type(ex).__name__}: {ex}"}
 
-    if backend == "anthropic":
-        return _try_anthropic()
-    if backend == "openai":
-        return _try_openai()
-    if backend == "auto":
-        a = _try_anthropic()
-        if a["text"] is not None:
-            return a
-        o = _try_openai()
-        if o["text"] is not None:
-            return o
-        # Both failed — surface both reasons so the user knows what to fix.
-        return {"text": None, "backend": None, "model": None,
-                "error": f"anthropic: {a['error']} | openai: {o['error']}"}
-    return {"text": None, "backend": None, "model": None,
-            "error": f"unknown backend '{backend}'"}
+    text = (res.get("text") or "").strip()
+    if not text:
+        return {"text": None, "backend": "ollama", "model": model,
+                "error": "empty response from local model"}
+    # A truncated narrative can read as complete while silently dropping
+    # findings — flag it rather than presenting it as the whole picture.
+    if res.get("truncated_output"):
+        text += ("\n\n_(Narrative truncated at the token limit — the "
+                 "deterministic report above is complete.)_")
+    return {"text": text, "backend": "ollama", "model": model, "error": None}
 
 
 # --------------------------------------------------------------------------
@@ -512,7 +483,7 @@ def decode_and_explain(lesion_path: str | Path,
                        kb_root: str | Path | None = None, *,
                        use_llm: bool = False,
                        model: str | None = None,
-                       backend: str = "auto",
+                       host: str | None = None,
                        min_overlap_pct: float = 1.0,
                        min_term_r: float = 0.0,
                        max_findings: int = 40,
@@ -538,10 +509,11 @@ def decode_and_explain(lesion_path: str | Path,
     )
     llm = None
     if use_llm:
-        llm = llm_summary(retrieval, model=model, backend=backend)
+        llm = llm_summary(retrieval, model=model, host=host)
         if llm.get("text"):
             report_md += ("\n\n---\n\n## LLM narrative "
-                          f"<sub>({llm['backend']} · {llm['model']})</sub>\n\n"
+                          f"<sub>({llm['backend']} · {llm['model']} · "
+                          f"local)</sub>\n\n"
                           f"{llm['text']}\n")
         else:
             report_md += ("\n\n---\n\n## LLM narrative\n\n"
@@ -561,8 +533,11 @@ def _cli(argv=None):
     ap.add_argument("lesion", help="Binary lesion mask in MNI space (.nii.gz)")
     ap.add_argument("--kb-root", default=None, help="KB directory (default: this file's dir)")
     ap.add_argument("--llm", action="store_true", help="Also generate the LLM narrative")
-    ap.add_argument("--model", default=None, help=f"LLM model (default: {DEFAULT_MODEL})")
-    ap.add_argument("--backend", default="auto", choices=["auto", "anthropic", "openai"])
+    ap.add_argument("--model", default=None,
+                    help=f"Ollama model tag. Default from models.yaml "
+                         f"(currently {DEFAULT_MODEL}).")
+    ap.add_argument("--ollama-host", default=None,
+                    help="Ollama base URL (default: http://localhost:11434).")
     ap.add_argument("--min-overlap-pct", type=float, default=1.0)
     ap.add_argument("--min-term-r", type=float, default=0.0)
     ap.add_argument("-o", "--output", default=None, help="Write the report markdown here")
@@ -570,7 +545,7 @@ def _cli(argv=None):
 
     res = decode_and_explain(
         args.lesion, args.kb_root,
-        use_llm=args.llm, model=args.model, backend=args.backend,
+        use_llm=args.llm, model=args.model, host=args.ollama_host,
         min_overlap_pct=args.min_overlap_pct, min_term_r=args.min_term_r,
     )
     if args.output:
