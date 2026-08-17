@@ -2,6 +2,11 @@
 
 CALMaR is an open-source Jupyter notebook pipeline for automated stroke lesion segmentation, quality control, and clinician-facing interpretation of structural brain MRI data. It is designed to run inside [Neurodesktop](https://www.neurodesk.org/), a browser-accessible neuroimaging environment that provides all required tools pre-installed.
 
+⚠️ **Copyright — the extraction CLI sends paper text to the Anthropic API.**
+On this (`main`) branch, `aphasia-kb/extract.py`, `auto_review.py --llm-review`, and `aphasia_kb_rag.py --llm` transmit **full paper text to a third-party API**. Do not run them on copyrighted PDFs you can't share off-machine.
+
+A fully local version — paper text never leaves your computer, via Ollama — lives on the **`ollama-local-models`** branch. Use that branch for copyright-sensitive material until it's merged.
+
 Given a BIDS-formatted dataset, CALMaR will:
 
 1. **Segment lesions** using HD-BET + LINDA, SynthStroke, and optionally BCBToolkit
