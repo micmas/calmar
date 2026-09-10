@@ -5,6 +5,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Interactive-widget performance & UX overhaul
+
+- **New `calmar_widgets.py` helper module** shared by all viewer cells:
+  - Persistent NiiVue viewer registry — widget callbacks now swap volumes on
+    one existing viewer instead of creating a new WebGL canvas per change.
+    Fixes viewers going blank mid-session (browsers cap live WebGL contexts
+    at ~16 and silently destroy the oldest) and the gradual front-end
+    slowdown from leaked widget models.
+  - Volumes load by **URL from the Jupyter file server** (browser-fetched and
+    browser-cached) instead of shipping file bytes through the kernel
+    websocket on every render. The per-user URL prefix is auto-detected
+    (`JUPYTERHUB_SERVICE_PREFIX`), configurable via
+    `CONFIG["NIIVUE_URL_BASE"]`; an mtime cache-buster keeps regenerated
+    masks fresh. Files outside the server root fall back to bytes.
+  - mtime-cached voxel counts for the diagnostic tables.
+- **QC dashboard** rebuilt as a build-once UI (was `widgets.interact`, which
+  recreated the whole panel — viewer included — on every slider/stage/toggle
+  change). Added a **Save & next** button for faster rating runs.
+- **BCB vs DeepDisco comparison**: agreement metrics and the resample to the
+  BCB grid are cached by file mtimes; glass brains render once to cached
+  PNGs and default to off (with a progress hint on first render).
+- **Atlas-overlap plots**: only the visible tab redraws on a control change
+  (the cross-subject heatmap was re-rendered even while hidden); subject
+  selection is preserved when switching atlas/mask, here and in the
+  per-subject report.
+- Group-map MNI template cached under `atlases/` instead of a tempfile.
+
+### Fixed
+
+- `aphasia_kb.interpret_predictors`: instrument aggregation is now NaN- and
+  whitespace-safe.
+
 ## [1.0.0] – 2025-06-06 — Initial public release
 
 ### Pipeline
