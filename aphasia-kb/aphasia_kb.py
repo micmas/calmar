@@ -992,7 +992,7 @@ class KnowledgeBase:
                     contributing_predictors=("source_id",
                                              lambda s: sorted(set(s))),
                     instruments=("instrument",
-                                 lambda s: sorted({x for x in s if x}))))
+                                 lambda s: sorted({str(x).strip() for x in s.dropna() if str(x).strip()}))))
         agg["direction"] = agg["score"].apply(
             lambda s: "likely" if s > 0 else ("unlikely" if s < 0 else "ambiguous")
         )
