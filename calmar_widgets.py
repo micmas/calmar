@@ -133,12 +133,11 @@ _VIEWERS = {}
 
 
 def viewer(key, height=300, colorbar=False, colorbar_height=None):
-    """Return the persistent NiiVue instance for ``key``.
+    """Return the existing NiiVue instance for ``key`` (get-or-create).
 
-    Created on first use; later calls return the same widget so
-    re-running a cell (or a widget callback) reuses the existing WebGL
-    canvas instead of leaking a new one. Display options are applied
-    only on creation.
+    Use this inside widget CALLBACKS, where the viewer created at the
+    top of the cell must be updated in place. Display options are
+    applied only on creation.
     """
     nv = _VIEWERS.get(key)
     if nv is None:
@@ -151,13 +150,34 @@ def viewer(key, height=300, colorbar=False, colorbar_height=None):
     return nv
 
 
+def fresh_viewer(key, **viewer_kwargs):
+    """Close any previous viewer under ``key`` and create a new one.
+
+    Use this at the TOP of a cell (re-)run. A fresh widget renders
+    reliably even after the notebook document was reloaded from disk
+    (a re-displayed pre-reload model can silently fail to render), and
+    closing the predecessor removes its views so WebGL contexts do not
+    accumulate across re-runs. Callbacks within the cell should keep
+    using the returned instance (or ``viewer(key)``) so interactions
+    update it in place instead of churning widgets.
+    """
+    old = _VIEWERS.pop(key, None)
+    if old is not None:
+        try:
+            old.close()
+        except Exception:
+            pass
+    return viewer(key, **viewer_kwargs)
+
+
 def show(key, volumes, **viewer_kwargs):
-    """One-liner: persistent viewer + URL-mode volumes, ready to display.
+    """One-liner for run-once cells: fresh viewer + volumes, ready to
+    display.
 
     ``volumes`` is the usual list of {"path": ..., "colormap": ...}
     dicts. Returns the NiiVue widget (pass it to ``display``).
     """
-    nv = viewer(key, **viewer_kwargs)
+    nv = fresh_viewer(key, **viewer_kwargs)
     nv.load_volumes(vols(volumes))
     return nv
 

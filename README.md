@@ -38,6 +38,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 | `lesion-interpretation-pipeline.ipynb` | Main pipeline notebook — run this |
 | `lesion-segmentation-benchmark.ipynb` | Benchmarks LINDA / SynthStroke across chronic and acute datasets |
 | `linda_qc.py` | Helper module (imported by both notebooks) for QC, mask edits, coregistration, and sidecars |
+| `calmar_masks.py` | Discovers existing LINDA, SynthStroke, and manual masks per subject/session, keeping native T1w and MNI outputs separate |
 | `synthetic_stroke.py` | Synthetic DWI/ADC/T1w phantom generator with ground-truth lesions (used by the benchmark) |
 | `linda_predict_with_mask.sh` | Host-side wrapper that runs LINDA's mask-bypass via the container (called by `linda_qc.py`) |
 | `linda_predict_with_mask.R` | R stub baked into the LINDA container — calls `linda_predict(..., brain_mask=)` |
@@ -74,6 +75,61 @@ cd ~/neurodesktop-storage/calmar
 ```
 
 The notebook uses `Path.cwd()` for all paths — no path editing required as long as you open it from the repo root.
+
+Setup checks dependencies without installing into the running kernel. If a
+package is missing, run the command it prints in a JupyterLab terminal, then
+use **Kernel → Restart Kernel** and rerun Setup through Configuration. Continue
+only after **CALMaR setup imports completed.** appears. If an earlier run
+installed packages and subsequent cells all fail with missing variables, restart
+the kernel first: rerunning downstream cells cannot recover failed imports.
+The import cell detects a stale in-memory `packaging` version; downstream
+decoding checks that setup completed before proceeding.
+
+For already discovered T1w subjects, QC discovers existing masks and offers
+only available stages: a SynthStroke or manual native mask does not require a
+LINDA lesion output. Existing QC sidecar locations are preserved. The report
+selector lists only locally available MNI masks for the selected subject and
+session; native-only masks remain available for QC. Configured manual masks
+must declare their space, and masks drawn on another scan need registration
+before they can be used in T1w QC. Finding a file does not validate its alignment.
+LINDA-specific edit and rerun actions remain specific to LINDA. DWI-only subject
+discovery and OpenADS integration are separate, planned extensions.
+
+Lightweight regression checks (no segmentation or data downloads):
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The disconnectome comparison and viewer each have independent subject, mask,
+and map selectors. They include DeepDisco outputs even when the corresponding
+BCBToolkit map is missing; agreement metrics appear only when both maps exist.
+Use **Refresh files** after upstream computation finishes. Manual-mask outputs
+retain the legacy `expert` filename token.
+
+Native manual and SynthStroke masks now use LINDA's complete native→Penn→ch2
+transform chain, including the inverse subject affine and bundled Penn→ch2
+transforms. The final reference is `Subject_in_MNI.nii.gz`; the intermediate
+`Reg3_registered_to_template.nii.gz` is not MNI. Cell 30 prepares the manual MNI
+mask before the disconnectome test cells and provides independent overlay
+toggles with fixed binary display ranges, including for very sparse masks.
+Alignment verification and repair records live in `alignment-repair/astra.yaml`.
+
+The next verification run is configured for **sub-M2018 / ses-341** and
+**sub-M2034 / ses-1568** (two fresh participants),
+with BCBToolkit and DeepDisco enabled for LINDA, SynthStroke, and manual masks,
+and all four DeepDisco models. Discovery uses the normal DataLad fetch for any
+missing content. These participants have not been processed by the repair jobs;
+the full verification run has not been launched.
+
+Cell 30's checkboxes change overlay opacity without reloading volumes. Cell 67
+lets you select a mask source, then explicitly build its group frequency map.
+Cell 51 stops execution after displaying the QC dashboard; review and save
+ratings, run any needed repairs, and recheck before continuing manually.
+Cells 71 and 74 have independent mask/atlas/subject selectors and only offer
+combinations with overlap tables. The report viewer uses the current cohort
+and explains missing brain, atlas, or lesion images. Cell 84 is optional MNI
+registration QC; cell 30 compares masks in native T1 space.
 
 ---
 
