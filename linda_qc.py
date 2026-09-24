@@ -191,12 +191,13 @@ QC_SCHEMA_VERSION = 2          # bumped: per-stage ratings + HD-BET hooks
 # lesion-stage observation anyway. So the workflow is two stages:
 # skull strip + lesion. Re-add "registration" here if you want it back.
 # ============================================================
-STAGES = ("skull_strip", "lesion", "synthstroke_lesion", "expert_mni_warp")
+STAGES = ("skull_strip", "lesion", "synthstroke_lesion", "manual_lesion", "expert_mni_warp")
 
 STAGE_LABELS = {
     "skull_strip":        "Skull strip / brain extraction",
     "lesion":             "LINDA lesion mask",
     "synthstroke_lesion": "SynthStroke lesion mask",
+    "manual_lesion":     "Manual lesion mask (native T1w)",
     "expert_mni_warp":    "Manual mask → MNI warp",
 }
 
@@ -232,6 +233,7 @@ STAGE_RATING_DEFINITIONS = {
     },
     "lesion":             RATING_DEFINITIONS,
     "synthstroke_lesion": RATING_DEFINITIONS,
+    "manual_lesion":     RATING_DEFINITIONS,
     "expert_mni_warp":    MANUAL_WARP_RATING_DEFINITIONS,
 }
 
@@ -336,6 +338,7 @@ STAGE_VOCAB = {
     "skull_strip":        (SKULL_STRIP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["skull_strip"]),
     "lesion":             (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["lesion"]),
     "synthstroke_lesion": (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["synthstroke_lesion"]),
+    "manual_lesion":     (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["lesion"]),
     "expert_mni_warp":    (MANUAL_WARP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["expert_mni_warp"]),
 }
 
@@ -484,6 +487,7 @@ class QCRecord:
             "marked_for_rerun": self.marked_for_rerun,
             "edits":            self.edits,
         }
+        self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps(out, indent=2) + "\n")
         return self.path
 
@@ -971,6 +975,59 @@ def find_best_hdbet_brain(hdbet_dir, prefer_mode: str | None = None) -> Path | N
     return None
 
 
+def mask_prediction_to_brain(pred_path, brain_mask_path,
+                             dilate_iters: int = 2) -> dict | None:
+    """Zero out lesion-prediction voxels outside the (dilated) brain mask.
+
+    SynthStroke segments the whole-head T1, so it occasionally labels
+    skull/scalp/neck voxels as lesion — visible as blobs well outside
+    the brain. Intersecting with the HD-BET brain mask removes them;
+    the mask is dilated a little first so genuine lesion voxels at the
+    cortical surface survive small mask imperfections.
+
+    Overwrites ``pred_path`` in place, after backing the untouched
+    original up to ``<stem>_raw.nii.gz`` (first edit only). No-op when
+    the grids differ or nothing lies outside the mask.
+
+    Returns {"total": n, "removed": n, "backup": Path|None}, or None
+    when either file is missing/unreadable.
+    """
+    import shutil as _shutil
+    import numpy as np
+    import nibabel as nib
+    from scipy.ndimage import binary_dilation
+
+    pred_path = Path(pred_path)
+    brain_mask_path = Path(brain_mask_path)
+    if not (pred_path.exists() and brain_mask_path.exists()):
+        return None
+    try:
+        pred_img = nib.load(str(pred_path))
+        bm_img = nib.load(str(brain_mask_path))
+    except Exception:
+        return None
+    if pred_img.shape != bm_img.shape or not np.allclose(
+            pred_img.affine, bm_img.affine, atol=1e-3):
+        return None  # different grids — don't guess, leave untouched
+
+    pred = np.asanyarray(pred_img.dataobj) > 0
+    brain = binary_dilation(np.asanyarray(bm_img.dataobj) > 0,
+                            iterations=dilate_iters)
+    outside = pred & ~brain
+    n_out = int(outside.sum())
+    if n_out == 0:
+        return {"total": int(pred.sum()), "removed": 0, "backup": None}
+
+    backup = pred_path.parent / pred_path.name.replace(
+        ".nii.gz", "_raw.nii.gz")
+    if not backup.exists():
+        _shutil.copy2(str(pred_path), str(backup))
+    cleaned = (pred & brain).astype(np.uint8)
+    nib.save(nib.Nifti1Image(cleaned, pred_img.affine, pred_img.header),
+             str(pred_path))
+    return {"total": int(pred.sum()), "removed": n_out, "backup": backup}
+
+
 # Path to the R stub that calls LINDA with brain_mask= bypass.
 # Lives next to this module.
 _LINDA_R_STUB     = Path(__file__).parent / "linda_predict_with_mask.R"
@@ -983,6 +1040,19 @@ _LINDA_BASH_STUB  = Path(__file__).parent / "linda_predict_with_mask.sh"
 _WARP_BASH_STUB   = Path(__file__).parent / "warp_native_to_mni.sh"
 
 
+def mni_mask_matches_reference(linda_out_dir: Path, mask: Path) -> bool:
+    """Reject historical Penn-space files incorrectly named 'in_MNI'.
+
+    This is a grid/cache check, not an assessment of registration quality.
+    """
+    try:
+        ref = nib.load(str(Path(linda_out_dir) / "Subject_in_MNI.nii.gz"))
+        img = nib.load(str(mask))
+        return img.shape == ref.shape and np.allclose(img.affine, ref.affine)
+    except (OSError, ValueError, nib.filebasedimages.ImageFileError):
+        return False
+
+
 def warp_native_mask_to_mni(linda_out_dir: Path,
                             native_mask: Path,
                             out_path: Path,
@@ -992,17 +1062,15 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
                             tool_label: str = "antsApplyTransforms") -> int:
     """
     Warp ANY native-space mask (LINDA / SynthStroke / manual) into MNI
-    space using LINDA's OWN transforms — the subject→template *affine*
-    PLUS the *nonlinear warp* — via antsApplyTransforms. This is the
-    single, precise method shared by every "<mask>_in_MNI" producer in
-    the notebook.
+    space using LINDA's native→Penn→MNI (ch2) chain, including the
+    bundled Penn→ch2 warp and affine. LINDA stores the native/Penn affine
+    in the reverse direction: it must be inverted, before applying the
+    Penn→ch2 transforms. The retained R wrapper matches linda_predict's
+    transform order and inversion flags exactly.
 
-    Because every mask is sampled onto the same reference grid
-    (Reg3_registered_to_template.nii.gz, the grid LINDA itself used to
-    make Lesion_in_MNI), the LINDA, SynthStroke and manual masks
-    coregister by construction. Using the full affine+warp (rather than
-    affine-only with a centre-of-mass nudge) is what makes this accurate
-    on brains with large, asymmetric lesions.
+    The output reference is Subject_in_MNI.nii.gz. Reg3_registered_to_template
+    is the intermediate Penn template, NOT MNI; using it previously caused
+    misaligned manual and SynthStroke masks despite their "in_MNI" filenames.
 
     The input mask must be in the subject's native T1 space (the space
     LINDA's transforms map *from*).
@@ -1019,7 +1087,7 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
     """
     linda_out_dir = Path(linda_out_dir)
     src    = Path(native_mask)
-    ref    = linda_out_dir / "Reg3_registered_to_template.nii.gz"
+    ref    = linda_out_dir / "Subject_in_MNI.nii.gz"
     warp   = linda_out_dir / "Reg3_sub_to_template_warp.nii.gz"
     affine = linda_out_dir / "Reg3_sub_to_template_affine.mat"
     out    = Path(out_path)

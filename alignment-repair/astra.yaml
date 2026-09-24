@@ -1,0 +1,69 @@
+id: alignment_repair
+version: "0.0.14"
+name: Repair native-mask mapping to LINDA MNI space
+description: >
+  Verify the corrected native-to-Penn-to-ch2 transform against LINDA's own
+  native and MNI lesion pair, and inspect manual and SynthStroke overlays
+  before replacing outputs. This is a software correction, not a new method.
+  Scripts are submitted from the CALMaR project root. Python 3.13.15 performs
+  QC; LINDA 0.5.1 (R 3.6.1 in linda_0.5.1_20260508.simg) performs warping.
+inputs:
+  - id: dataset
+    type: data
+    source: data/ds004884
+    description: Existing local subject images, masks and LINDA transforms; no acquisition.
+outputs:
+  - id: mni_mask
+    type: data
+    format: nii.gz
+    description: Control mask from the final atomic publication wrapper, checked against LINDA's own output.
+    inputs: [dataset]
+    recipe:
+      command: bash src/analysis_16_verify_mni_wrapper.sh {inputs.dataset} {output}
+      container: r:3.6.1
+  - id: alignment_qc
+    type: report
+    format: directory
+    description: Corrected masks, before/after PNG overlays and numerical QC in reports/alignment-repair.
+    inputs: [dataset]
+    recipe:
+      command: bash src/analysis_13_inspect_manual_alignment.sh {inputs.dataset} {output}
+      container: python:3.13.15
+  - id: corrected_disconnectomes
+    type: report
+    format: directory
+    description: >
+      Publication log and QC for inspected MNI masks and regenerated manual/SynthStroke
+      DeepDisco maps for the two affected subjects. Originals are preserved in a
+      job-specific backup under reports. The new subject is configured but not run.
+      Inference uses the pinned Neurodesk deepdisco/20251008 module; Python 3.13.15
+      resamples the inputs, validates results and produces the report.
+    inputs: [dataset, alignment_qc]
+    recipe:
+      command: bash src/analysis_14_refresh_corrected_disconnectomes.sh {inputs.dataset} {inputs.alignment_qc} {output}
+      container: python:3.13.15
+findings:
+  full_chain_matches_linda:
+    label: Complete transform reproduces LINDA
+    claim: >
+      Including the Penn-to-ch2 transforms and inversion of the native/Penn
+      affine reproduces LINDA's own MNI lesion exactly for sub-M2026/ses-3098
+      and sub-M2029/ses-180 (Dice 1.0 for both). The final atomic publication
+      wrapper also reproduces sub-M2026 voxel-for-voxel.
+    created_at: "2026-09-24T04:07:02Z"
+    evidence:
+      - id: alignment_metrics_and_pngs
+        artifact: alignment_qc
+      - id: reproduced_control_mask
+        artifact: mni_mask
+  sparse_overlay_scaling:
+    label: Sparse SynthStroke mask needs a fixed display range
+    claim: >
+      The sub-M2026 native SynthStroke mask and boundary each contain six
+      nonzero voxels out of 10485760, with header cal_min and cal_max both zero.
+      Cell 30 now specifies the binary display range explicitly and offers
+      independent mask toggles; this changes visualization, not segmentation.
+    created_at: "2026-09-24T04:07:02Z"
+    evidence:
+      - id: alignment_metrics_and_pngs
+        artifact: alignment_qc

@@ -4,8 +4,8 @@
 #
 # Most of these come pre-installed in Neurodesk; this file is the
 # reproducibility contract for running outside Neurodesk.
-# SimpleITK is the main package NOT pre-installed — the notebook pip-installs
-# it automatically in the Setup cell.
+# Setup reports missing packages without installing into the running kernel.
+# Install them in a terminal, then restart the notebook kernel.
 
 # Core neuroimaging
 nibabel>=5.0
