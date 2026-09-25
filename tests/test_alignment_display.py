@@ -12,8 +12,8 @@ import nibabel as nib
 import numpy as np
 from ipyniivue import NiiVue
 
-from calmar_overlay import mask_comparison
-import linda_qc as q
+from calmar.overlay import mask_comparison
+from calmar import qc as q
 
 
 class Viewer(widgets.HTML):
@@ -45,7 +45,7 @@ class AlignmentDisplayTests(unittest.TestCase):
                       importlib=SimpleNamespace(reload=lambda obj: obj),
                       image=SimpleNamespace(resample_to_img=lambda a, b, **kw: a),
                       HTML=lambda text: text, display=lambda *args: None, cw=None)
-            with patch("shutil.which", return_value=None), patch("calmar_overlay.mask_comparison"):
+            with patch("shutil.which", return_value=None), patch("calmar.overlay.mask_comparison"):
                 exec("".join(cells[29]["source"]), ns)
             self.assertEqual(len(calls), 1)
             self.assertEqual(calls[0][2], folder / "ExpertMask_in_MNI.nii.gz")

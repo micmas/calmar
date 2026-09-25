@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# warp_native_to_mni.sh
+# analysis_15_warp_native_to_mni.sh
 #
 # Apply ANTs transforms to a native-space lesion mask, producing the
 # MNI-space version using LINDA 0.5.1 native→Penn→ch2 transforms.
 # Reference must be Subject_in_MNI.nii.gz, not the intermediate Penn image.
 #
 # Usage:
-#   warp_native_to_mni.sh \
+#   bash src/analysis_15_warp_native_to_mni.sh \
 #       --input    /path/to/Prediction3_native.nii.gz \
 #       --reference /path/to/template_in_MNI.nii.gz   \
 #       --warp     /path/to/Reg3_sub_to_template_warp.nii.gz \
@@ -46,7 +46,7 @@ mkdir -p "$(dirname "$OUT")"
 source /opt/neurodesktop/agent_bash_env.sh
 module load linda/0.5.1
 PROJECT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
-R_SCRIPT="${PROJECT_DIR}/src/warp_native_mask_to_ch2.R"
+R_SCRIPT="${CALMAR_SOURCE_DIR:-${PROJECT_DIR}/src}/r/warp_native_mask_to_ch2.R"
 LINDA_IMAGE="/cvmfs/neurodesk.ardc.edu.au/containers/linda_0.5.1_20260508/linda_0.5.1_20260508.simg"
 SING_CMD="${SINGULARITY_CMD:-singularity}"
 if ! command -v "$SING_CMD" >/dev/null 2>&1; then SING_CMD=apptainer; fi

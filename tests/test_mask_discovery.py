@@ -14,8 +14,8 @@ import ipywidgets as widgets
 from IPython.display import HTML
 import packaging
 
-import calmar_masks as cm
-import linda_qc as q
+from calmar import masks as cm
+from calmar import qc as q
 
 
 ROOT = Path(__file__).resolve().parents[1]

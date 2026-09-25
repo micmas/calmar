@@ -7,6 +7,12 @@ description: >
   before replacing outputs. This is a software correction, not a new method.
   Scripts are submitted from the CALMaR project root. Python 3.13.15 performs
   QC; LINDA 0.5.1 (R 3.6.1 in linda_0.5.1_20260508.simg) performs warping.
+  The 2026-09-24 repository reorganization moves Python/R implementation files
+  beneath src/python and src/r and shared helpers into calmar; recipe entry
+  points and numerical methods are unchanged. The original execution scripts
+  are retained in Git commit 65ea24ff0b4928dfaf133fcf42c2ca02eedc3e56 and local
+  provenance sidecars retain their original script digests. This path migration
+  does not represent another scientific run.
 inputs:
   - id: dataset
     type: data
