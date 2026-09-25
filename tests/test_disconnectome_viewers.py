@@ -11,8 +11,8 @@ from IPython.display import HTML
 import nibabel as nib
 import numpy as np
 
-import calmar_disconnectomes as cd
-import calmar_masks as cm
+from calmar import disconnectomes as cd
+from calmar import masks as cm
 
 
 ROOT = Path(__file__).resolve().parents[1]

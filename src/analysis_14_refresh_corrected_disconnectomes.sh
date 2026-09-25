@@ -18,6 +18,6 @@ trap 'rm -rf "$TMP"' EXIT
 export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS="$SLURM_CPUS_PER_TASK"
 export MPLBACKEND=Agg
-python src/refresh_corrected_disconnectomes.py "$DATASET" "$CORRECTED" "$TMP"
+python src/python/refresh_corrected_disconnectomes.py "$DATASET" "$CORRECTED" "$TMP"
 neurodesk-astra-provenance publish "$TMP" "$FINAL" \
     --output-id corrected_disconnectomes --tool python --script "$0"
