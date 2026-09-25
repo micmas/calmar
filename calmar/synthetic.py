@@ -1,5 +1,5 @@
 """
-synthetic_stroke.py — controlled stroke DWI + ADC + T1w phantom generator.
+calmar.synthetic — controlled stroke DWI + ADC + T1w phantom generator.
 
 Open datasets with native-space DWI **and** ADC plus lesion masks are scarce
 (ISLES 2022 is essentially the only auto-downloadable one; the gold-standard
@@ -36,7 +36,7 @@ Output layout (mirrors the ISLES BIDS layout discover()/OpenADS expect):
     <target>/<sub>/dwi/<sub>_adc.nii.gz
     <target>/derivatives/<sub>/<sub>_msk.nii.gz
 
-Run `python synthetic_stroke.py` for an offline self-test (no nilearn/network).
+Run `python -m calmar.synthetic` for an offline self-test (no nilearn/network).
 """
 from __future__ import annotations
 

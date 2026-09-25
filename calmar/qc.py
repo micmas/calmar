@@ -1,5 +1,5 @@
 """
-linda_qc.py — QC, manual-fix, and re-run helpers for the LINDA notebook.
+calmar.qc — QC, manual-fix, and re-run helpers for the LINDA notebook.
 
 Design principles
 -----------------
@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import shutil
 import subprocess
 from collections import Counter
@@ -1028,16 +1029,16 @@ def mask_prediction_to_brain(pred_path, brain_mask_path,
     return {"total": int(pred.sum()), "removed": n_out, "backup": backup}
 
 
-# Path to the R stub that calls LINDA with brain_mask= bypass.
-# Lives next to this module.
-_LINDA_R_STUB     = Path(__file__).parent / "linda_predict_with_mask.R"
+_SOURCE_ROOT = Path(__file__).resolve().parents[1] / "src"
+
+# Resolve repository resources from this module, not the caller's directory.
+_LINDA_R_STUB = _SOURCE_ROOT / "r" / "linda_predict_with_mask.R"
 # Bash wrapper that auto-routes to host Rscript or to Rscript inside
 # the LINDA singularity container. Used by default on Neurodesk where
 # R only exists inside the container.
-_LINDA_BASH_STUB  = Path(__file__).parent / "linda_predict_with_mask.sh"
-# Bash wrapper that runs antsApplyTransforms (either host or via
-# singularity exec into the LINDA container). Used by warp_native_lesion_to_mni.
-_WARP_BASH_STUB   = Path(__file__).parent / "warp_native_to_mni.sh"
+_LINDA_BASH_STUB = _SOURCE_ROOT / "analysis_17_linda_predict_with_mask.sh"
+# LINDA-pinned R/ANTs transform wrapper, used by warp_native_lesion_to_mni.
+_WARP_BASH_STUB = _SOURCE_ROOT / "analysis_15_warp_native_to_mni.sh"
 
 
 def mni_mask_matches_reference(linda_out_dir: Path, mask: Path) -> bool:
@@ -1115,7 +1116,7 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
     ]
     print(f"  ▶ (warp native→MNI) bash {_WARP_BASH_STUB.name} "
           f"{src.name} → {out.name} ...")
-    res = subprocess.run(cmd)
+    res = subprocess.run(cmd, env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
 
     if res.returncode == 0 and out.exists():
         # Log on the mask's QC sidecar so the audit trail is intact.
@@ -1355,8 +1356,8 @@ def run_linda_with_mask(
     stub = Path(r_stub) if r_stub else _LINDA_R_STUB
     if not stub.exists():
         raise FileNotFoundError(
-            f"LINDA R stub not found at {stub}. Expected it next to "
-            f"linda_qc.py — was the file checked in?"
+            f"LINDA R stub not found at {stub}. Expected it under src/r/ "
+            f"in the CALMaR checkout — was the file checked in?"
         )
 
     # Routing logic (in priority order):
@@ -1366,8 +1367,8 @@ def run_linda_with_mask(
     #      → call it like any other CLI. This is what Neurodesk ships
     #      in the LINDA container alongside `linda_predict.sh`. Cleanest
     #      path: the host wrapper does the singularity exec for us.
-    #   3. **Local bash wrapper**: the `linda_predict_with_mask.sh`
-    #      that ships in this repo, which auto-discovers the LINDA
+    #   3. **Local bash wrapper**: `src/analysis_17_linda_predict_with_mask.sh`,
+    #      which ships in this repo and auto-discovers the LINDA
     #      `.simg` from `linda_predict.sh` and dispatches via
     #      `singularity exec`. Fallback for older container versions
     #      that don't yet bundle the in-container script.
@@ -1414,8 +1415,8 @@ def run_linda_with_mask(
                 "Fixes:\n"
                 "  • Update the LINDA module so its container ships "
                 "linda_predict_with_mask.sh, OR\n"
-                "  • Pull the repo (the local wrapper ships next to "
-                "this module), OR\n"
+                "  • Pull the repo (the local wrapper ships under "
+                "src/), OR\n"
                 "  • Set CONFIG['HDBET_RSCRIPT_CMD'] to an absolute "
                 "Rscript path, OR\n"
                 "  • Drop back to legacy padding mode with "
@@ -1429,7 +1430,7 @@ def run_linda_with_mask(
     if not cache:
         cmd.append("--no-cache")
 
-    res = subprocess.run(cmd)
+    res = subprocess.run(cmd, env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
 
     if res.returncode == 0:
         mask = linda_out_dir / "Lesion_in_MNI.nii.gz"

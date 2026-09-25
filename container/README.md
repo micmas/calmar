@@ -8,7 +8,7 @@ they call `linda_predict.sh` today.
 
 - `linda_predict_with_mask.sh` — bash entrypoint, install on `$PATH` next
   to `linda_predict.sh` (typically `/usr/local/bin/`).
-- `../linda_predict_with_mask.R` — R stub that calls
+- `../src/r/linda_predict_with_mask.R` — R stub that calls
   `linda_predict(file=..., brain_mask=...)`. Install it at
   `/usr/local/share/LINDA/linda_predict_with_mask.R` (or anywhere — set
   the `LINDA_MASK_R_STUB` env var in the container if you choose
@@ -16,12 +16,13 @@ they call `linda_predict.sh` today.
 
 ## Container build snippet (Singularity / Apptainer recipe)
 
-Add a section like this to the existing LINDA recipe:
+Add a section like this to the existing LINDA recipe, with the CALMaR repository
+root as the build context:
 
 ```Singularity
 %files
-    linda_predict_with_mask.R  /usr/local/share/LINDA/linda_predict_with_mask.R
-    linda_predict_with_mask.sh /usr/local/bin/linda_predict_with_mask.sh
+    src/r/linda_predict_with_mask.R  /usr/local/share/LINDA/linda_predict_with_mask.R
+    container/linda_predict_with_mask.sh /usr/local/bin/linda_predict_with_mask.sh
 
 %post
     chmod +x /usr/local/bin/linda_predict_with_mask.sh
@@ -31,8 +32,8 @@ Add a section like this to the existing LINDA recipe:
 Or as a Docker / `RUN` block:
 
 ```Dockerfile
-COPY linda_predict_with_mask.R  /usr/local/share/LINDA/
-COPY linda_predict_with_mask.sh /usr/local/bin/
+COPY src/r/linda_predict_with_mask.R  /usr/local/share/LINDA/
+COPY container/linda_predict_with_mask.sh /usr/local/bin/
 RUN  chmod +x /usr/local/bin/linda_predict_with_mask.sh
 ```
 

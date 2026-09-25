@@ -2,7 +2,7 @@
 
 import ipywidgets as widgets
 
-from calmar_masks import MASK_LABELS
+from .masks import MASK_LABELS
 
 
 class OverlapSelection:

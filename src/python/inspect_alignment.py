@@ -8,8 +8,8 @@ import nibabel as nib
 import numpy as np
 from nibabel.processing import resample_from_to
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import linda_qc as q
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from calmar import qc as q
 
 root, output = map(Path, sys.argv[1:])
 records = {}

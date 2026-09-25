@@ -1,169 +1,100 @@
 # Setting up CALMaR on a new machine
 
-This is a step-by-step for getting the notebook + KB workflow running
-on a second Mac with Neurodesk installed (the typical scenario:
-syncing your work between two computers via a git remote).
-
-> **Note on the local folder name.** The GitHub repo is
-> `calmar`. Throughout this doc we use the same name
-> for the local folder under `~/neurodesktop-storage/`. If you have an
-> older folder called `LINDA-STUFF` from earlier work on the primary
-> machine, you can rename it once with
-> `mv ~/neurodesktop-storage/LINDA-STUFF ~/neurodesktop-storage/calmar`
-> (the code uses relative paths, so nothing else needs to change).
-
-## Pre-flight (once per machine)
-
-1. Install Neurodesktop on the new Mac following the official
-   instructions: https://www.neurodesk.org/docs/getting-started/neurodesktop/macos/
-   The Docker image bundles LINDA, HD-BET, FSL, FreeSurfer, ANTs, etc.
-2. Make sure git is installed (it ships with macOS Command Line Tools).
-
-## Cloning the repo
+Clone the repository into persistent Neurodesktop storage, then launch the
+notebooks from its root directory:
 
 ```bash
-cd ~/neurodesktop-storage          # the persistent storage Neurodesk mounts
-git clone <YOUR_REMOTE_URL> calmar
+cd ~/neurodesktop-storage
+git clone https://github.com/micmas/calmar.git
 cd calmar
 ```
 
-`<YOUR_REMOTE_URL>` is the GitHub / GitLab / Bitbucket URL you set up
-on the primary machine (see "Pushing from machine A" below).
+The source layout is described in [docs/REPOSITORY_LAYOUT.md](docs/REPOSITORY_LAYOUT.md).
+Python helpers live in the local `calmar/` package. No editable installation
+is required when running from the repository root.
 
-## Re-installing the dataset (datalad)
+## Dependencies and first run
 
-The raw dataset is *not* tracked in git. On each machine you reinstall
-it from OpenNeuro via datalad. From inside `calmar/`:
+Use Neurodesktop for the neuroimaging tools. The notebook loads explicit module
+versions; follow its setup sequence rather than inferring a tool version from
+an older notebook's outputs. Python dependencies are listed in
+`requirements.txt`. Setup checks them and prints terminal installation
+instructions if something is missing; restart the kernel after installing
+packages.
 
-```bash
-datalad install -d . https://github.com/OpenNeuroDatasets/ds004884.git
-cd ds004884 && git checkout 1.0.2 && cd ..
-```
+1. Open `lesion-interpretation-pipeline.ipynb` from this checkout.
+2. Complete Setup and confirm “CALMaR setup imports completed.”
+3. Review Configuration. It currently selects two fresh verification
+   participants; choose your intended cohort deliberately.
+4. Run dataset discovery/acquisition and inspect the selected subject/session
+   pairs. The default dataset is OpenNeuro ds004884, pinned to tag 1.0.2,
+   under `data/ds004884/`. Missing content is fetched through DataLad.
+5. Follow the single-subject test, then the batch workflow. The notebook
+   deliberately stops at the test→batch boundary.
+6. At the QC dashboard, execution stops so you can inspect and save ratings.
+   Run repair cells only as needed, recheck affected masks, and continue manually.
+7. Choose the subject and MNI lesion mask at the report-selection checkpoint
+   before generating interpretation outputs.
 
-Or just run the notebook's data-preparation cell — it does the same
-thing automatically (`CONFIG["DATASET_SOURCE"] = "openneuro"`).
+Follow the execution environment's `AGENTS.md` for module initialization,
+retained scripts, Slurm submission, validation, and provenance. Retained shell
+entry points are in `src/analysis_*.sh`, with implementation files under
+`src/python/` and `src/r/`. Submit from the repository root and create
+`logs/` first. Data acquisition and imaging computation are not lightweight
+setup/import checks.
 
-## First run
+## Updating an existing checkout
 
-Open the notebook in Neurodesktop (Jupyter) and run the cells **in
-order**:
+Preserve local edits before updating the branch. After pulling the repository
+layout change, restart the notebook kernel and rerun Setup: old root-level
+module names have moved to `calmar`, and live viewer state cannot safely be
+mixed across both layouts. Both notebooks already use the updated imports and
+script paths.
 
-1. **Load LINDA** (`module.load('linda/0.5.1')`).
-2. **Load brain extractor** — `module.load('hd-bet/1.0.0')`. Required
-   because the segmentation pipeline now uses HD-BET preprocessing by
-   default. If you skip this, the segmentation cell will refuse to run
-   with a clear message.
-3. **Imports**.
-4. **CONFIG** — review the values; they should already match what's
-   in the repo. Defaults: `USE_HDBET_PREPROCESSING = True`,
-   `HDBET_PADDING_MM = 8.0`, `HDBET_MODE = "fast"`.
-5. **Atlases** — fetch on first run (cached under `atlases/`).
-6. **Data preparation** — `datalad install` + symlink anatomicals.
-7. **Run LINDA on every discovered T1w** — this re-creates the
-   derivatives on the new machine. A few minutes per subject on CPU.
-8. **QC review** — your existing `*.qc.json` sidecars are in the
-   repo, so the QC widget will load with your prior ratings and edit
-   history. The startup banner will offer to clear them if you want
-   to start fresh on the new machine's freshly-derived outputs.
+`main` contains the imaging workflow. `ollama-local-models` adds local-model
+KB extraction/review and optional RAG narrative generation; that branch had its
+history rebased in September 2026. Preserve local work before synchronizing a
+checkout that still has the old history.
 
-## Aphasia knowledge base
+## Knowledge base
 
-Same idea: code + KB markdown files travel via git. Source paper PDFs
-in `aphasia-kb/papers/` are *not* tracked (potential copyright +
-size); keep them locally per machine, or use a separate cloud sync if
-you want them on both machines.
-
-To verify the KB loads cleanly:
-
-```bash
-cd aphasia-kb
-python aphasia_kb.py
-```
-
-Expected output: "Knowledge base @ … regions: N impairments: M
-therapies: K findings: X drafts: Y issues: 0".
-
-## Pushing from machine A (one-time, after `git init`)
-
-The repo lives in your personal GitHub account (`micmas`), not in any
-Neurodesk-affiliated org.
-
-1. On github.com (logged in as `micmas`), create a new **private** repo
-   (recommended; you can flip to public later). Suggested name:
-   `calmar`. **Do not** let GitHub add a
-   README, license, or .gitignore — we already have those locally.
-2. From the primary machine, set the remote and push:
-   ```bash
-   cd ~/neurodesktop-storage/calmar
-   git remote add origin git@github.com:micmas/calmar.git
-   # or, if you use HTTPS instead of SSH:
-   # git remote add origin https://github.com/micmas/calmar.git
-   git branch -M main
-   git push -u origin main
-   ```
-3. On machine B, clone with:
-   ```bash
-   cd ~/neurodesktop-storage
-   git clone git@github.com:micmas/calmar.git calmar
-   ```
-
-## Day-to-day sync
-
-On the machine you've been working on:
+KB data and tools remain together under `aphasia-kb/`. From the repository root:
 
 ```bash
-cd ~/neurodesktop-storage/calmar
-git status                          # see what changed
-git add -A                          # stage everything tracked
-git commit -m "QC ratings for sub-M2040..M2049"
-git push
+python aphasia-kb/aphasia_kb.py
 ```
 
-On the other machine:
+See [aphasia-kb/README.md](aphasia-kb/README.md) and
+[aphasia-kb/HOWTO.md](aphasia-kb/HOWTO.md) for extraction and review.
+Source PDFs under `aphasia-kb/papers/` are local files, not distributed via Git.
+
+## What travels through Git
+
+| Content | In Git? |
+|---|---|
+| Notebooks, `calmar/`, retained source scripts, tests, documentation | Yes, when committed |
+| KB code, curated entries, and tracked review records | Yes |
+| Datasets and derivatives under `data/` | No |
+| QC sidecars stored alongside those derivatives | No |
+| Reports, QC summaries, cached atlases, and `qc_edits/` | No |
+| Source paper PDFs and generated Neurosynth caches | No |
+| Local handoffs, recovery snapshots, and cleanup archives under `notes/` | No |
+
+Copy scientific results, ratings, manual edits, and provenance separately when
+moving machines. Re-running segmentation does not restore a manually edited mask
+or its QC history. Preserve the mask and its sidecar together; edit logs do not
+automatically replay edits.
+
+Review `git status` and stage intended source paths explicitly when sharing
+changes. An untracked analysis script or specification can still be important
+unfinished work; do not treat it as disposable.
+
+## Lightweight verification
 
 ```bash
-cd ~/neurodesktop-storage/calmar
-git pull
+python -m unittest discover -s tests -v
 ```
 
-## What syncs vs what doesn't
-
-| Item                                          | Syncs via git? | How to recreate                              |
-|-----------------------------------------------|----------------|----------------------------------------------|
-| `lesion-interpretation-pipeline.ipynb`        | ✅             | n/a                                          |
-| `linda_qc.py`                                 | ✅             | n/a                                          |
-| `aphasia-kb/` (code, KB, drafts, examples)    | ✅             | n/a                                          |
-| `*.qc.json` sidecars                          | ✅             | n/a                                          |
-| `qc_summary.csv`                              | ✅             | regenerated by QC summary cell               |
-| `README.md`, `QC_RUBRIC.md`, `SETUP.md`       | ✅             | n/a                                          |
-| `requirements.txt`, `.gitignore`              | ✅             | n/a                                          |
-| `ds004884/` (raw OpenNeuro)                   | ❌             | `datalad install …` (~1 GB)                  |
-| `ds004884_anat/sub-*/anat/*_T1w.nii.gz`       | ❌             | re-symlinked by data-prep cell               |
-| `ds004884_anat/derivatives/.../linda/*.nii.gz`| ❌             | re-run segmentation cell                     |
-| `ds004884_anat/derivatives/.../_linda_original/`| ❌           | regenerated when re-running through HD-BET   |
-| `_hdbet_work/`                                | ❌             | regenerated each run (intermediate)          |
-| `atlases/`                                    | ❌             | `nilearn` re-downloads (~500 MB)             |
-| `aphasia-kb/papers/*.pdf`                     | ❌             | manual copy or separate cloud sync           |
-
-## Manual edits to lesion masks
-
-If you've used the deterministic-ops or paint tools to manually edit a
-mask on machine A, those edits are stored in two places:
-
-  - The *edited mask file* (`Lesion_in_MNI.nii.gz`) on disk — **NOT in
-    git** because it's a binary derivative.
-  - The *edit log* in the QC sidecar's `edits[]` list — **IS in git**.
-
-When machine B re-runs the segmentation, it'll produce a fresh
-unedited mask. The sidecar's edit log tells you which operations were
-applied previously, but doesn't auto-replay them. If you want the
-edits to also travel, you have two options:
-
-  - **Replay manually** on machine B using the same Tier-1 deterministic
-    ops with the same parameters (the log records them).
-  - **Sync the edited masks separately** — e.g. add specific
-    `Lesion_in_MNI.nii.gz` paths to a non-tracked sync folder, or use
-    `git lfs` for those files.
-
-For most cases, replay-from-log on machine B is fine and gives you
-audit clarity.
+These tests exercise discovery, imports, widget callbacks, and script dispatch
+without launching imaging jobs. They do not replace the two-participant
+end-to-end run or browser QC.

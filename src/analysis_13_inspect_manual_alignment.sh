@@ -17,6 +17,6 @@ TMP="$(mktemp -d "${FINAL}.attempt.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 export MPLBACKEND=Agg
 export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS="$SLURM_CPUS_PER_TASK"
-python src/inspect_alignment.py "$INPUT" "$TMP"
+python src/python/inspect_alignment.py "$INPUT" "$TMP"
 neurodesk-astra-provenance publish "$TMP" "$FINAL" \
     --output-id alignment_qc --tool python --script "$0"
