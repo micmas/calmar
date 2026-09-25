@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from calmar_masks import MASK_LABELS, present
+from .masks import MASK_LABELS, present
 
 
 MODEL_NAMES = ("whole_brain", "association", "projection", "commissural")

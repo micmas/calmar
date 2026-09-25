@@ -1,7 +1,7 @@
 # LINDA QC rubric
 
 Reference for rating LINDA pipeline outputs at each stage. The same
-definitions are loaded by `linda_qc.py` so the notebook UI and this
+definitions are loaded by `calmar/qc.py` so the notebook UI and this
 document stay in sync — if you change one, regenerate the other.
 
 > **Where the ratings go.** Each rating is saved as a sidecar JSON next
@@ -37,7 +37,7 @@ through two stages:
 > stroke was clinically left-sided), so it gets covered by the lesion
 > stage's `wrong_hemisphere` and `false_positive_cluster` tags.
 > The registration vocabulary is preserved as comments in
-> `linda_qc.py` if you want to re-enable it later.
+> `calmar/qc.py` if you want to re-enable it later.
 
 **Workflow tip:** judge skull strip first. If it's a 3, fix it before
 rating the lesion. The chip row at the top of the widget shows your

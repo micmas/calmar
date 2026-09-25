@@ -18,7 +18,7 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 
-from calmar_atlas_ui import OverlapSelection
+from calmar.atlas_ui import OverlapSelection
 
 
 CELLS = json.loads((Path(__file__).resolve().parents[1] /

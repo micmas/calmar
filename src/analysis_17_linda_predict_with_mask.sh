@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# linda_predict_with_mask.sh
+# analysis_17_linda_predict_with_mask.sh
 #
 # Bash wrapper that runs linda_predict_with_mask.R inside the same
 # environment that LINDA itself runs in. On Neurodesk, R + LINDA are
@@ -29,8 +29,14 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-R_STUB="$SCRIPT_DIR/linda_predict_with_mask.R"
+PROJECT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
+R_STUB="${CALMAR_SOURCE_DIR:-${PROJECT_DIR}/src}/r/linda_predict_with_mask.R"
+
+# Pin Neurodesk execution while retaining the native-R fallback elsewhere.
+if [[ -f /opt/neurodesktop/agent_bash_env.sh ]]; then
+    source /opt/neurodesktop/agent_bash_env.sh
+    module load linda/0.5.1
+fi
 
 if [[ ! -f "$R_STUB" ]]; then
     echo "ERROR: R stub not found at $R_STUB" >&2

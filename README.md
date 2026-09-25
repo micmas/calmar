@@ -27,7 +27,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 
 - [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools the notebooks load via `module.load`: LINDA, HD-BET, SynthStroke, BCBToolkit, DeepDisco, ANTs, FSL, FreeSurfer (and OpenADS, used only by the benchmark), plus all Python/R dependencies
 - A BIDS-formatted dataset (the notebook fetches `ds004884` from OpenNeuro via datalad by default)
-- Python packages listed in `requirements.txt` (pre-installed in Neurodesktop; run the pip cell in the notebook if anything is missing)
+- Python packages listed in `requirements.txt` (usually pre-installed in Neurodesktop; Setup prints terminal installation instructions for anything missing)
 
 ---
 
@@ -37,12 +37,12 @@ Given a BIDS-formatted dataset, CALMaR will:
 |------|---------|
 | `lesion-interpretation-pipeline.ipynb` | Main pipeline notebook — run this |
 | `lesion-segmentation-benchmark.ipynb` | Benchmarks LINDA / SynthStroke across chronic and acute datasets |
-| `linda_qc.py` | Helper module (imported by both notebooks) for QC, mask edits, coregistration, and sidecars |
-| `calmar_masks.py` | Discovers existing LINDA, SynthStroke, and manual masks per subject/session, keeping native T1w and MNI outputs separate |
-| `synthetic_stroke.py` | Synthetic DWI/ADC/T1w phantom generator with ground-truth lesions (used by the benchmark) |
-| `linda_predict_with_mask.sh` | Host-side wrapper that runs LINDA's mask-bypass via the container (called by `linda_qc.py`) |
-| `linda_predict_with_mask.R` | R stub baked into the LINDA container — calls `linda_predict(..., brain_mask=)` |
-| `warp_native_to_mni.sh` | Warps a native-space mask into MNI via the container (called by `linda_qc.py`) |
+| `calmar/` | Shared Python package: QC, mask/disconnectome discovery, viewer controls, and synthetic phantoms |
+| `src/analysis_*.sh` | Retained analysis entry points; submit from the repository root |
+| `src/python/`, `src/r/` | Python/R implementations called by the analysis scripts |
+| `tests/` | Lightweight regression tests; no imaging jobs or downloads |
+| `alignment-repair/astra.yaml` | Scientific record of the native-to-MNI correction |
+| `docs/REPOSITORY_LAYOUT.md` | Module map, script entry points, and migration notes |
 | `QC_RUBRIC.md` | Stage-aware QC rating reference (acute / subacute / chronic) |
 | `aphasia-kb/` | Aphasia literature knowledge base (see `aphasia-kb/README.md`) |
 | `container/` | In-container LINDA wrapper source (baked into the Neurodesk image) |
@@ -75,6 +75,11 @@ cd ~/neurodesktop-storage/calmar
 ```
 
 The notebook uses `Path.cwd()` for all paths — no path editing required as long as you open it from the repo root.
+
+Both notebooks import the local `calmar` package directly; no editable install
+is required when launched from this directory. After updating from the older
+root-script layout, restart the kernel and rerun Setup so old module instances
+and viewer registries are not mixed with the reorganized package.
 
 Setup checks dependencies without installing into the running kernel. If a
 package is missing, run the command it prints in a JupyterLab terminal, then
