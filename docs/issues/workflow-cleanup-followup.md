@@ -1,12 +1,28 @@
-Follow-up scope from notebook use (cell numbers refer to the current notebook):
+# Interpretation workflow follow-up
 
-- Map the essential workflow from configuration through processing, QC, and reports. Move exploratory/debugging cells into a clearly marked optional section or a separate diagnostic notebook, preserving useful checks.
-- Consolidate repeated selectors and visualizations without deleting distinct scientific checks. Cell 30 compares masks in native T1 space and reports overlap metrics; cell 84 checks all masks in MNI space. Make these explicit QC modes/stages, with prerequisites visible.
-- Keep visualization cells read-only. Warping, cache repair, and inference should have explicit processing steps in retained scripts, rather than being hidden prerequisites inside viewer cells.
-- Use consistent subject/session, mask, and atlas selection throughout. Offer only valid combinations and explain missing outputs. Each panel must retain its own callbacks when later cells run.
-- Preserve existing outputs, QC ratings, scientific decisions, and provenance during incremental cleanup. Avoid a broad notebook rewrite until the current workflow passes fresh-participant verification.
-- Cross-reference #5 for stale atlas tables, subject/session cache keys, and changed-mask invalidation; a functioning selector does not establish that a cached table is current.
+Implemented in the current workflow:
 
-Fresh-cohort acceptance run: two or three previously unprocessed participants with T1, T2, and manual masks. The notebook is now configured for sub-M2018/ses-341 and sub-M2034/ses-1568; the run is pending. Verify LINDA, SynthStroke, and manual masks in both spaces; BCBToolkit for each mask; all four DeepDisco models for each mask; and matching mask/atlas selections in tables and viewers. Check cell 30's toggles after later cells execute, switch mask source in cell 67, exercise both selectors in cell 71 and the brain viewer in cell 74, then repeat the viewer cells to check lifecycle behavior.
+- Guided inputs and stable cell IDs, with checkpoints that allow upstream cells to rerun.
+- Participant-local QC drafts, save/next navigation, saved-QC reuse that continues after QC, and explicit skip notices.
+- One native automatic/manual mask comparison and one lesion/disconnectome comparison. Model changes preserve the selected method and image position.
+- Consistent mask-origin colours, deferred image loading, and title-based cell timings.
+- Full-cohort atlas selectors, explicit zero/missing status, subject/session cache keys, changed-mask invalidation, and measured overlap laterality.
+- Integrated report selection, export and Neurosynth decoding with visible completion/failure status.
 
-Immediate fixes are intentionally limited to overlay opacity controls and isolation/validation of the affected selectors. Broader workflow cleanup remains in this issue.
+The current example cohort is sub-M2066/ses-235, sub-M2075/ses-602 and
+sub-M2176/ses-1237. All have local processing outputs. The September 30
+verification refreshed overlap tables for these participants and exercised
+cached Neurosynth decoding; see `workflow-validation/astra.yaml`. Browser
+fixtures exercised model switching, layer reuse and preserved slice position.
+These checks do not certify scientific QC or a fresh end-to-end processing run.
+
+Remaining work:
+
+- Complete fresh-cohort acceptance across native/MNI masks, all disconnectome sources and all four DeepDisco models, with scientific visual QC.
+- Extract remaining notebook processing into retained scripts so viewing a result never starts registration, inference or acquisition implicitly.
+- Continue separating optional diagnostics from the essential processing/QC/report workflow while preserving distinct scientific checks.
+- Cross-reference #5 when extending cache invalidation to other scientific outputs; a working selector alone does not establish that all cached results are current.
+
+Keep masks, ratings, manual edits, existing scientific decisions and run
+provenance intact during follow-up work. Use panel titles and stable cell IDs
+when referring to steps, since notebook cell positions change during cleanup.

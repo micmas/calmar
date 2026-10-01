@@ -9,7 +9,7 @@ document stay in sync — if you change one, regenerate the other.
 > dict carries one rating per pipeline stage (skull strip, registration,
 > lesion). The notebook aggregates every sidecar into `qc_summary.csv`.
 
-## The two stages
+## Available review stages
 
 LINDA's pipeline runs:
 
@@ -19,7 +19,7 @@ T1w → N4 bias correction → SKULL STRIP → MNI REGISTRATION → LESION PREDI
 
 A failure at an earlier stage propagates downstream — you cannot get a
 trustworthy lesion mask from a poor skull strip. The QC widget walks
-through two stages:
+through the stages available for each participant:
 
 1. **Skull strip / brain extraction** — is the brain mask
    (`BrainMask.nii.gz`) clean? If not, **re-strip with HD-BET** and
@@ -27,21 +27,30 @@ through two stages:
    button for this.
 2. **Lesion mask** — the LINDA output proper. Rate this once the
    skull strip is good.
+3. **SynthStroke lesion mask** — rate the automatic prediction in native T1 space.
+4. **Manual mask → MNI warp** — rate the registration, not the expert's native
+   delineation. The native manual mask is available as a reference overlay for
+   the automatic segmentations and is not a separate rating stage. Historical
+   native-manual ratings remain in existing sidecars.
 
-> **Why no registration QC?** Visual QC of MNI registration is
-> genuinely hard without specialized tools (template overlays with
-> edge highlighting, checkerboards, NMI metrics). The most
-> consequential registration failure — the lesion getting warped
-> across an anatomical boundary — is usually catchable by inspecting
-> the lesion in MNI space (e.g., contralateral hemisphere when the
-> stroke was clinically left-sided), so it gets covered by the lesion
-> stage's `wrong_hemisphere` and `false_positive_cluster` tags.
-> The registration vocabulary is preserved as comments in
-> `calmar/qc.py` if you want to re-enable it later.
+For the manual-mask warp, **1** means the mask retains its native anatomical
+location after registration, with appropriate hemisphere, tissue boundaries,
+and shape. **2** means a minor displacement or distortion needs a documented
+caveat. **3** means incorrect territory, major distortion, or an empty warped
+mask; repair it before MNI analyses. Inspect anatomy and native placement:
+agreement with LINDA or SynthStroke predictions alone does not validate a warp.
 
 **Workflow tip:** judge skull strip first. If it's a 3, fix it before
-rating the lesion. The chip row at the top of the widget shows your
-current ratings for both stages at a glance.
+rating the lesion. Clicking a number records a draft for that stage.
+**Save stage →** saves it and opens the next stage; **Save & next participant**
+saves all available stages together and opens stage 1 for the next participant.
+**Skip QC** remains available and records a notice in newly generated reports.
+
+When saved QC exists, the dashboard offers **Use existing QC** or **Redo QC**.
+Reusing keeps the saved ratings and immediately continues after QC; any unrated
+stages remain unrated. Redo starts
+blank ratings from stage 1 for the current group, preserving saved ratings until
+you save replacements. The report records reused QC separately from skipped QC.
 
 ---
 

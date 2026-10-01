@@ -9,13 +9,16 @@
 
 # Core neuroimaging
 nibabel>=5.0
-nilearn>=0.10
+# Nilearn 0.14 requires packaging>=26, conflicting with Neurodesk's Snakemake.
+nilearn>=0.10,<0.14
 scipy>=1.10
 numpy>=1.24
 pandas>=2.0
 
 # Notebook UI
 ipywidgets>=8.0
+anywidget>=0.11,<1
+ipylab==1.0.0            # JupyterLab continuation buttons
 ipyniivue>=2.0
 matplotlib>=3.7
 

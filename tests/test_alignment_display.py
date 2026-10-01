@@ -24,7 +24,7 @@ class Viewer(widgets.HTML):
 class AlignmentDisplayTests(unittest.TestCase):
     def test_comparison_cell_prepares_manual_mni_for_disconnectome_cells(self):
         root = Path(__file__).resolve().parents[1]
-        cells = json.loads((root / "lesion-interpretation-pipeline.ipynb").read_text())["cells"]
+        cells = {c["id"]: c for c in json.loads((root / "lesion-interpretation-pipeline.ipynb").read_text())["cells"]}
         with tempfile.TemporaryDirectory() as td:
             folder = Path(td)
             t1, manual = folder / "T1w.nii.gz", folder / "manual.nii.gz"
@@ -46,7 +46,7 @@ class AlignmentDisplayTests(unittest.TestCase):
                       image=SimpleNamespace(resample_to_img=lambda a, b, **kw: a),
                       HTML=lambda text: text, display=lambda *args: None, cw=None)
             with patch("shutil.which", return_value=None), patch("calmar.overlay.mask_comparison"):
-                exec("".join(cells[29]["source"]), ns)
+                exec("".join(cells["calmar-step-30"]["source"]), ns)
             self.assertEqual(len(calls), 1)
             self.assertEqual(calls[0][2], folder / "ExpertMask_in_MNI.nii.gz")
             self.assertTrue(calls[0][2].exists())
@@ -98,9 +98,9 @@ class AlignmentDisplayTests(unittest.TestCase):
         ns = {"Path": Path}
         exec(compile(ast.Module(body=[assignment], type_ignores=[]), "config", "exec"), ns)
         config = ns["CONFIG"]
-        self.assertEqual(config["SUBJECT_FILTER"], ["sub-M2018", "sub-M2034"])
-        self.assertEqual(config["SESSION_FILTER"], ["ses-341", "ses-1568"])
-        self.assertEqual(config["MAX_SUBJECTS"], 2)
+        self.assertCountEqual(config["SUBJECT_FILTER"], ["sub-M2066", "sub-M2075", "sub-M2176"])
+        self.assertCountEqual(config["SESSION_FILTER"], ["ses-235", "ses-602", "ses-1237"])
+        self.assertEqual(config["MAX_SUBJECTS"], 3)
         self.assertEqual(config["BCB_MASKS"], "all")
         self.assertEqual(config["DEEPDISCO_MASK_SOURCE"], "all")
         self.assertTrue(config["DEEPDISCO_RUN_ALL"])

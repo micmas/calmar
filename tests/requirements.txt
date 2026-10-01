@@ -1,0 +1,3 @@
+# Install the project's requirements.txt first.
+pytest>=8
+pytest-subtests>=0.14

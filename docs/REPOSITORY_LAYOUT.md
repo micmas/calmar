@@ -7,12 +7,21 @@ KB tools remain in `aphasia-kb/` with their existing entry points.
 
 ```text
 calmar/
+  acquisition.py        # fetch annex NIfTI inputs and check readable headers
+  execution.py          # explicit checkpoint lock and manual continuation
+  qc_decisions.py       # persistent QC choices and report notices
   qc.py                 # ratings, mask edits, registration, tool dispatch
   masks.py              # existing mask inventory by subject/session/space
   disconnectomes.py     # BCBToolkit and DeepDisco output discovery
   widgets.py            # shared NiiVue lifecycle and volume helpers
   overlay.py            # binary-mask overlay controls
   atlas_ui.py           # independent atlas/mask/subject selection
+  atlas_overlap.py      # measured laterality and subject/session cache status
+  colors.py             # consistent colours for each mask/map origin
+  guided.py             # guided notebook and canonical cell lookup
+  qc_panel.py           # QC review, saved-rating reuse and continuation
+  report_ui.py          # report selection, preview and decoding presentation
+  viewer_transport.py   # deferred image transport and compact widget state
   synthetic.py          # benchmark phantom generation
 src/
   analysis_*.sh         # retained analytical entry points
@@ -60,10 +69,18 @@ callers use the new locations. Restart an existing notebook kernel after pulling
 this change, then rerun Setup. Do not mix old root-module instances with the new
 package's viewer registry.
 
+The QC dashboard records the user's Do QC / Skip QC choice in `QC_decision.json` under
+each selected participant/session's LINDA output directory. This separate,
+atomic history leaves existing `*.qc.json` ratings and edits untouched. The
+interactive report and final HTML report read that participant's saved choice;
+the skip notice also appears when printing the final HTML to PDF. Selecting
+Do QC records review intent, not completed review. Regenerate a report after
+changing the QC choice to update its saved notice.
+
 This is a source layout change. Data, derivatives, QC sidecars, report locations,
-scientific parameters, and saved provenance remain in place. The two-subject
-end-to-end run and browser QC are still required; import and callback tests do
-not replace them. Historical scripts are recoverable from the pre-migration Git
+scientific parameters, and saved provenance remain in place. Automated callback and browser checks cover the UI. The retained
+interpretation verification checks existing atlas-overlap and decoding outputs;
+it does not establish a fresh end-to-end segmentation run or clinical QC. Historical scripts are recoverable from the pre-migration Git
 commit recorded in `alignment-repair/astra.yaml`; the local cleanup manifest also
 preserves unpublished benchmark-script versions.
 

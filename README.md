@@ -35,7 +35,8 @@ Given a BIDS-formatted dataset, CALMaR will:
 
 | Path | Purpose |
 |------|---------|
-| `lesion-interpretation-pipeline.ipynb` | Main pipeline notebook — run this |
+| `calmar-guided.ipynb` | Guided workflow — inputs, options, QC, and continuation buttons |
+| `lesion-interpretation-pipeline.ipynb` | Detailed processing notebook and canonical implementation |
 | `lesion-segmentation-benchmark.ipynb` | Benchmarks LINDA / SynthStroke across chronic and acute datasets |
 | `calmar/` | Shared Python package: QC, mask/disconnectome discovery, viewer controls, and synthetic phantoms |
 | `src/analysis_*.sh` | Retained analysis entry points; submit from the repository root |
@@ -68,18 +69,31 @@ git clone https://github.com/micmas/calmar.git ~/neurodesktop-storage/calmar
 cd ~/neurodesktop-storage/calmar
 
 # 3. Open the notebook
-# File → Open → lesion-interpretation-pipeline.ipynb
+# File → Open → calmar-guided.ipynb
 
-# 4. Run cells top to bottom, or jump to any section
-# Each section has a config block at the top — edit those, then run the cell
+# 4. Run the Inputs and options cell once, then use the form and buttons
 ```
 
 The notebook uses `Path.cwd()` for all paths — no path editing required as long as you open it from the repo root.
 
-Both notebooks import the local `calmar` package directly; no editable install
+The notebooks import the local `calmar` package directly; no editable install
 is required when launched from this directory. After updating from the older
 root-script layout, restart the kernel and rerun Setup so old module instances
 and viewer registries are not mixed with the reorganized package.
+
+The guided notebook reuses the detailed notebook's cells, resolved by stable cell
+IDs in `calmar/workflow_cells.json`. It saves your selected inputs in
+`reports/guided-inputs.json`. QC supports clickable ratings for every available
+stage, saving a whole participant at once, and a persistent Skip QC option.
+Manual masks are rated for their registration to MNI; the native delineation is
+a reference. See [SETUP.md](SETUP.md) for continuation and repair controls.
+
+When QC already exists, the dashboard lists those participants and their saved
+stage counts and offers **Use existing QC**, **Redo QC**, or **Skip QC**.
+Reusing keeps saved ratings and immediately continues after QC. Unrated stages
+in a mixed cohort remain unrated.
+Redo starts blank ratings from stage 1; saved ratings are replaced only when
+you save. Reports distinguish reused QC from skipped QC.
 
 Setup checks dependencies without installing into the running kernel. If a
 package is missing, run the command it prints in a JupyterLab terminal, then
@@ -91,10 +105,11 @@ The import cell detects a stale in-memory `packaging` version; downstream
 decoding checks that setup completed before proceeding.
 
 For already discovered T1w subjects, QC discovers existing masks and offers
-only available stages: a SynthStroke or manual native mask does not require a
-LINDA lesion output. Existing QC sidecar locations are preserved. The report
+only available stages: a SynthStroke native mask does not require a
+LINDA lesion output. The manual mask is rated only after warping to MNI.
+Existing QC sidecar locations are preserved. The report
 selector lists only locally available MNI masks for the selected subject and
-session; native-only masks remain available for QC. Configured manual masks
+session; native automatic masks remain available for QC. Configured manual masks
 must declare their space, and masks drawn on another scan need registration
 before they can be used in T1w QC. Finding a file does not validate its alignment.
 LINDA-specific edit and rerun actions remain specific to LINDA. DWI-only subject
@@ -115,26 +130,87 @@ retain the legacy `expert` filename token.
 Native manual and SynthStroke masks now use LINDA's complete native→Penn→ch2
 transform chain, including the inverse subject affine and bundled Penn→ch2
 transforms. The final reference is `Subject_in_MNI.nii.gz`; the intermediate
-`Reg3_registered_to_template.nii.gz` is not MNI. Cell 30 prepares the manual MNI
+`Reg3_registered_to_template.nii.gz` is not MNI. The single-subject comparison prepares the manual MNI
 mask before the disconnectome test cells and provides independent overlay
 toggles with fixed binary display ranges, including for very sparse masks.
 Alignment verification and repair records live in `alignment-repair/astra.yaml`.
 
-The next verification run is configured for **sub-M2018 / ses-341** and
-**sub-M2034 / ses-1568** (two fresh participants),
+The current example cohort is configured, in discovery order, for
+**sub-M2066 / ses-235**, **sub-M2075 / ses-602**, and **sub-M2176 / ses-1237**,
 with BCBToolkit and DeepDisco enabled for LINDA, SynthStroke, and manual masks,
 and all four DeepDisco models. Discovery uses the normal DataLad fetch for any
-missing content. These participants have not been processed by the repair jobs;
-the full verification run has not been launched.
+missing content. The cohort size remains three, random sampling is disabled,
+and overwrite remains false. These participants have now been processed locally;
+their processed state depends on the checkout's data directory. Existing outputs do not by themselves establish
+completed QC or end-to-end verification.
 
-Cell 30's checkboxes change overlay opacity without reloading volumes. Cell 67
-lets you select a mask source, then explicitly build its group frequency map.
-Cell 51 stops execution after displaying the QC dashboard; review and save
-ratings, run any needed repairs, and recheck before continuing manually.
-Cells 71 and 74 have independent mask/atlas/subject selectors and only offer
-combinations with overlap tables. The report viewer uses the current cohort
-and explains missing brain, atlas, or lesion images. Cell 84 is optional MNI
-registration QC; cell 30 compares masks in native T1 space.
+The single-subject comparison checkboxes change overlay opacity without reloading volumes.
+The **Group lesion overlap map** panel lets you select a mask source, then
+click **Build selected group map** to build its frequency map.
+The single-subject checkpoint blocks batch and later cells when `RUN_TEST=True`, including
+when the runner continues after errors. Earlier cells, including the single-subject
+viewers, can be edited and rerun while the batch checkpoint remains paused.
+Review the results, click **Continue to
+batch** there and confirm **Run all cells below**. Processing starts at the
+batch section and stops again at QC. With
+`RUN_TEST=False`, this checkpoint is skipped and batch processing continues.
+Every stop point follows the same rule: earlier cells and the stop's own cell
+can be rerun; later cells wait for its continuation choice. This also applies
+to QC, report selection, and the guided input form. Rerunning an earlier viewer
+does not record a QC choice or start report generation.
+Cell identity is retained in `# CALMAR_CELL_ID:` comments for clients that omit
+JupyterLab's execution metadata. Keep these comments when editing cell bodies.
+
+`CONFIG["MASK_COLORS"]` sets one colour per origin throughout the workflow,
+including native/MNI overlays, QC, group maps, comparison legends and report
+figures. Defaults: LINDA red, Manual blue, SynthStroke green, HD-BET yellow,
+BCBToolkit magenta and DeepDisco cyan. Supported colours are red, green, blue,
+yellow, cyan and magenta. After changing the mapping, rerun Configuration and
+the affected viewer/report cells. Probability maps retain their value scale
+while using their method's hue; the comparison's absolute-difference map has
+its own quantitative scale.
+The QC dashboard blocks later cells until you choose **Do QC** or **Skip QC** for the
+current cohort. **Do QC** enables manual review and repair work without marking
+QC complete. **Skip QC** saves a dated choice for each participant/session;
+newly generated reports, including printed PDFs, state **QC was skipped by the
+user**. Neither button runs subsequent cells. Existing ratings remain intact.
+
+If widgets remain at **Loading widget…**, the checkpoints also support explicit
+recovery commands in a temporary code cell. Run `%calmar_continue batch` by
+itself to release the batch checkpoint, then select the first batch code cell
+under **Batch processing** and choose **Run → Run All Cells Below**. At a paused QC checkpoint,
+`%calmar_continue skip-qc` records that QC was skipped by the user before releasing
+the pause. These commands do not run subsequent cells or repair widget loading.
+Remove the temporary recovery cell afterwards so it is not part of later runs.
+
+**Explore atlas results** and **Preview and export atlas results** have independent
+atlas, mask and participant selectors. Each table names the chosen atlas and mask;
+the Schaefer network summary also has a mask selector. SynthStroke is the initial
+choice when available; Manual and LINDA remain selectable. This is a display
+preference, not a quality ranking. Atlas previews update the table immediately
+and load brain images only when their tab is opened, reusing unchanged layers.
+**Export selected atlas PDF** uses the preview's exact selection.
+Participant menus retain the full configured cohort, including completed
+zero-overlap results. Tables show the hemisphere of actual intersecting lesion
+voxels, with left/right counts for bilateral intersections. Cache status records
+track subject/session pairs and changed masks; older tables are refreshed once
+to calculate laterality. A bilateral atlas region does not imply a bilateral lesion.
+
+The single-subject diagnostics keep one combined automatic/manual mask viewer.
+The lesion/disconnectome comparison places the lesion beneath the maps and
+preserves the selected method, image position and unchanged layers when changing
+DeepDisco models. Agreement metrics are calculated when their panel is opened.
+Cell timing labels use titles and current cell numbers.
+
+At **Choose report inputs**, select the participant, MNI mask and display atlas.
+An optional mask-comparison viewer and Neurosynth checkbox are in the same form.
+**Generate participant report** starts the remaining report cells automatically.
+The result has one panel with expandable evidence sections, a lazy brain viewer,
+optional decoding and an HTML download. QC decisions remain in the saved report.
+Use **Choose another report** to return to the form. The single-subject comparison
+remains the place to compare masks in native T1 space.
+Neurosynth reports whether decoding completed, how many terms were tested, and
+whether any correlations exceeded its display threshold; warnings remain visible.
 
 ---
 

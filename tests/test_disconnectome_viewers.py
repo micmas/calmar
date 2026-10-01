@@ -13,15 +13,36 @@ import numpy as np
 
 from calmar import disconnectomes as cd
 from calmar import masks as cm
+from calmar import colors
+from calmar.widgets import set_volumes
+from calmar.output import Output
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CELLS = json.loads((ROOT / "lesion-interpretation-pipeline.ipynb").read_text())["cells"]
+CELLS = {int(c["id"].rsplit("-", 1)[1]) - 1: c for c in json.loads((ROOT / "lesion-interpretation-pipeline.ipynb").read_text())["cells"] if c["id"].startswith("calmar-step-")}
 
 
 class Viewer(widgets.HTML):
+    def __init__(self):
+        super().__init__()
+        self.opts = SimpleNamespace()
+        self.loads = 0
+
     def load_volumes(self, volumes):
-        self.loaded = volumes
+        self.volumes = [SimpleNamespace(**v) for v in volumes]
+
+    @property
+    def loaded(self):
+        return [dict(path=v.path, colormap=v.colormap) for v in self.volumes]
+
+    @property
+    def volumes(self):
+        return getattr(self, '_volumes', [])
+
+    @volumes.setter
+    def volumes(self, volumes):
+        self._volumes = volumes
+        self.loads += 1
 
 
 class DisconnectomeTests(unittest.TestCase):
@@ -42,7 +63,8 @@ class DisconnectomeTests(unittest.TestCase):
                        display=lambda *args: self.shown.extend(args), clear_output=lambda **kw: None,
                        np=np, nib=nib,
                        image=SimpleNamespace(resample_to_img=lambda a, b, **kw: a),
-                       cw=SimpleNamespace(fresh_viewer=viewer, vols=lambda x: x),
+                       cw=SimpleNamespace(fresh_viewer=viewer, vols=lambda x: x,
+                                          set_volumes=set_volumes, Output=Output),
                        deriv_path_for=lambda e: self.folder(e, "linda"),
                        synthstroke_path_for=lambda e: self.folder(e, "synthstroke"),
                        bcb_path_for=lambda e: self.folder(e, "bcb"),
@@ -87,53 +109,100 @@ class DisconnectomeTests(unittest.TestCase):
         self.assertEqual(len(cd.discover(self.folder(e, "bcb"), self.folder(e, "dd"))
                              ["manual"]["deepdisco"]), 2)
 
-    def test_viewers_keep_independent_state_across_cells_and_subjects(self):
+    def test_unified_viewer_updates_source_model_and_subject(self):
         self.run_cell(35)
-        comparison = self.ns["_disconnectome_comparison"]
-        self.assertEqual(len(comparison["source"].options), 3)
-        self.run_cell(37)
-        view = self.ns["_disconnectome_view"]
-        # These globals were reused by downstream cells in the broken notebook.
-        for name in ("_src_dd", "_ddir", "_bdir", "_tag", "_bg", "_nv", "_c_e",
-                     "_map_dd", "_map_options", "_DD_LABELS", "_SRC_TOKEN"):
-            self.ns[name] = None
-        for src, token in cd.SOURCE_TOKENS.items():
-            view["source"].value = src
-            self.assertEqual(len(view["map"].options), 5 if src == "linda" else 4)
-            self.assertNotIn("No disconnectome", view["header"].value)
-            comparison["source"].value = src
-            self.assertEqual(len(comparison["model"].options), 4)
-            comparison["model"].value = "commissural"
-            self.assertTrue(any(f"{token}_commissural" in v["path"]
-                                for v in comparison["viewer"].loaded))
-        comparison["subject"].value = 1
+        view = self.ns["_disconnectome_comparison"]
+        for source, token in cd.SOURCE_TOKENS.items():
+            view["source"].value = source
+            view["model"].value = "commissural"
+            self.assertTrue(any(f"{token}_commissural" in v["path"] for v in view["viewer"].loaded))
+            self.assertFalse(view["lesion"].disabled)
+            self.assertEqual(view["viewer"].loaded[1]["colormap"], colors.color(source))
+            view["lesion"].value = False
+            self.assertEqual(view["viewer"].volumes[1].opacity, 0)
+            view["lesion"].value = True
+            self.assertEqual(view["viewer"].volumes[1].opacity, .35)
         view["subject"].value = 1
-        self.assertIn("ses-2", view["header"].value)
-        for state in (view, comparison):
-            self.assertTrue(all("ses-2" in v["path"] for v in state["viewer"].loaded))
+        self.assertTrue(all("ses-2" in v["path"] for v in view["viewer"].loaded))
         view["subject"].value = 2
-        comparison["subject"].value = 2
         self.assertEqual(view["viewer"].loaded, [])
-        self.assertEqual(comparison["viewer"].loaded, [])
+        self.assertTrue(view["lesion"].disabled)
 
-    def test_refresh_discovers_new_maps_and_bcb_only_source(self):
-        self.run_cell(37)
-        view = self.ns["_disconnectome_view"]
-        view["source"].value = "manual"
-        p = self.write(self.folder(self.entries[0], "bcb") / "Disconnectome_expert.nii.gz")
-        view["refresh"].click()
-        self.assertIn(("BCBToolkit", p), view["map"].options)
-        self.assertIn("BCBToolkit: available", view["files"].value)
-        for p in self.folder(self.entries[0], "dd").glob("DeepDisco_expert_*.nii.gz"):
-            p.unlink()
-        view["refresh"].click()
-        self.assertEqual(len(view["map"].options), 1)
+    def test_lesion_can_be_viewed_without_disconnectome_and_duplicate_is_removed(self):
+        for folder in (self.folder(self.entries[0], "bcb"), self.folder(self.entries[0], "dd")):
+            for path in folder.glob("*.nii.gz"):
+                path.unlink()
+        self.run_cell(35)
+        view = self.ns["_disconnectome_comparison"]
+        self.assertEqual(view["method"].value, "anatomy")
+        self.assertEqual(len(view["viewer"].loaded), 2)
+        self.assertFalse(view["lesion"].disabled)
+        self.assertNotIn(36, CELLS)
+        self.assertEqual(len(self.created), 1)
+
+    def test_readability_controls_reuse_layers_and_handle_missing_methods(self):
         self.run_cell(35)
         comparison = self.ns["_disconnectome_comparison"]
-        comparison["source"].value = "manual"
-        self.assertTrue(comparison["model"].disabled)
-        self.assertTrue(any("Disconnectome_expert" in v["path"]
-                            for v in comparison["viewer"].loaded))
+        viewer = comparison["viewer"]
+        anatomy, lesion, bcb, deepdisco = viewer.volumes
+        loads = viewer.loads
+        self.assertFalse(anatomy.colorbar_visible)
+        self.assertEqual((bcb.opacity, deepdisco.opacity), (0.65, 0))
+        self.assertEqual(viewer.opts.slice_type, 0)
+        self.assertEqual(viewer.opts.crosshair_width, 0)
+        comparison["method"].value = "deepdisco"
+        self.assertEqual((bcb.opacity, deepdisco.opacity), (0, 0.65))
+        self.assertFalse(bcb.colorbar_visible)
+        self.assertTrue(deepdisco.colorbar_visible)
+        comparison["method"].value = "both"
+        comparison["opacity"].value = 0.4
+        self.assertEqual((bcb.opacity, deepdisco.opacity), (0.4, 0.4))
+        comparison["plane"].value = 3
+        comparison["crosshair"].value = True
+        self.assertEqual(viewer.opts.slice_type, 3)
+        self.assertEqual(viewer.opts.crosshair_width, 1)
+        comparison["method"].value = "anatomy"
+        self.assertEqual((bcb.opacity, deepdisco.opacity), (0, 0))
+        self.assertTrue(comparison["opacity"].disabled)
+        self.assertEqual(viewer.loads, loads)
+        self.assertEqual(anatomy.opacity, 1)
+        comparison["method"].value = "bcbtoolkit"
+        comparison["source"].value = "manual"  # Only DeepDisco exists.
+        self.assertEqual(comparison["method"].value, "deepdisco")
+        self.assertNotIn("bcbtoolkit", [v for _, v in comparison["method"].options])
+        self.assertEqual(viewer.volumes[-1].opacity, 0.4)
+
+    def test_custom_origin_colours_match_lesion_and_disconnectome_layers(self):
+        colors.configure({'manual': 'yellow', 'synthstroke': 'cyan',
+                          'bcbtoolkit': 'green', 'deepdisco': 'magenta'})
+        self.addCleanup(colors.configure)
+        self.run_cell(35)
+        view = self.ns['_disconnectome_comparison']
+        self.assertEqual(view['viewer'].loaded[2]['colormap'], 'green')
+        self.assertEqual(view['viewer'].loaded[3]['colormap'], 'magenta')
+        view['source'].value = 'manual'
+        self.assertEqual(view['viewer'].loaded[1]['colormap'], 'yellow')
+
+    def test_model_change_preserves_method_location_and_unchanged_layers(self):
+        self.run_cell(35)
+        view = self.ns['_disconnectome_comparison']
+        viewer = view['viewer']
+        anatomy, lesion, bcb, old_dd = viewer.volumes
+        viewer.scene = SimpleNamespace(crosshair_pos=[.3, .4, .5])
+        view['method'].value = 'deepdisco'
+        view['model'].value = 'commissural'
+        self.assertEqual(view['method'].value, 'deepdisco')
+        self.assertEqual(viewer.scene.crosshair_pos, [.3, .4, .5])
+        self.assertIs(viewer.volumes[0], anatomy)
+        self.assertIs(viewer.volumes[1], lesion)
+        self.assertIs(viewer.volumes[2], bcb)
+        self.assertIsNot(viewer.volumes[3], old_dd)
+        self.assertEqual(viewer.volumes[3].opacity, .65)
+        self.assertEqual(bcb.opacity, 0)
+        # No resampling/metric work occurs while its accordion is closed.
+        self.assertFalse(list(self.root.rglob('_deepdisco_on_bcbgrid*')))
+        view['method'].value = 'anatomy'
+        self.assertEqual(lesion.opacity, .85)
 
 
 if __name__ == "__main__":

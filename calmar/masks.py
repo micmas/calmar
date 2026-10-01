@@ -66,8 +66,7 @@ def qc_stages(masks, *, brain_mask=None, mni_reference=None):
     if present(brain_mask):
         stages.append("skull_strip")
     for source, stage in (("linda", "lesion"),
-                          ("synthstroke", "synthstroke_lesion"),
-                          ("manual", "manual_lesion")):
+                          ("synthstroke", "synthstroke_lesion")):
         if "T1w" in masks.get(source, {}):
             stages.append(stage)
     if "MNI" in masks.get("manual", {}) and present(mni_reference):
