@@ -19,10 +19,11 @@ import numpy as np
 import pandas as pd
 
 from calmar.atlas_ui import OverlapSelection
+from calmar import widgets as cw
 
 
-CELLS = json.loads((Path(__file__).resolve().parents[1] /
-                    "lesion-interpretation-pipeline.ipynb").read_text())["cells"]
+CELLS = {int(c["id"].rsplit("-", 1)[1]) - 1: c for c in json.loads((Path(__file__).resolve().parents[1] /
+                    "lesion-interpretation-pipeline.ipynb").read_text())["cells"] if c["id"].startswith("calmar-step-")}
 
 
 class AtlasPanelTests(unittest.TestCase):
@@ -63,7 +64,7 @@ class AtlasPanelTests(unittest.TestCase):
                        REPORTS_DIR=self.root, ATLAS_DIR=self.root,
                        deriv_path_for=lambda e: self.root,
                        mask_inventory_for=lambda e: self.masks,
-                       cw=SimpleNamespace(fresh_viewer=fresh, vols=lambda s: s))
+                       cw=SimpleNamespace(fresh_viewer=fresh, vols=lambda s: s, set_volumes=cw.set_volumes, Output=cw.Output))
         self.addCleanup(lambda: plt.close("all"))
 
     def run_cell(self, number):
@@ -81,6 +82,21 @@ class AtlasPanelTests(unittest.TestCase):
         self.assertEqual(sel.source.options, (("Manual", "manual"),))
         self.assertTrue(pd.isna(self.tables["Atlas_B_manual"]["session"].iloc[0]))
 
+    def test_cohort_menu_keeps_participants_without_positive_overlap(self):
+        cohort = [('sub-test', ''), ('sub-zero', ''), ('sub-missing', 'ses-2')]
+        sel = OverlapSelection(self.tables, 'Atlas_A', cohort)
+        self.assertEqual([v for _, v in sel.subject.options], cohort)
+        sel.subject.value = cohort[1]
+        sel.atlas.value = 'Atlas_B'
+        self.assertEqual(sel.subject.value, cohort[1])
+        self.assertEqual([v for _, v in sel.subject.options], cohort)
+
+    def test_empty_table_preserves_columns_and_cohort(self):
+        empty = self.tables['Atlas_B_manual'].iloc[:0]
+        sel = OverlapSelection({'Atlas_B_manual': empty}, 'Atlas_B', [('sub-zero', '')])
+        self.assertEqual(sel.subject.value, ('sub-zero', ''))
+        self.assertIn('subject', sel.current()[0])
+
     def test_later_report_keeps_earlier_controls_independent_and_loads_brain(self):
         self.run_cell(71)
         earlier = self.ns["_atlas_overlap_panel"]
@@ -89,14 +105,20 @@ class AtlasPanelTests(unittest.TestCase):
         for name in ("atlas_dd", "subj_dd", "src_dd", "_refresh_subjects", "_dirty"):
             self.ns[name] = None
         self.assertEqual(report["subject"].value, ("sub-test", ""))
+        self.assertEqual(len(report["viewer"].volumes), 0)
+        self.assertIn("Atlas_A", report["report"].value)
+        self.assertIn("Manual mask", report["report"].value)
+        report["tabs"].selected_index = 1
         self.assertEqual(len(report["viewer"].volumes), 3)
+        brain = report["viewer"].volumes[0]
         self.assertEqual(Path(report["viewer"].volumes[0].path).name, "Subject_in_MNI.nii.gz")
         report["source"].value = "manual"
         self.assertEqual(Path(report["viewer"].volumes[-1].path).name, "manual.nii.gz")
         self.assertEqual(report["viewer"].volumes[-1].cal_min, .5)
         report["atlas"].value = "Atlas_B"
-        self.assertEqual(report["viewer"].volumes[1].name, "Atlas_B.nii")
-        self.assertTrue(report["viewer"].volumes[1].data)
+        self.assertEqual(report["viewer"].volumes[1].name, "Atlas_B_atlas.nii.gz")
+        self.assertIs(report["viewer"].volumes[0], brain)
+        self.assertTrue((self.root / "Atlas_B_atlas.nii.gz").exists())
         self.assertEqual(earlier["atlas"].value, "Atlas_A")
         earlier["atlas"].value = "Atlas_B"
         self.assertEqual(earlier["source"].value, "manual")
@@ -107,6 +129,7 @@ class AtlasPanelTests(unittest.TestCase):
         (self.root / "Subject_in_MNI.nii.gz").unlink()
         self.run_cell(74)
         report = self.ns["_subject_report_panel"]
+        report["tabs"].selected_index = 1
         self.assertFalse(report["viewer"].volumes)
         self.assertIn("Brain viewer needs Subject_in_MNI", report["message"].value)
 

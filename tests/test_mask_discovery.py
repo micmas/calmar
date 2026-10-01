@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import ipywidgets as widgets
@@ -19,7 +20,7 @@ from calmar import qc as q
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CELLS = json.loads((ROOT / "lesion-interpretation-pipeline.ipynb").read_text())["cells"]
+CELLS = {int(c["id"].rsplit("-", 1)[1]) - 1: c for c in json.loads((ROOT / "lesion-interpretation-pipeline.ipynb").read_text())["cells"] if c["id"].startswith("calmar-step-")}
 
 
 def cell(number):
@@ -112,6 +113,8 @@ class MaskDiscoveryTests(unittest.TestCase):
         first, second, _ = self.entries
         self.touch(self.synth(first) / "prediction_lesion_mask.nii.gz")
         self.touch(self.linda(second) / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz")
+        self.touch(self.linda(second) / "ExpertMask_in_MNI.nii.gz")
+        self.touch(self.linda(second) / "Subject_in_MNI.nii.gz")
         viewer = Viewer()
         self.addCleanup(viewer.close)
         class Widgets:
@@ -127,20 +130,26 @@ class MaskDiscoveryTests(unittest.TestCase):
                   Path=Path, widgets=widgets, HTML=HTML, cw=Widgets, _dt=datetime,
                   display=lambda *a: None, clear_output=lambda **kw: None,
                   StopExecution=StopExecution)
-        with patch.object(importlib, "reload", lambda x: x), patch.object(q, "ensure_lesion_boundary", lambda p, **kw: p):
+        with patch.object(importlib, "reload", lambda x: x), patch.object(q, "ensure_lesion_boundary", lambda p, **kw: p), patch("calmar.execution.pause_for_qc") as pause:
+            pause.return_value = SimpleNamespace(message=widgets.HTML(), do_qc=widgets.Button(),
+                skip_qc=widgets.Button(), choose=lambda choice: True, choice=None,
+                _update_cell_order=lambda *args: None)
             with self.assertRaises(StopExecution):
                 exec(cell(51), ns)
+            pause.assert_called_once_with(self.entries, self.linda, display_controls=False)
             self.assertEqual(len(ns["qc_pool"]), 2)
-            self.assertEqual(ns["_stage_toggle"].value, "synthstroke_lesion")
-            self.assertTrue(ns["rerun_cb"].disabled)
-            ns["rating"].value = 1
-            self.assertTrue(ns["_do_save"]())
-            ns["_subject_slider"].value = 1
-            self.assertEqual(ns["_stage_toggle"].value, "manual_lesion")
-            self.assertTrue(ns["show_gt"].disabled)
-            ns["rating"].value = 2
-            self.assertTrue(ns["_do_save"]())
-            self.assertIn("Manual lesion mask", ns["_status_html"].value)
+            panel = ns["_qc_panel"]
+            self.addCleanup(panel.close)
+            self.assertEqual(panel.stage.value, "synthstroke_lesion")
+            panel.rating_buttons["synthstroke_lesion"].value = 1
+            self.assertTrue(panel.save_participant())
+            self.assertEqual(panel.subject.value, 1)
+            self.assertEqual(panel.stage.value, "expert_mni_warp")
+            self.assertNotIn("manual_lesion", panel.rating_buttons)
+            panel.rating_buttons["expert_mni_warp"].value = 2
+            self.assertTrue(panel.save_current())
+            saved = q.QCRecord.load(self.linda(second) / "Lesion_in_MNI.nii.gz")
+            self.assertEqual(saved.get_stage("expert_mni_warp")["rating"], 2)
 
     def test_report_selector_filters_masks_and_handles_no_mni(self):
         first, second, third = self.entries
@@ -156,6 +165,7 @@ class MaskDiscoveryTests(unittest.TestCase):
                   StopExecution=StopExecution)
         with self.assertRaises(StopExecution):
             exec(cell(79), ns)
+        self.addCleanup(ns["_report_inputs"].close)
         self.assertEqual(ns["INTERP_MASK_SOURCE"], "synthstroke")
         ns["_rp_subj"].value = 1
         self.assertEqual(ns["INTERP_MASK_SOURCE"], "manual")
@@ -207,7 +217,10 @@ class SetupTests(unittest.TestCase):
 
     def test_decode_stops_after_failed_setup(self):
         with self.assertRaisesRegex(RuntimeError, "Setup imports did not complete"):
-            exec(cell(85), {})
+            exec(cell(85), {"INTERP_RUN_DECODING": True})
+
+    def test_optional_decode_does_nothing_when_not_requested(self):
+        exec(cell(85), {"INTERP_RUN_DECODING": False})
 
 
 if __name__ == "__main__":

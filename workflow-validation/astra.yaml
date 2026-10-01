@@ -1,0 +1,69 @@
+id: workflow_validation
+version: "0.0.14"
+name: Verify interpretation workflow corrections
+description: >
+  Software regression verification using existing local masks and atlases.
+  Preserve the notebook's nearest-neighbour resampling and lesion threshold
+  (>0.5). Add counts of actual intersecting voxels at MNI x<0 (left), x>0
+  (right), and x=0 (midline), without changing ROI totals or denominators.
+  Exercise the existing Neurosynth v7 decoder without changing its term list,
+  binning, smoothing, or correlation method. No inference or acquisition.
+  Submit from the CALMaR project root. The script loads the existing pipeline's
+  FSL 6.0.7.22 module and runs Python 3.13.15 with package versions checked.
+inputs:
+  - id: dataset
+    type: data
+    source: data/ds004884
+    description: Existing local MNI masks for sub-M2066, sub-M2075 and sub-M2176.
+  - id: atlases
+    type: data
+    source: atlases
+    description: Existing cached atlas images and labels; no downloads.
+  - id: cache
+    type: data
+    source: aphasia-kb/_neurosynth_cache
+    description: Existing Neurosynth v7 files and term maps used by the notebook decoder.
+outputs:
+  - id: verification
+    type: report
+    format: directory
+    description: Refreshed overlap CSVs/status manifests, decoding result, numerical summary and laterality PNG.
+    inputs: [dataset, atlases, cache]
+    recipe:
+      command: bash src/analysis_19_verify_interpretation.sh {inputs.dataset} {inputs.atlases} {inputs.cache} {output}
+      container: python:3.13.15
+findings:
+  zero_overlap_participant:
+    label: The missing participant has zero JHU overlap
+    claim: >
+      sub-M2075/ses-602 has 2450 SynthStroke lesion voxels on the JHU grid,
+      with no intersection with its labelled regions. Positive-row-only
+      participant menus therefore omitted this participant. The refreshed
+      status records retain the completed zero-overlap result.
+    created_at: "2026-09-30T00:00:00Z"
+    evidence:
+      - id: overlap_status
+        artifact: verification
+  measured_laterality:
+    label: Current SynthStroke cortical overlap is left-sided
+    claim: >
+      All 39 positive HarvardOxford overlap rows for the current three
+      participants contain left-sided SynthStroke voxels only. This differs
+      from the bilateral extent of unsided HarvardOxford ROIs. Whole-mask
+      counts additionally show right-of-midline predictions for sub-M2176;
+      these have not been relabelled as left or removed.
+    created_at: "2026-09-30T00:00:00Z"
+    evidence:
+      - id: laterality_summary_and_png
+        artifact: verification
+  decoder_completes:
+    label: Cached Neurosynth decoding completes
+    claim: >
+      The existing decoder returned 17 finite term correlations for the
+      sub-M2066/ses-235 SynthStroke mask, without warnings. Three requested
+      terms are absent from the Neurosynth vocabulary and are skipped by
+      the existing method. Slurm job 4 completed with exit code 0:0.
+    created_at: "2026-09-30T00:00:00Z"
+    evidence:
+      - id: decoder_terms_and_summary
+        artifact: verification

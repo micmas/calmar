@@ -13,25 +13,60 @@ Solves two structural problems with the interactive cells:
    every render. ``vol(path)`` rewrites servable paths to a ``url=``
    spec so the *browser* fetches the file from the Jupyter file server
    (with normal HTTP caching); the kernel never touches the bytes.
-   Files outside the server root (e.g. /tmp) fall back to ``path=``.
+   Path mode carries small file descriptors. The frontend tries authenticated
+   HTTP first, then falls back to 256 KiB kernel messages for inaccessible files.
+   This also loads while the kernel is computing and caches compressed bytes.
+   Decoded image arrays are omitted from widget restoration.
 
 The URL base is auto-detected per user (JupyterHub sets
 JUPYTERHUB_SERVICE_PREFIX for whoever runs the notebook), so nothing
 here is machine- or user-specific. CONFIG["NIIVUE_URL_BASE"] can
-override it: None = auto-detect, False = disable URL mode entirely
-(always send bytes), or an explicit prefix like "/user/alice/".
+override it: None = direct URL mode, False = authenticated lazy transport with
+kernel fallback, or an explicit prefix like "/user/alice/".
 """
 
 import os
+import json
+from .widget_lifecycle import close_widget
+from .output import Output
 from pathlib import Path
+from types import MethodType
+from collections import OrderedDict
 from urllib.parse import quote
 
 from ipyniivue import NiiVue
+from .viewer_transport import LazyVolume, attach_transport, make_lazy, configure_file_server
+
+
+def _deferred_viewer_source():
+    template = Path(__file__).with_name("viewer_bootstrap.js").read_text()
+    return template.replace("__CALMAR_VIEWER_SOURCE__", json.dumps(str(NiiVue._esm)))
+
+
+class _DeferredNiiVue(NiiVue):
+    """Load the imaging frontend during rendering, outside model startup timeout."""
+
+    _esm = _deferred_viewer_source()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        attach_transport(self)
+
+    def load_volumes(self, volumes):
+        models = [LazyVolume(**v) if isinstance(v, dict) else v for v in volumes]
+        for model in models:
+            make_lazy(model)
+        NiiVue.load_volumes(self, models)
+
+    def add_volume(self, volume):
+        model = LazyVolume(**volume) if isinstance(volume, dict) else volume
+        make_lazy(model)
+        NiiVue.add_volume(self, model)
 
 # ── URL-mode configuration ──────────────────────────────────────────
-_URL_BASE = None      # e.g. "/user/micmas/"; False disables URL mode
-_SERVE_ROOT = None    # filesystem root the Jupyter server serves from
-_configured = False
+_URL_BASE = globals().get("_URL_BASE")  # False disables URL mode
+_SERVE_ROOT = globals().get("_SERVE_ROOT")  # Jupyter server filesystem root
+_configured = globals().get("_configured", False)
 
 
 def _detect_server():
@@ -69,8 +104,7 @@ def _detect_server():
 def configure(url_base=None, serve_root=None):
     """Set URL mode explicitly. Called from the notebook CONFIG cell.
 
-    url_base : None → auto-detect; False → disable URL mode (send
-               bytes through the kernel, the old behaviour); or an
+    url_base : None → auto-detect; False → authenticated lazy transport; or an
                explicit prefix such as "/user/alice/".
     """
     global _URL_BASE, _SERVE_ROOT, _configured
@@ -82,6 +116,7 @@ def configure(url_base=None, serve_root=None):
     else:
         _URL_BASE = url_base if str(url_base).endswith("/") else f"{url_base}/"
     _SERVE_ROOT = Path(serve_root) if serve_root else auto_root
+    configure_file_server(auto_base, _SERVE_ROOT)
     _configured = True
 
 
@@ -105,7 +140,7 @@ def vol(path, **kw):
         try:
             rel = p.relative_to(_SERVE_ROOT)
             try:
-                v = int(p.stat().st_mtime)
+                v = p.stat().st_mtime_ns
             except OSError:
                 v = 0
             url = f"{_URL_BASE}files/{quote(rel.as_posix())}?v={v}"
@@ -129,7 +164,29 @@ def vols(specs):
 
 
 # ── Persistent viewer registry ──────────────────────────────────────
-_VIEWERS = {}
+_VIEWERS = globals().get("_VIEWERS", {})
+
+
+def refresh_viewer_frontends():
+    """Update live viewer loaders without rerunning analysis or changing volumes.
+
+    A browser reload recreates any frontend models already rejected by a timeout.
+    Keep the registry across module reloads so the existing views can be repaired.
+    """
+    source = _deferred_viewer_source()
+    updated = 0
+    for nv in _VIEWERS.values():
+        # Keep current output IDs and selections when repairing an open kernel.
+        attach_transport(nv)
+        nv.load_volumes = MethodType(_DeferredNiiVue.load_volumes, nv)
+        nv.add_volume = MethodType(_DeferredNiiVue.add_volume, nv)
+        for volume in nv.volumes:
+            make_lazy(volume)
+            volume.send_state(["path", "paired_img_path"])
+        if nv._esm != source:
+            nv._esm = source
+            updated += 1
+    return updated
 
 
 def viewer(key, height=300, colorbar=False, colorbar_height=None):
@@ -141,7 +198,7 @@ def viewer(key, height=300, colorbar=False, colorbar_height=None):
     """
     nv = _VIEWERS.get(key)
     if nv is None:
-        nv = NiiVue(height=height)
+        nv = _DeferredNiiVue(height=height)
         if colorbar:
             nv.opts.is_colorbar = True
         if colorbar_height is not None:
@@ -164,7 +221,9 @@ def fresh_viewer(key, **viewer_kwargs):
     old = _VIEWERS.pop(key, None)
     if old is not None:
         try:
-            old.close()
+            for model in getattr(old, "_calmar_layer_cache", {}).values():
+                model.close()
+            close_widget(old)
         except Exception:
             pass
     return viewer(key, **viewer_kwargs)
@@ -180,6 +239,44 @@ def show(key, volumes, **viewer_kwargs):
     nv = fresh_viewer(key, **viewer_kwargs)
     nv.load_volumes(vols(volumes))
     return nv
+
+
+def set_volumes(viewer, specs, *, cache_size=12):
+    """Reuse unchanged layers so switching an atlas/mask does not reload the brain."""
+    cache = getattr(viewer, "_calmar_layer_cache", None)
+    if cache is None:
+        cache = viewer._calmar_layer_cache = OrderedDict()
+    models = []
+    for spec in vols(specs):
+        if "data" in spec:
+            # In-memory sources are unusual; callers can cache them to disk.
+            models.append(LazyVolume(**spec))
+            continue
+        identity = dict(spec)
+        # Visibility is mutable UI state, not the identity of an image layer.
+        identity.pop('opacity', None)
+        identity.pop('colorbar_visible', None)
+        if "path" in spec:
+            p = Path(spec["path"])
+            stat = p.stat()
+            identity.update(path=str(p.absolute()), mtime_ns=stat.st_mtime_ns, size=stat.st_size)
+        key = json.dumps(identity, sort_keys=True, default=str)
+        model = cache.get(key)
+        if model is None:
+            model = LazyVolume(**spec)
+            cache[key] = model
+        else:
+            for setting in ("opacity", "colormap", "cal_min", "cal_max", "colorbar_visible"):
+                if setting in spec:
+                    setattr(model, setting, spec[setting])
+        cache.move_to_end(key)
+        models.append(model)
+    viewer.volumes = models
+    for key in list(cache):
+        if len(cache) <= cache_size:
+            break
+        if cache[key] not in models:
+            cache.pop(key).close()
 
 
 # ── Cached voxel counts ─────────────────────────────────────────────

@@ -38,6 +38,7 @@ import json
 import os
 import shutil
 import subprocess
+import tempfile
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -207,13 +208,11 @@ STAGE_LABELS = {
 # analyses (group overlap maps, atlas decoding)?" rather than "is the
 # prediction itself correct?"
 MANUAL_WARP_RATING_DEFINITIONS = {
-    1: ("Manual mask and LINDA's MNI lesion overlap or are co-located in "
-        "the same lobe and hemisphere. Warp is trustworthy for cohort-"
-        "level MNI analyses."),
-    2: ("Same hemisphere and roughly the same brain region as LINDA, but "
-        "noticeably displaced or distorted. Usable with caveats — flag "
-        "the subject and consider per-subject inspection before trusting "
-        "MNI-space results."),
+    1: ("The manual mask retains its native anatomical location after registration "
+        "to MNI, with appropriate hemisphere, tissue boundaries and shape. "
+        "Inspect the anatomy; agreement with LINDA or SynthStroke alone is insufficient."),
+    2: ("Registration preserves the expected hemisphere and broad anatomical location, "
+        "with a minor displacement or distortion that needs a documented caveat."),
     3: ("Manual mask is in entirely wrong territory (contralateral "
         "hemisphere, cerebellum/brainstem when the lesion is cortical, "
         "or empty after warp). **Do NOT use this subject's "
@@ -489,7 +488,19 @@ class QCRecord:
             "edits":            self.edits,
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(out, indent=2) + "\n")
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=self.path.parent,
+                    prefix=".qc-", suffix=".tmp", delete=False) as stream:
+                temporary = Path(stream.name)
+                json.dump(out, stream, indent=2)
+                stream.write("\n")
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temporary, self.path)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
         return self.path
 
     def log_edit(self, operation: str, params: dict | None = None,

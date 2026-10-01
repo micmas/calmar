@@ -33,3 +33,12 @@ aphasia-kb/_neurosynth_cache/
 
 # Agent working notes / handoff docs (session-local, not source)
 notes/
+
+# Local execution logs and verification artifacts; retain scripts/specifications.
+logs/
+/alignment-repair/alignment_qc
+/alignment-repair/corrected_disconnectomes
+/alignment-repair/control_mask.nii.gz
+/alignment-repair/*.prov.json
+/workflow-validation/verification
+/workflow-validation/*.prov.json

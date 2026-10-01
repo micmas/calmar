@@ -1,0 +1,2 @@
+# Optional UI regression check: python tests/browser_workflow.py
+playwright==1.63.0
