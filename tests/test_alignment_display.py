@@ -45,7 +45,7 @@ class AlignmentDisplayTests(unittest.TestCase):
                       importlib=SimpleNamespace(reload=lambda obj: obj),
                       image=SimpleNamespace(resample_to_img=lambda a, b, **kw: a),
                       HTML=lambda text: text, display=lambda *args: None, cw=None)
-            with patch("shutil.which", return_value=None), patch("calmar.overlay.mask_comparison"):
+            with patch("shutil.which", return_value=None), patch("calmar.overlay.mask_review"):
                 exec("".join(cells["calmar-step-30"]["source"]), ns)
             self.assertEqual(len(calls), 1)
             self.assertEqual(calls[0][2], folder / "ExpertMask_in_MNI.nii.gz")
@@ -98,8 +98,8 @@ class AlignmentDisplayTests(unittest.TestCase):
         ns = {"Path": Path}
         exec(compile(ast.Module(body=[assignment], type_ignores=[]), "config", "exec"), ns)
         config = ns["CONFIG"]
-        self.assertCountEqual(config["SUBJECT_FILTER"], ["sub-M2066", "sub-M2075", "sub-M2176"])
-        self.assertCountEqual(config["SESSION_FILTER"], ["ses-235", "ses-602", "ses-1237"])
+        self.assertCountEqual(config["SUBJECT_FILTER"], ["sub-M2001", "sub-M2075", "sub-M2077"])
+        self.assertCountEqual(config["SESSION_FILTER"], ["ses-1076", "ses-602", "ses-250"])
         self.assertEqual(config["MAX_SUBJECTS"], 3)
         self.assertEqual(config["BCB_MASKS"], "all")
         self.assertEqual(config["DEEPDISCO_MASK_SOURCE"], "all")

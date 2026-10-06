@@ -64,7 +64,7 @@ async def exercise(base, token, relative, artifacts):
             await cell.locator('.jp-OutputArea').first.screenshot(path=str(artifacts/'before-model-change.png'))
             before = list(files)
             started = asyncio.get_running_loop().time()
-            await cell.locator('select').nth(2).select_option(label='commissural')
+            await page.get_by_role('button', name='Commissural', exact=True).click()
             await page.wait_for_function("window.__calmarTestNv?.volumes.length === 4 && window.__calmarTestNv.volumes[3].name.includes('commissural')")
             state = await page.evaluate("window.__calmarTestNv.volumes.map(v => ({name:v.name, opacity:v.opacity, min:v.cal_min, max:v.cal_max, imageLength:v.img?.length}))")
             print('Browser layers:', json.dumps(state), flush=True)
@@ -84,6 +84,9 @@ async def exercise(base, token, relative, artifacts):
             (artifacts/'browser.json').write_text(json.dumps(result, indent=2))
             print(json.dumps(result))
         except Exception:
+            print('Browser errors:', errors)
+            print('Viewer state:', await page.evaluate('({available:!!window.__calmarTestNv, volumes:window.__calmarTestNv?.volumes?.map(v=>({name:v.name,opacity:v.opacity}))})'))
+            print('Active controls:', await page.locator('.widget-toggle-buttons .mod-active').all_text_contents())
             await page.screenshot(path=str(artifacts/'failure.png'))
             raise
         finally:

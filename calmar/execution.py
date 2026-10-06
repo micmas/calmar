@@ -50,17 +50,20 @@ def _request_cell_id(shell):
     cell_id = parent.get("metadata", {}).get("cellId")
     if cell_id:
         return cell_id
-    # Some notebook clients omit JupyterLab's optional cellId metadata.
-    # Keep identity in the code too, including after edits to a cell body.
+    # Retain compatibility with notebooks saved before IDs moved out of source.
     source = parent.get("content", {}).get("code", "")
     marker = re.search(r"^# CALMAR_CELL_ID: ([A-Za-z0-9_-]+)\s*$", source, re.MULTILINE)
     if marker:
         return marker.group(1)
-    # Compatibility for already-open notebooks predating the marker. Match
-    # whole cells only; fragments/unknown requests still cannot unlock work.
+    # Clients that omit cellId can use the frontend's live source/ID mapping,
+    # including unsaved edits. Whole-cell matching keeps unknown requests blocked.
     def unmarked(text):
         return re.sub(r"^# CALMAR_CELL_ID: [^\n]+\n?", "", text, flags=re.MULTILINE).strip()
     if source.strip():
+        matches = [cell_id for cell_id, text in getattr(shell, '_calmar_live_cell_sources', {}).items()
+                   if unmarked(text) == unmarked(source)]
+        if len(matches) == 1:
+            return matches[0]
         for name in ("lesion-interpretation-pipeline.ipynb", "calmar-guided.ipynb"):
             matches = [cell["id"] for cell in _notebook_cells(name)
                        if cell["cell_type"] == "code" and unmarked("".join(cell["source"])) == unmarked(source)]
@@ -230,19 +233,27 @@ class BatchCheckpoint(ExecutionCheckpoint):
         enable_checkpoint_recovery(shell)
         super().__init__(shell,
             "Execution is paused before batch processing. Click 'Continue to batch', "
-            "to run the batch cells below. This cell has not executed.")
+            "or 'Jump to reporting' at the checkpoint. This cell has not executed.")
         self.upstream_cell_ids = _saved_upstream_ids(shell, "batch-start")
         self.message = widgets.HTML(
             "<b>⏸ Paused before batch processing.</b> Review the results above. "
             "You can rerun cells above this checkpoint while batch processing stays paused. "
             "Click <b>Continue to batch</b> to confirm Run all cells below. "
-            "Processing will stop again at QC.")
-        self.navigation = NotebookNavigation(self.message, on_cell_order=self._update_cell_order)
+            "Processing will stop again at QC. Or choose <b>Jump to reporting</b> to open report "
+            "setup and selection without running the batch processing cells. "
+            "This does not mark QC as completed.")
+        self.navigation = NotebookNavigation(self.message, on_cell_order=self._update_cell_order,
+                                             on_error=self._retry_controls)
         self.button = widgets.Button(description="Continue to batch",
                                      button_style="warning",
                                      layout=widgets.Layout(width="190px"))
         self.button.on_click(self.resume)
-        self.controls = [self.message, self.button, self.navigation]
+        self.reporting = widgets.Button(description="Jump to reporting",
+                                       layout=widgets.Layout(width="190px"))
+        self.reporting.on_click(self.report)
+        self.controls = [self.message, self.button, self.reporting, self.navigation]
+        self.widget = widgets.VBox([self.message, widgets.HBox([self.button, self.reporting]), self.navigation])
+        self.controls.append(self.widget)
 
     def _update_cell_order(self, ids, batch_start):
         # Use the open notebook's order, including unsaved inserted/moved cells.
@@ -250,14 +261,33 @@ class BatchCheckpoint(ExecutionCheckpoint):
                                   if batch_start in ids else set())
 
     def resume(self, _button=None):
-        self.navigation.request("batch-start", self._resume,
-            prompt="Run all cells below, starting at batch processing? Execution will pause at QC.")
+        self.navigation.request("batch-start", self._resume)
+
+    def _retry_controls(self):
+        self.button.disabled = self.reporting.disabled = False
 
     def _resume(self):
         self.release()
         self.button.disabled = True
+        self.reporting.disabled = True
         self.message.value = (
             "<b>Starting batch processing.</b> Execution will pause again at QC.")
+
+    def report(self, _button=None):
+        self.navigation.request('report-setup', self._report)
+
+    def _report(self):
+        # Release old in-memory gates without changing any saved QC decisions.
+        for name in ('_calmar_qc_checkpoint', '_calmar_report_checkpoint'):
+            previous = getattr(self.shell, name, None)
+            if previous is not None:
+                previous.close()
+        self.release()
+        self.button.disabled = self.reporting.disabled = True
+        namespace = getattr(self.shell, 'user_ns', {})
+        namespace['INTERP_SUBJECT_IDX'] = namespace.get('TEST_SUBJECT_IDX', 0)
+        self.message.value = ('<b>Opening report setup.</b> '
+                              'Choose the participant and mask in the report selector. Saved QC is unchanged.')
 
 
 class QCCheckpoint(ExecutionCheckpoint):
@@ -342,7 +372,7 @@ def pause_before_batch():
         previous.close()
     checkpoint = BatchCheckpoint(shell)
     shell._calmar_batch_checkpoint = checkpoint
-    display(checkpoint.message, checkpoint.button, checkpoint.navigation)
+    display(checkpoint.widget)
     display(recovery_instructions("batch"))
     checkpoint._cancel_queued()
     return checkpoint

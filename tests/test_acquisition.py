@@ -130,7 +130,7 @@ class AcquisitionTests(unittest.TestCase):
     def test_batch_uses_mask_source_session_when_t1_is_elsewhere(self):
         self.move_t1_to_other_session()
         tree = ast.parse("".join(CELLS[47]["source"]))
-        definitions = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
+        definitions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
         ns = dict(Path=Path, re=re, RAW_DATASET_DIR=self.root,
                   deriv_path_for=lambda e: self.root / "linda",
                   q=SimpleNamespace(mni_mask_matches_reference=lambda *a: False,
@@ -149,7 +149,7 @@ class AcquisitionTests(unittest.TestCase):
 
     def test_batch_stops_on_unavailable_mask(self):
         tree = ast.parse("".join(CELLS[47]["source"]))
-        definitions = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
+        definitions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
         ns = dict(Path=Path, RAW_DATASET_DIR=self.root,
                   deriv_path_for=lambda e: self.root / "linda",
                   q=SimpleNamespace(mni_mask_matches_reference=lambda *a: False),

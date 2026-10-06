@@ -926,8 +926,9 @@ def rerun_subject(t1w_path: Path, linda_out_dir: Path, *,
     cmd = [linda_cmd, str(t1w_path), str(linda_out_dir)]
     if manual_seed is not None:
         cmd.append(str(manual_seed))
-    print(f"  ▶ {' '.join(cmd)}")
-    res = subprocess.run(cmd)
+    from .process_output import run_logged
+    print("Rerunning LINDA…")
+    res = run_logged(cmd, Path(linda_out_dir) / 'linda-processing.log')
     if res.returncode == 0:
         mask = linda_out_dir / "Lesion_in_MNI.nii.gz"
         if mask.exists():
@@ -1125,9 +1126,10 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
         "--output",    str(out),
         "--interp",    interp,
     ]
-    print(f"  ▶ (warp native→MNI) bash {_WARP_BASH_STUB.name} "
-          f"{src.name} → {out.name} ...")
-    res = subprocess.run(cmd, env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
+    from .process_output import run_logged
+    print(f"Warping {src.name} to MNI…")
+    res = run_logged(cmd, out.with_name(out.name + '.log'),
+                     env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
 
     if res.returncode == 0 and out.exists():
         # Log on the mask's QC sidecar so the audit trail is intact.
@@ -1287,11 +1289,9 @@ def run_linda_with_mask_via_R(
     )
 
     cmd = [r_cmd, "--no-save", "--quiet", "-e", r_expr]
-    print(f"  ▶ (R --no-save) bypassing LINDA's skull-strip with HD-BET mask")
-    print(f"      T1     = {t1}")
-    print(f"      mask   = {mask}")
-    print(f"      outdir = {out}")
-    res = subprocess.run(cmd)
+    from .process_output import run_logged
+    print("Running LINDA with the supplied brain mask…")
+    res = run_logged(cmd, Path(linda_out_dir) / 'linda-processing.log')
 
     if res.returncode == 0:
         lesion = linda_out_dir / "Lesion_in_MNI.nii.gz"
@@ -1402,17 +1402,13 @@ def run_linda_with_mask(
                 f"({rscript_cmd!r})."
             )
         cmd = [resolved, str(stub), *args_tail]
-        print(f"  ▶ (host Rscript override) {' '.join(cmd)}")
     elif container_wrapper:
         # Cleanest path — Neurodesk's transparent-singularity wrapper
         # for the in-container script. Same UX as linda_predict.sh.
         cmd = [container_wrapper, *args_tail]
-        print(f"  ▶ (container wrapper) {' '.join(cmd)}")
     elif _LINDA_BASH_STUB.exists():
         # Local bash wrapper — does the singularity exec dance itself.
         cmd = ["bash", str(_LINDA_BASH_STUB), *args_tail]
-        print(f"  ▶ (local bash wrapper → singularity exec) "
-              f"{' '.join(cmd)}")
     else:
         resolved = _find_rscript("Rscript")
         if resolved is None:
@@ -1434,14 +1430,16 @@ def run_linda_with_mask(
                 "CONFIG['HDBET_USE_MASK_BYPASS'] = False."
             )
         cmd = [resolved, str(stub), *args_tail]
-        print(f"  ▶ (host Rscript) {' '.join(cmd)}")
 
     if not verbose:
         cmd.append("--quiet")
     if not cache:
         cmd.append("--no-cache")
 
-    res = subprocess.run(cmd, env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
+    from .process_output import run_logged
+    print("Running LINDA with the supplied brain mask…")
+    res = run_logged(cmd, Path(linda_out_dir) / 'linda-processing.log',
+                     env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
 
     if res.returncode == 0:
         mask = linda_out_dir / "Lesion_in_MNI.nii.gz"
@@ -1585,8 +1583,9 @@ def run_hd_bet(t1w_path: Path, out_dir: Path,
         if device == "cpu" and mode == "accurate":
             print("  ⚠ HD-BET in 'accurate' mode is *very* slow on CPU "
                   "(5-model ensemble). Consider mode='fast'.")
-        print(f"  ▶ {' '.join(cmd)}")
-        res = subprocess.run(cmd)
+        from .process_output import run_logged
+        print(f"Running HD-BET ({mode})…")
+        res = run_logged(cmd, Path(out_dir) / 'brain-extraction.log')
         if res.returncode == 0:
             # HD-BET names: <prefix>.nii.gz and <prefix>_mask.nii.gz
             hd_brain = Path(f"{prefix}.nii.gz")
@@ -1601,8 +1600,9 @@ def run_hd_bet(t1w_path: Path, out_dir: Path,
                "-i", str(t1), "-o", str(brain), "-m", str(mask)]
         if extra_args:
             cmd.extend(extra_args)
-        print(f"  ▶ {' '.join(cmd)}")
-        res = subprocess.run(cmd)
+        from .process_output import run_logged
+        print("Running SynthStrip…")
+        res = run_logged(cmd, Path(out_dir) / 'brain-extraction.log')
         return {"tool": "mri_synthstrip", "brain": brain, "mask": mask,
                 "returncode": res.returncode}
 
@@ -1741,13 +1741,6 @@ def make_brain_with_padding(t1_path: Path, brain_mask_path: Path,
     if csf_voxels > 0:
         padded[csf_rim] = csf_value
     padded[skull_rim] = skull_value
-
-    n_brain = int(mask_data.sum())
-    n_csf   = int(csf_rim.sum())
-    n_skull = int(skull_rim.sum())
-    print(f"  padded T1: brain {n_brain:,} (intensity ~{brain_mean:.0f})"
-          f"  +  CSF rim {n_csf:,} ({csf_voxels}vox @ ~{csf_value:.1f})"
-          f"  +  skull rim {n_skull:,} ({skull_voxels}vox @ ~{skull_value:.1f})")
 
     nib.save(nib.Nifti1Image(padded, t1.affine, t1.header),
              str(output_path))
@@ -1973,7 +1966,6 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
     if use_mask_bypass:
         mode = "mask_bypass"
         linda_input = t1w_path  # original T1; mask is supplied separately
-        print(f"  Mode: mask-bypass — feeding HD-BET mask to LINDA's R API")
     else:
         mode = "legacy_padding"
         linda_input = bx["brain"]

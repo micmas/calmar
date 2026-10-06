@@ -12,16 +12,41 @@ export async function getLabApplication(manager) {
 
 export default {
   async render({ model, el }) {
+    const viewId = Math.random().toString(36).slice(2);
     el.style.fontSize = '12px';
     el.textContent = 'Connecting notebook controls…';
     let app, connecting, disposed = false;
     let pending = null;
     let observedCells = null;
+    let sourceTimer;
+    let sourceSnapshot = '{}';
+    const sourceCells = new Set();
+    const publishSources = () => {
+      const cells = observedCells ? Array.from(observedCells) : [];
+      const sources = Object.fromEntries(cells.filter(c => c.type === 'code').map(c =>
+        [c.id, c.sharedModel?.getSource?.() ?? '']));
+      const snapshot = JSON.stringify(sources);
+      if (snapshot !== sourceSnapshot) {
+        sourceSnapshot = snapshot;
+        model.send({event: 'cell-sources', sources});
+      }
+    };
+    const scheduleSources = () => {
+      clearTimeout(sourceTimer);
+      sourceTimer = setTimeout(publishSources, 150);
+    };
     const publishCellOrder = () => {
       const cells = observedCells ? Array.from(observedCells) : [];
+      for (const cell of sourceCells) {
+        if (!cells.includes(cell)) { cell.contentChanged?.disconnect(scheduleSources); sourceCells.delete(cell); }
+      }
+      for (const cell of cells) {
+        if (!sourceCells.has(cell)) { cell.contentChanged?.connect(scheduleSources); sourceCells.add(cell); }
+      }
       const starts = cells.filter(c => c.getMetadata('calmar')?.role === 'batch-start');
       model.send({event: 'cell-order', ids: cells.map(c => c.id),
         batch_start: starts.length === 1 ? starts[0].id : null});
+      publishSources();
     };
     const observeCellOrder = () => {
       const panel = owner();
@@ -66,15 +91,18 @@ export default {
           const panel = owner();
           if (!panel?.content?.model?.cells) throw Error('Open this control in its notebook tab.');
           const cells = Array.from(panel.content.model.cells);
-          const matches = cells.filter(c => c.getMetadata('calmar')?.role === data.role);
+          const matches = cells.filter(c => {
+            const metadata = c.getMetadata('calmar');
+            return metadata?.role === data.role || metadata?.roles?.includes(data.role);
+          });
           if (matches.length !== 1) throw Error(`Cannot locate a unique ${data.role} cell. Reload the updated notebook.`);
           if (data.prompt && !window.confirm(data.prompt)) {
             model.send({event: 'cancelled', message: 'Continuation cancelled; no cells were started.'});
             return;
           }
           pending = {panel, cellId: matches[0].id, allBelow: data.all_below};
-          model.send({event: 'approved'});
-        } else if (data.action === 'execute' && pending) {
+          model.send({event: 'approved', view_id: viewId});
+        } else if (data.action === 'execute' && pending && (!data.view_id || data.view_id === viewId)) {
           const {panel, cellId, allBelow} = pending;
           pending = null;
           if (panel.isDisposed) throw Error('The notebook was closed.');
@@ -97,6 +125,8 @@ export default {
       disposed = true;
       observedCells?.changed?.disconnect(publishCellOrder);
       clearTimeout(connectionTimer);
+      clearTimeout(sourceTimer);
+      for (const cell of sourceCells) cell.contentChanged?.disconnect(scheduleSources);
       model.off('msg:custom', receive);
     };
   }
