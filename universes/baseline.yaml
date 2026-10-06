@@ -1,0 +1,9 @@
+id: baseline
+description: 'Defaults: ISLES pilot n=25; HD-BET fast'
+analyses:
+  isles2022_openads:
+    decisions:
+      cohort_size: n25
+  synthetic_crosstool:
+    decisions:
+      hdbet_mode: fast

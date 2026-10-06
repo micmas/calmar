@@ -254,3 +254,186 @@ def _self_test() -> int:
 if __name__ == "__main__":
     import sys
     sys.exit(_self_test())
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Edge-case battery — "borderline" phantoms that stress the failure modes
+# distinguishing segmentation tools: tiny lesions, embolic multifocality,
+# territorial scale, faint contrast, CSF adjacency, cortical boundary,
+# mixed lesion chronology, and lesion-negative controls.
+# All five modalities (T1w/T2w/FLAIR/DWI/ADC) are written per subject so
+# any tool can run; ground truth excludes CSF voxels.
+# ═══════════════════════════════════════════════════════════════════════
+
+EDGECASE_SPECS = {
+    # id            phase      n lesions  radius vox  placement   contrast
+    "acutiny":   dict(phase="acute",   n=(1, 1),  r=(1.5, 2.5), place="deep",  contrast=1.0),
+    "acumulti":  dict(phase="acute",   n=(8, 14), r=(1.5, 3.0), place="deep",  contrast=1.0),
+    "acularge":  dict(phase="acute",   n=(1, 1),  r=(12, 18),   place="deep",  contrast=1.0),
+    "acusubtle": dict(phase="acute",   n=(1, 3),  r=(4, 9),     place="deep",  contrast=0.4),
+    "acuperiv":  dict(phase="acute",   n=(1, 1),  r=(2.5, 5),   place="periv", contrast=1.0),
+    "acucort":   dict(phase="acute",   n=(1, 1),  r=(2.5, 5),   place="cort",  contrast=1.0),
+    "acumixed":  dict(phase="acute",   n=(1, 1),  r=(4, 7),     place="deep",  contrast=1.0,
+                      distractor=True),   # + one chronic cavity, NOT in GT
+    "acuneg":    dict(phase="acute",   n=(0, 0),  r=(4, 9),     place="deep",  contrast=1.0),
+    "chrtiny":   dict(phase="chronic", n=(1, 1),  r=(1.5, 2.5), place="deep",  contrast=1.0),
+    "chrmulti":  dict(phase="chronic", n=(8, 14), r=(1.5, 3.0), place="deep",  contrast=1.0),
+    "chrsubtle": dict(phase="chronic", n=(1, 3),  r=(4, 9),     place="deep",  contrast=0.4),
+    "chrneg":    dict(phase="chronic", n=(0, 0),  r=(4, 9),     place="deep",  contrast=1.0),
+}
+
+
+def _edge_candidates(place: str, bm, t, csf):
+    """Voxel-index array of allowed lesion centres for a placement class."""
+    from scipy.ndimage import binary_dilation, binary_erosion
+    deep = bm & (t > 0.45) & (t < 0.9)
+    if place == "deep":
+        cand = deep
+    elif place == "periv":                      # adjacent to ventricles/CSF
+        cand = binary_dilation(csf, iterations=3) & bm & ~csf
+    elif place == "cort":                       # at the brain surface
+        cand = bm & ~binary_erosion(bm, iterations=3) & (t > 0.3)
+    else:
+        cand = bm
+    idx = np.argwhere(cand)
+    return idx if len(idx) else np.argwhere(bm)
+
+
+def _edge_blend(arr, les, target_val, contrast):
+    """Move arr toward target_val inside les, scaled by contrast in [0,1]."""
+    arr[les] = arr[les] * (1 - contrast) + target_val * contrast
+
+
+def _gen_one_edgecase(sub, target, rng, mni_img, brain_mask, spec) -> dict:
+    """One edge-case subject: 5 modalities + GT mask (+ distractor mask)."""
+    from scipy.ndimage import gaussian_filter, binary_dilation
+
+    target = Path(target)
+    aff = mni_img.affine
+    t1 = mni_img.get_fdata().astype(np.float32)
+    bm = np.asarray(brain_mask, dtype=bool)
+
+    t = np.zeros_like(t1)
+    if bm.any():
+        v = t1[bm]
+        lo, hi = np.percentile(v, [2, 98])
+        t[bm] = np.clip((t1[bm] - lo) / (hi - lo + 1e-6), 0, 1)
+    csf = bm & (t < 0.25)
+
+    # Healthy-brain bases (same conventions as _gen_one_synthetic and the
+    # FLAIR/T2 augmentation in src/analysis_09_add_flair_t2.sh).
+    dwi = np.zeros_like(t); dwi[bm] = 600 + 250 * t[bm]; dwi[csf] = 120
+    adc = np.zeros_like(t); adc[bm] = 800 + 100 * (1 - t[bm]); adc[csf] = 3000
+    t1max = np.percentile(t1[bm], 98) if bm.any() else (float(t1.max()) or 1.0)
+    t1w = np.clip(t1 / (t1max + 1e-6), 0, 1.5) * 700.0
+    tc = np.clip(t, 0, 1)
+    t2w = np.zeros_like(t); t2w[bm] = 400 + 500 * (1 - tc[bm]); t2w[csf] = 1300
+    fla = np.zeros_like(t); fla[bm] = 350 + 450 * (1 - tc[bm]); fla[csf] = 100
+
+    zz, yy, xx = np.ogrid[:t.shape[0], :t.shape[1], :t.shape[2]]
+
+    def _implant(n_range, r_range, place):
+        m = np.zeros(t.shape, bool)
+        n = int(rng.randint(n_range[0], n_range[1] + 1)) if n_range[1] else 0
+        cand = _edge_candidates(place, bm, t, csf)
+        for _ in range(n):
+            c = cand[rng.randint(len(cand))]
+            r = rng.uniform(r_range[0], r_range[1], size=3)
+            ell = (((zz - c[0]) / r[0])**2 + ((yy - c[1]) / r[1])**2
+                   + ((xx - c[2]) / r[2])**2) <= 1.0
+            m |= ell & bm & ~csf
+        return m
+
+    les = _implant(spec["n"], spec["r"], spec["place"])
+    c = spec.get("contrast", 1.0)
+
+    if spec["phase"] == "chronic":
+        _edge_blend(t1w, les, 60.0, c); _edge_blend(adc, les, 2200.0, c)
+        _edge_blend(dwi, les, 500.0, c); _edge_blend(t2w, les, 1300.0, c)
+        _edge_blend(fla, les, 120.0, c)
+        rim = binary_dilation(les, iterations=2) & ~les & bm
+        _edge_blend(fla, rim, 850.0, c); _edge_blend(t2w, rim, 900.0, c)
+    else:
+        _edge_blend(dwi, les, 1400.0, c); _edge_blend(adc, les, 350.0, c)
+        t1w[les] *= (1 - 0.15 * c)
+        _edge_blend(fla, les, 900.0, c); _edge_blend(t2w, les, 1000.0, c)
+
+    # Mixed-chronology distractor: one chronic cavity, excluded from GT.
+    distractor = np.zeros(t.shape, bool)
+    if spec.get("distractor"):
+        distractor = _implant((1, 1), (4, 7), "deep") & ~les
+        t1w[distractor] = 60.0; adc[distractor] = 2200.0
+        dwi[distractor] = 500.0; t2w[distractor] = 1300.0
+        fla[distractor] = 120.0
+        drim = binary_dilation(distractor, iterations=2) & ~distractor & bm & ~les
+        fla[drim] = 850.0; t2w[drim] = 900.0
+
+    head = t1 > 0
+    out = {}
+    vols = {"dwi": (dwi, 0.8, 15, bm), "adc": (adc, 0.8, 20, bm),
+            "T1w": (t1w, 0.6, 12, head), "T2w": (t2w, 0.6, 15, bm),
+            "FLAIR": (fla, 0.6, 15, bm)}
+    for name, (arr, sig, noise, region) in vols.items():
+        img = np.clip(gaussian_filter(arr, sig)
+                      + rng.normal(0, noise, t.shape) * region,
+                      0, None).astype(np.float32)
+        sub_dir = target / sub / ("anat" if name in ("T1w", "T2w", "FLAIR")
+                                  else "dwi")
+        sub_dir.mkdir(parents=True, exist_ok=True)
+        suffix = name if name in ("T1w", "T2w", "FLAIR") else name.lower()
+        p = sub_dir / f"{sub}_{suffix}.nii.gz"
+        nib.save(nib.Nifti1Image(img, aff), str(p))
+        out[name] = p
+
+    mdir = target / "derivatives" / sub
+    mdir.mkdir(parents=True, exist_ok=True)
+    nib.save(nib.Nifti1Image(les.astype(np.uint8), aff),
+             str(mdir / f"{sub}_msk.nii.gz"))
+    if spec.get("distractor"):
+        nib.save(nib.Nifti1Image(distractor.astype(np.uint8), aff),
+                 str(mdir / f"{sub}_desc-distractorchronic_msk.nii.gz"))
+    out["lesion_voxels"] = int(les.sum())
+    out["n_lesions"] = "0" if not les.any() else "multi"
+    return out
+
+
+def edgecase_install(target, *, n_per_cat: int = 3, seed: int = 11) -> bool:
+    """Generate the edge-case battery (idempotent per subject)."""
+    from nilearn import datasets as _nlds
+
+    target = Path(target)
+    mni = _nlds.load_mni152_template(resolution=2)
+    try:
+        bm_img = _nlds.load_mni152_brain_mask(resolution=2)
+        bm = bm_img.get_fdata() > 0
+        if bm.shape != mni.shape:
+            raise ValueError("grid mismatch")
+    except Exception:
+        d = mni.get_fdata()
+        bm = d > (0.15 * d.max())
+
+    rows = []
+    for ci, (cat, spec) in enumerate(sorted(EDGECASE_SPECS.items())):
+        for i in range(n_per_cat):
+            sub = f"sub-{cat}{i:03d}"
+            t1_p = target / sub / "anat" / f"{sub}_T1w.nii.gz"
+            if t1_p.exists():
+                print(f"  ✔ {sub} cached")
+                info = {"lesion_voxels": "cached"}
+            else:
+                info = _gen_one_edgecase(
+                    sub, target,
+                    np.random.RandomState(seed * 1000 + ci * 100 + i),
+                    mni, bm, spec)
+                print(f"  ✔ {sub}  ({info['lesion_voxels']} lesion voxels)")
+            rows.append((sub, spec["phase"], cat, str(info["lesion_voxels"])))
+
+    (target / "dataset_description.json").write_text(
+        '{"Name": "Synthetic stroke edge-case battery (5 modalities)", '
+        '"BIDSVersion": "1.9.0"}')
+    tsv = "participant_id\tphase\tcategory\tlesion_voxels\n" + "".join(
+        f"{s}\t{p}\t{c}\t{v}\n" for s, p, c, v in rows)
+    (target / "participants.tsv").write_text(tsv)
+    print(f"  ✔ edge-case battery ready "
+          f"({len(EDGECASE_SPECS)} categories × {n_per_cat})")
+    return True
