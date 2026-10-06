@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class GuidedWorkflowTests(unittest.TestCase):
     def test_every_disabled_test_cell_only_prints_continuation(self):
-        for number in (23,25,27,29,30,32,34,35,39):
+        for number in (20,23,25,27,30,32,34,35,39):
             with self.subTest(cell=number):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
@@ -30,13 +30,15 @@ class GuidedWorkflowTests(unittest.TestCase):
     def test_guided_defaults_preserve_selected_cohort(self):
         config = defaults()
         self.assertEqual(config['MAX_SUBJECTS'], 3)
-        self.assertCountEqual(config['SUBJECT_FILTER'], ['sub-M2066','sub-M2075','sub-M2176'])
+        self.assertCountEqual(config['SUBJECT_FILTER'], ['sub-M2001','sub-M2075','sub-M2077'])
 
     def test_navigation_targets_exist_once_in_each_notebook(self):
         for name in ('calmar-guided.ipynb', 'lesion-interpretation-pipeline.ipynb'):
             notebook = json.loads((ROOT/name).read_text())
-            roles = [c.get('metadata', {}).get('calmar', {}).get('role') for c in notebook['cells']]
-            for role in ('batch-start', 'skull-repair', 'after-qc'):
+            roles = [role for c in notebook['cells'] for role in {
+                c.get('metadata', {}).get('calmar', {}).get('role'),
+                *c.get('metadata', {}).get('calmar', {}).get('roles', [])}]
+            for role in ('batch-start', 'skull-repair', 'after-qc', 'report-prepare', 'report-setup', 'single-test-start'):
                 self.assertEqual(roles.count(role), 1, (name, role))
 
     def test_cached_hdbet_preview_loads_anatomy_and_thresholded_mask_once(self):
@@ -71,6 +73,22 @@ class GuidedWorkflowTests(unittest.TestCase):
 
 
 class GuidedRunnerTests(unittest.IsolatedAsyncioTestCase):
+    async def test_navigation_reconnects_stale_ready_state_and_reports_timeout(self):
+        from calmar.notebook_navigation import NotebookNavigation
+        retry = Mock()
+        nav = NotebookNavigation(ipywidgets.HTML(), on_error=retry)
+        self.addCleanup(nav.close)
+        nav.ready = True
+        nav.send = Mock()
+        callback = Mock()
+        nav.request('report-setup', callback)
+        nav.send.assert_called_once_with(dict(action='connect'))
+        callback.assert_not_called()
+        nav._connection_timeout()
+        self.assertIn('did not respond', nav.message.value)
+        retry.assert_called_once()
+        callback.assert_not_called()
+
     async def test_navigation_retries_connection_and_prepares_once(self):
         from calmar.notebook_navigation import NotebookNavigation
         nav = NotebookNavigation(ipywidgets.HTML())
@@ -97,12 +115,13 @@ class GuidedRunnerTests(unittest.IsolatedAsyncioTestCase):
                  2:'value += 1\nraise ValueError("stop")', 3:'value = 999'}
         ns={}
         with patch('calmar.guided.notebook_cells',return_value=[]), \
-             patch('calmar.guided.source_cell',side_effect=lambda n,c:dict(cell_type='code',source=[sources[n]])), \
+             patch('calmar.guided.source_cell',side_effect=lambda n,c:dict(id=f'calmar-step-{n:02}',cell_type='code',source=[sources[n]])), \
              patch('calmar.guided.get_ipython',return_value=InteractiveShell.instance()), \
              patch('calmar.guided.display'):
             with self.assertRaisesRegex(ValueError,'stop'):
                 await run_cells([1,2,3],ns)
         self.assertEqual(ns['value'],8)
+        self.assertEqual(list(ns['STEP_TIMINGS']), ['calmar-step-01', 'calmar-step-02'])
 
     async def test_frontend_continuation_waits_until_queue_cancellation_finishes(self):
         from calmar.notebook_navigation import NotebookNavigation

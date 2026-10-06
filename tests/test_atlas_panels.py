@@ -6,7 +6,9 @@ import tempfile
 import textwrap
 from types import SimpleNamespace
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+from datetime import datetime
+from matplotlib.backends.backend_pdf import PdfPages
 
 import ipywidgets as widgets
 from IPython.display import HTML
@@ -58,7 +60,7 @@ class AtlasPanelTests(unittest.TestCase):
         self.ns = dict(OVERLAP_DFS=self.tables, SUBJECTS=[self.entry],
                        CONFIG={"DEFAULT_ATLAS": "Atlas_A", "LESION_THRESHOLD": .5},
                        ALL_ATLASES={"Atlas_B": SimpleNamespace(maps=self.img)},
-                       widgets=widgets, HTML=HTML, display=lambda *a: None,
+                       widgets=widgets, HTML=HTML, display=Mock(), datetime=datetime, PdfPages=PdfPages,
                        clear_output=lambda **kw: None, Path=Path, nib=nib, np=np,
                        plt=plt, textwrap=textwrap, DERIV_DIR=self.root,
                        REPORTS_DIR=self.root, ATLAS_DIR=self.root,
@@ -97,9 +99,7 @@ class AtlasPanelTests(unittest.TestCase):
         self.assertEqual(sel.subject.value, ('sub-zero', ''))
         self.assertIn('subject', sel.current()[0])
 
-    def test_later_report_keeps_earlier_controls_independent_and_loads_brain(self):
-        self.run_cell(71)
-        earlier = self.ns["_atlas_overlap_panel"]
+    def test_one_preview_shares_selection_and_loads_brain_only_on_its_tab(self):
         self.run_cell(74)
         report = self.ns["_subject_report_panel"]
         for name in ("atlas_dd", "subj_dd", "src_dd", "_refresh_subjects", "_dirty"):
@@ -119,10 +119,11 @@ class AtlasPanelTests(unittest.TestCase):
         self.assertEqual(report["viewer"].volumes[1].name, "Atlas_B_atlas.nii.gz")
         self.assertIs(report["viewer"].volumes[0], brain)
         self.assertTrue((self.root / "Atlas_B_atlas.nii.gz").exists())
-        self.assertEqual(earlier["atlas"].value, "Atlas_A")
-        earlier["atlas"].value = "Atlas_B"
-        self.assertEqual(earlier["source"].value, "manual")
-        self.assertEqual(earlier["current"]()[0]["session"].iloc[0], "")
+        self.assertIn('Atlas_B', report['report'].value)
+        self.assertIsNone(report['group'].selected_index)
+        self.assertIsNone(report['state']['group_panel'])
+        self.assertFalse(report['chart'].outputs)
+        self.ns['display'].assert_called_once_with(report['widget'])
         self.assertEqual(len(self.viewers), 1)
 
     def test_report_explains_missing_brain_instead_of_showing_mask_as_background(self):
@@ -143,18 +144,81 @@ class AtlasPanelTests(unittest.TestCase):
                        image=SimpleNamespace(resample_to_img=resample),
                        mask_inventory_for=lambda e: self.masks if e == self.entry else
                        {"manual": {"MNI": moved}})
-        self.run_cell(67)
-        panel = self.ns["_group_overlap_panel"]
-        panel["source"].value = "manual"
+        self.run_cell(74)
+        report = self.ns['_subject_report_panel']
+        report['source'].value = 'manual'
+        report['group_tabs'].selected_index = 1
+        self.assertIsNone(report['state']['group_panel'])
+        report['group'].selected_index = 0
+        panel = report['state']['group_panel']
+        self.assertIs(panel['source'], report['source'])
         self.assertFalse(list(self.root.glob("group_lesion_frequency*")))
-        panel["compute"]()
+        self.assertIsNone(panel['state']['viewer'])
+        with patch('nilearn.image.resample_to_img', resample):
+            panel["compute"]()
         resample.assert_called_once()
-        self.assertEqual(len(panel["viewer"].volumes), 2)
-        self.assertEqual(Path(panel["viewer"].volumes[-1].path).name,
+        viewer = panel['state']['viewer']
+        self.assertEqual(len(viewer.volumes), 2)
+        self.assertEqual(Path(viewer.volumes[-1].path).name,
                          "group_lesion_frequency_manual.nii.gz")
-        self.assertIsNone(panel["viewer"].volumes[0].cal_min)
+        self.assertIsNone(viewer.volumes[0].cal_min)
         panel["source"].value = "linda"
-        self.assertFalse(panel["viewer"].volumes)
+        self.assertFalse(viewer.volumes)
+
+    def test_optional_charts_stay_lazy_and_refresh_from_shared_mask_selection(self):
+        self.tables['Schaefer400_manual'] = self.tables['Atlas_B_manual'].assign(region='LH_Vis_1')
+        self.run_cell(74)
+        panel = self.ns['_subject_report_panel']
+        self.assertFalse(panel['chart'].outputs)
+        self.assertFalse(panel['heatmap'].outputs)
+        self.assertFalse(panel['networks'].outputs)
+        panel['tabs'].selected_index = 2
+        self.assertTrue(panel['chart'].outputs)
+        panel['group'].selected_index = 0
+        self.assertTrue(panel['heatmap'].outputs)
+        panel['group_tabs'].selected_index = 2
+        self.assertTrue(panel['networks'].outputs)
+        panel['source'].value = 'linda'
+        self.assertIn('unavailable', panel['networks'].outputs[0]['text'])
+        self.assertIsNone(panel['state']['group_panel'])
+        self.assertEqual(len(self.viewers), 1)
+
+    def test_export_is_inside_preview_and_uses_current_selection(self):
+        self.run_cell(74)
+        self.run_cell(75)
+        panel = self.ns['_subject_report_panel']
+        self.assertEqual(len(panel['export'].children), 2)
+        self.ns['display'].assert_called_once_with(panel['widget'])
+        panel['atlas'].value = 'Atlas_B'
+        panel['export'].children[0].click()
+        path = self.root/'pdfs/sub-test_no-ses_Atlas_B_manual.pdf'
+        self.assertTrue(path.read_bytes().startswith(b'%PDF'))
+
+    def test_obsolete_panels_are_removed_from_both_workflows(self):
+        for number in (67, 71, 72):
+            self.assertNotIn(number-1, CELLS)
+        from calmar.guided import source_cell
+        self.assertIn('build_results_panel', ''.join(source_cell(74)['source']))
+
+    def test_group_heatmap_distinguishes_zero_overlap_from_missing_results(self):
+        from calmar.atlas_results import cohort_matrix
+        df = self.tables['Atlas_B_manual'].fillna({'session': ''})
+        df.attrs['overlap_status'] = {json.dumps(['sub-zero', '']): {'status': 'complete'}}
+        matrix = cohort_matrix(df, [('sub-test', ''), ('sub-zero', ''), ('sub-missing', '')],
+                               'lesion_in_roi_percent', 20)
+        self.assertEqual(list(matrix.columns), ['sub-test', 'sub-zero', 'sub-missing'])
+        self.assertEqual(matrix['sub-zero'].iloc[0], 0)
+        self.assertTrue(np.isnan(matrix['sub-missing'].iloc[0]))
+
+    def test_rerunning_preview_deactivates_the_old_panel(self):
+        self.run_cell(74)
+        old = self.ns['_subject_report_panel']
+        old['group_tabs'].selected_index = 1
+        old['group'].selected_index = 0
+        self.run_cell(74)
+        self.assertFalse(old['state']['active'])
+        self.assertTrue(old['state']['group_panel']['build'].disabled)
+        self.assertTrue(self.ns['_subject_report_panel']['state']['active'])
 
 
 if __name__ == "__main__":

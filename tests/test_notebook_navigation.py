@@ -44,7 +44,10 @@ assert.deepEqual(sent.at(-1), {event:'cell-order', ids:['0','1','batch'], batch_
 await handlers['msg:custom']({action:'connected'});
 await handlers['msg:custom']({action:'prepare',role:'guided-start',all_below:false});
 assert.equal(sent.at(-1).event,'approved');
-await handlers['msg:custom']({action:'execute'});
+const approvedView = sent.at(-1).view_id;
+await handlers['msg:custom']({action:'execute',view_id:'another-restored-view'});
+assert.deepEqual(calls, []);
+await handlers['msg:custom']({action:'execute',view_id:approvedView});
 assert.equal(panel.content.activeCellIndex,1);
 assert.deepEqual(calls,['own-notebook','notebook:run-cell']);
 dispose();
@@ -65,6 +68,11 @@ await handlers['msg:custom']({action:'prepare',role:'guided-start',all_below:tru
 assert.equal(sent.at(-1).event, 'approved');
 await handlers['msg:custom']({action:'execute'});
 assert.equal(calls.at(-1), 'notebook:run-all-below');
+cells[1].getMetadata = () => ({role:'report-selection',roles:['report-setup']});
+await handlers['msg:custom']({action:'prepare',role:'report-setup',all_below:true});
+assert.equal(sent.at(-1).event,'approved');
+await handlers['msg:custom']({action:'execute',view_id:sent.at(-1).view_id});
+assert.equal(panel.content.activeCellIndex,1);
 disposeRetry();
 '''
         result = subprocess.run(['node','--input-type=module','-',str(source)], input=script,

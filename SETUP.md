@@ -68,20 +68,28 @@ For the detailed notebook:
 
 1. Open `lesion-interpretation-pipeline.ipynb` from this checkout.
 2. Complete Setup and confirm “CALMaR setup imports completed.”
-3. Review Configuration. The example selects three participants: sub-M2066,
-   sub-M2075 and sub-M2176. They have been processed in the development checkout;
+3. Review Configuration. The example selects three participants: sub-M2001,
+   sub-M2075 and sub-M2077. At selection time, participants 1 and 3 are unprocessed
+   in the development checkout, while participant 2 has existing outputs;
    a new checkout's local files determine which processing steps are cached.
 4. Run dataset discovery/acquisition and inspect the selected subject/session
    pairs. The default dataset is OpenNeuro ds004884, pinned to tag 1.0.2,
    under `data/ds004884/`. Missing content is fetched through DataLad.
-5. Follow the single-subject test, then the batch workflow. The notebook
+5. In **Choose the single-subject test participant**, select a participant and
+   click **Run single-subject test**. The default favours an unprocessed participant.
+   Follow the single-subject test, then the batch workflow. The notebook
    stops at the test→batch boundary when `RUN_TEST=True`.
    Cells above that boundary can still be rerun, including the single-subject
    viewers; rerunning them does not release the batch checkpoint.
    The same rule applies at QC, report selection, and the guided input form:
    earlier cells and the stop's own cell remain runnable; later cells wait.
-   Click **Continue to batch** and accept the Run all cells below prompt. The
+   Click **Continue to batch**. The
    button selects the correct starting cell and starts processing up to QC.
+   To test reporting from available outputs, choose **Jump to reporting** instead.
+   This runs report setup and stops at report selection without changing
+   saved QC. The registration/mask review panel remains usable with cached inputs.
+   Batch steps display participant timings; the final timing summary includes
+   per-participant totals. Cached timings represent checks, not the original run.
    With `RUN_TEST=False`, every single-subject code cell prints only
    `RUN_TEST = False — continuing into batch processing` and performs no test work.
 6. At the **Quality control** dashboard, saved QC is listed with participant
@@ -104,12 +112,16 @@ For the detailed notebook:
    session, and newly generated reports state that QC was skipped by the user.
    Both choices preserve existing ratings. Use **Continue after QC** to start
    disconnectomes and reports without running optional repair/edit/reset cells.
-7. In **Group lesion overlap map**, choose the mask source and click **Build
-   selected group map**. The atlas tables and Schaefer summary have their own
-   mask selectors. Table titles identify the atlas and selected mask.
-8. **Preview and export atlas results** lets you select a participant, atlas
-   and mask. Open the brain tab to load images. **Export selected atlas PDF**
-   exports these same choices.
+7. **Preview and export results** provides one participant, atlas and mask
+   selection for the atlas table, region chart, brain view and PDF export.
+   Brain images load when you open their tab. **Export selected atlas PDF**
+   exports these same choices from within the preview.
+8. Expand **Group summaries (optional)** for comparisons across participants.
+   **Across participants** shows the selected atlas's heatmap; **Schaefer
+   networks** summarizes the selected mask against Schaefer400. **Lesion
+   frequency** shows a group lesion map only after **Build selected group map**
+   is clicked. All three use the preview's mask source and the configured
+   cohort; changing the selected individual does not change group summaries.
 9. At **Choose report inputs**, use the participant, mask and display-atlas
    dropdowns. Expand **Compare available MNI masks** if helpful; enable
    Neurosynth only when wanted. Click **Generate participant report** to start

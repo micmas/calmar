@@ -136,22 +136,27 @@ toggles with fixed binary display ranges, including for very sparse masks.
 Alignment verification and repair records live in `alignment-repair/astra.yaml`.
 
 The current example cohort is configured, in discovery order, for
-**sub-M2066 / ses-235**, **sub-M2075 / ses-602**, and **sub-M2176 / ses-1237**,
+**sub-M2001 / ses-1076**, **sub-M2075 / ses-602**, and **sub-M2077 / ses-250**,
 with BCBToolkit and DeepDisco enabled for LINDA, SynthStroke, and manual masks,
 and all four DeepDisco models. Discovery uses the normal DataLad fetch for any
 missing content. The cohort size remains three, random sampling is disabled,
-and overwrite remains false. These participants have now been processed locally;
-their processed state depends on the checkout's data directory. Existing outputs do not by themselves establish
+and overwrite remains false. At selection time, participants 1 and 3 have no local
+processing outputs; participant 2 has existing outputs. Their processed state
+depends on the checkout's data directory. Existing outputs do not by themselves establish
 completed QC or end-to-end verification.
 
 The single-subject comparison checkboxes change overlay opacity without reloading volumes.
-The **Group lesion overlap map** panel lets you select a mask source, then
-click **Build selected group map** to build its frequency map.
+The optional **Lesion frequency** tab in the results preview builds a group map
+only when you click **Build selected group map**.
+Before HD-BET, **Choose the single-subject test participant** lists the cohort and
+each participant's processing state. It defaults to an unprocessed participant
+when available. **Run single-subject test** starts the selected participant's steps.
+Cell identities are stored in the notebook structure, without ID comments in code.
+
 The single-subject checkpoint blocks batch and later cells when `RUN_TEST=True`, including
 when the runner continues after errors. Earlier cells, including the single-subject
 viewers, can be edited and rerun while the batch checkpoint remains paused.
-Review the results, click **Continue to
-batch** there and confirm **Run all cells below**. Processing starts at the
+Review the results and click **Continue to batch**. Processing starts at the
 batch section and stops again at QC. With
 `RUN_TEST=False`, this checkpoint is skipped and batch processing continues.
 Every stop point follows the same rule: earlier cells and the stop's own cell
@@ -183,9 +188,12 @@ under **Batch processing** and choose **Run → Run All Cells Below**. At a paus
 the pause. These commands do not run subsequent cells or repair widget loading.
 Remove the temporary recovery cell afterwards so it is not part of later runs.
 
-**Explore atlas results** and **Preview and export atlas results** have independent
-atlas, mask and participant selectors. Each table names the chosen atlas and mask;
-the Schaefer network summary also has a mask selector. SynthStroke is the initial
+**Preview and export results** uses one atlas, mask and participant selection
+for its table, brain view, region chart and PDF export. The collapsed **Group
+summaries (optional)** section adds a cross-participant heatmap, an explicitly
+built lesion-frequency map, and a Schaefer network summary, all using the same
+mask source. Group summaries include the configured cohort and do not depend
+on the selected individual. Each view names its atlas and mask. SynthStroke is the initial
 choice when available; Manual and LINDA remain selectable. This is a display
 preference, not a quality ranking. Atlas previews update the table immediately
 and load brain images only when their tab is opened, reusing unchanged layers.
@@ -196,11 +204,25 @@ voxels, with left/right counts for bilateral intersections. Cache status records
 track subject/session pairs and changed masks; older tables are refreshed once
 to calculate laterality. A bilateral atlas region does not imply a bilateral lesion.
 
-The single-subject diagnostics keep one combined automatic/manual mask viewer.
+The single-subject review uses one canvas for reference-scan coregistration and
+automatic/manual lesion masks. Switch between the two checks without reloading
+the images; cached registrations remain available for inspection. Agreement
+metrics are collapsed, and development voxel-count diagnostics are removed.
+The agreement table compares LINDA and SynthStroke in separate columns.
 The lesion/disconnectome comparison places the lesion beneath the maps and
 preserves the selected method, image position and unchanged layers when changing
 DeepDisco models. Agreement metrics are calculated when their panel is opened.
-Cell timing labels use titles and current cell numbers.
+DeepDisco models are selected with individual buttons.
+Cell timing labels use titles and current cell numbers. Each batch step shows
+participant/session durations and outcomes, with separate HD-BET and LINDA entries.
+The final summary includes participant totals; cached timings measure this run's
+cache checks. Reruns replace the earlier timings. Detailed processing logs stay
+beside the outputs, with error excerpts shown when a tool fails.
+
+After the single-subject review, **Jump to reporting** starts at report setup and
+opens report selection, bypassing batch segmentation, QC and disconnectome computation.
+Generating the selected report prepares any missing atlas overlap tables for that
+participant and mask. Saved QC decisions remain unchanged.
 
 At **Choose report inputs**, select the participant, MNI mask and display atlas.
 An optional mask-comparison viewer and Neurosynth checkbox are in the same form.

@@ -136,6 +136,46 @@ class ExecutionCheckpointTests(unittest.TestCase):
         finally:
             self.assertEqual(self.reply(self.client.execute('%calmar_continue batch'))['status'], 'ok')
 
+    def test_reporting_shortcut_preserves_qc_and_stops_at_report_selection(self):
+        setup = (f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
+                 "from calmar.execution import pause_before_batch, ExecutionCheckpoint\n"
+                 "from pathlib import Path\nTEST_SUBJECT_IDX = 2\n")
+        self.assertEqual(self.reply(self.client.execute(setup))['status'], 'ok')
+        self.assertEqual(self.execute_cell('gate = pause_before_batch()', 'calmar-step-39')['status'], 'ok')
+        try:
+            self.assertEqual(self.execute_cell(
+                "gate.navigation.request = lambda role, callback: (globals().update(report_target=role), callback())\n"
+                "gate.reporting.click()\n"
+                "assert report_target == 'report-setup'\n"
+                "assert INTERP_SUBJECT_IDX == TEST_SUBJECT_IDX == 2\n"
+                "assert not gate.paused and gate.button.disabled and gate.reporting.disabled",
+                'calmar-step-39')['status'], 'ok')
+            self.assertEqual(self.execute_cell('report_setup_ran = True', 'calmar-step-77')['status'], 'ok')
+            self.assertEqual(self.execute_cell(
+                "report_gate = ExecutionCheckpoint(get_ipython(), 'Choose report inputs')\n"
+                "report_generated = False", 'calmar-step-79')['status'], 'ok')
+            self.assertEqual(self.execute_cell('report_generated = True', 'calmar-step-81')['ename'], 'InputRejected')
+            self.assertEqual(self.execute_cell(
+                "assert report_setup_ran and not report_generated\nreport_gate.close()",
+                'calmar-step-79')['status'], 'ok')
+        finally:
+            self.execute_cell('gate.close()', 'calmar-step-39')
+
+    def test_live_source_identity_supports_unmarked_edited_upstream_cells(self):
+        self.assertEqual(self.reply(self.client.execute(
+            f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
+            "from calmar.execution import pause_before_batch"))['status'], 'ok')
+        self.assertEqual(self.execute_cell('gate = pause_before_batch()', 'calmar-step-39')['status'], 'ok')
+        code = 'assert gate.paused\nedited_viewer_ran = True'
+        try:
+            self.assertEqual(self.execute_cell(
+                f"get_ipython()._calmar_live_cell_sources = {{'calmar-step-35': {code!r}}}",
+                'calmar-step-39')['status'], 'ok')
+            self.assertEqual(self.execute_cell(code, None)['status'], 'ok')
+            self.assertEqual(self.execute_cell('unexpected_code = True', None)['ename'], 'InputRejected')
+        finally:
+            self.execute_cell('gate.close()', 'calmar-step-39')
+
     def click_widget(self, comm_id, *, acknowledged=True):
         # Send the same widget message as a frontend click. Executing Python
         # button.click() in another cell would itself be blocked by the gate.
