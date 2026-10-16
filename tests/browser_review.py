@@ -89,12 +89,13 @@ async def check(base, token, relative, artifacts):
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--server-url',required=True)
+    parser.add_argument('--artifacts', type=Path, default=ROOT/'notes/browser-review')
     args=parser.parse_args()
     base=args.server_url.rstrip('/')
     if not base.startswith(('http://127.0.0.1:', 'http://localhost:')):
         raise ValueError('Use a loopback server.')
     token=os.environ.get('CALMAR_BROWSER_TOKEN') or os.environ['JUPYTERHUB_API_TOKEN']
-    artifacts=ROOT/'notes/browser-review'; artifacts.mkdir(parents=True,exist_ok=True)
+    artifacts=args.artifacts; artifacts.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='calmar-review-',dir=ROOT/'notes') as directory:
         first=f'''import sys
 sys.path.insert(0, {str(ROOT)!r})
@@ -118,7 +119,7 @@ data[:]=0; data[10:15,10:15,10:15]=1
 mask=root/'mask.nii.gz'; nib.save(nib.Nifti1Image(data,np.eye(4)),mask)
 display(mask_review(cw,'review',[dict(path=str(brain)),
     dict(path=str(mask),name='Manual',colormap='blue',opacity=.5),
-    dict(path=str(mask),name='LINDA',colormap='red',opacity=.8)],coreg_path=registered))
+    dict(path=str(mask),name='LINDA',colormap='red',opacity=.8)],coreg_path=registered,edge_path=mask))
 with BatchTiming(globals(),'Fixture batch') as timer:
     with timer.participant(dict(subject='sub-test',session='ses-1'),'LINDA') as row:
         row['status']='Cached'

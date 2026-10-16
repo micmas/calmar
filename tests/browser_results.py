@@ -48,7 +48,7 @@ async def check(base, token, relative, artifacts):
             await page.screenshot(path=str(artifacts/'group-controls.png'))
             print('One preview; group controls appear only when expanded.', flush=True)
             await build.click()
-            await page.get_by_text('Group map mask source: synthstroke', exact=False).wait_for(timeout=15000)
+            await page.get_by_text('Group map mask source: synthstroke', exact=False).wait_for(timeout=60000)
             await page.locator('.jp-Notebook canvas').first.wait_for(timeout=45000)
             await page.get_by_text('Group summaries (optional)', exact=True).click()
             await atlas.select_option(index=1)

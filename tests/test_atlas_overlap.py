@@ -58,7 +58,7 @@ def test_cache_migrates_legacy_and_records_zero_missing_and_sessions(tmp_path):
     assert np.isfinite(refreshed.lesion_in_roi_percent).all()
 
 
-def test_direct_reporting_prepares_selected_tables_and_preserves_other_cache_statuses(tmp_path):
+def test_direct_reporting_submits_selected_tables_and_preserves_other_cache_statuses(tmp_path):
     from types import SimpleNamespace
     from calmar.atlas_overlap import prepare_report_overlap
     import json
@@ -70,12 +70,15 @@ def test_direct_reporting_prepares_selected_tables_and_preserves_other_cache_sta
     ns = dict(ALL_ATLASES={'Test':SimpleNamespace(maps=atlas,labels=['Background','ROI'])},
               INTERP_KB_ATLASES=['Test'], REPORTS_DIR=tmp_path, CONFIG={'LESION_THRESHOLD':.5},
               mask_file_token=lambda s:s, _mask_path_for=lambda e,s:path)
-    with patch('calmar.atlas_overlap.calculate_overlap', side_effect=AssertionError('cache reran')):
+    before = csv.read_bytes()
+    def prepare(namespace, selected, sources):
+        assert selected == [entries[0]] and sources == ['linda']
+        namespace['OVERLAP_PATHS'] = {'Test_linda': str(tmp_path/'published.csv')}
+    with patch('calmar.reporting.overlap_tables', side_effect=prepare):
         prepare_report_overlap(ns, entries[0], 'linda')
-    assert len(json.loads(csv.with_suffix('.status.json').read_text()))==2
-    csv.unlink();csv.with_suffix('.status.json').unlink()
-    prepare_report_overlap(ns, entries[0], 'linda')
-    assert set(pd.read_csv(csv).subject)=={'sub-a'}
+    assert csv.read_bytes() == before
+    assert len(json.loads(csv.with_suffix('.status.json').read_text())) == 2
+    assert ns['OVERLAP_PATHS']['Test_linda'].endswith('published.csv')
 
 
 def test_old_table_never_claims_bilateral_lesion_from_atlas_name():

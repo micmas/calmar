@@ -71,96 +71,20 @@ class AcquisitionTests(unittest.TestCase):
                     returncode=0, stdout="nothing fetched", stderr="")):
             self.assertFalse(acquisition.ensure_nifti_content(self.mask, self.root))
 
-    def comparison_namespace(self):
-        return dict(RUN_TEST=True, TEST_SUBJECT_IDX=0, Path=Path,
-                    SUBJECTS=[dict(subject=self.sub, session=self.ses, t1w=self.t1)],
-                    RAW_DATASET_DIR=self.root,
-                    CONFIG=dict(MANUAL_MASK_PATH=None, OVERWRITE=False),
-                    deriv_path_for=lambda e: self.root / "linda",
-                    synthstroke_path_for=lambda e: self.root / "synth",
-                    q=SimpleNamespace(coregister_t2_mask_to_t1=Mock(
-                        side_effect=RuntimeError("registration reached"))),
-                    importlib=SimpleNamespace(reload=lambda obj: obj),
-                    HTML=lambda text: text, display=lambda *args: None)
+    def test_discovery_preserves_annotation_session(self):
+        from calmar.processing import manual_inputs
+        entry = dict(subject=self.sub, session="ses-other", t1w=self.t1)
+        mask, reference, space = manual_inputs(dict(dataset=str(self.root), config={}), entry)
+        self.assertEqual((mask, reference, space), (self.mask, self.t2, "other"))
+        self.assertFalse(mask.exists())  # Discovery does not materialize content.
 
-    def test_comparison_fetches_discovered_mask_and_reference_before_registration(self):
-        ns = self.comparison_namespace()
-        with patch.dict("os.environ", {"RAW_DATASET_DIR": str(self.root)}), patch.object(
-                acquisition.shutil, "which", return_value="datalad"), patch.object(
-                acquisition.subprocess, "run", side_effect=self.fetch):
-            with self.assertRaisesRegex(RuntimeError, "registration reached"):
-                exec("".join(CELLS[29]["source"]), ns)
-        self.assertEqual(self.calls, [self.mask, self.t2])
-        args = ns["q"].coregister_t2_mask_to_t1.call_args.args
-        self.assertEqual(args[:3], (self.t1, self.t2, self.mask))
-
-    def test_comparison_reports_fetch_failure_without_registration(self):
-        ns = self.comparison_namespace()
-        output = io.StringIO()
-        with patch.dict("os.environ", {"RAW_DATASET_DIR": str(self.root)}), patch.object(
-                acquisition.shutil, "which", return_value="datalad"), patch.object(
-                acquisition.subprocess, "run", return_value=SimpleNamespace(
-                    returncode=1, stdout="", stderr="download failed")), contextlib.redirect_stdout(output):
-            exec("".join(CELLS[29]["source"]), ns)
-        ns["q"].coregister_t2_mask_to_t1.assert_not_called()
-        self.assertIn("located but its content is unavailable", output.getvalue())
-        self.assertIn("download failed", output.getvalue())
-
-    def move_t1_to_other_session(self):
-        self.t1.unlink()
-        self.t1 = self.root / self.sub / "ses-t1only" / "anat" / f"{self.sub}_ses-t1only_T1w.nii.gz"
-        self.t1.parent.mkdir(parents=True)
-        nib.save(self.img, self.t1)
-        # A T2 next to the T1 must not displace the annotation's actual source.
-        nib.save(self.img, self.t1.with_name(f"{self.sub}_ses-t1only_T2w.nii.gz"))
-
-    def test_comparison_uses_mask_source_session_when_t1_is_elsewhere(self):
-        self.move_t1_to_other_session()
-        ns = self.comparison_namespace()
-        ns["SUBJECTS"][0]["session"] = "ses-t1only"
-        with patch.dict("os.environ", {"RAW_DATASET_DIR": str(self.root)}), patch.object(
-                acquisition.shutil, "which", return_value="datalad"), patch.object(
-                acquisition.subprocess, "run", side_effect=self.fetch):
-            with self.assertRaisesRegex(RuntimeError, "registration reached"):
-                exec("".join(CELLS[29]["source"]), ns)
-        self.assertEqual(self.calls, [self.mask, self.t2])
-        self.assertEqual(ns["q"].coregister_t2_mask_to_t1.call_args.args[:3],
-                         (self.t1, self.t2, self.mask))
-
-    def test_batch_uses_mask_source_session_when_t1_is_elsewhere(self):
-        self.move_t1_to_other_session()
-        tree = ast.parse("".join(CELLS[47]["source"]))
-        definitions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
-        ns = dict(Path=Path, re=re, RAW_DATASET_DIR=self.root,
-                  deriv_path_for=lambda e: self.root / "linda",
-                  q=SimpleNamespace(mni_mask_matches_reference=lambda *a: False,
-                      coregister_t2_mask_to_t1=Mock(side_effect=RuntimeError("registration reached"))),
-                  ensure_nifti_content=acquisition.ensure_nifti_content)
-        exec(compile(ast.Module(body=definitions, type_ignores=[]), "batch", "exec"), ns)
-        with patch.object(acquisition.shutil, "which", return_value="datalad"), patch.object(
-                acquisition.subprocess, "run", side_effect=self.fetch):
-            with self.assertRaisesRegex(RuntimeError, "registration reached"):
-                ns["_warp_manual_to_mni_batch"](
-                    dict(subject=self.sub, session="ses-t1only", t1w=self.t1),
-                    self.root / "derivatives" / "lesion_masks")
-        self.assertEqual(self.calls, [self.mask, self.t2])
-        self.assertEqual(ns["q"].coregister_t2_mask_to_t1.call_args.args[:3],
-                         (self.t1, self.t2, self.mask))
-
-    def test_batch_stops_on_unavailable_mask(self):
-        tree = ast.parse("".join(CELLS[47]["source"]))
-        definitions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
-        ns = dict(Path=Path, RAW_DATASET_DIR=self.root,
-                  deriv_path_for=lambda e: self.root / "linda",
-                  q=SimpleNamespace(mni_mask_matches_reference=lambda *a: False),
-                  ensure_nifti_content=Mock(return_value=False))
-        exec(compile(ast.Module(body=definitions, type_ignores=[]), "batch", "exec"), ns)
-        state, message = ns["_warp_manual_to_mni_batch"](
-            dict(subject=self.sub, session=self.ses, t1w=self.t1),
-            self.root / "derivatives" / "lesion_masks")
-        self.assertEqual(state, "failed")
-        self.assertIn("content unavailable", message)
-        ns["ensure_nifti_content"].assert_called_once_with(self.mask, self.root)
+    def test_acquisition_failure_stops_before_registration(self):
+        from calmar.processing import process
+        request=dict(dataset=str(self.root),config={},entries=[dict(subject=self.sub,session=self.ses,t1w=str(self.t1))])
+        with patch.dict("os.environ", {"SLURM_JOB_ID":"fixture"}), patch("calmar.processing.ensure_nifti_content",return_value=False), patch("calmar.qc.coregister_t2_mask_to_t1") as register:
+            with self.assertRaisesRegex(RuntimeError,"Acquisition failed"):
+                process("acquisition",request)
+        register.assert_not_called()
 
 
 if __name__ == "__main__":

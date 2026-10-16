@@ -97,6 +97,10 @@ cat(sprintf("[linda_predict_with_mask] outdir = %s\n", opts$outdir))
 cat("[linda_predict_with_mask] LINDA's internal skull-stripping ",
     "is bypassed (using supplied brain_mask).\n", sep = "")
 
+# Fix R's random number generator when a seed is provided (CALMAR_R_SEED);
+# ANTs registration reads ANTS_RANDOM_SEED itself.
+if (nzchar(Sys.getenv("CALMAR_R_SEED"))) set.seed(as.integer(Sys.getenv("CALMAR_R_SEED")))
+
 # ---- run linda_predict() with brain_mask= bypass ----
 result <- tryCatch(
   linda_predict(

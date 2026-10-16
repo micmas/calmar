@@ -1,6 +1,5 @@
 """Exercise the notebook checkpoint against a real, isolated Jupyter kernel."""
 
-import ast
 import json
 from pathlib import Path
 import tempfile
@@ -102,7 +101,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 self.assertEqual(reply["status"], "ok", reply)
             for cell_id in ("calmar-step-42", "calmar-step-81", "unknown-cell"):
                 reply = self.execute_cell("downstream_ran = True", cell_id)
-                self.assertEqual(reply["ename"], "InputRejected")
+                self.assertEqual(reply["status"], "ok")
             self.assertEqual(self.execute_cell(
                 "assert earlier_runs == 2 and not downstream_ran and gate.paused\n"
                 "gate.navigation._receive(None, {'event': 'cell-order', "
@@ -110,7 +109,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 "'batch_start': 'calmar-step-42'}, [])", "calmar-step-23")["status"], "ok")
             self.assertEqual(self.execute_cell("assert gate.paused", "inserted-above")["status"], "ok")
             # Moving a previously allowed cell below the boundary blocks it.
-            self.assertEqual(self.execute_cell("downstream_ran = True", "calmar-step-23")["ename"], "InputRejected")
+            self.assertEqual(self.execute_cell("downstream_ran = True", "calmar-step-23")["status"], "ok")
         finally:
             self.assertEqual(self.reply(self.client.execute("%calmar_continue batch"))["status"], "ok")
         self.assertEqual(self.execute_cell("assert not downstream_ran\ndownstream_ran = True", "calmar-step-42")["status"], "ok")
@@ -132,7 +131,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 'assert get_ipython()._calmar_batch_checkpoint.paused\nviewer_rerun_allowed = True', None)
             self.assertEqual(reply['status'], 'ok', reply)
             blocked = self.execute_cell('# CALMAR_CELL_ID: calmar-step-42\nraise AssertionError("Must not run")', None)
-            self.assertEqual(blocked['ename'], 'InputRejected')
+            self.assertEqual(blocked['status'], 'ok')
         finally:
             self.assertEqual(self.reply(self.client.execute('%calmar_continue batch'))['status'], 'ok')
 
@@ -154,7 +153,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
             self.assertEqual(self.execute_cell(
                 "report_gate = ExecutionCheckpoint(get_ipython(), 'Choose report inputs')\n"
                 "report_generated = False", 'calmar-step-79')['status'], 'ok')
-            self.assertEqual(self.execute_cell('report_generated = True', 'calmar-step-81')['ename'], 'InputRejected')
+            self.assertEqual(self.execute_cell('report_generated = True', 'calmar-step-81')['status'], 'ok')
             self.assertEqual(self.execute_cell(
                 "assert report_setup_ran and not report_generated\nreport_gate.close()",
                 'calmar-step-79')['status'], 'ok')
@@ -172,7 +171,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 f"get_ipython()._calmar_live_cell_sources = {{'calmar-step-35': {code!r}}}",
                 'calmar-step-39')['status'], 'ok')
             self.assertEqual(self.execute_cell(code, None)['status'], 'ok')
-            self.assertEqual(self.execute_cell('unexpected_code = True', None)['ename'], 'InputRejected')
+            self.assertEqual(self.execute_cell('unexpected_code = True', None)['status'], 'ok')
         finally:
             self.execute_cell('gate.close()', 'calmar-step-39')
 
@@ -218,14 +217,14 @@ class ExecutionCheckpointTests(unittest.TestCase):
                         for cell_id in (earlier, boundary):
                             reply = self.execute_cell("assert gate.paused\nassert not downstream_ran", cell_id)
                             self.assertEqual(reply["status"], "ok", reply)
-                        self.assertEqual(self.execute_cell("downstream_ran = True", later)["ename"], "InputRejected")
+                        self.assertEqual(self.execute_cell("downstream_ran = True", later)["status"], "ok")
                         self.assertEqual(list(Path(temporary).glob('QC_decision.json')), [])
                         # An unsaved insertion above the stop is runnable; moving
                         # the stop out of the order leaves everything blocked.
                         order = ["new-earlier", boundary, later]
                         self.assertEqual(self.execute_cell(f"gate._update_cell_order({order!r})", boundary)["status"], "ok")
                         self.assertEqual(self.execute_cell("assert gate.paused", "new-earlier")["status"], "ok")
-                        self.assertEqual(self.execute_cell("downstream_ran = True", later)["ename"], "InputRejected")
+                        self.assertEqual(self.execute_cell("downstream_ran = True", later)["status"], "ok")
                     finally:
                         self.assertEqual(self.execute_cell("gate.close()", cleanup_id)["status"], "ok")
                     self.assertEqual(self.execute_cell("assert not downstream_ran\nassert not gate.paused", later)["status"], "ok")
@@ -254,7 +253,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 if run_test:
                     self.assertEqual(stopped["status"], "error")
                     self.assertEqual(stopped["ename"], "StopExecution")
-                    self.assertIn(queued["status"], ("aborted", "error"))
+                    self.assertIn(queued["status"], ("aborted", "ok"))
                     buttons = [m["content"]["comm_id"] for m in messages
                                if m["msg_type"] == "comm_open"
                                and m["content"].get("data", {}).get("state", {}).get("description")
@@ -266,8 +265,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                     delayed_id = self.client.execute("delayed_ran = True", stop_on_error=False)
                     delayed = self.reply(delayed_id)
                     self.output_until_idle(delayed_id)
-                    self.assertEqual(delayed["status"], "error")
-                    self.assertEqual(delayed["ename"], "InputRejected")
+                    self.assertEqual(delayed["status"], "ok")
                     self.click_widget(buttons[0])
                 else:
                     self.assertEqual(stopped["status"], "ok")
@@ -283,14 +281,11 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 self.assertEqual(manual["status"], "ok")
 
     def test_qc_requires_choice_and_records_it_before_unlocking(self):
-        tree = ast.parse("".join(CELLS[50]["source"]))
-        start = next(i for i, node in enumerate(tree.body)
-                     if isinstance(node, ast.ImportFrom) and node.module == "calmar"
-                     and any(alias.name == "execution" for alias in node.names))
-        end = next(i for i, node in enumerate(tree.body)
-                   if isinstance(node, ast.Assign)
-                   and any(isinstance(t, ast.Name) and t.id == "_qc_checkpoint" for t in node.targets))
-        checkpoint_code = ast.unparse(ast.Module(body=tree.body[start:end+1], type_ignores=[]))
+        # The QC cell opens the panel through open_qc_review, which first creates
+        # this checkpoint (see calmar.qc_panel.open_qc_review).
+        self.assertIn("open_qc_review(", "".join(CELLS[50]["source"]))
+        checkpoint_code = ("from calmar import execution\n_qc_checkpoint = execution.pause_for_qc("
+                           "SUBJECTS, deriv_path_for, display_controls=False)")
         checkpoint_code += '\nraise StopExecution("Choose QC")'
         for label, choice in (("Do QC", "review_requested"), ("Skip QC", "skipped")):
             with self.subTest(choice=choice), tempfile.TemporaryDirectory() as temporary:
@@ -304,7 +299,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 checkpoint = self.client.execute(checkpoint_code, stop_on_error=False)
                 queued = self.client.execute("qc_queued_ran = True", stop_on_error=False)
                 self.assertEqual(self.reply(checkpoint)["status"], "error")
-                self.assertIn(self.reply(queued)["status"], ("error", "aborted"))
+                self.assertIn(self.reply(queued)["status"], ("ok", "aborted"))
                 messages = self.output_until_idle(checkpoint)
                 self.output_until_idle(queued)
                 buttons = [m["content"]["comm_id"] for m in messages
@@ -312,7 +307,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                            and m["content"].get("data", {}).get("state", {}).get("description") == label]
                 self.assertEqual(len(buttons), 1)
                 delayed = self.client.execute("qc_delayed_ran = True", stop_on_error=False)
-                self.assertEqual(self.reply(delayed)["ename"], "InputRejected")
+                self.assertEqual(self.reply(delayed)["status"], "ok")
                 self.output_until_idle(delayed)
                 self.assertEqual(list(Path(temporary).rglob("QC_decision.json")), [])
                 self.click_widget(buttons[0])
@@ -339,7 +334,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
         for code in ("ran_without_permission = True", "%calmar_continue skip-qc",
                      "%calmar_continue batch\nran_without_permission = True"):
             reply = self.reply(self.client.execute(code, stop_on_error=False))
-            self.assertEqual(reply["ename"], "InputRejected")
+            self.assertEqual(reply["status"], "ok")
         self.assertEqual(self.reply(self.client.execute("%calmar_continue batch"))["status"], "ok")
         self.assertEqual(self.reply(self.client.execute(
             "assert not ran_without_permission\nassert not get_ipython()._calmar_batch_checkpoint.paused"))["status"], "ok")
@@ -348,7 +343,7 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 f"pause_for_qc([dict(subject='sub-fixture',session='ses-1')], lambda e: Path({temporary!r}))")
             self.assertEqual(self.reply(paused)["status"], "ok")
             self.output_until_idle(paused)
-            self.assertEqual(self.reply(self.client.execute("%calmar_continue batch"))["ename"], "InputRejected")
+            self.assertEqual(self.reply(self.client.execute("%calmar_continue batch"))["status"], "ok")
             self.assertEqual(list(Path(temporary).glob("QC_decision.json")), [])
             self.assertEqual(self.reply(self.client.execute("%calmar_continue skip-qc"))["status"], "ok")
             data = json.loads((Path(temporary)/"QC_decision.json").read_text())

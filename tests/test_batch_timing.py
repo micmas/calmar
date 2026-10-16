@@ -35,35 +35,12 @@ def test_durations_outcomes_reruns_and_participant_totals():
     assert len(ns['BATCH_TIMINGS']['Segmentation']['participants']) == 1
 
 
-def test_batch_segmentation_records_cached_failed_and_new_participants(tmp_path):
-    entries = [dict(subject=f'sub-{kind}', session='ses-1', t1w=tmp_path/f'{kind}_T1w.nii.gz')
-               for kind in ('cached', 'failed', 'new')]
-    directory = lambda e: tmp_path/e['subject']/'linda'
-    brain_dir = lambda e: tmp_path/e['subject']/'hdbet'
-    directory(entries[0]).mkdir(parents=True)
-    (directory(entries[0])/'Lesion_in_MNI.nii.gz').write_bytes(b'existing-output')
-    def extract(t1, output, **kw):
-        if t1.name.startswith('failed'):
-            return dict(returncode=1)
-        (output/(t1.name.replace('.nii.gz','')+'_brain_mask.nii.gz')).write_bytes(b'mask')
-        return dict(returncode=0)
-    def segment(command, log, **kw):
-        out = Path(command[command.index('--outdir')+1])
-        (out/'Lesion_in_MNI.nii.gz').write_bytes(b'new-output')
-        return SimpleNamespace(returncode=0)
-    ns = dict(CONFIG=dict(RUN_SEGMENTATION=True), SUBJECTS=entries, Path=Path,
-              deriv_path_for=directory, hdbet_path_for=brain_dir,
-              q=SimpleNamespace(run_hd_bet=Mock(side_effect=extract)),
-              importlib=SimpleNamespace(reload=lambda obj: obj))
-    with patch('calmar.process_output.run_logged', side_effect=segment) as run, patch('calmar.timing.display'):
-        exec(''.join(source_cell(42)['source']), ns)
-    rows = list(ns['BATCH_TIMINGS']['Brain extraction and LINDA']['participants'].values())
-    assert [(r['stage'], r['status']) for r in rows] == [
-        ('HD-BET', 'Not needed (LINDA cached)'), ('LINDA', 'Cached'),
-        ('HD-BET', 'Failed'), ('LINDA', 'Skipped (brain extraction failed)'),
-        ('HD-BET', 'Completed'), ('LINDA', 'Completed')]
-    assert run.call_count == 1
-    assert (directory(entries[0])/'Lesion_in_MNI.nii.gz').read_bytes() == b'existing-output'
+def test_batch_runs_retained_stages_and_stops_after_failure():
+    ns = dict(SUBJECTS=[], study=None, BATCH_TIMINGS={})
+    with patch("calmar.scheduled.submit_step",side_effect=RuntimeError("brain extraction failed")) as run:
+        with pytest.raises(RuntimeError,match="brain extraction failed"):
+            exec("".join(source_cell(42)["source"]),ns)
+    assert [call.args[0] for call in run.call_args_list] == ["brain"]
 
 
 def test_atlas_timing_records_cached_zero_and_missing_masks(tmp_path):
@@ -109,3 +86,24 @@ def test_process_log_retains_details_without_printing_success_debug(tmp_path, ca
     result = run_logged([sys.executable, '-c', 'print("failure detail"); raise SystemExit(3)'], path)
     assert result.returncode == 3
     assert 'failure detail' in capsys.readouterr().out
+
+
+def test_temporary_tool_logs_survive_timeout_and_staging_cleanup(tmp_path, monkeypatch):
+    import shutil
+    import subprocess
+    from calmar.process_output import run_logged
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('SLURM_JOB_ID', 'fixture')
+    staging = tmp_path/'map.attempt.fixture'; staging.mkdir()
+    (staging/'nested.log').write_text('full nested diagnostic')
+    def timeout(command, stdout, **kwargs):
+        stdout.write('partial progress')
+        raise subprocess.TimeoutExpired(command, 1)
+    with patch('calmar.process_output.subprocess.run', side_effect=timeout):
+        with pytest.raises(subprocess.TimeoutExpired):
+            run_logged(['tool'], staging/'processing.log', timeout=1)
+    shutil.rmtree(staging)
+    retained = list((tmp_path/'logs/processing_attempts/fixture').glob('*'))
+    assert len(retained) == 1
+    assert (retained[0]/'processing.log').read_text() == 'partial progress'
+    assert (retained[0]/'nested.log').read_text() == 'full nested diagnostic'

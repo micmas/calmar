@@ -1,7 +1,7 @@
 """Regression checks using temporary file stubs; no imaging jobs or downloads."""
 
-import datetime
 import importlib
+import subprocess
 import importlib.metadata
 import json
 from pathlib import Path
@@ -122,24 +122,23 @@ class MaskDiscoveryTests(unittest.TestCase):
             vols = staticmethod(lambda v: v)
         class StopExecution(Exception):
             pass
-        ns = dict(importlib=importlib, q=q, cm=cm, SUBJECTS=self.entries,
-                  mask_inventory_for=self.inventory, qc_available_stages=self.stages,
-                  lesion_mni_for=lambda e: self.linda(e) / "Lesion_in_MNI.nii.gz",
-                  deriv_path_for=self.linda, synthstroke_path_for=self.synth,
-                  _mask_path_for=lambda e, s: self.inventory(e).get(s, {}).get("MNI", self.root / "absent"),
-                  Path=Path, widgets=widgets, HTML=HTML, cw=Widgets, _dt=datetime,
-                  display=lambda *a: None, clear_output=lambda **kw: None,
-                  StopExecution=StopExecution)
-        with patch.object(importlib, "reload", lambda x: x), patch.object(q, "ensure_lesion_boundary", lambda p, **kw: p), patch("calmar.execution.pause_for_qc") as pause:
+        study = SimpleNamespace(
+            masks=self.inventory, qc_stages=self.stages, linda_dir=self.linda,
+            synthstroke_dir=self.synth, hdbet_dir=lambda e: self.root / "hdbet",
+            lesion_mni=lambda e: self.linda(e) / "Lesion_in_MNI.nii.gz",
+            mni_mask=lambda e, s: self.inventory(e).get(s, {}).get("MNI", self.root / "absent"))
+        ns = dict(SUBJECTS=self.entries, study=study, cw=Widgets, StopExecution=StopExecution)
+        with patch.object(q, "ensure_lesion_boundary", lambda p, **kw: p), \
+                patch("calmar.qc_panel.display"), patch("calmar.execution.pause_for_qc") as pause:
             pause.return_value = SimpleNamespace(message=widgets.HTML(), do_qc=widgets.Button(),
                 skip_qc=widgets.Button(), choose=lambda choice: True, choice=None,
                 _update_cell_order=lambda *args: None)
             with self.assertRaises(StopExecution):
                 exec(cell(51), ns)
             pause.assert_called_once_with(self.entries, self.linda, display_controls=False)
-            self.assertEqual(len(ns["qc_pool"]), 2)
             panel = ns["_qc_panel"]
             self.addCleanup(panel.close)
+            self.assertEqual(len(panel.entries), 2)
             self.assertEqual(panel.stage.value, "synthstroke_lesion")
             panel.rating_buttons["synthstroke_lesion"].value = 1
             self.assertTrue(panel.save_participant())
@@ -175,34 +174,51 @@ class MaskDiscoveryTests(unittest.TestCase):
 
 
 class SetupTests(unittest.TestCase):
+    PACKAGES = ("numpy", "pandas", "scipy", "matplotlib", "nibabel", "nilearn", "ipywidgets", "anywidget",
+                "ipylab", "ipyniivue", "SimpleITK", "pymupdf", "pydicom", "PyYAML", "packaging")
+
+    def fake_env(self, missing, installs=True, changes=None):
+        """A package set with ``missing`` absent; pip (subprocess.run) adds them."""
+        versions = {p: "1.0" for p in self.PACKAGES if p not in missing}
+        def version(name):
+            if versions.get(name) is None:
+                raise importlib.metadata.PackageNotFoundError(name)
+            return versions[name]
+        def run(command, **kwargs):
+            if installs:
+                versions.update({p: "1.0" for p in missing})
+                versions.update(changes or {})
+            return subprocess.CompletedProcess(command, 0 if installs else 1, "out", "err")
+        return version, run
+
     def test_install_skipped_when_packages_present(self):
-        with patch("subprocess.run") as run:
+        version, _ = self.fake_env([])
+        with patch("importlib.metadata.version", version), patch("subprocess.run") as run:
             exec(cell(5), {})
             run.assert_not_called()
 
-    def test_missing_package_reports_terminal_command_without_installing(self):
-        actual_version = importlib.metadata.version
-        def version(name):
-            if name == "SimpleITK":
-                raise importlib.metadata.PackageNotFoundError(name)
-            return actual_version(name)
-        with patch("importlib.metadata.version", version), patch("subprocess.run") as run:
+    def test_missing_packages_are_installed_with_pins_into_user_site(self):
+        version, fake_run = self.fake_env(["nilearn", "SimpleITK", "ipylab", "pymupdf"])
+        ns = {}
+        with patch("importlib.metadata.version", version), patch("subprocess.run", side_effect=fake_run) as run:
+            exec(cell(5), ns)
+        command = run.call_args.args[0]
+        self.assertEqual(command[1:5], ["-m", "pip", "install", "--user"])
+        self.assertIn("nilearn==0.13.1", command)
+        self.assertIn("ipylab==1.0.0", command)
+        self.assertNotIn("numpy", command)
+
+    def test_failed_install_or_changed_loaded_package_stops_setup(self):
+        version, fake_run = self.fake_env(["ipyniivue"], installs=False)
+        ns = {"_CALMAR_SETUP_READY": True}
+        with patch("importlib.metadata.version", version), patch("subprocess.run", side_effect=fake_run):
+            with self.assertRaisesRegex(RuntimeError, "Installing ipyniivue failed"):
+                exec(cell(5), ns)
+        self.assertFalse(ns["_CALMAR_SETUP_READY"])
+        version, fake_run = self.fake_env(["nilearn"], changes={"packaging": "26.0"})
+        with patch("importlib.metadata.version", version), patch("subprocess.run", side_effect=fake_run):
             with self.assertRaisesRegex(RuntimeError, "Restart Kernel"):
                 exec(cell(5), {})
-            run.assert_not_called()
-
-    def test_missing_widget_dependency_is_checked(self):
-        actual_version = importlib.metadata.version
-        def version(name):
-            if name == "ipyniivue":
-                raise importlib.metadata.PackageNotFoundError(name)
-            return actual_version(name)
-        ns = {"_CALMAR_SETUP_READY": True}
-        with patch("importlib.metadata.version", version), patch("subprocess.run") as run:
-            with self.assertRaisesRegex(RuntimeError, "pip install ipyniivue"):
-                exec(cell(5), ns)
-            run.assert_not_called()
-        self.assertFalse(ns["_CALMAR_SETUP_READY"])
 
     def test_stale_packaging_has_actionable_error(self):
         with patch.object(packaging, "__version__", "stale-test"):
@@ -213,7 +229,7 @@ class SetupTests(unittest.TestCase):
         ns = {}
         exec(cell(8), ns)
         self.assertTrue(ns["_CALMAR_SETUP_READY"])
-        self.assertTrue(all(name in ns for name in ("sys", "importlib", "image", "widgets", "cm")))
+        self.assertTrue(all(name in ns for name in ("sys", "importlib", "widgets", "cm", "q", "cw", "submit_step", "in_slurm", "show_step")))
 
     def test_decode_stops_after_failed_setup(self):
         with self.assertRaisesRegex(RuntimeError, "Setup imports did not complete"):

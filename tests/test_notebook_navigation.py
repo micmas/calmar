@@ -21,10 +21,17 @@ let changed;
 cells.changed = {connect: callback => changed = callback, disconnect: callback => {
   assert.equal(changed, callback); changed = null;
 }};
+globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
+const scroller = {scrollTop: 120, addEventListener(){}, removeEventListener(){}};
 const panel = {id:'own-notebook', node:{contains: node => node === el},
-    content:{model:{cells}, deselectAll(){}, activeCellIndex:0}};
+    content:{model:{cells}, deselectAll(){}, activeCellIndex:0, outerNode:scroller}};
 const app = {shell:{widgets: () => [panel], activateById: id => calls.push(id)},
-             commands:{execute: async command => calls.push(command)}};
+             commands:{execute: async command => {
+               calls.push(command);
+               scroller.scrollTop = 5000;                 // JupyterLab scrolls to the last cell run
+               panel.content.activeCellIndex = 9;
+               setTimeout(() => { scroller.scrollTop = 6000; }, 5);
+             }}};
 let available = true;
 const manager = {loadClass: async (...args) => {
   assert.deepEqual(args, ['JupyterFrontEndModel', 'ipylab', '^1.0.0']);
@@ -48,7 +55,9 @@ const approvedView = sent.at(-1).view_id;
 await handlers['msg:custom']({action:'execute',view_id:'another-restored-view'});
 assert.deepEqual(calls, []);
 await handlers['msg:custom']({action:'execute',view_id:approvedView});
+await new Promise(resolve => setTimeout(resolve, 50));
 assert.equal(panel.content.activeCellIndex,1);
+assert.equal(scroller.scrollTop, 120);                 // the reader stays where they clicked
 assert.deepEqual(calls,['own-notebook','notebook:run-cell']);
 dispose();
 assert.equal(changed, null);

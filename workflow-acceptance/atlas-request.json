@@ -1,0 +1,5 @@
+{
+  "task": "atlases",
+  "atlas_dir": "atlases",
+  "names": ["HarvardOxford", "AAL", "Destrieux", "Schaefer400", "JHU"]
+}

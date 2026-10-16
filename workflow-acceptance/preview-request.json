@@ -1,0 +1,7 @@
+{
+  "task": "report_overlay",
+  "output_id": "report_preview",
+  "mask": "data/ds004884/derivatives/synthstroke/sub-M2077/ses-250/anat/SynthStroke_in_MNI.nii.gz",
+  "background": "data/ds004884/derivatives/linda/sub-M2077/ses-250/anat/Subject_in_MNI.nii.gz",
+  "source": "synthstroke"
+}

@@ -10,13 +10,12 @@ from .execution import _notebook_cells
 
 
 TITLES = {
-    4: 'Load software modules', 5: 'Check software', 7: 'Certificate setup',
+    4: 'Record notebook Python for jobs', 5: 'Check software', 7: 'Certificate setup',
     8: 'Setup imports', 10: 'Enable step timing', 12: 'Configuration',
     13: 'Prepare workflow checkpoints', 15: 'Load atlases', 17: 'Prepare dataset',
     19: 'Discover subjects', 23: 'HD-BET brain extraction — single subject',
     25: 'LINDA lesion segmentation — single subject',
     27: 'SynthStroke lesion segmentation — single subject',
-    30: 'Review registration and lesion masks',
     32: 'BCBToolkit disconnectome — single subject',
     34: 'DeepDisco disconnectome — single subject',
     35: 'Compare disconnectomes and lesion',
@@ -51,9 +50,12 @@ def step_key(source, cell_id=None):
 def step_title(key):
     key = key.removeprefix('CALMAR_CELL_ID: ').strip()
     match = re.fullmatch(r'calmar-step-(\d+)', key)
-    if not match and key != 'calmar-test-participant':
+    named = {'calmar-test-participant': 'Choose single-subject participant',
+             'calmar-acquire': 'Fetch image content (datalad get)',
+             'calmar-manual': 'Manual mask registration — single subject'}
+    if not match and key not in named:
         return key
-    title = TITLES.get(int(match[1]), 'Notebook step') if match else 'Choose single-subject participant'
+    title = TITLES.get(int(match[1]), 'Notebook step') if match else named[key]
     cells = _notebook_cells('lesion-interpretation-pipeline.ipynb')
     position = next((i for i, c in enumerate(cells, 1) if c['id'] == key), None)
     return f'{title} (cell {position})' if position else title
@@ -160,7 +162,7 @@ def install_timing(namespace, shell):
     namespace.setdefault('BATCH_TIMINGS', {})
     namespace['show_timings'] = lambda **kw: show_timings(namespace, **kw)
     if shell is None:
-        return
+        return namespace['BATCH_TIMINGS']
     # Also remove the notebook's previous inline implementation after upgrading.
     for event, name in (('pre_run_cell', '_timing_pre'), ('post_run_cell', '_timing_post')):
         for callback in list(shell.events.callbacks.get(event, [])):
@@ -181,3 +183,4 @@ def install_timing(namespace, shell):
     shell.events.register('pre_run_cell', before)
     shell.events.register('post_run_cell', after)
     shell._calmar_timing_hooks = (before, after)
+    return namespace["BATCH_TIMINGS"]

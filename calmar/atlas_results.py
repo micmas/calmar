@@ -41,15 +41,26 @@ def cohort_matrix(df, pairs, metric, limit):
 
 def build_results_panel(tables, entries, default_atlas, atlas_objects, helpers, *,
                         deriv_path_for, inventory_for, deriv_dir, atlas_dir,
-                        reports_dir, threshold=.5):
+                        reports_dir, threshold=.5, previous=None):
+    """Build the atlas-results preview (table, brain view, chart, group summaries).
+
+    ``previous`` is the panel returned by an earlier call; it is closed first so
+    re-running the cell does not leave a second live viewer. Returns None when
+    no overlap tables exist.
+    """
+    if previous and callable(previous.get('close')):
+        previous['close']()
     entries = [dict(e) for e in entries]
     by_pair = {(e['subject'], e.get('session') or ''): e for e in entries}
     selection = OverlapSelection(tables, default_atlas, list(by_pair))
     if not selection.tables:
         return None
     table, message, chart = widgets.HTML(), widgets.HTML(), helpers.Output()
-    viewer = helpers.fresh_viewer('report_viewer', height=420)
-    tabs = widgets.Tab(children=[table, widgets.VBox([message, viewer]), chart])
+    from .layer_controls import LayerControls
+    from .step_viewer import _layer, show_layers, viewer_layout
+    viewer = viewer_layout(helpers.fresh_viewer('report_viewer', height=420))
+    controls = LayerControls(plane=3)       # same overlay controls as the step viewers
+    tabs = widgets.Tab(children=[table, widgets.VBox([message, controls, viewer]), chart])
     for i, title in enumerate(('Atlas table', 'Brain and selected mask', 'Region chart')):
         tabs.set_title(i, title)
     metric = widgets.Dropdown(options=list(METRICS), description='Chart measure:',
@@ -79,8 +90,7 @@ def build_results_panel(tables, entries, default_atlas, atlas_objects, helpers, 
             viewer.load_volumes([])
             message.value = f'Brain viewer needs Subject_in_MNI.nii.gz for {escape(_label((sub, ses)))}. Run the MNI warp first.'
             return
-        specs = [dict(path=str(background), colormap='gray', opacity=1.)]
-        notes = []
+        layers, notes = [], []
         name = selection.atlas.value
         atlas_path = Path(deriv_dir) / f'{name}_atlas.nii.gz'
         maps = getattr(atlas_objects.get(name), 'maps', None)
@@ -89,16 +99,17 @@ def build_results_panel(tables, entries, default_atlas, atlas_objects, helpers, 
         elif not atlas_path.exists() and hasattr(maps, 'to_bytes'):
             nib.save(maps, str(atlas_path))
         if atlas_path.exists():
-            specs.append(dict(path=str(atlas_path), colormap='viridis', opacity=.25))
+            layers.append(_layer(f'{name} atlas', 'atlas', atlas_path, 'atlas',
+                                 colormap='viridis', css='#3b9b8b'))
         else:
             notes.append('Atlas image unavailable; the overlap table is still available.')
         lesion = inventory_for(entry).get(selection.source.value, {}).get('MNI')
         if lesion is not None and Path(lesion).exists():
-            specs.append(dict(path=str(lesion), colormap=colors.color(selection.source.value),
-                              opacity=.7, cal_min=threshold, cal_max=1.))
+            layers.append(_layer(f'{selection.source.label} lesion', selection.source.value, lesion, 'lesion',
+                                 role='lesion', opacity=.7, cal_min=threshold, cal_max=1.))
         else:
             notes.append(f'{selection.source.label} MNI mask unavailable; run its warp step.')
-        helpers.set_volumes(viewer, specs)
+        show_layers(viewer, controls, background, layers, helpers)
         message.value = escape(' '.join(notes))
         state['brain'] = False
 
@@ -244,22 +255,10 @@ def build_group_panel(entries, inventory_for, helpers, *, source, reports_dir, a
             available = paths()
             if not available:
                 output.append_stdout('No usable MNI masks for this source.'); return
-            ref = nib.load(available[0]); accum = np.zeros(ref.shape, dtype=np.float32); used = 0
-            for path in available:
-                try:
-                    img = nib.load(path)
-                    if img.shape != ref.shape or not np.allclose(img.affine, ref.affine):
-                        img = image.resample_to_img(img, ref, interpolation='nearest', force_resample=True, copy_header=True)
-                    accum += (img.get_fdata() > threshold).astype(np.float32); used += 1
-                except Exception as error:
-                    output.append_stdout(f'{path.name}: {error}\n')
-            if not used:
-                output.append_stdout('No usable lesions — group map not built.'); return
-            frequency = nib.Nifti1Image(accum/used, ref.affine, ref.header)
-            target = Path(reports_dir) / f'group_lesion_frequency_{source.value}.nii.gz'
-            nib.save(frequency, target)
-            background = Path(atlas_dir) / 'mni152_t1_2mm.nii.gz'
-            if not background.exists(): nib.save(datasets.load_mni152_template(resolution=2), background)
+            from .reporting import run_reporting_task
+            result = run_reporting_task({'PROJECT_DIR': Path(__file__).resolve().parents[1]},
+                                        'group', masks=[str(p) for p in available], threshold=threshold)
+            target, background, used = Path(result['map']), Path(result['background']), result['used']
             if state['viewer'] is None:
                 state['viewer'] = helpers.fresh_viewer('group_overlap', height=420, colorbar=True, colorbar_height=.05)
             helpers.set_volumes(state['viewer'], [dict(path=str(background), colormap='gray', opacity=1.),
