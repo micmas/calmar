@@ -49,3 +49,6 @@ aphasia-kb/_extraction_dry_run.txt
 aphasia-kb/_last_extraction_response_*.txt
 aphasia-kb/_compare/
 .env
+
+# Local Python virtual environment
+.venv/

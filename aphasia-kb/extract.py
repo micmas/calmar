@@ -64,6 +64,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -80,7 +81,10 @@ def _load_text(p: Path) -> str:
 def _extract_pdf_text(pdf_path: Path) -> tuple[str, int]:
     """Return (full_text, page_count) for a PDF."""
     try:
-        import fitz  # PyMuPDF
+        try:
+            import pymupdf as fitz  # PyMuPDF >= 1.24
+        except ImportError:  # pragma: no cover
+            import fitz  # older PyMuPDF
     except ImportError as e:
         raise SystemExit(
             "PyMuPDF is required. Install with:\n"
@@ -642,7 +646,8 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
                 monitor: bool = True,
                 timeout: int = 3600,
                 lean: bool = False) -> bool:
-    print(f"\n=== {pdf_path.name} ===")
+    t_start = time.monotonic()
+    print(f"\n=== {pdf_path.name} ===  started {dt.datetime.now():%Y-%m-%d %H:%M:%S}")
     if not pdf_path.exists():
         print(f"  ❌ not found: {pdf_path}")
         return False
@@ -687,9 +692,16 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
               f"{num_ctx or _autosize_num_ctx(prompt, max_tokens):,}")
         return True
 
+    t_model = time.monotonic()
+    print(f"  Model call started {dt.datetime.now():%H:%M:%S} "
+          f"({model}, num_ctx={num_ctx or 'auto'}); output arrives in one "
+          f"piece when the model finishes — see `ollama ps` meanwhile.",
+          flush=True)
     raw = call_ollama(prompt, model, max_tokens=max_tokens,
                       host=host, num_ctx=num_ctx, monitor=monitor,
                       timeout=timeout)
+    print(f"  Model call finished {dt.datetime.now():%H:%M:%S} "
+          f"(took {_fmt_elapsed(time.monotonic() - t_model)})", flush=True)
     raw_path = kb_root / f"_last_extraction_response_{pdf_path.stem}.txt"
     raw_path.write_text(raw, encoding="utf-8")
 
@@ -736,6 +748,8 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
     if out_dir is not None:
         print(f"  ⊙ sandbox mode: skipped annotator + extraction_log "
               f"(nothing outside {out_dir.name}/ was modified)")
+        print(f"  Done {dt.datetime.now():%H:%M:%S} — total "
+              f"{_fmt_elapsed(time.monotonic() - t_start)} for this paper")
         return True
 
     run_annotator(pdf_path, saved, kb_root)
@@ -749,7 +763,15 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
     notes = result.get("notes_for_reviewer")
     if notes:
         print(f"  For reviewer: {notes}")
+    print(f"  Done {dt.datetime.now():%H:%M:%S} — total "
+          f"{_fmt_elapsed(time.monotonic() - t_start)} for this paper")
     return True
+
+
+def _fmt_elapsed(seconds: float) -> str:
+    m, s = divmod(int(seconds), 60)
+    h, m = divmod(m, 60)
+    return f"{h}h {m:02d}m {s:02d}s" if h else f"{m}m {s:02d}s"
 
 
 # ============================================================
@@ -882,6 +904,7 @@ def main(argv=None):
             p.error(msg)
         print(f"✓ {msg}  (model from {cfg['source']})")
 
+    t_batch = time.monotonic()
     n_ok, n_fail = 0, 0
     for pdf in pdfs:
         try:
@@ -900,7 +923,8 @@ def main(argv=None):
             print(f"  ❌ unhandled error: {e}")
             n_fail += 1
 
-    print(f"\nFinished: {n_ok} ok, {n_fail} failed.")
+    print(f"\nFinished {dt.datetime.now():%Y-%m-%d %H:%M:%S}: {n_ok} ok, "
+          f"{n_fail} failed, {_fmt_elapsed(time.monotonic() - t_batch)} total.")
     if not args.dry_run and n_ok > 0:
         print(f"Review with: cd {kb_root} && python promote.py --list")
 

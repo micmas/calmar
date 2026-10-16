@@ -307,7 +307,10 @@ def _extract_pdf_text(pdf_path: Path) -> str:
     if pdf_path.suffix.lower() == ".txt":
         return pdf_path.read_text(encoding="utf-8", errors="ignore")
     try:
-        import fitz  # pymupdf
+        try:
+            import pymupdf as fitz  # PyMuPDF >= 1.24
+        except ImportError:  # pragma: no cover
+            import fitz  # older PyMuPDF
     except ImportError as e:
         raise RuntimeError("pymupdf required for PDF reading "
                            "(pip install pymupdf)") from e
@@ -705,7 +708,10 @@ def paper_text_for(fm: dict, papers_dir: Path = PAPERS_DIR) -> tuple[str, list[s
         if found.suffix.lower() == ".txt":
             text = found.read_text(encoding="utf-8", errors="ignore")
         else:
-            import fitz  # pymupdf
+            try:
+                import pymupdf as fitz  # PyMuPDF >= 1.24
+            except ImportError:  # pragma: no cover
+                import fitz  # older PyMuPDF
             doc = fitz.open(str(found))
             text = "".join(f"\n=== PAGE {i+1} ===\n" + doc[i].get_text()
                            for i in range(doc.page_count))
