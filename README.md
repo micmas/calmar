@@ -243,14 +243,24 @@ Dataset (BIDS)
 
 ## Aphasia knowledge base
 
-The `aphasia-kb/` subdirectory is a structured literature database of aphasia findings, therapies, and their active ingredients (RTSS framework). Each entry links a brain region or clinical predictor to an expected impairment or outcome, with citations, sample metadata, and confidence levels.
-
-To add a paper to the KB, point the extraction agent at `aphasia-kb/EXTRACTION_SKILL.md`. Extracted drafts go to `aphasia-kb/drafts/`; promote reviewed entries with:
+`aphasia-kb/` is a curated, source-traceable literature base: each
+finding links a brain region, predictor or therapy to an outcome, with
+the verbatim passages from the paper that support it. CALMaR's
+clinical-interpretation stage queries it to turn a lesion mask into a
+cited report. Extraction and review run on a local model via Ollama;
+approval follows the two-tier policy in `aphasia-kb/GOVERNANCE.md`
+(an independent model may approve routine findings after re-reading
+the PDF; a person approves the rest and audits).
 
 ```bash
-python aphasia-kb/promote.py --list      # review drafts
-python aphasia-kb/promote.py --approve <id>
+python aphasia-kb/kb_status.py                                        # what is in it
+python aphasia-kb/extract.py --pdf aphasia-kb/papers/<Key>.pdf        # one paper → drafts
+python aphasia-kb/auto_review.py --all --llm-review --require-pdf-match
+python aphasia-kb/promote.py --list                                   # what needs a person
 ```
+
+See `aphasia-kb/README.md` for the layout and `aphasia-kb/HOWTO.md` for
+the full procedure.
 
 ---
 
