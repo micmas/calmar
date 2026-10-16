@@ -1,13 +1,16 @@
 """Mock-Ollama test of the auto_review guardrails and review tiers.
 
 Run with:  python3 test_review_guardrails.py
-No Ollama or model required — it stands up a fake server on :11434.
+No Ollama or model required — it stands up a fake server on a spare
+port (default 11499, override with MOCK_OLLAMA_PORT), so it coexists
+with a real Ollama on :11434.
 Run this after touching llm_second_opinion, _validate_llm_payload,
 classify_tier or promote.validate_review_args.
 
 Every guardrail must fail toward "leave it deferred for a person".
 """
 import json
+import os
 import sys
 import tempfile
 import threading
@@ -48,7 +51,8 @@ class H(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
-srv = HTTPServer(("127.0.0.1", 11434), H)
+PORT = int(os.environ.get("MOCK_OLLAMA_PORT", "11499"))
+srv = HTTPServer(("127.0.0.1", PORT), H)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 
 import auto_review as ar  # noqa: E402
@@ -106,7 +110,7 @@ def run(name, canned, **kw):
     kw.setdefault("tier", "A")
     kw.setdefault("paper_text", PAPER)
     r = ar.llm_second_opinion(FM, CHECKS, model="gemma4:31b",
-                              host="http://127.0.0.1:11434", **kw)
+                              host=f"http://127.0.0.1:{PORT}", **kw)
     print(f"\n--- {name}")
     print(f"    override = {r.get('verdict_override')!r}")
     for g in (r.get("guardrails") or []):

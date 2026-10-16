@@ -153,6 +153,21 @@ def collect(root: Path) -> dict:
                        "pdf_present": pdf,
                        "used_by": sorted(users)}
 
+    # files in papers/ that no cited key claims — usually a naming slip
+    unmatched: list[str] = []
+    if papers_dir.is_dir():
+        # any key in citations.md counts, not only those canonical
+        # entries cite — drafts and not-yet-extracted papers live there too
+        keys = {k.lstrip("@") for k in cited} | {k.lstrip("@") for k in dois}
+        for f in sorted(papers_dir.iterdir()):
+            if f.suffix.lower() not in (".pdf", ".txt") or f.name.startswith("."):
+                continue
+            stem = f.stem
+            if stem.endswith("_annotated"):
+                continue
+            if stem not in keys:
+                unmatched.append(f.name)
+
     total_review = collections.Counter()
     for b in BUCKETS:
         total_review.update(per_bucket[b]["review"])
@@ -170,6 +185,7 @@ def collect(root: Path) -> dict:
         "methods": dict(methods.most_common()),
         "decoder": {"reachable": reachable, "unreachable": unreachable},
         "papers": papers,
+        "papers_unmatched": unmatched,
         "_legacy_candidates": [str(p.relative_to(root)) for p in legacy_candidates],
     }
 
@@ -217,6 +233,11 @@ def print_summary(st: dict) -> None:
     print(f"\n  Papers: {len(st['papers'])} cited, "
           f"{len(st['papers']) - len(missing)} with a PDF in papers/, "
           f"{len(missing)} missing  (--papers-needed lists them with DOIs)")
+    if st.get("papers_unmatched"):
+        print(f"  {len(st['papers_unmatched'])} file(s) in papers/ match no "
+              f"cited key (rename to <Key>.pdf): "
+              + ", ".join(st["papers_unmatched"][:6])
+              + (" …" if len(st["papers_unmatched"]) > 6 else ""))
 
 
 def print_papers_needed(st: dict) -> None:
