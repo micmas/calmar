@@ -2,16 +2,28 @@
 """
 auto_review.py — agentic first-pass review of pending KB drafts.
 
-Workflow
---------
+Workflow (GOVERNANCE.md §2–§4)
+------------------------------
 For each pending draft:
-  1. Run deterministic safety checks.
-  2. Optionally run an LLM second-opinion review.
-  3. Compute a verdict: auto_approve | defer_to_human | auto_reject.
-  4. Write a sidecar audit report under `auto_review_log/`.
-  5. If auto_approve, shell out to `promote.py --approve` and tag the
-     `extraction_log.md` line as `AUTO-APPROVED` (distinct from human
-     `APPROVED`).
+  1. Run deterministic safety checks. These can REJECT or DEFER; they
+     never approve. A draft that passes everything is `checks_passed`,
+     which is eligible for review, not approved.
+  2. Classify the draft into a review tier from its frontmatter:
+       Tier A  routine finding appended to an existing entry; an
+               independent model may approve it.
+       Tier B  therapies/ingredients, strong claims, new entries,
+               reviews, flagged or low-confidence drafts; a person must.
+  3. Optionally (--llm-review) ask an INDEPENDENT local model — a
+     different tag from the extractor — to re-read the paper's text
+     layer and answer, per finding: is each passage there, does it
+     support the field it is tagged for, is the relationship faithful,
+     is strength fair, do the numbers match, are limitations captured,
+     is anything contradicting omitted?
+  4. A unanimous model `approve` promotes a Tier A draft via
+     `promote.py --reviewer model:<tag> --tier A --extractor <tag>`,
+     which logs `MODEL-APPROVED`. On Tier B the model's verdict is
+     recorded and the draft stays deferred for a person.
+  5. Write a sidecar audit report under `auto_review_log/`.
 
 Design
 ------
@@ -20,11 +32,9 @@ Design
     * non-empty `contradictions:` on any finding
     * PDF quote-match below threshold (likely fabricated quotes)
     * `provenance.confidence: low`
-- Soft checks (an LLM second-opinion CAN override these):
-    * `provenance.confidence: medium` on any finding
+- Soft checks (defer to a reviewer; a model may still approve Tier A):
     * suspicious words in `provenance.flags` (placeholder, verify, todo,
       uncertain, ambiguous, etc.)
-    * `strength: weak` or null on any finding
     * sample.n disagrees across findings citing the same paper
 
 Defaults aim conservative — better to defer a fine draft than to
@@ -33,7 +43,7 @@ papers/ dir is populated.
 
 Usage (CLI)
 -----------
-    # First pass: deterministic only, all pending drafts, auto-promote winners
+    # First pass: deterministic checks + tier classification; promotes nothing
     python auto_review.py --all
 
     # Second pass: re-review only those drafts that deferred to human,
@@ -62,7 +72,8 @@ Usage (CLI)
     #   * Drafts whose quotes don't match    → auto_reject (LLM was fooled)
     #   * Drafts where PDFs are STILL missing → defer (loud failure)
 
-    # Cowork / human-reviewer workflow (no Anthropic API spend):
+    # Cowork / human-reviewer workflow (nothing runs locally; a human or
+    # a Cowork session supplies the verdicts):
     #
     #   1. Generate a worksheet listing the drafts you want reviewed:
     #        python auto_review.py --deferred --emit-worksheet worksheet.yaml
@@ -95,6 +106,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import os
 import re
 import subprocess
@@ -123,8 +135,34 @@ REPORTS_DIR = ROOT / "auto_review_log"
 PROMOTE_PY = ROOT / "promote.py"
 LOG_PATH = ROOT / "extraction_log.md"
 
-DEFAULT_LLM_MODEL = "claude-sonnet-4-6"
+# Which model reviews drafts lives in models.yaml — see model_config.py.
+from model_config import resolve as resolve_model  # noqa: E402
+
+_REVIEW_CFG = resolve_model("review")
+DEFAULT_LLM_MODEL = _REVIEW_CFG["model"]
 PDF_MATCH_THRESHOLD = 0.80   # >= this fraction of quotes must match
+
+# --- Local-model guardrails -------------------------------------------
+# The LLM second opinion can PROMOTE a draft into the canonical KB. That
+# makes a wrong `override_approve` the most costly error this script can
+# make, and a mid-size local model is more likely to make it than a
+# frontier model — small models are agreeable, and this prompt actively
+# invites them to bless something a deterministic check already flagged.
+#
+# So local review is asymmetric by default:
+#   * escalate_reject / agree_defer  → honoured (both fail SAFE)
+#   * override_approve               → downgraded to agree_defer,
+#                                      unless --allow-local-override
+# Enabling the override flag is reasonable once you've spot-checked the
+# model's rationales on a batch you already know the answer to.
+ALLOW_LOCAL_OVERRIDE_DEFAULT = False   # deprecated; kept for importers
+
+# Self-consistency: with votes>1 the review runs N times at nonzero
+# temperature and an override is honoured ONLY if every run agrees.
+# Disagreement across runs is itself the signal — it means the model is
+# guessing, which is exactly when you don't want it promoting anything.
+DEFAULT_VOTES = 3
+VOTE_TEMPERATURE = 0.4
 
 # Soft import of the existing validator + parser
 sys.path.insert(0, str(ROOT))
@@ -143,7 +181,10 @@ except Exception:
 # Verdicts
 # ============================================================
 class Verdict:
-    APPROVE     = "auto_approve"
+    ELIGIBLE    = "checks_passed"         # deterministic checks passed; NOT
+                                           # approved — needs a reviewer
+    APPROVE     = "auto_approve"          # approved by a model (Tier A) or
+                                           # a person via a worksheet
     PROVISIONAL = "provisional_approve"   # would auto_approve, but PDF check
                                            # was skipped — held pending PDF
                                            # re-verification on a machine with
@@ -322,8 +363,14 @@ def check_pdf_quote_match(fm: dict, papers_dir: Path = PAPERS_DIR,
             if not quote:
                 continue
             total += 1
-            qnorm = _normalize(quote)
-            if qnorm in norm_text:
+            # Case-insensitive: `_normalize` deliberately preserves case
+            # (annotate_paper needs it to locate highlight rects), but for
+            # a containment test case only produces false failures — a
+            # curator quoting mid-sentence writes "the two groups…" where
+            # the paper has "The two groups…". This is a BLOCKER check, so
+            # a false failure auto-rejects a perfectly good draft.
+            qnorm = _normalize(quote).casefold()
+            if qnorm in norm_text.casefold():
                 matched += 1
             else:
                 misses.append(
@@ -345,14 +392,17 @@ def check_pdf_quote_match(fm: dict, papers_dir: Path = PAPERS_DIR,
                  blocker=True, details=details)
 
 
+# `check_provenance_confidence` (high only) and
+# `check_strength_moderate_or_better` are no longer in the default set:
+# under GOVERNANCE.md §3 medium confidence and weak strength are ordinary
+# Tier A material, and the tier classifier already sends strong/low
+# elsewhere. They remain importable for ad-hoc use.
 ALL_CHECKS: list = [
     check_schema_validates,
     check_provenance_not_low,
     check_no_contradictions,
     check_pdf_quote_match,
-    check_provenance_confidence,
     check_no_human_review_flags,
-    check_strength_moderate_or_better,
     check_cross_finding_consistency,
 ]
 
@@ -410,101 +460,433 @@ def compute_verdict(checks: list[Check],
     if softs_failed:
         return Verdict.DEFER
 
-    # Would-be APPROVE — downgrade to PROVISIONAL when PDF check was
-    # skipped, if the caller asked for that behaviour.
+    # Everything passed. That makes the draft ELIGIBLE for review; the
+    # deterministic checks never approve (GOVERNANCE.md §2).
     if provisional_without_pdf and pdf and pdf.passed is None:
         return Verdict.PROVISIONAL
-    return Verdict.APPROVE
+    return Verdict.ELIGIBLE
+
+
+# ============================================================
+# Review tiers (GOVERNANCE.md §3)
+# ============================================================
+TIER_A_BUCKETS = ("regions", "impairments", "predictors")
+TIER_A_STRENGTHS = ("weak", "moderate")
+TIER_B_EVIDENCE = ("narrative-review", "case-study", "case_study")
+
+
+def _canonical_exists(fm: dict, draft_path: Path, root: Path = ROOT) -> bool:
+    """True when a canonical file with this draft's id already exists in
+    the bucket the draft lives in (so approval appends findings)."""
+    try:
+        bucket = draft_path.resolve().relative_to((root / "drafts").resolve()).parts[0]
+    except Exception:
+        return False
+    return (root / bucket / f"{fm.get('id')}.md").exists()
+
+
+def classify_tier(fm: dict, checks: list[Check], draft_path: Path,
+                  root: Path = ROOT) -> tuple[str, list[str]]:
+    """Return ("A" | "B", reasons). Tier B reasons list why a person is
+    needed; an empty list means Tier A.
+
+    This is a classification, not a judgement: every rule reads a field
+    the extractor wrote or a check result. Anything not provably Tier A
+    is Tier B.
+    """
+    reasons: list[str] = []
+    try:
+        bucket = draft_path.resolve().relative_to((root / "drafts").resolve()).parts[0]
+    except Exception:
+        bucket = "?"
+    if bucket not in TIER_A_BUCKETS:
+        reasons.append(f"bucket {bucket!r} always needs a person")
+
+    schema = next((c for c in checks if c.name == "schema_valid"), None)
+    if schema is None or schema.passed is not True:
+        reasons.append("schema not clean")
+    pdf = next((c for c in checks if c.name == "pdf_quote_match"), None)
+    if pdf is None or pdf.passed is not True:
+        reasons.append("PDF quote match not run or not passed")
+    else:
+        m = re.search(r"matched (\d+)/(\d+)", (pdf.details or [""])[0])
+        if not m or m.group(1) != m.group(2):
+            reasons.append("not every passage matched the PDF exactly")
+
+    if not _canonical_exists(fm, draft_path, root):
+        reasons.append("new entry id (not appending to an existing entry)")
+
+    for f in fm.get("findings") or []:
+        fid = f.get("id", "?")
+        prov = f.get("provenance") or {}
+        if prov.get("confidence") not in ("high", "medium"):
+            reasons.append(f"{fid}: confidence={prov.get('confidence')!r}")
+        if prov.get("flags"):
+            reasons.append(f"{fid}: has provenance.flags")
+        if f.get("strength") not in TIER_A_STRENGTHS:
+            reasons.append(f"{fid}: strength={f.get('strength')!r}")
+        eq = str(f.get("evidence_quality") or "")
+        if eq in TIER_B_EVIDENCE or f.get("method") == "narrative_review":
+            reasons.append(f"{fid}: evidence_quality={eq!r}")
+        if f.get("contradictions"):
+            reasons.append(f"{fid}: has contradictions")
+    return ("B" if reasons else "A"), reasons
 
 
 # ============================================================
 # LLM second-opinion (optional)
 # ============================================================
 LLM_SYSTEM_PROMPT = """\
-You are a skeptical second reviewer of an extraction draft from an aphasia-research
-knowledge base. The first-pass deterministic review flagged this draft for human
-review. Your job is to decide whether the deferral was warranted, or whether the
-draft is actually safe to auto-approve despite the flag.
+You are the independent second reader for a stroke/aphasia research
+knowledge base. A different model extracted structured findings from a
+paper. You have the paper's full text layer and the draft. Your job is
+to re-read the paper and check the draft against it, finding by finding.
 
-Be conservative. Default to "agree_defer" unless the draft is plainly fine.
+For EVERY finding id listed, answer each check from the paper text:
+  passage_present       every quoted passage appears verbatim in the text
+  passage_supports_field each passage supports the field it is tagged for
+                        ([claim] supports the claim, [statistics] the
+                        numbers, [sample] the sample, ...), not merely
+                        something nearby
+  relationship_faithful the paper itself makes the kind of claim recorded
+                        (causal vs correlational vs recruitment vs
+                        responder); a correlation written up as causal
+                        fails this
+  strength_fair         `strength` is at or below what the authors claim
+                        for their own result
+  numbers_match         n, effect sizes, thresholds and p-values match the
+                        text and tables exactly
+  limitations_captured  the authors' own stated limitations that weaken
+                        this finding are recorded
+  omissions             a result in the paper that contradicts or
+                        qualifies this finding and was left out, or ""
+Then give a per-finding verdict: agree (all checks true), disagree (a
+check is false), or cannot_verify (the text needed is missing or
+unreadable).
 
-You CANNOT override these — they will stay deferred or rejected regardless of
-your verdict:
-  - schema_valid failure
-  - pdf_quote_match failure
-  - no_low_confidence_findings failure
-  - no_contradictions failure
+Overall verdict:
+  approve  every finding is `agree`. Only then.
+  defer    anything is `disagree`/`cannot_verify`, or you are unsure.
+           This is the normal, safe answer.
+  reject   a passage is fabricated, a number is wrong, or the direction
+           of a claim is reversed.
 
-You CAN override these soft criteria when justified:
-  - all_findings_confidence_high (medium confidence may still be sound)
-  - no_human_review_flags (some flag-words are false positives)
-  - strength_moderate_or_better (a weak finding may still be honestly weak-but-correct)
-  - cross_finding_consistency (per-finding sample.n differences may be intentional
-    sub-sample reporting)
-
-For each finding, evaluate:
-  1. Do the source_passages tagged `supports: claim` plainly support the claim text?
-  2. Does the strength rating match the evidence in the quotes?
-  3. Are the provenance flags substantive concerns or routine bookkeeping?
-
-Respond ONLY in this YAML format inside a ```yaml block:
-```yaml
-overall_verdict: agree_defer | override_approve | escalate_reject
-rationale: |
-  <2-4 sentences explaining the decision>
-per_finding:
-  - id: f1
-    concern: <brief concern, or 'none'>
-    supports_approval: true | false
-```
+Judge only against the paper text. A well-written, confident draft is
+not evidence of anything. Use the exact finding ids given; do not invent
+ids. Keep `rationale` specific and under 80 words.
 """
 
 
-def llm_second_opinion(fm: dict, det_checks: list[Check],
-                       model: str = DEFAULT_LLM_MODEL) -> dict:
-    """Call Anthropic API for a skeptical review of a deferred draft.
+# JSON Schema for constrained decoding. Ollama restricts the sampler to
+# tokens that keep the output schema-valid, so the model cannot emit a
+# verdict outside the enum or skip a required key. This is the single
+# biggest reliability win for a mid-size local model — far more robust
+# than asking politely for a fenced YAML block.
+_CHECK_KEYS = ("passage_present", "passage_supports_field",
+               "relationship_faithful", "strength_fair", "numbers_match",
+               "limitations_captured")
+LLM_RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "overall_verdict": {"type": "string",
+                            "enum": ["approve", "defer", "reject"]},
+        "rationale": {"type": "string"},
+        "per_finding": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    **{k: {"type": "boolean"} for k in _CHECK_KEYS},
+                    "omissions": {"type": "string"},
+                    "concern": {"type": "string"},
+                    "verdict": {"type": "string",
+                                "enum": ["agree", "disagree", "cannot_verify"]},
+                },
+                "required": ["id", *_CHECK_KEYS, "omissions", "concern",
+                             "verdict"],
+            },
+        },
+    },
+    "required": ["overall_verdict", "rationale", "per_finding"],
+}
 
-    Returns a dict with `model`, `raw_response`, `parsed`, and an
-    interpreted `verdict_override` ∈ {'approve', 'reject', None}.
+# Legacy verdict names (v1 sidecars and the worksheet path use these).
+_V2_TO_V1 = {"approve": "override_approve", "defer": "agree_defer",
+             "reject": "escalate_reject"}
+
+
+def _validate_llm_payload(parsed: dict | None,
+                          expected_ids: list[str]) -> list[str]:
+    """Return a list of structural problems with the model's response.
+
+    Any problem here means we do NOT trust the verdict. Catching a
+    confabulated or incomplete response is cheap; acting on one is not.
     """
+    problems: list[str] = []
+    if not isinstance(parsed, dict):
+        return ["response was not a JSON object"]
+
+    verdict = parsed.get("overall_verdict")
+    if verdict not in ("approve", "defer", "reject"):
+        problems.append(f"unknown overall_verdict {verdict!r}")
+
+    pf = parsed.get("per_finding")
+    if not isinstance(pf, list):
+        problems.append("per_finding missing or not a list")
+        return problems
+
+    got_ids = [str(x.get("id")) for x in pf if isinstance(x, dict)]
+    missing = [i for i in expected_ids if i not in got_ids]
+    invented = [i for i in got_ids if i not in expected_ids]
+    if missing:
+        problems.append(f"did not review finding(s): {missing}")
+    if invented:
+        problems.append(f"invented finding id(s) not in the draft: {invented}")
+
+    # Internal coherence: approving overall while any check is false or
+    # any finding is not `agree` means the model contradicted itself.
+    if verdict == "approve":
+        bad = [str(x.get("id")) for x in pf if isinstance(x, dict)
+               and (x.get("verdict") != "agree"
+                    or any(x.get(k) is not True for k in _CHECK_KEYS))]
+        if bad:
+            problems.append(
+                f"said approve but did not fully agree on {bad}")
+    for x in pf:
+        if isinstance(x, dict) and x.get("verdict") == "agree" \
+                and any(x.get(k) is False for k in _CHECK_KEYS):
+            problems.append(f"{x.get('id')}: verdict agree but a check is false")
+
+    rationale = (parsed.get("rationale") or "").strip()
+    if len(rationale) < 15:
+        problems.append("rationale empty or too short to audit")
+
+    return problems
+
+
+def _bare_tag(s: str | None) -> str:
+    s = (s or "").strip()
+    for pre in ("agent:", "model:"):
+        if s.lower().startswith(pre):
+            s = s[len(pre):]
+    return s.lower()
+
+
+def reviewer_is_independent(extractor: str | None, reviewer_model: str) -> bool:
+    """A model never reviews its own drafts: tags must differ. A missing
+    extractor tag cannot be shown independent, so it fails."""
+    if not extractor:
+        return False
+    return _bare_tag(extractor) != _bare_tag(reviewer_model)
+
+
+def paper_text_for(fm: dict, papers_dir: Path = PAPERS_DIR) -> tuple[str, list[str]]:
+    """Full text layer (with page markers) of every paper the draft cites,
+    plus a list of citations whose PDF could not be found."""
+    cites = []
+    for f in fm.get("findings") or []:
+        c = f.get("citation")
+        if c and c not in cites:
+            cites.append(c)
+    chunks: list[str] = []
+    missing: list[str] = []
+    for cite in cites:
+        key = cite.lstrip("@")
+        found = None
+        for ext in (".pdf", ".txt"):
+            cand = papers_dir / f"{key}{ext}"
+            if cand.exists():
+                found = cand
+                break
+        if not found:
+            missing.append(cite)
+            continue
+        if found.suffix.lower() == ".txt":
+            text = found.read_text(encoding="utf-8", errors="ignore")
+        else:
+            import fitz  # pymupdf
+            doc = fitz.open(str(found))
+            text = "".join(f"\n=== PAGE {i+1} ===\n" + doc[i].get_text()
+                           for i in range(doc.page_count))
+            doc.close()
+        chunks.append(f"\n\n######## PAPER {cite} ########\n{text}")
+    return "".join(chunks), missing
+
+
+def _one_llm_pass(prompt: str, model: str, host: str, expected_ids: list[str],
+                  temperature: float, seed: int | None,
+                  max_tokens: int = 4000) -> dict:
+    """Single review pass. Returns {verdict, parsed, raw, problems, error}."""
+    from ollama_client import OllamaError, chat
     try:
-        from anthropic import Anthropic
-    except ImportError:
-        return {"error": "anthropic SDK not installed (pip install anthropic)"}
+        res = chat(prompt, model=model, system=LLM_SYSTEM_PROMPT,
+                   max_tokens=max_tokens, host=host, temperature=temperature,
+                   seed=seed, fmt=LLM_RESPONSE_SCHEMA, verbose=False)
+    except OllamaError as e:
+        return {"error": str(e), "verdict": None, "parsed": None, "raw": "",
+                "problems": ["transport error"]}
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        return {"error": "ANTHROPIC_API_KEY not set in environment"}
-
-    prompt = _build_llm_prompt(fm, det_checks)
-    client = Anthropic(api_key=api_key)
+    raw = res["text"]
     try:
-        response = client.messages.create(
-            model=model,
-            max_tokens=2000,
-            system=LLM_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-        )
-    except Exception as e:
-        return {"error": f"Anthropic API call failed: {e}"}
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        parsed = _parse_llm_yaml(raw)   # legacy/fallback path
 
-    raw = "".join(b.text for b in response.content if hasattr(b, "text"))
-    parsed = _parse_llm_yaml(raw)
+    # A model that answers in prose yields a str (or None) here, not a
+    # dict. Coerce so downstream never has to care.
+    if not isinstance(parsed, dict):
+        parsed = None
+
+    problems = _validate_llm_payload(parsed, expected_ids)
+    if res.get("truncated_output"):
+        problems.append("response truncated at num_predict")
+    if res.get("truncated_input"):
+        problems.append("prompt truncated at num_ctx — paper not fully read")
+    return {"error": None,
+            "verdict": (parsed or {}).get("overall_verdict"),
+            "parsed": parsed, "raw": raw, "problems": problems}
+
+
+def llm_second_opinion(fm: dict, det_checks: list[Check],
+                       model: str = DEFAULT_LLM_MODEL,
+                       host: str | None = None,
+                       votes: int = DEFAULT_VOTES,
+                       allow_override: bool | None = None,
+                       *,
+                       tier: str = "B",
+                       paper_text: str | None = None,
+                       extractor: str | None = None,
+                       papers_dir: Path = PAPERS_DIR) -> dict:
+    """Ask an INDEPENDENT local model to re-read the paper and review.
+
+    Runs entirely against Ollama — paper text, draft and quotes never
+    leave the machine.
+
+    Guardrails, in order of application:
+      1. Independence — the reviewer tag must differ from the extractor
+         tag (`created_by`), or no approval is possible.
+      2. Paper present — without the PDF text the model cannot do the
+         second reading; `approve` is downgraded to defer.
+      3. Schema-constrained decoding (verdict must be in the enum).
+      4. Structural validation — must review exactly the real finding
+         ids, must not contradict itself, must give an auditable
+         rationale. Any failure ⇒ verdict discarded, draft stays deferred.
+      5. Self-consistency — with votes>1, all runs must agree.
+      6. Tier — `approve` is honoured only on Tier A (GOVERNANCE.md §3);
+         on Tier B it is recorded as agree_defer for a person.
+
+    `allow_override` is accepted for backward compatibility and ignored:
+    the tier decides, not a flag.
+
+    Every guardrail fails toward "leave it deferred for a person", which
+    is the cheap error. Returns the usual dict plus `guardrails`, which
+    records anything that fired so the sidecar YAML stays auditable.
+    """
+    from ollama_client import DEFAULT_HOST, is_local
+    host = host or DEFAULT_HOST
+
+    expected_ids = [str(f.get("id")) for f in (fm.get("findings") or [])]
+    if not expected_ids:
+        return {"error": "draft has no findings to review", "model": model}
+
+    guardrails: list[str] = []
+    if allow_override is not None:
+        guardrails.append("allow_override is deprecated and ignored; "
+                          "the review tier decides")
+    if not is_local(host):
+        guardrails.append(f"WARNING: host {host} is not local")
+
+    extractor = extractor or fm.get("created_by")
+    independent = reviewer_is_independent(extractor, model)
+    if not independent:
+        guardrails.append(f"reviewer {model!r} is not independent of the "
+                          f"extractor {extractor!r}; cannot approve")
+
+    missing: list[str] = []
+    if paper_text is None:
+        paper_text, missing = paper_text_for(fm, papers_dir)
+    if not paper_text:
+        guardrails.append("no paper text available — second reading not "
+                          "possible; approve would be downgraded")
+
+    prompt = _build_llm_prompt(fm, det_checks, paper_text, tier)
+
+    votes = max(1, votes)
+    passes = [
+        _one_llm_pass(prompt, model, host, expected_ids,
+                      temperature=(0.0 if votes == 1 else VOTE_TEMPERATURE),
+                      seed=(None if votes == 1 else 1000 + i))
+        for i in range(votes)
+    ]
+
+    transport_errs = [p["error"] for p in passes if p["error"]]
+    if len(transport_errs) == len(passes):
+        return {"model": model, "error": transport_errs[0],
+                "verdict_override": None, "parsed": None,
+                "guardrails": ["all passes failed to reach Ollama"]}
+
+    good = [p for p in passes if not p["error"] and not p["problems"]]
+    rejected = [p for p in passes if p["problems"] and not p["error"]]
+    for p in rejected:
+        guardrails.append(f"discarded a pass: {'; '.join(p['problems'])}")
+
+    if not good:
+        return {"model": model, "parsed": (passes[0] or {}).get("parsed"),
+                "raw_response": passes[0].get("raw", ""),
+                "verdict_override": None,
+                "error": "no structurally valid response; leaving deferred",
+                "guardrails": guardrails, "tier": tier,
+                "extractor": extractor, "independent": independent}
+
+    verdicts = {p["verdict"] for p in good}
+    unanimous = len(verdicts) == 1 and len(good) == votes
+    if not unanimous:
+        guardrails.append(
+            f"votes disagreed or were incomplete ({[p['verdict'] for p in good]}"
+            f" over {votes} run(s)) — no override applied")
+
+    best = good[0]
+    verdict = best["verdict"]
+
     override = None
-    v = (parsed or {}).get("overall_verdict")
-    if v == "override_approve":
-        override = "approve"
-    elif v == "escalate_reject":
-        override = "reject"
-    return {"model": model, "raw_response": raw, "parsed": parsed,
-            "verdict_override": override}
+    if unanimous:
+        if verdict == "reject":
+            override = "reject"          # fails safe — always honoured
+        elif verdict == "approve":
+            if not independent:
+                pass                     # guardrail already recorded
+            elif not paper_text:
+                guardrails.append("model said approve without the paper "
+                                  "text; downgraded to defer")
+            elif tier != "A":
+                guardrails.append(
+                    f"model said approve on Tier {tier}; recorded as "
+                    f"agree_defer — a person must approve this tier")
+            else:
+                override = "approve"
+
+    parsed = best["parsed"]
+    if isinstance(parsed, dict):
+        parsed = dict(parsed)
+        parsed["overall_verdict_v1"] = _V2_TO_V1.get(
+            parsed.get("overall_verdict"), parsed.get("overall_verdict"))
+    return {"model": model, "raw_response": best["raw"],
+            "parsed": parsed, "verdict_override": override,
+            "votes": votes, "vote_verdicts": [p["verdict"] for p in passes],
+            "unanimous": unanimous, "guardrails": guardrails, "error": None,
+            "tier": tier, "extractor": extractor, "independent": independent,
+            "papers_missing": missing}
 
 
-def _build_llm_prompt(fm: dict, det_checks: list[Check]) -> str:
+def _build_llm_prompt(fm: dict, det_checks: list[Check],
+                      paper_text: str = "", tier: str = "B") -> str:
     parts = [f"# Draft under review: {fm.get('id')}",
-             f"Kind: {fm.get('kind')}  ·  schema_version: {fm.get('schema_version')}",
+             f"Kind: {fm.get('kind')}  ·  schema_version: {fm.get('schema_version')}"
+             f"  ·  review tier: {tier}",
+             f"Extracted by: {fm.get('created_by')}",
              "",
-             "## Deterministic checks that failed (the deferral reasons)"]
+             "## Deterministic checks that failed (if any)"]
     any_failed = False
     for c in det_checks:
         if c.passed is False:
@@ -513,39 +895,86 @@ def _build_llm_prompt(fm: dict, det_checks: list[Check]) -> str:
             parts.append(f"- [{tag}] {c.name}: " +
                          "; ".join(c.details[:3]) if c.details else c.name)
     if not any_failed:
-        parts.append("(none — escalation path)")
+        parts.append("(none)")
 
-    parts.append("\n## Findings")
-    for f in fm.get("findings") or []:
-        parts.append(f"\n### {f.get('id')}")
+    findings = fm.get("findings") or []
+    ids = [str(f.get("id")) for f in findings]
+
+    # State the id list up front AND require it back. A mid-size model
+    # skipping a finding is a common failure; making the checklist
+    # explicit both reduces it and makes it detectable downstream.
+    parts.append(f"\n## Findings to review ({len(ids)} total)")
+    parts.append(f"You must return exactly these ids in `per_finding`: "
+                 f"{', '.join(ids)}")
+
+    for f in findings:
+        parts.append(f"\n### Finding id: {f.get('id')}")
         parts.append(f"- citation: {f.get('citation')}")
         parts.append(f"- target: {f.get('target')} ({f.get('target_kind')})")
-        parts.append(f"- claim: {f.get('claim')}")
+        parts.append(f"- CLAIM: {f.get('claim')}")
+        parts.append(f"- direction: {f.get('direction')}  ·  relationship: "
+                     f"{f.get('relationship')}")
+        parts.append(f"- method: {f.get('method')}  ·  design: {f.get('design')}"
+                     f"  ·  evidence_quality: {f.get('evidence_quality')}")
         parts.append(f"- strength: {f.get('strength')}  ·  "
                      f"confidence: {(f.get('provenance') or {}).get('confidence')}")
+        sample = f.get("sample") or {}
+        if sample:
+            parts.append(f"- sample: n={sample.get('n')} · "
+                         f"{sample.get('population')} · "
+                         f"time post-onset: {sample.get('time_post_onset')}")
+        stats = f.get("statistics") or {}
+        if stats:
+            parts.append(f"- statistics: effect={stats.get('effect_size')} · "
+                         f"threshold={stats.get('threshold')} · "
+                         f"p={stats.get('p_value')} · CI={stats.get('ci_95')}")
+        if f.get("author_limitations"):
+            parts.append(f"- author_limitations: {f.get('author_limitations')}")
         flags = (f.get('provenance') or {}).get('flags') or []
         if flags:
             parts.append(f"- flags: {flags}")
-        parts.append("- source_passages:")
+        # Full quotes, not truncated: a quote clipped mid-sentence can
+        # look like it fails to support a claim it actually supports.
+        parts.append("- QUOTED PASSAGES (tag = what each is said to support):")
         for sp in f.get("source_passages") or []:
-            q = (sp.get("quote") or "")[:240]
-            parts.append(f"    - [{sp.get('supports','?')}] (p.{sp.get('page','?')}) {q}")
+            q = (sp.get("quote") or "").strip()
+            parts.append(f"    - [{sp.get('supports','?')}] "
+                         f"(p.{sp.get('page','?')}) \"{q}\"")
+        if not (f.get("source_passages") or []):
+            parts.append("    (none — a claim with no quotes cannot be "
+                         "approved)")
+
+    parts.append("\n## Your task")
+    parts.append(f"Re-read the paper text below. For each of {', '.join(ids)} "
+                 f"answer every check from the text, then give one overall "
+                 f"verdict. When in doubt, answer defer.")
+    if paper_text:
+        parts.append("\n## Paper text layer (verbatim, with page markers)")
+        parts.append(paper_text)
+    else:
+        parts.append("\n## Paper text layer: NOT AVAILABLE — you cannot "
+                     "verify passages; answer cannot_verify where needed.")
     return "\n".join(parts)
 
 
 def _parse_llm_yaml(raw: str) -> dict | None:
-    """Find the first ```yaml block in `raw` and parse it."""
-    m = re.search(r"```ya?ml\s*\n(.*?)\n```", raw, re.DOTALL | re.IGNORECASE)
-    if not m:
-        # Fallback: maybe the model emitted bare YAML
+    """Find the first ```yaml block in `raw` and parse it.
+
+    Always returns a dict or None — never a bare str. `yaml.safe_load`
+    happily parses a prose sentence into a string, which would otherwise
+    sail downstream and blow up on `.get`.
+    """
+    def _load(text: str) -> dict | None:
         try:
-            return yaml.safe_load(raw)
+            out = yaml.safe_load(text)
         except Exception:
             return None
-    try:
-        return yaml.safe_load(m.group(1))
-    except Exception:
-        return None
+        return out if isinstance(out, dict) else None
+
+    m = re.search(r"```ya?ml\s*\n(.*?)\n```", raw, re.DOTALL | re.IGNORECASE)
+    if m:
+        return _load(m.group(1))
+    return _load(raw)   # fallback: maybe the model emitted bare YAML
 
 
 # ============================================================
@@ -559,7 +988,9 @@ def report_path_for(draft_path: Path) -> Path:
 
 def write_report(draft_path: Path, verdict: str, checks: list[Check],
                  llm_result: dict | None = None,
-                 dry_run: bool = False) -> Path | None:
+                 dry_run: bool = False,
+                 tier: str | None = None,
+                 tier_reasons: list[str] | None = None) -> Path | None:
     """Append a run entry to the sidecar YAML for this draft."""
     p = report_path_for(draft_path)
     if p.exists():
@@ -577,16 +1008,31 @@ def write_report(draft_path: Path, verdict: str, checks: list[Check],
         "verdict":   verdict,
         "checks":    [c.to_yaml_dict() for c in checks],
     }
+    if tier:
+        run["review_tier"] = tier
+        run["tier_reasons"] = tier_reasons or []
     if llm_result:
         # Don't dump the full raw response by default if it's huge —
         # keep parsed verdict + first 800 chars of raw for audit.
         raw = llm_result.get("raw_response", "")
         run["llm_review"] = {
             "model":             llm_result.get("model"),
+            "backend":           "ollama (local)",
             "verdict_override":  llm_result.get("verdict_override"),
             "parsed":            llm_result.get("parsed"),
             "raw_preview":       (raw or "")[:800],
             "error":             llm_result.get("error"),
+            # Guardrail audit trail: which safety nets fired, how the
+            # votes split, and whether they agreed. Keep this — it's how
+            # you decide later whether the local model is trustworthy
+            # enough to hand it --allow-local-override.
+            "votes":             llm_result.get("votes"),
+            "vote_verdicts":     llm_result.get("vote_verdicts"),
+            "unanimous":         llm_result.get("unanimous"),
+            "guardrails":        llm_result.get("guardrails") or [],
+            "extractor":         llm_result.get("extractor"),
+            "independent":       llm_result.get("independent"),
+            "papers_missing":    llm_result.get("papers_missing"),
         }
     report["runs"].append(run)
     report["last_run"]        = run["timestamp"]
@@ -605,30 +1051,26 @@ def write_report(draft_path: Path, verdict: str, checks: list[Check],
 # Promotion
 # ============================================================
 
-def auto_promote(draft_path: Path, reviewer: str = "auto-reviewer") -> tuple[bool, str]:
-    """Run promote.py --approve and tag the log line as AUTO-APPROVED."""
+def auto_promote(draft_path: Path, reviewer: str, *,
+                 tier: str | None = None,
+                 extractor: str | None = None) -> tuple[bool, str]:
+    """Run promote.py --approve on behalf of a named reviewer.
+
+    `reviewer` is `human:<name>` or `model:<tag>`; promote.py refuses
+    `auto-reviewer`, enforces that a model may only approve Tier A, that
+    the model differs from the extractor, and writes the MODEL-APPROVED
+    or APPROVED log line itself. Nothing is retagged after the fact.
+    """
     cmd = [sys.executable, str(PROMOTE_PY),
            "--approve", str(draft_path),
            "--reviewer", reviewer]
+    if tier:
+        cmd += ["--tier", tier]
+    if extractor:
+        cmd += ["--extractor", extractor]
     res = subprocess.run(cmd, capture_output=True, text=True)
     out = (res.stdout or "") + (res.stderr or "")
-    if res.returncode == 0:
-        _retag_last_log_line()
     return res.returncode == 0, out
-
-
-def _retag_last_log_line() -> None:
-    """Replace the most recent ' | APPROVED | ' in extraction_log.md
-    with ' | AUTO-APPROVED | ' so spot-check greps work later."""
-    if not LOG_PATH.exists():
-        return
-    lines = LOG_PATH.read_text(encoding="utf-8").splitlines(keepends=True)
-    for i in range(len(lines) - 1, -1, -1):
-        if " | APPROVED | " in lines[i]:
-            lines[i] = lines[i].replace(" | APPROVED | ",
-                                        " | AUTO-APPROVED | ", 1)
-            break
-    LOG_PATH.write_text("".join(lines), encoding="utf-8")
 
 
 # ============================================================
@@ -643,11 +1085,17 @@ def review_one(draft_path: Path,
                model: str = DEFAULT_LLM_MODEL,
                papers_dir: Path = PAPERS_DIR,
                dry_run: bool = False,
-               write_sidecar: bool = True
+               write_sidecar: bool = True,
+               ollama_host: str | None = None,
+               votes: int = DEFAULT_VOTES,
+               allow_local_override: bool | None = None,
+               model_approve: bool = True,
                ) -> tuple[str, list[Check], dict | None]:
     """Review one draft and return (verdict, checks, llm_result_or_None).
 
-    See module docstring for what `provisional_without_pdf` does.
+    The returned llm_result (when --llm-review ran) carries `tier`,
+    `tier_reasons` and `extractor`, which `review_many` needs to call
+    promote.py correctly. `allow_local_override` is deprecated/ignored.
     """
     fm, _ = parse_markdown(draft_path)
     checks = run_deterministic_checks(fm, draft_path, papers_dir=papers_dir)
@@ -656,27 +1104,36 @@ def review_one(draft_path: Path,
         require_pdf_match=require_pdf_match,
         provisional_without_pdf=provisional_without_pdf,
     )
+    tier, tier_reasons = classify_tier(fm, checks, draft_path)
 
     llm_result = None
-    # LLM second-opinion runs on DEFER; can lift to APPROVE / drop to REJECT.
-    # If lifted to APPROVE but PDF was skipped under provisional mode, we
-    # still downgrade to PROVISIONAL (LLM can't substitute for quote
-    # verification against the source PDF).
-    if llm_review and verdict == Verdict.DEFER:
-        llm_result = llm_second_opinion(fm, checks, model=model)
+    # The model reviewer runs on anything the deterministic checks did
+    # not reject: ELIGIBLE (clean) and DEFER (soft/blocker flagged). It
+    # can approve only Tier A; reject is always honoured.
+    if llm_review and verdict in (Verdict.ELIGIBLE, Verdict.DEFER):
+        llm_result = llm_second_opinion(
+            fm, checks, model=model, host=ollama_host, votes=votes,
+            tier=tier, papers_dir=papers_dir)
+        llm_result["tier"] = tier
+        llm_result["tier_reasons"] = tier_reasons
         ov = (llm_result or {}).get("verdict_override")
-        if ov == "approve":
+        if ov == "approve" and model_approve:
             verdict = Verdict.APPROVE
             pdf = next((c for c in checks
                         if c.name == "pdf_quote_match"), None)
             if (provisional_without_pdf
                     and pdf is not None and pdf.passed is None):
                 verdict = Verdict.PROVISIONAL
+        elif ov == "approve" and not model_approve:
+            llm_result["guardrails"].append(
+                "model approval disabled by --no-model-approve")
+            llm_result["verdict_override"] = None
         elif ov == "reject":
             verdict = Verdict.REJECT
 
     if write_sidecar:
-        write_report(draft_path, verdict, checks, llm_result, dry_run=dry_run)
+        write_report(draft_path, verdict, checks, llm_result, dry_run=dry_run,
+                     tier=tier, tier_reasons=tier_reasons)
     return verdict, checks, llm_result
 
 
@@ -705,7 +1162,7 @@ def apply_manual_verdict(
     verdict_override: str,           # "approve" | "agree_defer" | "reject"
     rationale: str,
     per_finding: list[dict] | None = None,
-    reviewer: str = "cowork-claude",
+    reviewer: str = "human:unnamed",
     auto_promote_on_approve: bool = True,
     require_pdf_match: bool = False,
     provisional_without_pdf: bool = False,
@@ -750,8 +1207,10 @@ def apply_manual_verdict(
     else:  # agree_defer
         final_verdict = Verdict.DEFER
 
+    tier, tier_reasons = classify_tier(fm, checks, draft_path)
     manual_record = {
         "model":            reviewer,
+        "tier":             tier,
         "verdict_override": ("approve" if verdict_override == "approve"
                              else "reject" if verdict_override == "reject"
                              else None),
@@ -765,10 +1224,14 @@ def apply_manual_verdict(
         "raw_preview": (rationale or "")[:800],
         "error":       None,
     }
-    write_report(draft_path, final_verdict, checks, manual_record)
+    write_report(draft_path, final_verdict, checks, manual_record,
+                 tier=tier, tier_reasons=tier_reasons)
 
     if final_verdict == Verdict.APPROVE and auto_promote_on_approve:
-        auto_promote(draft_path, reviewer=reviewer)
+        ok, out = auto_promote(draft_path, reviewer=reviewer, tier=tier,
+                               extractor=fm.get("created_by"))
+        if not ok:
+            raise RuntimeError(f"promote.py refused: {out.strip()}")
 
     return final_verdict, checks
 
@@ -826,9 +1289,12 @@ def emit_worksheet(drafts: list[Path], *,
                 ]
             findings_summary.append(row)
 
+        tier, tier_reasons = classify_tier(fm, checks, d)
         items.append({
             "draft":             str(d.relative_to(ROOT)),
             "current_verdict":   verdict,
+            "review_tier":       tier,
+            "tier_reasons":      tier_reasons or None,
             "failure_reasons":   failure_reasons or None,
             "findings_summary":  findings_summary,
             # ↓ reviewer fills these in:
@@ -850,8 +1316,8 @@ def emit_worksheet(drafts: list[Path], *,
         "#   python auto_review.py --apply-verdicts <this-file>\n"
         "#\n"
         "# Notes:\n"
-        "#   - 'approve' on a deferred draft lifts to auto_approve and "
-        "promotes via promote.py.\n"
+        "#   - 'approve' promotes via promote.py under YOUR name "
+        "(--reviewer human:<name>); the tier is stamped on the entry.\n"
         "#   - 'reject' marks as auto_reject (the draft stays in drafts/).\n"
         "#   - 'agree_defer' keeps it deferred (still needs human attention).\n"
         "#   - schema_valid / pdf_quote_match failures CANNOT be overridden.\n"
@@ -862,7 +1328,7 @@ def emit_worksheet(drafts: list[Path], *,
 
 
 def apply_worksheet(path: Path, *,
-                    reviewer: str = "cowork-claude",
+                    reviewer: str = "human:unnamed",
                     promote: bool = True,
                     papers_dir: Path = PAPERS_DIR,
                     require_pdf_match: bool = False,
@@ -872,8 +1338,8 @@ def apply_worksheet(path: Path, *,
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     items = data.get("drafts") or []
 
-    counts = {Verdict.APPROVE: 0, Verdict.PROVISIONAL: 0,
-              Verdict.DEFER: 0, Verdict.REJECT: 0}
+    counts = {Verdict.ELIGIBLE: 0, Verdict.APPROVE: 0,
+              Verdict.PROVISIONAL: 0, Verdict.DEFER: 0, Verdict.REJECT: 0}
     skipped: list[str] = []
     promoted: list[str] = []
 
@@ -980,18 +1446,24 @@ def review_many(drafts: list[Path], *,
                 provisional_without_pdf: bool = False,
                 model: str = DEFAULT_LLM_MODEL,
                 papers_dir: Path = PAPERS_DIR,
-                reviewer: str = "auto-reviewer",
+                reviewer: str | None = None,
                 dry_run: bool = False,
                 promote: bool = True,
+                ollama_host: str | None = None,
+                votes: int = DEFAULT_VOTES,
+                allow_local_override: bool | None = None,
+                model_approve: bool = True,
                 verbose: bool = True) -> dict:
     """Review many drafts. Returns a summary dict.
 
-    Promotion is triggered ONLY when verdict == Verdict.APPROVE.
-    `provisional_approve` is held for re-verification on a machine with
-    PDFs available.
+    Promotion is triggered ONLY when verdict == Verdict.APPROVE, which
+    can only come from a unanimous, independent model review of a Tier A
+    draft. The promotion runs as `model:<tag>`; `reviewer` is ignored
+    here (a person approves through the worksheet path).
     """
-    counts = {Verdict.APPROVE: 0, Verdict.PROVISIONAL: 0,
-              Verdict.DEFER: 0, Verdict.REJECT: 0}
+    counts = {Verdict.ELIGIBLE: 0, Verdict.APPROVE: 0,
+              Verdict.PROVISIONAL: 0, Verdict.DEFER: 0, Verdict.REJECT: 0}
+    tiers = {"A": 0, "B": 0}
     promoted: list[Path] = []
     failed_to_promote: list[Path] = []
     per_draft: list[dict] = []
@@ -1005,7 +1477,8 @@ def review_many(drafts: list[Path], *,
                 require_pdf_match=require_pdf_match,
                 provisional_without_pdf=provisional_without_pdf,
                 model=model, papers_dir=papers_dir,
-                dry_run=dry_run,
+                dry_run=dry_run, ollama_host=ollama_host, votes=votes,
+                model_approve=model_approve,
             )
         except Exception as e:
             if verbose:
@@ -1013,14 +1486,23 @@ def review_many(drafts: list[Path], *,
             per_draft.append({"draft": str(d), "error": repr(e)})
             continue
         counts[verdict] += 1
-        per_draft.append({"draft": str(d), "verdict": verdict})
+        tier = (llm or {}).get("tier")
+        if tier is None:
+            try:
+                fm, _ = parse_markdown(d)
+                tier, _reasons = classify_tier(fm, checks, d)
+            except Exception:
+                tier = "B"
+        tiers[tier] = tiers.get(tier, 0) + 1
+        per_draft.append({"draft": str(d), "verdict": verdict, "tier": tier})
         if verbose:
-            emoji = {"auto_approve":        "✓",
+            emoji = {"checks_passed":       "○",
+                     "auto_approve":        "✓",
                      "provisional_approve": "◐",
                      "defer_to_human":      "⚠",
                      "auto_reject":         "✗"}[verdict]
             mode  = "+LLM" if llm else "    "
-            print(f"  {emoji} [{mode}] {verdict}")
+            print(f"  {emoji} [{mode}] {verdict}  · tier {tier}")
             for c in checks:
                 if c.passed is False:
                     tag = "blk" if c.blocker else "sft"
@@ -1036,7 +1518,9 @@ def review_many(drafts: list[Path], *,
                 print(f"      ↻ LLM overrode: {llm['verdict_override']}")
 
         if verdict == Verdict.APPROVE and promote and not dry_run:
-            ok, out = auto_promote(d, reviewer=reviewer)
+            ok, out = auto_promote(
+                d, reviewer=f"model:{(llm or {}).get('model') or model}",
+                tier="A", extractor=(llm or {}).get("extractor"))
             if ok:
                 promoted.append(d)
                 if verbose:
@@ -1048,6 +1532,7 @@ def review_many(drafts: list[Path], *,
 
     summary = {
         "counts":            counts,
+        "tiers":             tiers,
         "n_promoted":        len(promoted),
         "n_failed_promote":  len(failed_to_promote),
         "promoted":          [str(p) for p in promoted],
@@ -1055,10 +1540,12 @@ def review_many(drafts: list[Path], *,
         "per_draft":         per_draft,
     }
     if verbose:
-        print(f"\nSummary: {counts[Verdict.APPROVE]} auto_approve, "
+        print(f"\nSummary: {counts[Verdict.ELIGIBLE]} checks_passed, "
+              f"{counts[Verdict.APPROVE]} model-approved, "
               f"{counts[Verdict.PROVISIONAL]} provisional, "
               f"{counts[Verdict.DEFER]} defer, "
-              f"{counts[Verdict.REJECT]} auto_reject  "
+              f"{counts[Verdict.REJECT]} reject  "
+              f"· tier A {tiers['A']} / tier B {tiers['B']}  "
               f"(promoted={len(promoted)}, "
               f"failed_promote={len(failed_to_promote)})")
     return summary
@@ -1103,11 +1590,27 @@ def _cli(argv: list[str] | None = None) -> int:
                         "--pending-pdf to choose which drafts go in.")
 
     p.add_argument("--llm-review", action="store_true",
-                   help="Enable LLM second opinion (requires "
-                        "ANTHROPIC_API_KEY in env)")
-    p.add_argument("--model",      default=DEFAULT_LLM_MODEL,
-                   help=f"Anthropic model for LLM review (default: "
-                        f"{DEFAULT_LLM_MODEL})")
+                   help="Enable LLM second opinion using a LOCAL model via "
+                        "Ollama (needs `ollama serve` running). Nothing is "
+                        "sent off-machine.")
+    p.add_argument("--model",      default=None,
+                   help=f"Ollama model tag for LLM review. Default comes "
+                        f"from models.yaml (currently {DEFAULT_LLM_MODEL}). "
+                        f"Run `python model_config.py` to see it resolved.")
+    p.add_argument("--ollama-host", default=None,
+                   help="Ollama base URL (default: http://localhost:11434, "
+                        "or OLLAMA_HOST).")
+    p.add_argument("--votes", type=int, default=DEFAULT_VOTES, metavar="N",
+                   help=f"Run the review N times and require unanimity "
+                        f"before honouring an override (default: "
+                        f"{DEFAULT_VOTES}). N=1 disables self-consistency "
+                        f"checking and is faster but less safe.")
+    p.add_argument("--no-model-approve", action="store_true",
+                   help="Record the model's verdicts but never promote on "
+                        "them (Tier A approvals become agree_defer). Use "
+                        "while calibrating a new reviewer model.")
+    p.add_argument("--allow-local-override", action="store_true",
+                   help=argparse.SUPPRESS)   # deprecated: tiers decide now
     p.add_argument("--require-pdf-match", action="store_true",
                    help="Refuse to auto-approve when PDF unavailable. "
                         "Default is to skip the PDF check if no papers/ files.")
@@ -1118,8 +1621,11 @@ def _cli(argv: list[str] | None = None) -> int:
                         "machine with papers/) to finalise them.")
     p.add_argument("--papers-dir", type=Path, default=PAPERS_DIR,
                    help=f"Where the source PDFs live (default: {PAPERS_DIR})")
-    p.add_argument("--reviewer",   default="auto-reviewer",
-                   help="Reviewer name passed to promote.py")
+    p.add_argument("--reviewer",   default=None,
+                   help="With --apply-verdicts: who filled in the worksheet, "
+                        "as human:<name> (a bare name is a person). Not used "
+                        "by the automatic path — the checks never approve, "
+                        "and a model approval is stamped model:<tag>.")
     p.add_argument("--dry-run",    action="store_true",
                    help="Compute verdicts but DO NOT promote or write logs")
     p.add_argument("--no-promote", action="store_true",
@@ -1135,12 +1641,26 @@ def _cli(argv: list[str] | None = None) -> int:
     if args.pending_pdf:
         args.require_pdf_match = True
 
+    if args.allow_local_override:
+        print("⚠ --allow-local-override is deprecated and ignored: the "
+              "review tier decides what a model may approve (GOVERNANCE.md).")
+
     # Mode A: --apply-verdicts — read a worksheet, apply the verdicts.
     # No selector needed; drafts come from the worksheet itself.
     if args.apply_verdicts is not None:
         if not args.apply_verdicts.exists():
             print(f"❌ worksheet not found: {args.apply_verdicts}")
             return 2
+        if not args.reviewer:
+            p.error("--apply-verdicts requires --reviewer human:<name>")
+        from promote import normalize_reviewer
+        try:
+            args.reviewer = normalize_reviewer(args.reviewer)
+        except ValueError as e:
+            p.error(str(e))
+        if args.reviewer.startswith("model:"):
+            p.error("worksheet verdicts are a person's; use --llm-review "
+                    "for a model review")
         summary = apply_worksheet(
             args.apply_verdicts,
             reviewer=args.reviewer,
@@ -1183,6 +1703,25 @@ def _cli(argv: list[str] | None = None) -> int:
               f"{args.emit_worksheet} --reviewer <your-name>")
         return 0
 
+    # Preflight the local model once, so a long --all run doesn't fail
+    # on draft 1 of 60.
+    if args.llm_review:
+        from ollama_client import check_model_available, is_local
+        _cfg = resolve_model("review", args.model)
+        args.model = _cfg["model"]
+        host = args.ollama_host or os.environ.get(
+            "OLLAMA_HOST", "http://localhost:11434")
+        if not is_local(host):
+            print(f"⚠ OLLAMA_HOST points at {host}, which is not this "
+                  f"machine. Draft quotes WILL leave your computer.")
+        ok, msg = check_model_available(args.model, host)
+        if not ok:
+            p.error(msg)
+        print(f"✓ {msg}  (model from {_cfg['source']})")
+        note = ("off (--no-model-approve)" if args.no_model_approve
+                else "Tier A only; Tier B always goes to a person")
+        print(f"  votes={args.votes}  ·  model approval: {note}")
+
     # Mode C (default): full review pipeline.
     summary = review_many(
         drafts,
@@ -1194,6 +1733,9 @@ def _cli(argv: list[str] | None = None) -> int:
         reviewer=args.reviewer,
         dry_run=args.dry_run,
         promote=not args.no_promote,
+        ollama_host=args.ollama_host,
+        votes=args.votes,
+        model_approve=not args.no_model_approve,
     )
     return 0 if summary["n_failed_promote"] == 0 else 1
 

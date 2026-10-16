@@ -4,6 +4,7 @@ id: tdcs_aphasia_treatment
 name: Transcranial Direct Current Stimulation (tDCS) during aphasia treatment
 kind: therapy
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 short_description: Anodal tDCS applied to the intact left temporoparietal region for the first 20 min

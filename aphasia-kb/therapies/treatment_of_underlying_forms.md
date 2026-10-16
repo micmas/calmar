@@ -8,6 +8,7 @@ aliases:
 - thematic-syntactic mapping treatment
 kind: therapy
 status: approved
+review_tier: legacy
 created_by: agent:claude-opus-4-7
 created_on: 2026-05-01
 short_description: A linguistically-motivated, impairment-based intervention for agrammatic

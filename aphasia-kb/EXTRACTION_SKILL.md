@@ -260,7 +260,7 @@ id: subcortical_aphasia_thalamus
 name: "Subcortical Aphasia — Thalamic Mechanisms"
 kind: classical
 status: draft
-created_by: "agent:claude-sonnet-4-6"
+created_by: "agent:<the model id you are running as>"
 created_on: 2026-05-06
 hemisphere: left
 
@@ -285,7 +285,7 @@ findings:
     author_limitations:
       - "Synthesis based on small case series; no voxel-level evidence available at time of publication."
     provenance:
-      extracted_by: "agent:claude-sonnet-4-6"
+      extracted_by: "agent:<the model id you are running as>"
       extracted_on: 2026-05-06
       paper_section: "Discussion, pages 380-395"
       confidence: high

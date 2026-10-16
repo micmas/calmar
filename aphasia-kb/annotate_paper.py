@@ -113,7 +113,7 @@ def _ligaturize(s: str) -> str:
 
 
 def _normalize(s: str) -> str:
-    """Aggressive normalization: Unicode -> ASCII, ligatures expanded,
+    r"""Aggressive normalization: Unicode -> ASCII, ligatures expanded,
     elision markers stripped, soft hyphens joined, whitespace collapsed.
 
     Soft-hyphen handling (two passes, applied symmetrically to both PDF

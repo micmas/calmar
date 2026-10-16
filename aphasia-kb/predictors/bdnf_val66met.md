@@ -4,6 +4,7 @@ id: bdnf_val66met
 name: BDNF Val66Met genotype (rs6265)
 kind: predictor
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 predictor_type: demographic

@@ -4,6 +4,7 @@ id: left_superior_temporal_gyrus_wernicke
 name: Left Superior Temporal Gyrus (Wernicke's Area and Planum Temporale)
 kind: classical
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 hemisphere: left
