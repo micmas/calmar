@@ -4,6 +4,7 @@ id: left_frontal_white_matter_bottleneck
 name: Left Frontal White Matter Bottleneck
 kind: tract
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 hemisphere: left

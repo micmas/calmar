@@ -4,6 +4,7 @@ id: brocas_aphasia
 name: Broca's aphasia
 kind: impairment
 status: approved
+review_tier: legacy
 created_by: agent:claude-opus-4-7
 created_on: 2026-05-01
 short_definition: Non-fluent aphasia syndrome with effortful, halting speech, agrammatism,

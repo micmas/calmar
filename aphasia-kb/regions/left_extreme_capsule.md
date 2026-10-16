@@ -4,6 +4,7 @@ id: left_extreme_capsule
 name: Left Extreme Capsule (Ventral Language Pathway)
 kind: tract
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 aliases:

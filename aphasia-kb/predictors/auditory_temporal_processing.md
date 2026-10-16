@@ -4,6 +4,7 @@ id: auditory_temporal_processing
 name: Rapid auditory temporal processing (40-Hz FM detection)
 kind: predictor
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 predictor_type: behavioural

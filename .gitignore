@@ -42,3 +42,10 @@ logs/
 /alignment-repair/*.prov.json
 /workflow-validation/verification
 /workflow-validation/*.prov.json
+
+# Local-extraction scratch files. These contain verbatim paper text —
+# committing them would undo the point of extracting locally.
+aphasia-kb/_extraction_dry_run.txt
+aphasia-kb/_last_extraction_response_*.txt
+aphasia-kb/_compare/
+.env

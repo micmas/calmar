@@ -8,6 +8,7 @@ aliases:
 - motor-phonological speech processing
 kind: impairment
 status: approved
+review_tier: legacy
 created_by: agent:claude-opus-4-7
 created_on: 2026-05-01
 short_definition: 'Underlying processing component for the motor-phonological aspects

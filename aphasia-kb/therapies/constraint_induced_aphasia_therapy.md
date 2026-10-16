@@ -9,6 +9,7 @@ aliases:
 - constraint-induced aphasia treatment
 kind: therapy
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-07
 short_description: 'An intensive, massed-practice therapy in which compensatory strategies (gesture, drawing,

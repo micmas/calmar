@@ -77,6 +77,44 @@ def parse_markdown(path: Path) -> tuple[dict, str]:
 # ============================================================
 
 STATUS_VOCAB = {"draft", "in_review", "approved", "rejected", "legacy_v1"}
+
+# v2.5 — review provenance (see GOVERNANCE.md §3–§5).
+#   A       routine finding; an independent model may approve
+#   B       a person must approve
+#   legacy  approved before the governance policy; not PDF-re-read
+REVIEW_TIER_VOCAB = {"A", "B", "legacy"}
+REVIEWER_PREFIXES = ("human:", "model:")
+
+# Reviewer strings that pre-date the human:/model: prefixes and are known
+# to be a person. Anything else un-prefixed is treated as machine/legacy.
+_LEGACY_HUMAN_REVIEWERS = {"michele"}
+_MACHINE_HINTS = ("auto", "claude", "agent", "cowork", "model", "gpt",
+                  "gemma", "qwen", "llama", "sonnet", "opus", "haiku")
+
+
+def reviewer_kind(reviewer, review_tier=None) -> str:
+    """Classify who approved something: 'human' | 'model' | 'legacy' | 'none'.
+
+    The explicit `review_tier: legacy` stamp wins over the reviewer
+    string, so entries tagged by `kb_status.py --tag-legacy` are never
+    mistaken for human-reviewed even when a person's name is on them
+    (the May-2026 batch wrote AUTO-APPROVED lines under a human name).
+    """
+    if review_tier == "legacy":
+        return "legacy"
+    r = (reviewer or "").strip()
+    if not r:
+        return "none"
+    low = r.lower()
+    if low.startswith("human:"):
+        return "human"
+    if low.startswith("model:"):
+        return "model"
+    if low in _LEGACY_HUMAN_REVIEWERS:
+        return "human"
+    if any(h in low for h in _MACHINE_HINTS):
+        return "legacy"
+    return "legacy"
 DIRECTION_VOCAB = {
     "likely", "unlikely",
     "likely_responder", "unlikely_responder",
@@ -220,12 +258,15 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
     # v2.2+ entries get the relationship + multimodal-method checks.
     # v2.3+ entries can use the predictor bucket and target_kind=predictor.
     # v2.4+ entries can use method=narrative_review with relaxed field rules.
-    if sv not in (2, 2.1, 2.2, 2.3, 2.4, "2", "2.1", "2.2", "2.3", "2.4"):
-        err(f"schema_version must be 2–2.4, got {sv!r}")
-    is_v21 = sv in (2.1, 2.2, 2.3, 2.4, "2.1", "2.2", "2.3", "2.4")
-    is_v22 = sv in (2.2, 2.3, 2.4, "2.2", "2.3", "2.4")
-    is_v23 = sv in (2.3, 2.4, "2.3", "2.4")
-    is_v24 = sv in (2.4, "2.4")
+    # v2.5 adds optional review-provenance fields (review_tier, per-finding
+    # review block, audited_by/audited_on); no structural change.
+    _ALL_SV = (2, 2.1, 2.2, 2.3, 2.4, 2.5, "2", "2.1", "2.2", "2.3", "2.4", "2.5")
+    if sv not in _ALL_SV:
+        err(f"schema_version must be 2–2.5, got {sv!r}")
+    is_v21 = sv in _ALL_SV[1:6] + _ALL_SV[7:]
+    is_v22 = sv in _ALL_SV[2:6] + _ALL_SV[8:]
+    is_v23 = sv in _ALL_SV[3:6] + _ALL_SV[9:]
+    is_v24 = sv in _ALL_SV[4:6] + _ALL_SV[10:]
 
     # v2.3 predictor entries: validate file-level predictor fields.
     # (We check kind=='predictor' regardless of bucket so any file that
@@ -255,6 +296,18 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
             err("status=approved requires reviewer")
         if not entry.get("reviewed_on"):
             err("status=approved requires reviewed_on")
+    # v2.5 review provenance (optional, but constrained when present)
+    rt = entry.get("review_tier")
+    if rt is not None and rt not in REVIEW_TIER_VOCAB:
+        err(f"unknown review_tier={rt!r}; allowed: {sorted(REVIEW_TIER_VOCAB)}")
+    for f in entry.get("findings") or []:
+        rv = f.get("review") if isinstance(f, dict) else None
+        if rv is None:
+            continue
+        if not isinstance(rv, dict) or not rv.get("reviewer"):
+            err(f"finding {f.get('id')}: review block must be a dict with a reviewer")
+        elif rv.get("tier") is not None and rv.get("tier") not in REVIEW_TIER_VOCAB:
+            err(f"finding {f.get('id')}: unknown review.tier={rv.get('tier')!r}")
 
     findings = entry.get("findings") or []
     for i, f in enumerate(findings):
@@ -471,9 +524,20 @@ class KnowledgeBase:
     drafts: pd.DataFrame = field(init=False)
 
     def __init__(self, root: str | Path,
-                 include: Sequence[str] = ("approved",)):
+                 include: Sequence[str] = ("approved",),
+                 review_kinds: Sequence[str] | None = None):
+        """
+        include       entry statuses to load (default: approved only).
+        review_kinds  if given, keep only findings whose review provenance
+                      is in this set — e.g. ("human",) for the clinical
+                      interpretation path (GOVERNANCE.md §4). Kinds are
+                      'human' | 'model' | 'legacy' | 'none'. Findings
+                      dropped this way are counted in `review_excluded`.
+        """
         self.root = Path(root)
         self.include = tuple(include)
+        self.review_kinds = tuple(review_kinds) if review_kinds else None
+        self.review_excluded = 0
         self.bodies = {}
         self.issues = []
         self._load()
@@ -589,8 +653,24 @@ class KnowledgeBase:
                         "confidence":  (f.get("provenance") or {}).get("confidence"),
                         "flags":       (f.get("provenance") or {}).get("flags") or [],
                         "schema_version": e.get("schema_version", 1),
+                        # Review provenance: a per-finding `review` block
+                        # (v2.5, written by promote.py) wins over the
+                        # file-level reviewer, so a canonical entry that
+                        # accumulated findings from several reviews reports
+                        # each one honestly.
+                        "reviewer":    ((f.get("review") or {}).get("reviewer")
+                                        or e.get("reviewer")),
+                        "review_tier": ((f.get("review") or {}).get("tier")
+                                        or e.get("review_tier")),
+                        "review_kind": reviewer_kind(
+                            (f.get("review") or {}).get("reviewer") or e.get("reviewer"),
+                            (f.get("review") or {}).get("tier") or e.get("review_tier")),
                     })
         self.findings = pd.DataFrame(rows)
+        if self.review_kinds is not None and not self.findings.empty:
+            keep = self.findings["review_kind"].isin(self.review_kinds)
+            self.review_excluded = int((~keep).sum())
+            self.findings = self.findings[keep].reset_index(drop=True)
 
         # Convenience: a separate drafts dataframe for review tooling
         draft_rows = []
