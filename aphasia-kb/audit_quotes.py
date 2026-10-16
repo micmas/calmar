@@ -20,16 +20,29 @@ smart quotes, whitespace) and is case-insensitive, i.e. the same test
 `auto_review.check_pdf_quote_match` applies to drafts, so a canonical
 entry that passes here would pass the Tier A exact-match rule.
 
-Three outcomes per passage:
-    found     located in the PDF text layer
-    absent    not located — fabricated, paraphrased, or a bad OCR layer
+Outcomes per passage, graded because PDF text layers are lossy (a
+different download of the same paper breaks spaces at line ends, drops
+`×`/`=` glyphs, encodes `=` as `¼`):
+    found     located verbatim in the text layer
+    elided    the quote contains `[...]`/`…` and every fragment is found
+    near      not verbatim, but the same passage is there: identical once
+              all whitespace is removed, or ≥ 0.82 similar on a window
+              anchored at the quote's opening words. The content is
+              real; the quote is not byte-exact. Re-review quickly.
+    absent    no similar passage anywhere — the fabrication/paraphrase
+              signal. Re-review first.
     no_pdf    the cited paper is not in papers/ (see kb_status.py
               --papers-needed)
+
+Tier A in `auto_review.py` still requires `found`; this grading is for
+triaging the legacy entries, not for relaxing the rule on new drafts.
 """
 from __future__ import annotations
 
 import argparse
 import csv
+import difflib
+import re
 import sys
 from pathlib import Path
 
@@ -46,6 +59,34 @@ except Exception:  # pragma: no cover
         return re.sub(r"\s+", " ", s).strip()
 
 BUCKETS = ("regions", "impairments", "therapies", "predictors", "reviews")
+NEAR_RATIO = 0.82
+_ELISION = re.compile(r"\[\s*(?:\.\.\.|…)\s*\]|…|\.\.\.")
+
+
+def _grade(quote: str, text: str, text_nospace: str) -> str:
+    """found | elided | near | absent — see module docstring."""
+    q = _normalize(quote).casefold()
+    if q in text:
+        return "found"
+    parts = [p.strip() for p in _ELISION.split(q) if len(p.strip()) >= 20]
+    if len(parts) >= 2 and all(p in text for p in parts):
+        return "elided"
+    if len(q) >= 20 and re.sub(r"\s+", "", q) in text_nospace:
+        return "near"
+    words = q.split()
+    if len(words) >= 5:
+        for start in (0, 3, len(words) // 2):
+            anchor = " ".join(words[start:start + 4])
+            if len(anchor) < 8:
+                continue
+            idx = text.find(anchor)
+            if idx < 0:
+                continue
+            lo = max(0, idx - start * 8)
+            window = text[lo:lo + len(q) + 60]
+            if difflib.SequenceMatcher(None, q, window[:len(q)]).ratio() >= NEAR_RATIO:
+                return "near"
+    return "absent"
 
 
 def _pdf_text(path: Path) -> str:
@@ -69,7 +110,7 @@ def _find_paper(cite: str, papers_dir: Path) -> Path | None:
 
 def audit(root: Path, papers_dir: Path, buckets=BUCKETS) -> list[dict]:
     rows: list[dict] = []
-    cache: dict[str, str | None] = {}
+    cache: dict[str, tuple[str, str] | None] = {}
     for b in buckets:
         d = root / b
         if not d.is_dir():
@@ -85,8 +126,11 @@ def audit(root: Path, papers_dir: Path, buckets=BUCKETS) -> list[dict]:
                 if cite not in cache:
                     paper = _find_paper(cite, papers_dir) if cite else None
                     try:
-                        cache[cite] = (_normalize(_pdf_text(paper)).casefold()
-                                       if paper else None)
+                        if paper:
+                            t = _normalize(_pdf_text(paper)).casefold()
+                            cache[cite] = (t, re.sub(r"\s+", "", t))
+                        else:
+                            cache[cite] = None
                     except Exception as e:  # noqa: BLE001
                         cache[cite] = None
                         print(f"  ! could not read {paper}: {e}", file=sys.stderr)
@@ -98,8 +142,7 @@ def audit(root: Path, papers_dir: Path, buckets=BUCKETS) -> list[dict]:
                     if text is None:
                         status = "no_pdf"
                     else:
-                        status = ("found" if _normalize(q).casefold() in text
-                                  else "absent")
+                        status = _grade(q, text[0], text[1])
                     rows.append({
                         "bucket": b, "entry": p.name, "entry_id": fm.get("id"),
                         "reviewer": fm.get("reviewer"),
@@ -117,13 +160,13 @@ def summarise(rows: list[dict]) -> list[dict]:
         k = (r["bucket"], r["entry"])
         e = by.setdefault(k, {"bucket": r["bucket"], "entry": r["entry"],
                               "reviewer": r["reviewer"],
-                              "passages": 0, "found": 0, "absent": 0,
-                              "no_pdf": 0})
+                              "passages": 0, "found": 0, "elided": 0,
+                              "near": 0, "absent": 0, "no_pdf": 0})
         e["passages"] += 1
         e[r["status"]] += 1
     out = list(by.values())
     # worst first: absent quotes, then unverifiable, then clean
-    out.sort(key=lambda e: (-e["absent"], -e["no_pdf"], e["bucket"], e["entry"]))
+    out.sort(key=lambda e: (-e["absent"], -e["near"], -e["no_pdf"], e["bucket"], e["entry"]))
     return out
 
 
@@ -140,6 +183,7 @@ def _cli(argv=None) -> int:
 
     rows = audit(args.root, args.papers_dir, tuple(args.bucket or BUCKETS))
     if args.csv:
+        args.csv.parent.mkdir(parents=True, exist_ok=True)
         with args.csv.open("w", newline="", encoding="utf-8") as fh:
             w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()) if rows else
                                ["bucket", "entry", "status"])
@@ -148,15 +192,17 @@ def _cli(argv=None) -> int:
         print(f"wrote {args.csv} ({len(rows)} passages)")
 
     summ = summarise(rows)
-    print(f"{'bucket':<12}{'entry':<48}{'quotes':>7}{'found':>7}"
-          f"{'absent':>8}{'no pdf':>8}")
+    print(f"{'bucket':<12}{'entry':<46}{'quotes':>7}{'found':>7}"
+          f"{'elided':>7}{'near':>6}{'absent':>8}{'no pdf':>8}")
     for e in summ:
-        print(f"{e['bucket']:<12}{e['entry'][:47]:<48}{e['passages']:>7}"
-              f"{e['found']:>7}{e['absent']:>8}{e['no_pdf']:>8}")
-    tot = {k: sum(e[k] for e in summ) for k in ("passages", "found", "absent", "no_pdf")}
+        print(f"{e['bucket']:<12}{e['entry'][:45]:<46}{e['passages']:>7}"
+              f"{e['found']:>7}{e['elided']:>7}{e['near']:>6}{e['absent']:>8}"
+              f"{e['no_pdf']:>8}")
+    keys = ("passages", "found", "elided", "near", "absent", "no_pdf")
+    tot = {k: sum(e[k] for e in summ) for k in keys}
     print(f"\n{len(summ)} entries · {tot['passages']} passages · "
-          f"{tot['found']} found · {tot['absent']} absent · "
-          f"{tot['no_pdf']} without a PDF")
+          f"{tot['found']} found · {tot['elided']} elided · {tot['near']} near · "
+          f"{tot['absent']} absent · {tot['no_pdf']} without a PDF")
     if args.show_absent:
         for r in rows:
             if r["status"] == "absent":
