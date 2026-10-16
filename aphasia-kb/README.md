@@ -1,190 +1,172 @@
-# Aphasia knowledge base (v2.3)
+# Aphasia knowledge base
 
-A clinician-controlled, agent-extensible knowledge base linking lesion
-locations to aphasia-related impairments, therapy responses, and
-behavioural / clinical predictors. The format is **markdown with rich
-YAML frontmatter**, designed for both human review and machine
-consumption.
+A curated, source-traceable literature base linking stroke lesion
+locations to aphasia impairments, therapy responses and recovery
+predictors. CALMaR uses it to turn a lesion mask into a cited
+interpretation. Entries are markdown files with YAML frontmatter,
+readable by people and loaded by code.
 
-> **Nothing is approved without a second reading of the paper, and a
-> named person is accountable for everything in the canonical folders.**
-> Agents write to `drafts/`. A draft reaches `regions/`, `impairments/`,
-> `therapies/`, `predictors/` or `ingredients/` only through
-> `promote.py`, approved either by a person or — for routine Tier A
-> findings — by an independent local model that re-read the PDF, with
-> a person auditing a sample. The policy is [`GOVERNANCE.md`](GOVERNANCE.md);
-> which local model does what is [`MODELS.md`](MODELS.md).
+Every finding is one claim from one paper and carries the verbatim
+passages that support it, so anyone can open the paper and check.
+Nothing enters the canonical folders without a second reading of that
+paper — by a person, or for routine findings by an independent local
+model — and a named person is accountable for all of it. That policy is
+[`GOVERNANCE.md`](GOVERNANCE.md). Every model step runs on this machine
+via Ollama; paper text and patient data never leave it
+([`MODELS.md`](MODELS.md)).
+
+**State (October 2026):** 72 entries, 244 findings, 43 papers. 26
+entries were approved by a named person; 33 were approved before the
+governance policy and are tagged `review_tier: legacy` pending
+re-review. `python kb_status.py` prints the current numbers.
+
+## Start here
+
+| You want to… | Read / run |
+|---|---|
+| understand the entry format | [`schema.md`](schema.md) (v2.5), then `examples/region_ifg_opercularis_fridriksson2018.md` |
+| take one PDF to an approved entry | [`HOWTO.md`](HOWTO.md) |
+| know who may approve what | [`GOVERNANCE.md`](GOVERNANCE.md) |
+| choose or benchmark a local model | [`MODELS.md`](MODELS.md) and `models.yaml` |
+| see what is in the KB and what is thin | `python kb_status.py` |
+| check the canonical quotes against the PDFs | `python audit_quotes.py` |
+| set up the machine | `pip install -r ../requirements.txt`, `ollama pull gemma4:26b`, `python model_config.py` |
+
+## How a paper becomes an entry
+
+```
+papers/<Key>.pdf
+   │  extract.py — local model reads the text layer, writes schema-bound drafts
+   ▼
+drafts/<bucket>/<id>__<Key>.md          + papers/<Key>_annotated.pdf (annotate_paper.py)
+   │  auto_review.py — deterministic checks (reject / defer only), tier classification,
+   │                   then an INDEPENDENT model re-reads the PDF and answers seven
+   │                   per-finding checks; may approve Tier A only
+   ▼
+promote.py — a person approves Tier B (therapies, strong claims, new entries, reviews);
+             stamps reviewer, tier and a per-finding review block
+   ▼
+regions/ impairments/ therapies/ predictors/ reviews/ ingredients/      ← what CALMaR queries
+   │
+extraction_log.md — append-only: EXTRACTED · REJECTED · MODEL-APPROVED · APPROVED · AUDIT
+```
+
+Minimal session, from the repository root with the venv active:
+
+```bash
+cp ~/Downloads/Foo2024.pdf aphasia-kb/papers/Foo2024.pdf       # name = citation key
+python aphasia-kb/extract.py --pdf aphasia-kb/papers/Foo2024.pdf
+python aphasia-kb/aphasia_kb.py --check aphasia-kb/drafts/
+python aphasia-kb/auto_review.py --all --llm-review --require-pdf-match
+python aphasia-kb/promote.py --list                               # what still needs you
+python aphasia-kb/promote.py --approve aphasia-kb/drafts/<...>.md --reviewer michele
+git add aphasia-kb && git commit -m "Foo2024 extraction"
+```
 
 ## Layout
 
 ```
 aphasia-kb/
 ├── README.md                  # this file
-├── schema.md                  # YAML frontmatter spec (v2.3 — read first)
-├── HOWTO.md                   # end-to-end walkthrough: one PDF → approved entry
-├── EXTRACTION_SKILL.md        # the agent's instruction manual
-├── GOVERNANCE.md              # who may approve what, tiers, audit, legacy (read this)
-├── MODELS.md                  # choosing and benchmarking the local models
-├── citations.md               # bibliography (@Key references)
+├── schema.md                  # YAML frontmatter spec (v2.5) — the data contract
+├── HOWTO.md                   # procedure: one PDF → approved entry
+├── GOVERNANCE.md              # policy: review tiers, model approval, audit, legacy
+├── MODELS.md                  # choosing and benchmarking the local models; decision log
+├── EXTRACTION_SKILL.md        # the extractor's instruction manual
+├── models.yaml                # which Ollama model each role uses (extract / review / rag)
+├── citations.md               # bibliography (@Key, DOI, extraction status)
 ├── extraction_log.md          # append-only audit log
 │
-│   # ---- code: loaders, CLIs, and the imaging bridge ----
+│   # ---- building the KB ----
+├── batch_ocr.py               # OCR image-only PDFs in papers/
+├── extract.py                 # local model: PDF → drafts + annotated PDF
+├── annotate_paper.py          # colour-highlight a PDF from a draft's source_passages
+├── auto_review.py             # checks, tier classification, independent model review
+├── promote.py                 # the only way into the canonical folders
+├── compare_extraction.py      # benchmark a model against entries you already curated
+├── audit_quotes.py            # every canonical quote vs its PDF (graded)
+├── kb_status.py               # counts, review provenance, decoder reachability, papers needed
+├── model_config.py            # resolves models.yaml / env vars; lists pulled models
+├── ollama_client.py           # the one HTTP client to the local Ollama server
+├── resource_monitor.py        # GPU/CPU watch during long runs
+├── test_review_guardrails.py  # mock-Ollama tests of the review policy (no model needed)
+├── neurosynth_bootstrap.py    # scaffold region drafts from Neurosynth meta-analyses
+│
+│   # ---- using the KB on a lesion ----
 ├── aphasia_kb.py              # loader + validator + query module
-├── promote.py                 # CLI: review / promote / reject drafts
-├── extract.py                 # CLI: agent-driven paper extraction (Anthropic API)
-├── auto_review.py             # CLI: agentic first-pass review of pending drafts
-├── annotate_paper.py          # CLI: color-highlight a PDF from a draft's quotes
-├── batch_ocr.py               # CLI: OCR image-only PDFs in papers/
-├── decode_lesion.py           # lesion mask → HarvardOxford overlap + Neurosynth terms
-├── aphasia_kb_rag.py          # imaging-driven RAG: lesion mask → cited report (+ LLM)
-├── neurosynth_bootstrap.py    # (stage-2) scaffold to auto-draft from meta-analyses
+├── decode_lesion.py           # MNI mask → HarvardOxford overlap + Neurosynth terms
+├── aphasia_kb_rag.py          # decode → retrieve → deterministic cited report (+ local narrative)
 │
-│   # ---- canonical content (APPROVED; loaded by the KB) ----
-├── regions/                   # approved region entries
-├── impairments/               # approved impairment entries
-├── therapies/                 # approved therapy entries
-├── predictors/                # approved predictor entries (v2.3+)
-├── ingredients/               # RTSS active-ingredient entries (referenced by therapies)
+│   # ---- canonical content (status: approved; loaded by the KB) ----
+├── regions/  impairments/  therapies/  predictors/  reviews/  ingredients/
 │
-│   # ---- workflow & supporting material ----
-├── drafts/                    # AGENT writes here; HUMAN reviews
-│   ├── regions/
-│   ├── impairments/
-│   ├── therapies/
-│   └── predictors/
-├── reviews/                   # longer-form narrative reviews of review papers
-├── examples/                  # worked-example entries (NOT loaded by KB)
-├── auto_review_log/           # sidecar audit reports written by auto_review.py
-├── papers/                    # source PDFs (NOT tracked — available on request; see below)
-└── _neurosynth_cache/         # Neurosynth v7 data + term maps (NOT tracked; regenerated)
+│   # ---- workflow material ----
+├── drafts/{regions,impairments,therapies,predictors}/   # extractor writes here
+├── auto_review_log/           # per-draft sidecar audit YAML
+├── examples/                  # worked example (not loaded)
+├── papers/                    # source + annotated PDFs — NOT tracked (copyright)
+├── _compare/                  # sandbox extractions and audit CSVs — NOT tracked
+└── _neurosynth_cache/         # Neurosynth v7 data — NOT tracked; regenerated
 ```
 
-### What each script does (in the order you'd use them)
+## Scripts
 
-The scripts split into two phases: **building** the KB from papers
-(top), and **using** the finished KB on a lesion (bottom).
+| Script | Role | Needs |
+|---|---|---|
+| `batch_ocr.py` | Detect and OCR image-only PDFs so their text layer is searchable. Run before extracting an older paper. | local |
+| `extract.py` | Read a PDF's text layer and emit schema-bound drafts plus the annotated PDF. `--dry-run` previews prompt size and `num_ctx`; `--batch` does every un-extracted PDF; `--out-dir _compare/<model>` sandboxes a benchmark run. | Ollama |
+| `annotate_paper.py` | Highlight each `source_passage` in the PDF, colour-coded by what it supports. The reviewer's primary tool. | local |
+| `auto_review.py` | Deterministic checks (schema, every quote in the PDF, no low confidence, no contradictions) that **reject or defer, never approve**; Tier A/B classification; with `--llm-review`, an independent model re-reads the paper and may approve Tier A. | local / Ollama |
+| `promote.py` | Approve or reject as `human:<name>` or (Tier A only) `model:<tag>`; refuses a model on Tier B or reviewing its own extraction; stamps review provenance; writes the log line. | local |
+| `compare_extraction.py` | Run a candidate model on a paper you already curated and grade quote fidelity, schema, coverage and calibration. The model-selection test in `MODELS.md` §3. | local |
+| `audit_quotes.py` | Grade every canonical quote against its PDF: found / elided / near / absent / no_pdf. The legacy re-review triage. | local |
+| `kb_status.py` | Entries and findings per bucket, review provenance, relationship and strength counts, which KB regions the lesion decoder can reach, papers missing from `papers/` (`--papers-needed`), `--tag-legacy`. | local |
+| `aphasia_kb.py` | Load, validate (`--check DIR`, `--issues`), query (`--lookup`); `KnowledgeBase(review_kinds=("human",))` restricts to person-approved findings. | local |
+| `decode_lesion.py` | Atlas overlap and Neurosynth term decoding of an MNI mask. | local |
+| `aphasia_kb_rag.py` | Decode → retrieve → deterministic cited report; `--llm` adds a local narrative over the same evidence; `--human-approved-only` drops model-approved and legacy findings. | local / Ollama |
 
-| Script                   | Role                                                                                       | Network   |
-|--------------------------|-------------------------------------------------------------------------------------------|-----------|
-| `batch_ocr.py`           | (Run first) detect and OCR any image-only PDFs in `papers/` so their text is searchable.   | local     |
-| `extract.py`             | Drive an LLM to turn a PDF into draft entries + an annotated PDF.                          | API       |
-| `annotate_paper.py`      | Render a color-coded PDF from a draft's `source_passages` so you can check the quotes.      | local     |
-| `auto_review.py`         | Deterministic checks (reject/defer only), tier classification, and the independent model's second reading of the PDF. | local |
-| `aphasia_kb.py`          | Load, validate, and query the KB; `--check` validates drafts before promotion; `review_kinds=` filters by review provenance. | local     |
-| `promote.py`             | The only way into the canonical folders: approve/reject as `human:<name>` or (Tier A only) `model:<tag>`; stamps review provenance. | local     |
-| `audit_quotes.py`        | Verify every quote in the canonical KB against its PDF — the re-review triage (GOVERNANCE.md §5). | local     |
-| `kb_status.py`           | Counts, review provenance, decoder reachability, papers needed; `--tag-legacy` stamps pre-policy entries. | local     |
-| `neurosynth_bootstrap.py`| (Alternative to `extract.py`) scaffold region drafts from Neurosynth meta-analyses.        | local     |
-| `decode_lesion.py`       | Correlate an MNI lesion mask with Neurosynth v7 term maps + HarvardOxford regions.          | local     |
-| `aphasia_kb_rag.py`      | Join `decode_lesion` output to KB findings → a deterministic cited report (+ optional LLM). | local/API |
+Nothing here calls a cloud API. `OLLAMA_HOST` pointing off-machine is a
+configuration error and the scripts warn about it.
 
-The validator, deterministic auto-review, annotation, OCR, decoding, and
-`promote.py` are all local Python and free. Steps marked **API** read an
-`ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) from the environment and bill
-per call — see `HOWTO.md` for cost notes.
+## Papers
 
-## Accessing the annotated papers
-
-The source and color-annotated PDFs in `papers/` are **not redistributed
-in this repository** for copyright reasons. What the KB ships instead is
-the structured findings and full citations (`citations.md`, with DOIs) —
-fetch any paper yourself via its DOI through your usual access. If you
-need the annotated PDFs themselves (e.g. to verify `source_passages`
-against the highlights), **contact the repository owner to request
-access.**
-
-## The two workflows
-
-### A. Agent extraction (the new capability)
-
-1. You give an agent a paper (PDF, link, or pasted text) and point it at
-   `EXTRACTION_SKILL.md`.
-2. The agent reads the SKILL.md *and* the schema, then produces one or
-   more `drafts/<bucket>/<entry_id>__<citation>.md` files.
-3. The agent appends one `EXTRACTED` line to `extraction_log.md`.
-4. You review with `python promote.py --list`, then `--diff` and
-   `--show` each draft.
-5. You approve with `python promote.py --approve <path> --reviewer "you"`
-   or reject with `--reject <path> --reviewer "you" --reason "…"`.
-6. `promote.py` validates the draft, stamps approval, merges/moves it
-   into the canonical folder, and appends an `APPROVED` log line.
-
-For the full operational walkthrough — including the Cowork-vs-CLI
-choice, OCR, annotation, and auto-review — see `HOWTO.md`.
-
-### B. Direct human curation (for entries you write yourself)
-
-1. Read `schema.md` and the worked example in
-   `examples/region_ifg_opercularis_fridriksson2018.md`.
-2. Write a v2 entry in `drafts/<bucket>/`, set `status: draft` and
-   `created_by: human:<your name>`.
-3. Run `python aphasia_kb.py --check drafts/` to validate.
-4. `python promote.py --approve <path> --reviewer "you"`.
-
-## Quick reference
-
-```bash
-# Validate everything
-python aphasia_kb.py --issues
-
-# List pending drafts
-python promote.py --list
-
-# Diff a draft against the canonical entry it would change
-python promote.py --diff drafts/regions/ho-cort_44__Fridriksson2018.md
-
-# Approve a draft
-python promote.py --approve drafts/regions/ho-cort_44__Fridriksson2018.md \
-                  --reviewer "michele"
-
-# Reject a draft
-python promote.py --reject drafts/regions/ho-cort_44__Fridriksson2018.md \
-                  --reviewer "michele" --reason "sample too small"
-
-# Lookup a region by name / alias / id
-python aphasia_kb.py --lookup "Broca's area"
-
-# Decode a lesion mask and write a cited KB report
-python aphasia_kb_rag.py /path/to/Lesion_in_MNI.nii.gz -o report.md
-```
-
-## How this connects to the CALMaR pipeline
-
-The main `lesion-interpretation-pipeline.ipynb` calls into this KB at its
-clinical-interpretation stage: it decodes each lesion mask
-(`decode_lesion.py`), retrieves matching findings, and renders the
-predicted impairments, outcome predictions, and therapy recommendations
-(with RTSS ingredient badges) that appear in the per-subject report. The
-KB can also be used standalone via the CLIs above.
+Source PDFs are not redistributed. `citations.md` carries the DOI for
+every key; fetch papers through your own access and save them as
+`papers/<Key>.pdf` (the key exactly, e.g. `Fridriksson2018Anatomy.pdf`).
+`kb_status.py --papers-needed` lists what the canonical KB depends on
+and is missing. Annotated copies (`<Key>_annotated.pdf`) are generated
+locally and stay local.
 
 ## What each finding captures
 
-Every finding is a structured object, not just a free-text note:
+A finding is a structured object, not a note: the claim; its target
+(impairment, therapy, predictor or region) and `relationship` (causal,
+correlational, recruitment, responder, treatment_response, synthesis);
+method, design and evidence class; sample; statistics; confounders
+controlled and not; how the paper defined the region; the authors' own
+limitations; the extractor's `strength` and `provenance.confidence`;
+and the required `source_passages`, each tagged by what it supports.
+From v2.5 a `review` block records who approved it, when, and at which
+tier. `schema.md` has the full specification.
 
-- **Method** — LSM / fMRI / DTI / etc. (required)
-- **Sample** — n, demographics, inclusion criteria (`sample.*`)
-- **Statistics** — thresholding and effect size (`statistics.*`)
-- **Confounders** — controlled and uncontrolled (two lists)
-- **Region definition** — how the *paper* itself defined the region (`region_definition.*`)
-- **Limitations** — author-acknowledged caveats (required)
-- **Replications / contradictions** — optional cross-study links
-- **Verbatim quotes** — `source_passages` anchoring each claim (encouraged)
-- **Provenance** — who extracted it, when, and how (`provenance.*` + flags)
+## How this connects to CALMaR
 
-See `schema.md` for the full field specification.
+The notebooks call the KB at the clinical-interpretation stage:
+`decode_lesion.py` maps the mask to atlas regions and Neurosynth terms,
+`aphasia_kb_rag.py` retrieves the matching approved findings and
+renders the cited report that appears per subject. The report carries a
+research-only caveat that no flag removes. Only regions present in
+`decode_lesion.py`'s atlas map can be reached from a mask;
+`kb_status.py` lists which KB regions are currently unreachable.
 
-## Status
+## Schema history
 
-This is a **proof-of-concept** (~60 entries from ~40 papers). Every
-approved entry needs clinician sign-off before being relied upon
-clinically; both the deterministic and LLM report paths carry a
-research-only, not-clinical-advice caveat. The schema is frozen for
-v2.3; expanding it (new methods, new vocabularies, new buckets) is a
-v2.4 change that must update `schema.md` and `aphasia_kb.py` together.
+- **v2.0** rich finding object · **v2.1** required `source_passages`,
+  `imaging_details` · **v2.2** multimodal `method`, required
+  `relationship` · **v2.3** `predictors/` bucket · **v2.4** `reviews/`
+  bucket, `method: narrative_review` · **v2.5** review provenance
+  (`review_tier`, per-finding `review` block, `human:`/`model:` reviewers).
 
-### Schema history
-
-- **v2.0** — rich finding object (method, sample, statistics, confounders, region_definition).
-- **v2.1** — required `source_passages` + `imaging_details` for the color-annotated PDF workflow.
-- **v2.2** — `method` as list (multimodal), `imaging_details.modalities` + `task`, required `relationship` field on findings.
-- **v2.3** — new `predictors/` bucket for behavioural / demographic / clinical / imaging-metric variables, plus `target_kind: predictor` so any finding can point at a predictor. Enables querying the KB with scan + behavioural-test data combined.
+Changing the schema is a change to `schema.md` and `aphasia_kb.py`
+together; changing who may approve what is a change to `GOVERNANCE.md`
+and the scripts that enforce it together.
