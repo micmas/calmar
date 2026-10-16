@@ -11,6 +11,11 @@ from calmar import qc
 
 
 class ScriptPathTests(unittest.TestCase):
+    def setUp(self):
+        allocation = patch.dict(os.environ, {"SLURM_JOB_ID": "test-fixture"})
+        allocation.start()
+        self.addCleanup(allocation.stop)
+
     def test_warp_dispatch_preserves_arguments_and_finds_resources_outside_repo(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -31,6 +36,9 @@ class ScriptPathTests(unittest.TestCase):
             self.assertTrue(Path(command[1]).is_file())
             self.assertEqual(Path(command[1]).name, "analysis_15_warp_native_to_mni.sh")
             self.assertEqual(command[command.index("--reference") + 1], str(root / "Subject_in_MNI.nii.gz"))
+            from calmar import templates
+            self.assertEqual(command[command.index("--template-warp") + 1], str(templates.WARP))
+            self.assertEqual(command[command.index("--input-space") + 1], "native")
             source = Path(kwargs["env"]["CALMAR_SOURCE_DIR"])
             self.assertTrue((source / "r" / "warp_native_mask_to_ch2.R").is_file())
 

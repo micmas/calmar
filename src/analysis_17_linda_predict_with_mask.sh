@@ -71,8 +71,19 @@ if [[ -z "${LINDA_SIMG:-}" ]]; then
         echo "  Either set LINDA_SIMG=/path/to/linda_*.simg, or install/load LINDA." >&2
         exit 1
     fi
-    # Pull out the first .simg / .sif path that appears in the wrapper.
-    LINDA_SIMG="$(grep -oE '/[^ ]*\.(simg|sif)' "$LINDA_WRAPPER" | head -1 || true)"
+    # Artifact-v2 wrappers resolve the image relative to the wrapper directory.
+    # Reuse their runtime adapter, which also handles container execution policy.
+    LINDA_WRAPPER="$(readlink -f "$LINDA_WRAPPER")"
+    LINDA_RUNTIME="$(dirname "$LINDA_WRAPPER")/container_runtime.sh"
+    if grep -q '^# neurodesk-artifact-v2' "$LINDA_WRAPPER"; then
+        LINDA_IMAGE_NAME="$(grep -oE 'linda_[a-zA-Z0-9_.-]+\.(simg|sif)' "$LINDA_WRAPPER" | head -1)"
+        LINDA_SIMG="$(dirname "$LINDA_WRAPPER")/$LINDA_IMAGE_NAME"
+        source "$LINDA_RUNTIME"
+        neurodesk_container exec "$LINDA_SIMG" Rscript "$R_STUB" "$@"
+        exit $?
+    fi
+    # Older wrappers use a literal absolute image path.
+    LINDA_SIMG="$(grep -oE '/[^[:space:]"]*\.(simg|sif)' "$LINDA_WRAPPER" | head -1 || true)"
 fi
 
 if [[ -z "$LINDA_SIMG" ]]; then

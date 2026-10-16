@@ -58,6 +58,29 @@ def test_cache_migrates_legacy_and_records_zero_missing_and_sessions(tmp_path):
     assert np.isfinite(refreshed.lesion_in_roi_percent).all()
 
 
+def test_direct_reporting_submits_selected_tables_and_preserves_other_cache_statuses(tmp_path):
+    from types import SimpleNamespace
+    from calmar.atlas_overlap import prepare_report_overlap
+    import json
+    atlas = nib.Nifti1Image(np.ones((2,2,2), dtype=np.uint8), np.eye(4))
+    path = tmp_path/'mask.nii.gz'; nib.save(atlas,path)
+    entries = [dict(subject='sub-a',session='ses-1'), dict(subject='sub-b',session='ses-2')]
+    csv = tmp_path/'lesion_atlas_overlap_Test_linda.csv'
+    cached_overlap(csv, entries, lambda e:path, 'Test', atlas, atlas.get_fdata(), ['Background','ROI'])
+    ns = dict(ALL_ATLASES={'Test':SimpleNamespace(maps=atlas,labels=['Background','ROI'])},
+              INTERP_KB_ATLASES=['Test'], REPORTS_DIR=tmp_path, CONFIG={'LESION_THRESHOLD':.5},
+              mask_file_token=lambda s:s, _mask_path_for=lambda e,s:path)
+    before = csv.read_bytes()
+    def prepare(namespace, selected, sources):
+        assert selected == [entries[0]] and sources == ['linda']
+        namespace['OVERLAP_PATHS'] = {'Test_linda': str(tmp_path/'published.csv')}
+    with patch('calmar.reporting.overlap_tables', side_effect=prepare):
+        prepare_report_overlap(ns, entries[0], 'linda')
+    assert csv.read_bytes() == before
+    assert len(json.loads(csv.with_suffix('.status.json').read_text())) == 2
+    assert ns['OVERLAP_PATHS']['Test_linda'].endswith('published.csv')
+
+
 def test_old_table_never_claims_bilateral_lesion_from_atlas_name():
     row = dict(region='Frontal Pole', subject='sub-a', session='', overlap_voxels=2,
                total_lesion_voxels=2, lesion_in_roi_percent=100., roi_coverage_percent=2.)

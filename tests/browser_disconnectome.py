@@ -1,5 +1,7 @@
 """Exercise the real comparison cell in a disposable notebook, using cached files."""
 import asyncio
+import argparse
+import os
 import io
 import json
 from pathlib import Path
@@ -64,7 +66,7 @@ async def exercise(base, token, relative, artifacts):
             await cell.locator('.jp-OutputArea').first.screenshot(path=str(artifacts/'before-model-change.png'))
             before = list(files)
             started = asyncio.get_running_loop().time()
-            await cell.locator('select').nth(2).select_option(label='commissural')
+            await page.get_by_role('button', name='Commissural', exact=True).click()
             await page.wait_for_function("window.__calmarTestNv?.volumes.length === 4 && window.__calmarTestNv.volumes[3].name.includes('commissural')")
             state = await page.evaluate("window.__calmarTestNv.volumes.map(v => ({name:v.name, opacity:v.opacity, min:v.cal_min, max:v.cal_max, imageLength:v.img?.length}))")
             print('Browser layers:', json.dumps(state), flush=True)
@@ -84,6 +86,9 @@ async def exercise(base, token, relative, artifacts):
             (artifacts/'browser.json').write_text(json.dumps(result, indent=2))
             print(json.dumps(result))
         except Exception:
+            print('Browser errors:', errors)
+            print('Viewer state:', await page.evaluate('({available:!!window.__calmarTestNv, volumes:window.__calmarTestNv?.volumes?.map(v=>({name:v.name,opacity:v.opacity}))})'))
+            print('Active controls:', await page.locator('.widget-toggle-buttons .mod-active').all_text_contents())
             await page.screenshot(path=str(artifacts/'failure.png'))
             raise
         finally:
@@ -91,17 +96,15 @@ async def exercise(base, token, relative, artifacts):
 
 
 def main():
-    for config in sorted((Path.home()/'.local/share/jupyter/runtime').glob('jpserver-*.json'),
-                         key=lambda p: p.stat().st_mtime, reverse=True):
-        cfg = json.loads(config.read_text())
-        if 'token' not in cfg: continue
-        base = f"http://127.0.0.1:{cfg['port']}{cfg['base_url'].rstrip('/')}"
-        token = cfg['token']
-        if requests.get(base+'/api/sessions', headers={'Authorization':'token '+token}, timeout=5).ok:
-            break
-    else:
-        raise RuntimeError('No active local Jupyter server found')
-    artifacts = ROOT/'notes/disconnectome-review'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--server-url', required=True)
+    parser.add_argument('--artifacts', type=Path, default=ROOT/'notes/disconnectome-review')
+    args = parser.parse_args()
+    base = args.server_url.rstrip('/')
+    if not base.startswith(('http://127.0.0.1:', 'http://localhost:')):
+        raise ValueError('A loopback server is required.')
+    token = os.environ['CALMAR_BROWSER_TOKEN']
+    artifacts = args.artifacts
     artifacts.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='review-viewer-', dir=ROOT/'notes') as temp:
         path = Path(temp)/'review.ipynb'
@@ -119,10 +122,13 @@ SUBJECTS=[dict(subject='sub-M2066',session='ses-235')]
 RUN_TEST=True
 TEST_SUBJECT_IDX=0
 def folder(e, tool): return ROOT/'data/ds004884/derivatives'/tool/e['subject']/e['session']/'anat'
-def deriv_path_for(e): return folder(e,'linda')
-def bcb_path_for(e): return folder(e,'bcbtoolkit')
-def deepdisco_path_for(e): return folder(e,'deepdisco')
-def mask_inventory_for(e): return cm.discover_masks(e,folder(e,'linda'),folder(e,'synthstroke'))
+class CachedStudy:
+    """Only the Study methods the comparison panel uses, on cached derivatives."""
+    project = ROOT
+    def dirs(self, e): return dict(linda=folder(e,'linda'), synthstroke=folder(e,'synthstroke'),
+                                   bcbtoolkit=folder(e,'bcbtoolkit'), deepdisco=folder(e,'deepdisco'))
+    def masks(self, e): return cm.discover_masks(e,folder(e,'linda'),folder(e,'synthstroke'))
+study=CachedStudy()
 n=json.loads((ROOT/'lesion-interpretation-pipeline.ipynb').read_text())
 exec(''.join(next(c for c in n['cells'] if c['id']=='calmar-step-35')['source']))
 '''

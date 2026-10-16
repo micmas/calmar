@@ -22,6 +22,7 @@ class ReportInterfaceTests(unittest.TestCase):
             brain, lesion = root/'brain.nii.gz', root/'mask.nii.gz'
             brain.touch(); lesion.touch()
             viewer = w.HTML()
+            viewer.opts, viewer.volumes = SimpleNamespace(), []
             self.addCleanup(viewer.close)
             helpers = SimpleNamespace(fresh_viewer=Mock(return_value=viewer), set_volumes=Mock())
             report = ParticipantReport('Report', '', [('Results', '<p>Fixture</p>')], root/'report.html', '<body></body>',
@@ -30,7 +31,8 @@ class ReportInterfaceTests(unittest.TestCase):
             self.addCleanup(report.navigation.close)
             report.show_brain({'new': 1})
             self.assertEqual(helpers.set_volumes.call_args.args[1][1]['colormap'], 'cyan')
-            self.assertIn('Manual (cyan)', report.brain_box.children[0].value)
+            controls = report.brain_box.children[0]                       # same controls as the step viewers
+            self.assertEqual([r['label'] for r in controls.roles], ['Manual lesion'])
 
     def test_table_title_tracks_atlas_mask_and_counts_full_overlap(self):
         rows = [dict(subject='sub-ui', session='', region=f'ROI {i}', overlap_voxels=1,

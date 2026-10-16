@@ -192,6 +192,12 @@ SUPPORTS_COLORS = {
 
 # WAB aphasia type → canonical impairment IDs used by interpret_therapies()
 # to derive behavioral_impairment_ids from a WAB type string.
+# Source: project approximation, not a published mapping. The KB has no
+# transcortical impairment entries, so the transcortical types are mapped to
+# the nearest available ids (TCM -> fluency + Broca's, TCS -> Wernicke's +
+# semantics, mixed transcortical -> global). This differs from the WAB profile
+# in aphasia_rules.APHASIA_COMPONENTS (e.g. TCM has preserved repetition,
+# Broca's does not); review before relying on transcortical therapy matches.
 _WAB_IMPAIRMENT_MAP: dict = {
     "anomic":                    ["anomic_aphasia"],
     "anomic aphasia":            ["anomic_aphasia"],
@@ -214,6 +220,18 @@ _WAB_IMPAIRMENT_MAP: dict = {
     "transcortical sensory":     ["wernickes_aphasia", "semantics"],
     "tcs":                       ["wernickes_aphasia", "semantics"],
     "mixed transcortical":       ["global_aphasia"],
+}
+
+# The same mapping keyed by aphasia_rules.canonical_aphasia_type() ids.
+_WAB_CANONICAL_IMPAIRMENTS: dict = {
+    "anomic_aphasia":                ["anomic_aphasia"],
+    "brocas_aphasia":                ["brocas_aphasia"],
+    "wernickes_aphasia":             ["wernickes_aphasia"],
+    "conduction_aphasia":            ["conduction_aphasia"],
+    "global_aphasia":                ["global_aphasia"],
+    "transcortical_motor_aphasia":   ["fluency", "brocas_aphasia"],
+    "transcortical_sensory_aphasia": ["wernickes_aphasia", "semantics"],
+    "mixed_transcortical_aphasia":   ["global_aphasia"],
 }
 
 # Numeric weights for interpret_overlap()
@@ -1520,8 +1538,24 @@ class KnowledgeBase:
         """
         if not wab_type:
             return []
+        # One alias system: canonicalise with aphasia_rules (handles "Isolation",
+        # "TranscorticalMotor", "Broca's aphasia", ...), then map the canonical id.
+        try:
+            from aphasia_rules import canonical_aphasia_type
+        except ImportError:  # imported without aphasia-kb/ on sys.path
+            from .aphasia_rules import canonical_aphasia_type  # type: ignore
+        canonical = canonical_aphasia_type(wab_type)
+        if canonical in _WAB_CANONICAL_IMPAIRMENTS:
+            return list(_WAB_CANONICAL_IMPAIRMENTS[canonical])
         key = wab_type.lower().strip()
-        return list(_WAB_IMPAIRMENT_MAP.get(key) or [])
+        found = _WAB_IMPAIRMENT_MAP.get(key)
+        if found is None:
+            # Tolerate spacing/punctuation variants such as "TranscorticalMotor"
+            # (ds004884 participants.tsv), which previously matched nothing.
+            squashed = re.sub(r"[^a-z]", "", key)
+            found = next((v for k, v in _WAB_IMPAIRMENT_MAP.items()
+                          if re.sub(r"[^a-z]", "", k) == squashed), None)
+        return list(found or [])
 
     # --------------------------------------------------------
     # Convenience

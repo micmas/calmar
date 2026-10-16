@@ -9,27 +9,47 @@ import anywidget
 class NotebookNavigation(anywidget.AnyWidget):
     _esm = Path(__file__).with_name("notebook_navigation.js")
 
-    def __init__(self, message, *, on_cell_order=None):
+    def __init__(self, message, *, on_cell_order=None, on_error=None):
         super().__init__()
         self.message = message
         self.on_cell_order = on_cell_order
+        self.on_error = on_error
         self.ready = False
         self.pending = None
         self.pending_request = None
+        self._watchdog = None
         self.on_msg(self._receive)
 
     def request(self, role, before_run, *, all_below=True, prompt=""):
+        self._cancel_watchdog()
         self.pending = before_run
         self.pending_request = dict(action="prepare", role=role, all_below=all_below, prompt=prompt)
-        if self.ready:
-            self._send_pending_request()
-        else:
-            self.message.value = "Connecting notebook controls…"
-            self.send(dict(action="connect"))
+        # A restored/virtualized view can disappear after its earlier ready event.
+        # Reconnect for every click rather than trusting stale Python readiness.
+        self.ready = False
+        self.message.value = "Connecting notebook controls…"
+        self.send(dict(action="connect"))
+        try:
+            self._watchdog = asyncio.get_running_loop().call_later(12, self._connection_timeout)
+        except RuntimeError:
+            pass
         return True
+
+    def _cancel_watchdog(self):
+        if getattr(self, '_watchdog', None) is not None:
+            self._watchdog.cancel()
+            self._watchdog = None
+
+    def _connection_timeout(self):
+        self.pending = self.pending_request = None
+        self.ready = False
+        self.message.value = "Notebook controls did not respond. Rerun this controls cell to reconnect, then click again."
+        if self.on_error:
+            self.on_error()
 
     def _send_pending_request(self):
         if self.pending_request is not None:
+            self._cancel_watchdog()
             request, self.pending_request = self.pending_request, None
             self.send(request)
 
@@ -39,9 +59,15 @@ class NotebookNavigation(anywidget.AnyWidget):
             self.ready = True
             self.send(dict(action="connected"))
             self._send_pending_request()
+        elif event == "cell-sources":
+            from IPython import get_ipython
+            shell = get_ipython()
+            if shell is not None:
+                shell._calmar_live_cell_sources = data.get('sources', {})
         elif event == "cell-order" and self.on_cell_order is not None:
             self.on_cell_order(data["ids"], data.get("batch_start"))
         elif event == "approved" and self.pending is not None:
+            self._cancel_watchdog()
             callback, self.pending = self.pending, None
             if callback() is not False:
                 # Releasing a checkpoint cancels old queued execute requests.
@@ -52,14 +78,26 @@ class NotebookNavigation(anywidget.AnyWidget):
                 async def continue_when_ready():
                     for _ in range(200):
                         if not getattr(kernel, "_aborting", False):
-                            self.send(dict(action="execute"))
+                            command = dict(action="execute")
+                            if data.get('view_id'):
+                                command['view_id'] = data['view_id']
+                            self.send(command)
                             return
                         await asyncio.sleep(.01)
                     self.message.value = "Queue cancellation is still in progress. Click the continuation button again."
+                    if self.on_error:
+                        self.on_error()
                 asyncio.get_running_loop().create_task(continue_when_ready())
         elif event in ("error", "cancelled"):
+            self._cancel_watchdog()
             self.pending = None
             self.pending_request = None
             if data.get("connection"):
                 self.ready = False
             self.message.value = escape(data.get("message", "Continuation cancelled."))
+            if self.on_error:
+                self.on_error()
+
+    def close(self):
+        self._cancel_watchdog()
+        super().close()

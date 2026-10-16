@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # analysis_15_warp_native_to_mni.sh
 #
-# Apply ANTs transforms to a native-space lesion mask, producing the
-# MNI-space version using LINDA 0.5.1 native→Penn→ch2 transforms.
-# Reference must be Subject_in_MNI.nii.gz, not the intermediate Penn image.
+# Apply ANTs transforms to a native-space image, producing its template-space
+# version with LINDA 0.5.1's native→Penn→ch2 transforms, continued ch2→MNI152
+# (FSL MNI152NLin6Asym) with the transform from analysis_38, in one resampling.
+# Reference: an image on the target grid (Subject_in_MNI.nii.gz, MNI152 1 mm).
 #
 # Usage:
 #   bash src/analysis_15_warp_native_to_mni.sh \
@@ -13,10 +14,13 @@
 #       --affine   /path/to/Reg3_sub_to_template_affine.mat  \
 #       --output   /path/to/Lesion_in_MNI.nii.gz \
 #       [--interp NearestNeighbor]   # default; preserves binary masks
+#       [--template-warp W --template-affine A]  # ch2 -> MNI152 (omit: stop at ch2)
+#       [--input-space native|ch2]   # ch2: input already on ch2, apply ch2 -> MNI152 only
 
 set -euo pipefail
 
 INPUT="" REF="" WARP="" AFF="" OUT="" INTERP="NearestNeighbor"
+TWARP="NONE" TAFF="NONE" SPACE="native"
 while [ $# -gt 0 ]; do
     case "$1" in
         --input)     INPUT="$2"; shift 2 ;;
@@ -25,6 +29,9 @@ while [ $# -gt 0 ]; do
         --affine)    AFF="$2"; shift 2 ;;
         --output)    OUT="$2"; shift 2 ;;
         --interp)    INTERP="$2"; shift 2 ;;
+        --template-warp)   TWARP="$2"; shift 2 ;;
+        --template-affine) TAFF="$2"; shift 2 ;;
+        --input-space)     SPACE="$2"; shift 2 ;;
         -h|--help)
             echo "Usage: $0 --input <native.nii.gz> --reference <template.nii.gz>"
             echo "          --warp <warp.nii.gz> --affine <affine.mat> --output <out.nii.gz>"
@@ -34,12 +41,18 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+if [ "$SPACE" = "ch2" ]; then WARP="${WARP:-NONE}"; AFF="${AFF:-NONE}"; fi
 [ -z "$INPUT" ] || [ -z "$REF" ] || [ -z "$WARP" ] || [ -z "$AFF" ] || [ -z "$OUT" ] && {
     echo "Need --input, --reference, --warp, --affine, --output" >&2; exit 1; }
 [ -f "$INPUT" ] || { echo "Input not found: $INPUT" >&2; exit 3; }
 [ -f "$REF" ]   || { echo "Reference not found: $REF" >&2; exit 3; }
-[ -f "$WARP" ]  || { echo "Warp not found: $WARP" >&2; exit 3; }
-[ -f "$AFF" ]   || { echo "Affine not found: $AFF" >&2; exit 3; }
+if [ "$SPACE" = "native" ]; then
+    [ -f "$WARP" ]  || { echo "Warp not found: $WARP" >&2; exit 3; }
+    [ -f "$AFF" ]   || { echo "Affine not found: $AFF" >&2; exit 3; }
+fi
+if [ "$TWARP" != "NONE" ]; then
+    [ -f "$TWARP" ] && [ -f "$TAFF" ] || { echo "Template transform not found: $TWARP / $TAFF" >&2; exit 3; }
+fi
 mkdir -p "$(dirname "$OUT")"
 
 # Always use the same LINDA package and bundled Penn→ch2 transforms as prediction.
@@ -58,7 +71,7 @@ TMP="$TMP_DIR/$(basename "$OUT")"
     --env "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=$ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" \
     ${neurodesk_singularity_opts:-} --pwd "$PROJECT_DIR" "$LINDA_IMAGE" \
     R --vanilla --slave -f "$R_SCRIPT" --args \
-    "$INPUT" "$REF" "$WARP" "$AFF" "$TMP" "$INTERP"
+    "$INPUT" "$REF" "$WARP" "$AFF" "$TMP" "$INTERP" "$TWARP" "$TAFF" "$SPACE"
 python -c 'import sys,nibabel as n,numpy as np; a,b=map(n.load,sys.argv[1:]); assert a.shape==b.shape and np.allclose(a.affine,b.affine); assert np.isfinite(a.get_fdata()).all()' "$TMP" "$REF"
 REPLACE=()
 if [ -e "$OUT" ]; then

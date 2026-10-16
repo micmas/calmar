@@ -4,8 +4,8 @@
 #
 # Most of these come pre-installed in Neurodesk; this file is the
 # reproducibility contract for running outside Neurodesk.
-# Setup reports missing packages without installing into the running kernel.
-# Install them in a terminal, then restart the notebook kernel.
+# The notebook's Setup installs missing notebook packages with pip --user
+# (~/.local survives a Neurodesk restart) and leaves installed ones as they are.
 
 # Core neuroimaging
 nibabel>=5.0

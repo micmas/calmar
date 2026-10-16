@@ -1,0 +1,95 @@
+{
+  "dataset": "data/ds004884",
+  "config": {
+    "MASK_COLORS": {
+      "linda": "red",
+      "manual": "blue",
+      "synthstroke": "green",
+      "hdbet": "yellow",
+      "bcbtoolkit": "magenta",
+      "deepdisco": "cyan"
+    },
+    "RUN_TEST": true,
+    "TEST_SUBJECT_IDX": 0,
+    "PROJECT_DIR": ".",
+    "DATASET_SOURCE": "openneuro",
+    "OPENNEURO_ID": "ds004884",
+    "DATA_SUBDIR": "data",
+    "OPENNEURO_TAG": "1.0.2",
+    "LOCAL_DATASET": null,
+    "SINGLE_T1W": null,
+    "SUBJECT_FILTER": [
+      "sub-M2075",
+      "sub-M2077",
+      "sub-M2001"
+    ],
+    "SESSION_FILTER": [
+      "ses-602",
+      "ses-250",
+      "ses-1076"
+    ],
+    "T1W_SELECTION": "first",
+    "DERIVATIVES_SUBDIR": "derivatives/linda",
+    "HDBET_SUBDIR": "derivatives/hdbet",
+    "BCB_SUBDIR": "derivatives/bcbtoolkit",
+    "SYNTHSTROKE_SUBDIR": "derivatives/synthstroke",
+    "DEEPDISCO_SUBDIR": "derivatives/deepdisco",
+    "SYNTHSTROKE_TTA": true,
+    "SYNTHSTROKE_TIMEOUT": 5400,
+    "SYNTHSTROKE_WEIGHTS_DIR": "data/models/synthstroke-synth-plus",
+    "SYNTHSTROKE_ALLOW_BASELINE": false,
+    "BCB_MASKS": "all",
+    "DEEPDISCO_MASK_SOURCE": "all",
+    "DEEPDISCO_RUN_ALL": true,
+    "DEEPDISCO_MODELS": [
+      "whole_brain"
+    ],
+    "DEEPDISCO_OVERWRITE": false,
+    "REPORTS_SUBDIR": "reports",
+    "MANUAL_MASK_PATH": null,
+    "MANUAL_MASK_SPACE": "t1",
+    "MANUAL_MASK_REF": null,
+    "ATLAS_SUBDIR": "atlases",
+    "ATLASES": [
+      "HarvardOxford",
+      "AAL",
+      "Destrieux",
+      "Schaefer400",
+      "JHU"
+    ],
+    "DEFAULT_ATLAS": "HarvardOxford",
+    "RUN_SEGMENTATION": true,
+    "LESION_THRESHOLD": 0.5,
+    "OVERWRITE": false,
+    "USE_HDBET_PREPROCESSING": true,
+    "HDBET_USE_MASK_BYPASS": true,
+    "HDBET_RSCRIPT_CMD": "Rscript",
+    "HDBET_PADDING_MM": 8.0,
+    "HDBET_CSF_RIM_MM": 2.0,
+    "HDBET_MODE": "fast",
+    "HDBET_DEVICE": null,
+    "NIIVUE_URL_BASE": false,
+    "FORCE_FETCH": true,
+    "MAX_SUBJECTS": 3,
+    "RANDOM_SAMPLE": false,
+    "RANDOM_SEED": 67,
+    "VERBOSE": true
+  },
+  "entries": [
+    {
+      "subject": "sub-M2001",
+      "session": "ses-1076",
+      "t1w": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz"
+    },
+    {
+      "subject": "sub-M2075",
+      "session": "ses-602",
+      "t1w": "data/ds004884/sub-M2075/ses-602/anat/sub-M2075_ses-602_acq-tfl3p2_run-2_T1w.nii.gz"
+    },
+    {
+      "subject": "sub-M2077",
+      "session": "ses-250",
+      "t1w": "data/ds004884/sub-M2077/ses-250/anat/sub-M2077_ses-250_acq-tfl3p2_run-3_T1w.nii.gz"
+    }
+  ]
+}
