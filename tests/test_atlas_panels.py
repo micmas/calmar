@@ -67,6 +67,9 @@ class AtlasPanelTests(unittest.TestCase):
                        deriv_path_for=lambda e: self.root,
                        mask_inventory_for=lambda e: self.masks,
                        cw=SimpleNamespace(fresh_viewer=fresh, vols=lambda s: s, set_volumes=cw.set_volumes, Output=cw.Output))
+        # Cells use study.linda_dir / study.masks; follow later namespace overrides.
+        self.ns["study"] = SimpleNamespace(linda_dir=lambda e: self.ns["deriv_path_for"](e),
+                                           masks=lambda e: self.ns["mask_inventory_for"](e))
         self.addCleanup(lambda: plt.close("all"))
 
     def run_cell(self, number):
@@ -154,13 +157,15 @@ class AtlasPanelTests(unittest.TestCase):
         self.assertIs(panel['source'], report['source'])
         self.assertFalse(list(self.root.glob("group_lesion_frequency*")))
         self.assertIsNone(panel['state']['viewer'])
-        with patch('nilearn.image.resample_to_img', resample):
+        with patch('calmar.reporting.run_reporting_task', return_value={
+                'map': str(moved), 'background': str(self.root/'Subject_in_MNI.nii.gz'), 'used': 2}) as submit:
             panel["compute"]()
-        resample.assert_called_once()
+        self.assertEqual(submit.call_args.args[1], 'group')
+        self.assertIn(str(moved), submit.call_args.kwargs['masks'])
         viewer = panel['state']['viewer']
         self.assertEqual(len(viewer.volumes), 2)
         self.assertEqual(Path(viewer.volumes[-1].path).name,
-                         "group_lesion_frequency_manual.nii.gz")
+                         "manual_moved.nii.gz")
         self.assertIsNone(viewer.volumes[0].cal_min)
         panel["source"].value = "linda"
         self.assertFalse(viewer.volumes)

@@ -1,11 +1,30 @@
-"""QC controls with participant-local drafts and explicit save/navigation actions."""
+"""QC review panel: rate each participant's processing stages 1/2/3.
+
+``open_qc_review`` is the notebook entry point. It pauses the notebook at the
+QC checkpoint (``calmar.execution.pause_for_qc``), chooses the participants
+with something to review, builds the image layers for each stage
+(``QCVolumes``) and shows a ``QCPanel``.
+
+Ratings are saved per participant in ``<linda_dir>/Lesion_in_MNI.qc.json``
+(``calmar.qc.QCRecord``), also when LINDA produced no mask. The reviewer's
+Do / Skip / Use existing QC choice is saved in ``<linda_dir>/QC_decision.json``
+(``calmar.qc_decisions``).
+"""
 
 from copy import deepcopy
+from dataclasses import dataclass
 from datetime import date
 from html import escape
+from pathlib import Path
 
 import ipywidgets as w
+import nibabel as nib
+import numpy as np
+from IPython.display import display
+from . import execution
+from . import masks as cm
 from . import qc as q
+from .layer_controls import ChoiceButtons, LayerControls
 from .notebook_navigation import NotebookNavigation
 from . import colors
 from .widget_lifecycle import close_widget
@@ -25,20 +44,22 @@ class QCPanel(w.VBox):
         self.loading = False
         self.inactive = False
         self.message = w.HTML()
+        self.navigation_message = w.HTML()
         self.navigation = NotebookNavigation(
-            self.message, on_cell_order=checkpoint._update_cell_order)
+            self.navigation_message, on_cell_order=checkpoint._update_cell_order)
         self.subject = w.Dropdown(options=[
             (f"{i+1}. {e['subject']} {e.get('session') or ''}", i)
             for i, e in enumerate(self.entries)], description="Participant:",
             style={"description_width": "initial"}, layout=w.Layout(width="500px"))
-        self.stage = w.ToggleButtons(description="View:", style={"button_width":"235px"})
+        self.stage = ChoiceButtons(title="View:")
         self.rows = w.VBox()
         self.rating_buttons = {}
         self.help = w.HTML()
-        self.reference = w.Checkbox(description="Show manual reference in native space", value=False,
-                                    layout=w.Layout(width="auto"))
-        self.synth = w.Checkbox(description="Show SynthStroke reference in MNI", value=True,
-                                layout=w.Layout(width="auto"))
+        # Overlay checkboxes, plane and "Centre on lesion", as in the step viewers.
+        self.layers = LayerControls(plane=3)
+        if hasattr(viewer, "opts"):
+            from .step_viewer import viewer_layout
+            viewer_layout(viewer)
         self.issues = w.SelectMultiple(description="Issues:", rows=5)
         self.notes = w.Textarea(description="Notes:", layout=w.Layout(width="90%"))
         self.reviewer = w.Text(description="Reviewer:")
@@ -74,15 +95,13 @@ class QCPanel(w.VBox):
                    "Click a number to view that stage. Save &amp; next saves all stages together. "
                    "Unsaved choices stay in this panel until it is rerun or the kernel restarts."),
             self.rows, self.stage, self.help,
-            w.HBox([self.reference, self.synth], layout=w.Layout(flex_flow="row wrap")), viewer,
+            self.layers, viewer,
             self.issues, self.notes, self.reviewer, self.repair,
             w.HBox([self.save, self.save_next]),
             w.HTML(colors.legend(["hdbet", "linda", "manual", "synthstroke"])),
-            next_steps, self.message, self.navigation])
+            next_steps, self.message, self.navigation_message, self.navigation])
         self.subject.observe(self._load_subject, names="value")
         self.stage.observe(self._load_stage, names="value")
-        self.reference.observe(self._render, names="value")
-        self.synth.observe(self._render, names="value")
         self.issues.observe(self._capture, names="value")
         self.notes.observe(self._capture, names="value")
         self.repair.observe(self._capture, names="value")
@@ -247,8 +266,6 @@ class QCPanel(w.VBox):
             self.issues.options = list(tags)
             self.issues.value = tuple(t for t in data.get("issue_tags", []) if t in tags)
             self.notes.value = data.get("notes", "")
-            self.reference.disabled = stage not in ("lesion", "synthstroke_lesion")
-            self.synth.disabled = stage != "expert_mni_warp"
             self.help.value = "<b>" + escape(q.STAGE_LABELS[stage]) + "</b><br>" + "<br>".join(
                 f"{r}: {escape(text).replace('**', '')}" for r, text in rubric.items())
             if stage == "expert_mni_warp":
@@ -262,10 +279,29 @@ class QCPanel(w.VBox):
         if self.loading or self.stage.value is None:
             return
         try:
-            volumes = self.volumes_for(self.stage.value, self.entry,
-                self.reference.value and not self.reference.disabled,
-                self.synth.value and not self.synth.disabled)
+            stage = self.stage.value
+            volumes = self.volumes_for(stage, self.entry, True, True)
+            # Every optional overlay is loaded; its checkbox only changes its opacity.
+            overlays = [(i, v) for i, v in enumerate(volumes) if v.get("name")]
+            roles = {r["key"]: r["shown"] for r in self.layers.roles}
+            described = []
+            for i, spec in overlays:
+                key = f"{stage}:{spec['name']}"
+                optional = spec["name"] == "manual" and stage in ("lesion", "synthstroke_lesion")
+                shown = roles.get(key, not optional)
+                described.append((key, overlay_label(stage, spec["name"]), spec, shown))
+                volumes[i] = {**spec, "opacity": spec["opacity"] if shown else 0.}
             self.viewer.load_volumes(self.encode_volumes(volumes))
+            models = getattr(self.viewer, "volumes", [])
+            with self.layers.hold_sync():
+                self.layers.viewer_id = getattr(self.viewer, "model_id", "")
+                self.layers.roles = [{"key": key, "label": label, "shown": shown}
+                                     for key, label, _, shown in described]
+                self.layers.layers = [
+                    {"model_id": getattr(models[i], "model_id", ""), "role": key, "group": "", "variant": "",
+                     "opacity": spec["opacity"], "color": colors.css(spec["name"]),
+                     "centre": _centre(spec, volumes[0])}
+                    for (i, _), (key, _, spec, _) in zip(overlays, described) if i < len(models)]
         except Exception as error:
             self.message.value = "Could not display this stage: " + escape(str(error))
 
@@ -343,9 +379,170 @@ class QCPanel(w.VBox):
     def deactivate(self):
         """Prevent an old panel from resaving stale drafts after repair/reload."""
         self.inactive = True
-        for control in [self.subject, self.stage, *self.rating_buttons.values(), self.reference,
-                        self.synth, self.issues, self.notes, self.reviewer, self.repair,
+        for control in [self.subject, self.stage, *self.rating_buttons.values(), self.issues, self.notes, self.reviewer, self.repair,
                         self.save, self.save_next, self.repair_button, self.continue_button,
                         self.use_existing, self.redo]:
             control.disabled = True
         self.message.value = "This QC panel was replaced. Use the newest QC panel."
+
+
+# ── Stage images ─────────────────────────────────────────────────────────────
+
+def _centre(spec, background):
+    """Crosshair position of a lesion overlay (NiiVue fractions), or None."""
+    if spec["name"] == "hdbet" or "path" not in background:
+        return None
+    try:
+        from .disconnectome_compare import lesion_centre_mm
+        from .layer_controls import mm_to_frac
+        mm = lesion_centre_mm(spec["path"])
+        return None if mm is None else mm_to_frac(background["path"], mm)
+    except Exception:  # unreadable mask: no centring, the viewer still works
+        return None
+
+
+def overlay_label(stage, origin):
+    """Checkbox label of an overlay in the QC viewer."""
+    if origin == "hdbet":
+        return "Brain mask"
+    label = colors.LABELS.get(origin, origin)
+    if stage in LESION_STAGE_SOURCES:
+        return f"{label} lesion (outline)" if origin == LESION_STAGE_SOURCES[stage] else f"{label} reference"
+    return f"{label} lesion"
+
+
+# Which mask origin (and colour) each lesion-style stage shows.
+LESION_STAGE_SOURCES = {"lesion": "linda", "synthstroke_lesion": "synthstroke",
+                        "manual_lesion": "manual"}
+
+
+@dataclass
+class QCDisplay:
+    """Overlay settings of the QC viewer (display only; nothing is rated differently)."""
+    lesion_opacity: float = 0.80
+    lesion_as_boundary: bool = True
+    lesion_boundary_thickness: int = 1
+    brain_mask_opacity: float = 0.30
+    skull_strip_show_extracted: bool = True
+    manual_overlay_opacity: float = 0.50
+
+
+def brain_extracted_image(t1, brain_mask, out_path):
+    """Cache ``t1 × brain_mask`` at ``out_path``; return it, or None if the grids differ.
+
+    Rebuilt whenever either input is newer than the cached file.
+    """
+    out_path = Path(out_path)
+    if (not out_path.exists()
+            or out_path.stat().st_mtime < max(Path(t1).stat().st_mtime, Path(brain_mask).stat().st_mtime)):
+        image = nib.load(str(t1))
+        mask = np.asanyarray(nib.load(str(brain_mask)).dataobj) > 0
+        if mask.shape != image.shape:
+            return None
+        nib.save(nib.Nifti1Image((image.get_fdata() * mask).astype(np.float32),
+                                 image.affine, image.header), str(out_path))
+    return out_path
+
+
+class QCVolumes:
+    """Image layers for each QC stage, as NiiVue volume specs.
+
+    * ``skull_strip``: the brain-extracted N4 T1 (residual skull or dura shows as
+      bright rim tissue) or, if that cannot be built, the head with the brain
+      mask overlaid.
+    * ``lesion`` / ``synthstroke_lesion`` / ``manual_lesion``: native T1 (N4 if
+      available) with that mask, optionally plus the manual mask for reference.
+    * ``expert_mni_warp``: ``Subject_in_MNI`` with the warped manual mask, LINDA's
+      MNI lesion and optionally SynthStroke's, to judge the registration.
+    """
+
+    def __init__(self, study, settings=None):
+        self.study = study
+        self.settings = settings or QCDisplay()
+
+    def __call__(self, stage, entry, show_manual=False, show_synth=True):
+        if stage == "skull_strip":
+            return self.skull_strip(entry)
+        if stage == "expert_mni_warp":
+            return self.mni_warp(entry, show_synth)
+        return self.lesion(stage, entry, show_manual)
+
+    def _overlay(self, path, source, opacity):
+        # ``name`` = mask origin: the QC panel labels the overlay checkbox with it.
+        return {"path": str(path), "name": source, "colormap": colors.color(source),
+                "cal_min": 0.5, "cal_max": 1.0, "opacity": opacity}
+
+    def _native_mask(self, entry, source):
+        defaults = {"linda": self.study.linda_dir(entry) / "Prediction3_native.nii.gz",
+                    "synthstroke": self.study.synthstroke_dir(entry) / "prediction_lesion_mask.nii.gz",
+                    "manual": self.study.linda_dir(entry) / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz"}
+        return Path(self.study.masks(entry).get(source, {}).get("T1w", defaults[source]))
+
+    def skull_strip(self, entry):
+        d = self.study.linda_dir(entry)
+        n4, brain = d / "N4corrected.nii.gz", d / "BrainMask.nii.gz"
+        if not cm.present(brain):
+            brain = q.find_best_hdbet_mask(self.study.hdbet_dir(entry)) or brain
+        if self.settings.skull_strip_show_extracted and n4.exists() and brain.exists():
+            try:
+                extracted = brain_extracted_image(n4, brain, d / "_qc_brain_extracted.nii.gz")
+                if extracted is not None:
+                    return [{"path": str(extracted)}]
+            except Exception:
+                pass  # fall back to head + mask overlay
+        head = n4 if n4.exists() else Path(entry["t1w"])
+        volumes = [{"path": str(head)}] if head.exists() else []
+        if brain.exists():
+            volumes.append(self._overlay(brain, "hdbet", self.settings.brain_mask_opacity))
+        return volumes
+
+    def lesion(self, stage, entry, show_manual=False):
+        n4 = self.study.linda_dir(entry) / "N4corrected.nii.gz"
+        background = n4 if n4.exists() else Path(entry["t1w"])
+        volumes = [{"path": str(background)}] if background.exists() else []
+        source = LESION_STAGE_SOURCES[stage]
+        mask = self._native_mask(entry, source)
+        if mask.exists():
+            if self.settings.lesion_as_boundary:
+                mask = q.ensure_lesion_boundary(mask, thickness=self.settings.lesion_boundary_thickness)
+            volumes.append(self._overlay(mask, source, self.settings.lesion_opacity))
+        manual = self._native_mask(entry, "manual")
+        if show_manual and cm.present(manual):
+            volumes.append(self._overlay(manual, "manual", self.settings.manual_overlay_opacity))
+        return volumes
+
+    def mni_warp(self, entry, show_synth=True):
+        subject = self.study.linda_dir(entry) / "Subject_in_MNI.nii.gz"
+        volumes = [{"path": str(subject)}] if subject.exists() else []
+        layers = [("linda", 0.50), ("manual", self.settings.manual_overlay_opacity)]
+        if show_synth:
+            layers.append(("synthstroke", 0.40))
+        for source, opacity in layers:
+            path = Path(self.study.mni_mask(entry, source))
+            if cm.present(path):
+                volumes.append(self._overlay(path, source, opacity))
+        return volumes
+
+
+_ACTIVE_PANEL = None
+
+
+def open_qc_review(entries, study, settings=None, *, viewer, encode_volumes=lambda v: v):
+    """Pause at the QC checkpoint and display the rating panel.
+
+    Participants without any stage to review are left out. A panel from an
+    earlier run of the cell is deactivated so it cannot overwrite newer
+    ratings. Returns the new ``QCPanel``.
+    """
+    global _ACTIVE_PANEL
+    if _ACTIVE_PANEL is not None:
+        try:
+            _ACTIVE_PANEL.deactivate()
+        except Exception:
+            pass  # its widgets were already closed
+    checkpoint = execution.pause_for_qc(entries, study.linda_dir, display_controls=False)
+    pool = [e for e in entries if study.qc_stages(e)]
+    _ACTIVE_PANEL = QCPanel(pool, study.qc_stages, study.lesion_mni, QCVolumes(study, settings),
+                            viewer, checkpoint, encode_volumes=encode_volumes)
+    display(_ACTIVE_PANEL)
+    return _ACTIVE_PANEL

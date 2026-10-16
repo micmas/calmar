@@ -107,16 +107,11 @@ def cached_overlap(csv, entries, mask_path, atlas_name, atlas_img, atlas_data,
 
 
 def prepare_report_overlap(namespace, entry, source):
-    """Refresh the selected participant's atlas tables when reporting is entered directly."""
-    for name, atlas in namespace.get('ALL_ATLASES', {}).items():
-        if name not in namespace.get('INTERP_KB_ATLASES', []):
-            continue
-        img = atlas.maps if hasattr(atlas.maps, 'get_fdata') else nib.load(atlas.maps)
-        labels = atlas.labels
-        if hasattr(atlas, 'indices') and not isinstance(labels, dict):
-            labels = dict(zip(map(int, atlas.indices), labels))
-        token = namespace['mask_file_token'](source)
-        path = Path(namespace['REPORTS_DIR']) / f'lesion_atlas_overlap_{name}_{token}.csv'
-        cached_overlap(path, [entry], lambda e: namespace['_mask_path_for'](e, source),
-                       name, img, img.get_fdata(), labels,
-                       threshold=namespace['CONFIG']['LESION_THRESHOLD'])
+    """Prepare selected tables in Slurm; preserve historical shared CSVs."""
+    from .reporting import overlap_tables
+    selected = dict(namespace)
+    selected['ALL_ATLASES'] = {name: atlas for name, atlas in namespace.get('ALL_ATLASES', {}).items()
+                             if name in namespace.get('INTERP_KB_ATLASES', [])}
+    overlap_tables(selected, [entry], [source])
+    namespace.setdefault('OVERLAP_PATHS', {}).update(selected.get('OVERLAP_PATHS', {}))
+    namespace.setdefault('OVERLAP_DFS', {}).update(selected.get('OVERLAP_DFS', {}))

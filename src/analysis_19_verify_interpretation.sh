@@ -9,7 +9,7 @@ set -euo pipefail
 source /opt/neurodesktop/agent_bash_env.sh
 PROJECT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
 cd "$PROJECT_DIR"
-CALMAR_PYTHON="$(command -v python)"
+CALMAR_PYTHON="${CALMAR_PYTHON:-$(command -v python)}"
 module load fsl/6.0.7.22
 DATASET="${1:?dataset required}"
 ATLASES="${2:?atlas directory required}"

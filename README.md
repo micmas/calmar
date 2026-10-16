@@ -15,7 +15,7 @@ CALMaR is an open-source Jupyter notebook pipeline for automated stroke lesion s
 
 Given a BIDS-formatted dataset, CALMaR will:
 
-1. **Segment lesions** using HD-BET + LINDA, SynthStroke, and optionally BCBToolkit
+1. **Segment lesions** using an HD-BET brain mask, LINDA, SynthStroke, and optionally BCBToolkit
 2. **QC every mask** with an interactive dashboard, stage-aware rubric, and edit audit trail
 3. **Analyse regional overlap** against five atlases (HarvardOxford, AAL, Destrieux, Schaefer400, JHU)
 4. **Decode the lesion** against Neurosynth v7 meta-analytic language/cognitive maps
@@ -25,7 +25,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 
 ## Requirements
 
-- [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools the notebooks load via `module.load`: LINDA, HD-BET, SynthStroke, BCBToolkit, DeepDisco, ANTs, FSL, FreeSurfer (and OpenADS, used only by the benchmark), plus all Python/R dependencies
+- [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools that the retained Slurm scripts in `src/` load with pinned `module load` versions: LINDA, HD-BET, SynthStrip, SynthStroke, BCBToolkit, DeepDisco, ANTs, FSL, FreeSurfer (and OpenADS, used only by the benchmark), plus all Python/R dependencies
 - A BIDS-formatted dataset (the notebook fetches `ds004884` from OpenNeuro via datalad by default)
 - Python packages listed in `requirements.txt` (usually pre-installed in Neurodesktop; Setup prints terminal installation instructions for anything missing)
 
@@ -38,7 +38,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 | `calmar-guided.ipynb` | Guided workflow — inputs, options, QC, and continuation buttons |
 | `lesion-interpretation-pipeline.ipynb` | Detailed processing notebook and canonical implementation |
 | `lesion-segmentation-benchmark.ipynb` | Benchmarks LINDA / SynthStroke across chronic and acute datasets |
-| `calmar/` | Shared Python package: QC, mask/disconnectome discovery, viewer controls, and synthetic phantoms |
+| `calmar/` | Shared Python package. Key modules: `study.py` (participant discovery + every derivatives path), `processing.py` (one documented `step_<name>` function per processing step, run inside Slurm), `scheduled.py` (`submit_step`: one Slurm job per participant, receipts, reuse; `in_slurm` for QC repairs), `step_qc.py` (saved QC figure + plausibility metrics per step), `step_summary.py` (`show_step` tables), `step_viewer.py` (the viewer under each step), `methods.py` (methods table), plus QC, viewer and report modules |
 | `src/analysis_*.sh` | Retained analysis entry points; submit from the repository root |
 | `src/python/`, `src/r/` | Python/R implementations called by the analysis scripts |
 | `tests/` | Lightweight regression tests; no imaging jobs or downloads |
@@ -95,9 +95,11 @@ in a mixed cohort remain unrated.
 Redo starts blank ratings from stage 1; saved ratings are replaced only when
 you save. Reports distinguish reused QC from skipped QC.
 
-Setup checks dependencies without installing into the running kernel. If a
-package is missing, run the command it prints in a JupyterLab terminal, then
-use **Kernel → Restart Kernel** and rerun Setup through Configuration. Continue
+Setup installs missing notebook packages (nilearn, SimpleITK, PyMuPDF, ipylab, …)
+with `pip install --user`, into `~/.local` on the persistent home volume, so they
+survive a Neurodesk restart; installed packages are not upgraded. If it reports
+that the installation changed a package the kernel had already loaded, use
+**Kernel → Restart Kernel** and rerun Setup through Configuration. Continue
 only after **CALMaR setup imports completed.** appears. If an earlier run
 installed packages and subsequent cells all fail with missing variables, restart
 the kernel first: rerunning downstream cells cannot recover failed imports.
@@ -127,9 +129,9 @@ BCBToolkit map is missing; agreement metrics appear only when both maps exist.
 Use **Refresh files** after upstream computation finishes. Manual-mask outputs
 retain the legacy `expert` filename token.
 
-Native manual and SynthStroke masks now use LINDA's complete native→Penn→ch2
-transform chain, including the inverse subject affine and bundled Penn→ch2
-transforms. The final reference is `Subject_in_MNI.nii.gz`; the intermediate
+Native LINDA, manual and SynthStroke masks use LINDA's complete native→Penn→ch2
+transform chain (including the inverse subject affine and bundled Penn→ch2
+transforms), continued ch2→MNI152 in the same resampling. The final reference is `Subject_in_MNI.nii.gz`; the intermediate
 `Reg3_registered_to_template.nii.gz` is not MNI. The single-subject comparison prepares the manual MNI
 mask before the disconnectome test cells and provides independent overlay
 toggles with fixed binary display ranges, including for very sparse masks.
@@ -148,7 +150,7 @@ completed QC or end-to-end verification.
 The single-subject comparison checkboxes change overlay opacity without reloading volumes.
 The optional **Lesion frequency** tab in the results preview builds a group map
 only when you click **Build selected group map**.
-Before HD-BET, **Choose the single-subject test participant** lists the cohort and
+Before brain extraction, **Choose the single-subject test participant** lists the cohort and
 each participant's processing state. It defaults to an unprocessed participant
 when available. **Run single-subject test** starts the selected participant's steps.
 Cell identities are stored in the notebook structure, without ID comments in code.
@@ -168,7 +170,7 @@ JupyterLab's execution metadata. Keep these comments when editing cell bodies.
 
 `CONFIG["MASK_COLORS"]` sets one colour per origin throughout the workflow,
 including native/MNI overlays, QC, group maps, comparison legends and report
-figures. Defaults: LINDA red, Manual blue, SynthStroke green, HD-BET yellow,
+figures. Defaults: LINDA red, Manual blue, SynthStroke green, brain mask yellow (its HD-BET part orange),
 BCBToolkit magenta and DeepDisco cyan. Supported colours are red, green, blue,
 yellow, cyan and magenta. After changing the mapping, rerun Configuration and
 the affected viewer/report cells. Probability maps retain their value scale
@@ -241,7 +243,7 @@ whether any correlations exceeded its display threshold; warnings remain visible
 ```
 Dataset (BIDS)
     │
-    ├─ Skull strip (HD-BET / SynthStrip)
+    ├─ Brain mask (HD-BET; + SynthStrip per participant when a cavity is left out)
     ├─ Lesion segmentation (LINDA)      ─┐
     ├─ Lesion segmentation (SynthStroke)  ├─ warped to MNI space
     └─ Expert/manual mask               ─┘
@@ -263,6 +265,18 @@ Dataset (BIDS)
                    └─ Printable HTML report (Save as PDF)
 ```
 
+### Reading the detailed notebook
+
+Every processing step follows the same pattern: a markdown cell (what, why, inputs, outputs, parameters, **what to check**), a short code cell that submits the step (`submit_step("linda", entries, study)`), and `show_step(result, study)`, which shows per participant the result, plausibility metrics, ⚠ prompts, the exact commands that produced the outputs and the Slurm log folder (this table stays in the saved notebook), then an interactive NiiVue viewer of the step's images (`calmar/step_viewer.py`: participant menu, overlay checkboxes, plane, centre on lesion). Each job also writes a static QC figure to `reports/qc/steps/<step>/`; `show_step(..., images=True)` embeds it.
+
+### Brain mask
+
+`BRAIN_MASK = "hdbet"` (default): the brain mask that LINDA and SynthStroke use is HD-BET (brain tissue). HD-BET follows surviving tissue, so a CSF-filled chronic infarct cavity that opens onto the brain surface can fall outside its mask (more than 5% of the expert lesion in 12 of 36 sessions, worst 35%). `BRAIN_MASK = "hdbet+synthstrip"` adds SynthStrip's CSF-inclusive mask (2 of 36 sessions above 5%, worst 7%, plus a ~160 ml CSF rim), but LINDA then also labels CSF next to the lesion: on 8 sessions its median Dice fell from 0.61 to 0.59 and false positives rose from 45 to 84 ml. The union helped only where about 40 ml or more of the lesion lay outside HD-BET (sub-M2045, sub-M2029). It is therefore applied per participant: tag the skull strip `lesion_excluded_by_strip` in QC, mark the participant for repair, and the skull-strip repair uses the union for that participant. Evidence and the per-session table: [`docs/validation/brain-mask/`](docs/validation/brain-mask/README.md). Closing (`calmar.brainmask.close_cavities`) does not recover these cavities, because they are wider than any closing radius that would not also fill sulci.
+
+### Template space
+
+LINDA registers each brain to its **ch2 (Colin27)** template (single-subject anatomy in MNI coordinates). The atlases, BCBToolkit tractograms and DeepDisco are defined on **FSL MNI152** (MNI152NLin6Asym), so ch2 is registered to MNI152 once (`src/analysis_38_template_ch2_to_mni152.sh`, ANTs SyN; transforms in `atlases/templates/ch2_to_MNI152NLin6Asym/`) and every mask is warped native → Penn → ch2 → MNI152 in one resampling. `*_in_MNI.nii.gz` are on MNI152 (182×218×182); LINDA's original ch2 outputs are kept as `*_in_ch2.nii.gz`.
+
 ---
 
 ## Aphasia knowledge base
@@ -282,7 +296,7 @@ python aphasia-kb/promote.py --approve <id>
 
 CALMaR separates two kinds of work:
 
-**Pipeline outputs** (derivatives) are versioned through BIDS-style folder structure and skip logic — re-running a cell never overwrites a completed subject unless you explicitly set `*_OVERWRITE = True`.
+**Pipeline outputs** (derivatives) are published atomically with a `*.prov.json` sidecar and a cache record of their inputs (hashes), parameters and the exact commands that produced them. Re-running reuses an output only when all of these match; if a parameter changed, the output is reported as stale and kept until you set the matching `OVERWRITE` / `BCB_OVERWRITE` / `DEEPDISCO_OVERWRITE` (the old output is preserved as `*.previous.*`).
 
 **QC ratings and KB claims** earn full provenance: every QC edit is logged in a sidecar JSON file (`Lesion_in_MNI.qc.json`) with reviewer, timestamp, and a before/after record. Every KB finding carries a citation, method, sample description, and extraction log.
 

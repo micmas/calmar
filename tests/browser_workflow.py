@@ -117,10 +117,16 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             await expect(page.get_by_role('button', name='Do QC', exact=True)).to_have_count(1)
             await expect(page.get_by_role('button', name='Skip QC', exact=True)).to_have_count(1)
             # Workflow actions belong after the rating/save controls.
-            save_box = await page.get_by_role('button', name='Save & next participant', exact=True).bounding_box()
-            for label in ('Run skull-strip repair', 'Continue after QC'):
-                action_box = await page.get_by_role('button', name=label, exact=True).bounding_box()
-                assert action_box['y'] >= save_box['y'] + save_box['height']
+            # Read all positions in one frame; notebook auto-scrolling can move
+            # the viewport between separate bounding_box() calls.
+            await page.wait_for_function('''() => {
+                const buttons = Array.from(document.querySelectorAll('button'));
+                const box = text => buttons.find(b => b.textContent.trim() === text)?.getBoundingClientRect();
+                const save = box('Save & next participant');
+                return save && ['Run skull-strip repair', 'Continue after QC'].every(text => {
+                    const action = box(text); return action && action.top >= save.bottom;
+                });
+            }''')
             chosen = json.loads((root/'reports/guided-inputs.json').read_text())
             assert chosen['DATASET_SOURCE'] == 'single' and chosen['SINGLE_T1W'] == str(fixture)
             assert chosen['SUBJECT_FILTER'] is None and chosen['SESSION_FILTER'] is None
@@ -164,7 +170,7 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             await use_existing.scroll_into_view_if_needed()
             await page.screenshot(path=str(artifacts/'existing-qc.png'))
             await use_existing.click()
-            await page.get_by_text('Existing QC kept. Review the unrated stages, starting here.', exact=True).wait_for()
+            await output('EXISTING_QC_CONTINUED')
             subject = page.get_by_role('combobox', name='Participant:', exact=True)
             assert 'sub-1' in await subject.locator('option:checked').inner_text()
             view = page.locator('.widget-toggle-buttons').filter(has_text='View:').last
@@ -176,8 +182,7 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             assert all(path.read_bytes() == original for path, original in saved.items())
             await page.get_by_role('button', name='Skip QC', exact=True).click()
             await use_existing.click()
-            await page.get_by_text('Existing QC kept. Review the unrated stages, starting here.', exact=True).wait_for()
-            await page.get_by_role('button', name='Continue after QC', exact=True).click()
+            await page.get_by_text('Existing QC kept. Continuing after QC; unrated stages remain unrated.', exact=True).wait_for()
             await output('EXISTING_QC_CONTINUED')
             assert all(path.read_bytes() == original for path, original in saved.items())
             (artifacts/'failure.png').unlink(missing_ok=True)
@@ -209,13 +214,18 @@ class StopExecution(Exception):
         def code(source, role=None):
             return nb.v4.new_code_cell(source, metadata={'calmar': {'role': role}} if role else {})
         notebooks = {
-            'navigation.ipynb': [code(prefix+'''checkpoint = pause_before_batch()
+            'navigation.ipynb': [code(prefix+'''from unittest.mock import patch
+# Install the failure fixture before the view is rendered. Replacing _esm on
+# an already displayed widget races anywidget's cleanup and event listeners.
+with patch('calmar.execution.display'):
+    checkpoint = pause_before_batch()
 # Fail this view's first registry lookup, then exercise recovery via the button.
 checkpoint.navigation._esm = checkpoint.navigation._esm.replace(
     "const FrontEnd = await manager.loadClass",
     "if (!window.__calmar_connection_attempted) { window.__calmar_connection_attempted = true; throw Error('Fixture: extension still loading'); } const FrontEnd = await manager.loadClass")
 checkpoint.button.on_click(lambda _: Path('events.txt').open('a').write('click ready='+str(checkpoint.navigation.ready)+'\\n'))
 checkpoint.navigation.on_msg(lambda _, data, buffers: Path('events.txt').open('a').write(str(data)+'\\n'))
+display(checkpoint.widget)
 raise StopExecution("Paused")'''),
                 code('print("BATCH_RAN")\nqc = pause_for_qc([dict(subject="sub-fixture", session="ses-1")], lambda e: Path("qc"))\nraise StopExecution("QC paused")', 'batch-start'),
                 code('print("MUST_NOT_RUN")')],

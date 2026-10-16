@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class GuidedWorkflowTests(unittest.TestCase):
     def test_every_disabled_test_cell_only_prints_continuation(self):
-        for number in (20,23,25,27,30,32,34,35,39):
+        for number in (20,23,25,27,"calmar-manual",32,34,35,39):
             with self.subTest(cell=number):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
@@ -30,7 +30,7 @@ class GuidedWorkflowTests(unittest.TestCase):
     def test_guided_defaults_preserve_selected_cohort(self):
         config = defaults()
         self.assertEqual(config['MAX_SUBJECTS'], 3)
-        self.assertCountEqual(config['SUBJECT_FILTER'], ['sub-M2001','sub-M2075','sub-M2077'])
+        self.assertCountEqual(config['SUBJECT_FILTER'], ['sub-M2103','sub-M2205','sub-M2002'])
 
     def test_navigation_targets_exist_once_in_each_notebook(self):
         for name in ('calmar-guided.ipynb', 'lesion-interpretation-pipeline.ipynb'):
@@ -42,29 +42,28 @@ class GuidedWorkflowTests(unittest.TestCase):
                 self.assertEqual(roles.count(role), 1, (name, role))
 
     def test_cached_hdbet_preview_loads_anatomy_and_thresholded_mask_once(self):
+        from calmar import review
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             t1 = root/'T1w.nii.gz'; t1.write_bytes(b'fixture')
             mask = root/'T1w_brain_mask.nii.gz'; mask.write_bytes(b'fixture')
             show = Mock(return_value=SimpleNamespace(volumes=[SimpleNamespace(),SimpleNamespace()]))
-            ns = dict(CONFIG={'RUN_TEST':True}, SUBJECTS=[dict(subject='sub-test',session=None,t1w=t1)],
-                Path=Path, cm=masks, q=SimpleNamespace(), importlib=importlib,
-                hdbet_path_for=lambda e:root, cw=SimpleNamespace(show=show),
-                widgets=ipywidgets, display=lambda *a:None, HTML=lambda s:s)
-            with patch.object(importlib,'reload',lambda m:m):
-                exec(''.join(source_cell(23)['source']),ns)
+            displayed = []
+            with patch('calmar.review.display', side_effect=lambda *a: displayed.extend(a)):
+                review.show_brain_mask(dict(subject='sub-test', session=None, t1w=t1), root, SimpleNamespace(show=show))
             show.assert_called_once()
             volumes=show.call_args.args[1]
             self.assertEqual(volumes[0], {'path':str(t1)})
             self.assertEqual(volumes[1]['cal_min'], .5)
             self.assertEqual(volumes[1]['cal_max'], 1.)
-            ns['_hdbet_overlay'].value=False
+            toggle = next(d for d in displayed if isinstance(d, ipywidgets.Checkbox))
+            toggle.value=False
             self.assertEqual(show.return_value.volumes[1].opacity, 0.)
 
     def test_local_inputs_keep_derivatives_under_selected_dataset(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary); dataset=root/'local'; dataset.mkdir()
-            ns=dict(Path=Path, os=os, cw=SimpleNamespace(configure=lambda **kw:None),
+            ns=dict(Path=Path, os=os, cw=SimpleNamespace(configure=lambda **kw:None), display=lambda *a: None,
                 _CALMAR_CONFIG_OVERRIDES={'PROJECT_DIR':root,'DATASET_SOURCE':'local','LOCAL_DATASET':dataset})
             with contextlib.redirect_stdout(io.StringIO()), patch.dict(os.environ):
                 exec(''.join(source_cell(12)['source']),ns)

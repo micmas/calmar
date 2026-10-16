@@ -142,6 +142,13 @@ class QCPanelTests(unittest.TestCase):
         self.assertFalse(p.continue_after_qc())
         p.navigation.request.assert_not_called()
 
+    def test_navigation_status_does_not_erase_qc_choice(self):
+        p = self.saved_panel({0: dict(skull_strip=1)})
+        del p.navigation.request  # Exercise the real bridge, without a browser.
+        self.assertTrue(p.reuse_saved())
+        self.assertIn('Existing QC kept', p.message.value)
+        self.assertIn('Connecting notebook controls', p.navigation_message.value)
+
     def test_save_advances_stage_and_unlocks_completed_reviews(self):
         p = self.panel
         p.rating_buttons["skull_strip"].value = 3
@@ -212,3 +219,26 @@ class QCPanelTests(unittest.TestCase):
         self.assertFalse(p.save_current())
         self.assertFalse(p._prepare_repair())
         self.assertFalse(list(self.root.rglob("*.qc.json")))
+
+
+class QCViewerControlTests(unittest.TestCase):
+    def test_overlays_get_the_step_viewer_controls(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        entries = [dict(subject="sub-0", session="ses-1")]
+        shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
+        gate = QCCheckpoint(shell, entries, lambda e: root)
+        self.addCleanup(gate.close)
+        def volumes(stage, entry, show_manual, show_synth):
+            return [{"path": "t1.nii.gz"},
+                    {"path": "linda.nii.gz", "name": "linda", "opacity": .8},
+                    {"path": "manual.nii.gz", "name": "manual", "opacity": .5}]
+        viewer = Viewer()
+        panel = QCPanel(entries, lambda e: ["lesion"], lambda e: root / "Lesion_in_MNI.nii.gz",
+                        volumes, viewer, gate)
+        self.addCleanup(panel.close)
+        self.assertEqual(panel.stage.value, "lesion")
+        self.assertEqual([(r["label"], r["shown"]) for r in panel.layers.roles],
+                         [("LINDA lesion (outline)", True), ("Manual reference", False)])
+        self.assertEqual([v.get("opacity") for v in viewer.volumes], [None, .8, 0.])  # reference loaded hidden

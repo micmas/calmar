@@ -1,0 +1,2054 @@
+[
+ {
+  "subject": "sub-M2001",
+  "session": "ses-1076",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 168.4,
+    "volume_ml": 1516.5
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0009,
+    "added_beyond_hdbet_and_lesion_ml": 19.4,
+    "volume_ml": 1367.4
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0008,
+    "added_beyond_hdbet_and_lesion_ml": 28.0,
+    "volume_ml": 1376.0
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1347.9,
+    "lesion_outside_frac": 0.0014,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1360.2,
+    "lesion_outside_frac": 0.001,
+    "added_beyond_hdbet_and_lesion_ml": 12.3,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1375.7,
+    "lesion_outside_frac": 0.0007,
+    "added_beyond_hdbet_and_lesion_ml": 30.4,
+    "hdbet_brain_removed_ml": 2.6
+   },
+   "hdbet2": {
+    "volume_ml": 1333.0,
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 14.0,
+    "hdbet_brain_removed_ml": 29.1
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1512.7,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 168.4,
+    "hdbet_brain_removed_ml": 3.8
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1275.5,
+    "lesion_outside_frac": 0.0227,
+    "added_beyond_hdbet_and_lesion_ml": 14.4,
+    "hdbet_brain_removed_ml": 83.7
+   }
+  }
+ },
+ {
+  "subject": "sub-M2018",
+  "session": "ses-341",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0044,
+    "added_beyond_hdbet_and_lesion_ml": 149.2,
+    "volume_ml": 1729.7
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0323,
+    "added_beyond_hdbet_and_lesion_ml": 24.9,
+    "volume_ml": 1604.1
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0307,
+    "added_beyond_hdbet_and_lesion_ml": 36.8,
+    "volume_ml": 1616.0
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1579.0,
+    "lesion_outside_frac": 0.0358,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1594.4,
+    "lesion_outside_frac": 0.0332,
+    "added_beyond_hdbet_and_lesion_ml": 15.3,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1603.4,
+    "lesion_outside_frac": 0.0139,
+    "added_beyond_hdbet_and_lesion_ml": 28.3,
+    "hdbet_brain_removed_ml": 4.9
+   },
+   "hdbet2": {
+    "volume_ml": 1578.2,
+    "lesion_outside_frac": 0.0043,
+    "added_beyond_hdbet_and_lesion_ml": 21.4,
+    "hdbet_brain_removed_ml": 23.7
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1723.8,
+    "lesion_outside_frac": 0.0046,
+    "added_beyond_hdbet_and_lesion_ml": 149.2,
+    "hdbet_brain_removed_ml": 5.9
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1500.6,
+    "lesion_outside_frac": 0.0171,
+    "added_beyond_hdbet_and_lesion_ml": 24.0,
+    "hdbet_brain_removed_ml": 103.3
+   }
+  }
+ },
+ {
+  "subject": "sub-M2026",
+  "session": "ses-3098",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0019,
+    "added_beyond_hdbet_and_lesion_ml": 176.1,
+    "volume_ml": 1464.6
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0115,
+    "added_beyond_hdbet_and_lesion_ml": 24.1,
+    "volume_ml": 1312.5
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0115,
+    "added_beyond_hdbet_and_lesion_ml": 37.1,
+    "volume_ml": 1325.5
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1288.4,
+    "lesion_outside_frac": 0.0123,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1302.6,
+    "lesion_outside_frac": 0.0119,
+    "added_beyond_hdbet_and_lesion_ml": 14.1,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1311.8,
+    "lesion_outside_frac": 0.0094,
+    "added_beyond_hdbet_and_lesion_ml": 25.1,
+    "hdbet_brain_removed_ml": 1.8
+   },
+   "hdbet2": {
+    "volume_ml": 1223.6,
+    "lesion_outside_frac": 0.0187,
+    "added_beyond_hdbet_and_lesion_ml": 2.8,
+    "hdbet_brain_removed_ml": 67.6
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1464.1,
+    "lesion_outside_frac": 0.0019,
+    "added_beyond_hdbet_and_lesion_ml": 176.1,
+    "hdbet_brain_removed_ml": 0.5
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1253.3,
+    "lesion_outside_frac": 0.0065,
+    "added_beyond_hdbet_and_lesion_ml": 22.3,
+    "hdbet_brain_removed_ml": 57.4
+   }
+  }
+ },
+ {
+  "subject": "sub-M2029",
+  "session": "ses-180",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.032,
+    "added_beyond_hdbet_and_lesion_ml": 160.6,
+    "volume_ml": 1637.6
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.261,
+    "added_beyond_hdbet_and_lesion_ml": 20.5,
+    "volume_ml": 1462.3
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.2552,
+    "added_beyond_hdbet_and_lesion_ml": 30.8,
+    "volume_ml": 1473.5
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1439.7,
+    "lesion_outside_frac": 0.2742,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1453.8,
+    "lesion_outside_frac": 0.2651,
+    "added_beyond_hdbet_and_lesion_ml": 12.6,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1464.6,
+    "lesion_outside_frac": 0.2232,
+    "added_beyond_hdbet_and_lesion_ml": 23.1,
+    "hdbet_brain_removed_ml": 6.0
+   },
+   "hdbet2": {
+    "volume_ml": 1483.2,
+    "lesion_outside_frac": 0.0481,
+    "added_beyond_hdbet_and_lesion_ml": 27.1,
+    "hdbet_brain_removed_ml": 18.4
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1635.5,
+    "lesion_outside_frac": 0.0323,
+    "added_beyond_hdbet_and_lesion_ml": 160.6,
+    "hdbet_brain_removed_ml": 2.1
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1445.9,
+    "lesion_outside_frac": 0.0937,
+    "added_beyond_hdbet_and_lesion_ml": 32.7,
+    "hdbet_brain_removed_ml": 54.4
+   }
+  }
+ },
+ {
+  "subject": "sub-M2034",
+  "session": "ses-1568",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0604,
+    "added_beyond_hdbet_and_lesion_ml": 168.0,
+    "volume_ml": 1720.6
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0971,
+    "added_beyond_hdbet_and_lesion_ml": 21.5,
+    "volume_ml": 1565.7
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0952,
+    "added_beyond_hdbet_and_lesion_ml": 33.8,
+    "volume_ml": 1578.4
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1542.8,
+    "lesion_outside_frac": 0.1031,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1556.5,
+    "lesion_outside_frac": 0.0981,
+    "added_beyond_hdbet_and_lesion_ml": 12.5,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1565.3,
+    "lesion_outside_frac": 0.1019,
+    "added_beyond_hdbet_and_lesion_ml": 25.7,
+    "hdbet_brain_removed_ml": 3.4
+   },
+   "hdbet2": {
+    "volume_ml": 1556.3,
+    "lesion_outside_frac": 0.0722,
+    "added_beyond_hdbet_and_lesion_ml": 23.5,
+    "hdbet_brain_removed_ml": 17.1
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1716.1,
+    "lesion_outside_frac": 0.0675,
+    "added_beyond_hdbet_and_lesion_ml": 168.0,
+    "hdbet_brain_removed_ml": 2.9
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1453.1,
+    "lesion_outside_frac": 0.1658,
+    "added_beyond_hdbet_and_lesion_ml": 22.4,
+    "hdbet_brain_removed_ml": 97.8
+   }
+  }
+ },
+ {
+  "subject": "sub-M2035",
+  "session": "ses-4295",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0009,
+    "added_beyond_hdbet_and_lesion_ml": 167.3,
+    "volume_ml": 1378.4
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0122,
+    "added_beyond_hdbet_and_lesion_ml": 18.6,
+    "volume_ml": 1228.2
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0106,
+    "added_beyond_hdbet_and_lesion_ml": 29.1,
+    "volume_ml": 1238.9
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1209.0,
+    "lesion_outside_frac": 0.0168,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1221.2,
+    "lesion_outside_frac": 0.0141,
+    "added_beyond_hdbet_and_lesion_ml": 11.8,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1224.6,
+    "lesion_outside_frac": 0.0109,
+    "added_beyond_hdbet_and_lesion_ml": 21.0,
+    "hdbet_brain_removed_ml": 6.2
+   },
+   "hdbet2": {
+    "volume_ml": 1210.4,
+    "lesion_outside_frac": 0.0035,
+    "added_beyond_hdbet_and_lesion_ml": 26.7,
+    "hdbet_brain_removed_ml": 27.1
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1373.6,
+    "lesion_outside_frac": 0.0013,
+    "added_beyond_hdbet_and_lesion_ml": 167.3,
+    "hdbet_brain_removed_ml": 4.7
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1140.6,
+    "lesion_outside_frac": 0.0767,
+    "added_beyond_hdbet_and_lesion_ml": 21.5,
+    "hdbet_brain_removed_ml": 82.0
+   }
+  }
+ },
+ {
+  "subject": "sub-M2036",
+  "session": "ses-695",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 188.7,
+    "volume_ml": 1803.0
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0342,
+    "added_beyond_hdbet_and_lesion_ml": 23.4,
+    "volume_ml": 1637.1
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0308,
+    "added_beyond_hdbet_and_lesion_ml": 33.3,
+    "volume_ml": 1647.1
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1613.3,
+    "lesion_outside_frac": 0.014,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1628.1,
+    "lesion_outside_frac": 0.0108,
+    "added_beyond_hdbet_and_lesion_ml": 14.4,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1636.7,
+    "lesion_outside_frac": 0.0094,
+    "added_beyond_hdbet_and_lesion_ml": 27.2,
+    "hdbet_brain_removed_ml": 4.4
+   },
+   "hdbet2": {
+    "volume_ml": 1643.2,
+    "lesion_outside_frac": 0.0004,
+    "added_beyond_hdbet_and_lesion_ml": 48.5,
+    "hdbet_brain_removed_ml": 20.3
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1799.6,
+    "lesion_outside_frac": 0.0004,
+    "added_beyond_hdbet_and_lesion_ml": 187.9,
+    "hdbet_brain_removed_ml": 3.4
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1598.6,
+    "lesion_outside_frac": 0.0101,
+    "added_beyond_hdbet_and_lesion_ml": 46.6,
+    "hdbet_brain_removed_ml": 61.9
+   }
+  }
+ },
+ {
+  "subject": "sub-M2037",
+  "session": "ses-275",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0245,
+    "added_beyond_hdbet_and_lesion_ml": 174.0,
+    "volume_ml": 1364.0
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.2864,
+    "added_beyond_hdbet_and_lesion_ml": 21.0,
+    "volume_ml": 1201.8
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.2533,
+    "added_beyond_hdbet_and_lesion_ml": 31.8,
+    "volume_ml": 1213.7
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1178.7,
+    "lesion_outside_frac": 0.3432,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1192.0,
+    "lesion_outside_frac": 0.3262,
+    "added_beyond_hdbet_and_lesion_ml": 12.7,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1213.5,
+    "lesion_outside_frac": 0.1684,
+    "added_beyond_hdbet_and_lesion_ml": 30.0,
+    "hdbet_brain_removed_ml": 1.4
+   },
+   "hdbet2": {
+    "volume_ml": 1185.4,
+    "lesion_outside_frac": 0.1007,
+    "added_beyond_hdbet_and_lesion_ml": 19.6,
+    "hdbet_brain_removed_ml": 21.6
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1362.3,
+    "lesion_outside_frac": 0.0245,
+    "added_beyond_hdbet_and_lesion_ml": 174.0,
+    "hdbet_brain_removed_ml": 1.7
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1158.3,
+    "lesion_outside_frac": 0.1546,
+    "added_beyond_hdbet_and_lesion_ml": 27.2,
+    "hdbet_brain_removed_ml": 54.3
+   }
+  }
+ },
+ {
+  "subject": "sub-M2042",
+  "session": "ses-1953",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.004,
+    "added_beyond_hdbet_and_lesion_ml": 184.1,
+    "volume_ml": 1640.7
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0173,
+    "added_beyond_hdbet_and_lesion_ml": 21.3,
+    "volume_ml": 1475.5
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0162,
+    "added_beyond_hdbet_and_lesion_ml": 33.2,
+    "volume_ml": 1487.7
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1453.7,
+    "lesion_outside_frac": 0.0205,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1466.6,
+    "lesion_outside_frac": 0.0183,
+    "added_beyond_hdbet_and_lesion_ml": 12.5,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1468.5,
+    "lesion_outside_frac": 0.0233,
+    "added_beyond_hdbet_and_lesion_ml": 19.8,
+    "hdbet_brain_removed_ml": 4.5
+   },
+   "hdbet2": {
+    "volume_ml": 1429.1,
+    "lesion_outside_frac": 0.0048,
+    "added_beyond_hdbet_and_lesion_ml": 13.2,
+    "hdbet_brain_removed_ml": 40.5
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1627.6,
+    "lesion_outside_frac": 0.0085,
+    "added_beyond_hdbet_and_lesion_ml": 184.1,
+    "hdbet_brain_removed_ml": 12.3
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1343.8,
+    "lesion_outside_frac": 0.1025,
+    "added_beyond_hdbet_and_lesion_ml": 14.2,
+    "hdbet_brain_removed_ml": 109.5
+   }
+  }
+ },
+ {
+  "subject": "sub-M2043",
+  "session": "ses-183",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 179.9,
+    "volume_ml": 1649.9
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 25.9,
+    "volume_ml": 1495.9
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 39.9,
+    "volume_ml": 1509.8
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1469.9,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1484.8,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 14.9,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1493.2,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 24.8,
+    "hdbet_brain_removed_ml": 1.5
+   },
+   "hdbet2": {
+    "volume_ml": 1405.8,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 2.7,
+    "hdbet_brain_removed_ml": 66.8
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1648.4,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 179.9,
+    "hdbet_brain_removed_ml": 1.5
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1409.9,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 21.1,
+    "hdbet_brain_removed_ml": 81.1
+   }
+  }
+ },
+ {
+  "subject": "sub-M2044",
+  "session": "ses-2150",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0087,
+    "added_beyond_hdbet_and_lesion_ml": 190.3,
+    "volume_ml": 1356.1
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0678,
+    "added_beyond_hdbet_and_lesion_ml": 17.3,
+    "volume_ml": 1181.6
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0658,
+    "added_beyond_hdbet_and_lesion_ml": 26.1,
+    "volume_ml": 1190.5
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1164.1,
+    "lesion_outside_frac": 0.0366,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1175.1,
+    "lesion_outside_frac": 0.0333,
+    "added_beyond_hdbet_and_lesion_ml": 10.7,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1184.0,
+    "lesion_outside_frac": 0.0188,
+    "added_beyond_hdbet_and_lesion_ml": 19.3,
+    "hdbet_brain_removed_ml": 1.3
+   },
+   "hdbet2": {
+    "volume_ml": 1168.3,
+    "lesion_outside_frac": 0.0092,
+    "added_beyond_hdbet_and_lesion_ml": 14.9,
+    "hdbet_brain_removed_ml": 13.7
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1355.6,
+    "lesion_outside_frac": 0.0025,
+    "added_beyond_hdbet_and_lesion_ml": 188.3,
+    "hdbet_brain_removed_ml": 0.5
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1137.9,
+    "lesion_outside_frac": 0.0111,
+    "added_beyond_hdbet_and_lesion_ml": 18.1,
+    "hdbet_brain_removed_ml": 47.0
+   }
+  }
+ },
+ {
+  "subject": "sub-M2044",
+  "session": "ses-3122",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0017,
+    "added_beyond_hdbet_and_lesion_ml": 161.4,
+    "volume_ml": 1332.1
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.009,
+    "added_beyond_hdbet_and_lesion_ml": 15.3,
+    "volume_ml": 1185.1
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0082,
+    "added_beyond_hdbet_and_lesion_ml": 24.2,
+    "volume_ml": 1194.1
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1169.6,
+    "lesion_outside_frac": 0.0116,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1178.9,
+    "lesion_outside_frac": 0.0097,
+    "added_beyond_hdbet_and_lesion_ml": 9.1,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1189.2,
+    "lesion_outside_frac": 0.0062,
+    "added_beyond_hdbet_and_lesion_ml": 19.6,
+    "hdbet_brain_removed_ml": 0.6
+   },
+   "hdbet2": {
+    "volume_ml": 1190.2,
+    "lesion_outside_frac": 0.0059,
+    "added_beyond_hdbet_and_lesion_ml": 25.0,
+    "hdbet_brain_removed_ml": 5.0
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1331.0,
+    "lesion_outside_frac": 0.0024,
+    "added_beyond_hdbet_and_lesion_ml": 161.4,
+    "hdbet_brain_removed_ml": 1.0
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1138.2,
+    "lesion_outside_frac": 0.0099,
+    "added_beyond_hdbet_and_lesion_ml": 16.2,
+    "hdbet_brain_removed_ml": 47.7
+   }
+  }
+ },
+ {
+  "subject": "sub-M2045",
+  "session": "ses-381",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0722,
+    "added_beyond_hdbet_and_lesion_ml": 213.5,
+    "volume_ml": 1618.9
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.3372,
+    "added_beyond_hdbet_and_lesion_ml": 19.5,
+    "volume_ml": 1411.9
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.3317,
+    "added_beyond_hdbet_and_lesion_ml": 31.2,
+    "volume_ml": 1423.9
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1391.7,
+    "lesion_outside_frac": 0.3511,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1404.1,
+    "lesion_outside_frac": 0.3425,
+    "added_beyond_hdbet_and_lesion_ml": 12.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1414.9,
+    "lesion_outside_frac": 0.3373,
+    "added_beyond_hdbet_and_lesion_ml": 27.1,
+    "hdbet_brain_removed_ml": 4.6
+   },
+   "hdbet2": {
+    "volume_ml": 1427.4,
+    "lesion_outside_frac": 0.2503,
+    "added_beyond_hdbet_and_lesion_ml": 50.4,
+    "hdbet_brain_removed_ml": 19.7
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1618.0,
+    "lesion_outside_frac": 0.0724,
+    "added_beyond_hdbet_and_lesion_ml": 213.5,
+    "hdbet_brain_removed_ml": 0.9
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1368.6,
+    "lesion_outside_frac": 0.3209,
+    "added_beyond_hdbet_and_lesion_ml": 42.0,
+    "hdbet_brain_removed_ml": 66.6
+   }
+  }
+ },
+ {
+  "subject": "sub-M2046",
+  "session": "ses-2499",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0192,
+    "added_beyond_hdbet_and_lesion_ml": 132.9,
+    "volume_ml": 1473.8
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.1228,
+    "added_beyond_hdbet_and_lesion_ml": 16.9,
+    "volume_ml": 1343.2
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.1187,
+    "added_beyond_hdbet_and_lesion_ml": 24.9,
+    "volume_ml": 1351.8
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1324.6,
+    "lesion_outside_frac": 0.1352,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1336.6,
+    "lesion_outside_frac": 0.1276,
+    "added_beyond_hdbet_and_lesion_ml": 10.9,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1364.5,
+    "lesion_outside_frac": 0.1021,
+    "added_beyond_hdbet_and_lesion_ml": 35.7,
+    "hdbet_brain_removed_ml": 0.4
+   },
+   "hdbet2": {
+    "volume_ml": 1393.8,
+    "lesion_outside_frac": 0.0305,
+    "added_beyond_hdbet_and_lesion_ml": 56.6,
+    "hdbet_brain_removed_ml": 2.2
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1468.2,
+    "lesion_outside_frac": 0.0224,
+    "added_beyond_hdbet_and_lesion_ml": 132.9,
+    "hdbet_brain_removed_ml": 5.2
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1274.3,
+    "lesion_outside_frac": 0.0985,
+    "added_beyond_hdbet_and_lesion_ml": 28.1,
+    "hdbet_brain_removed_ml": 83.6
+   }
+  }
+ },
+ {
+  "subject": "sub-M2047",
+  "session": "ses-553",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 140.5,
+    "volume_ml": 1346.9
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0862,
+    "added_beyond_hdbet_and_lesion_ml": 17.9,
+    "volume_ml": 1219.5
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0817,
+    "added_beyond_hdbet_and_lesion_ml": 27.3,
+    "volume_ml": 1229.1
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1201.1,
+    "lesion_outside_frac": 0.0944,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1212.9,
+    "lesion_outside_frac": 0.0888,
+    "added_beyond_hdbet_and_lesion_ml": 11.5,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1218.7,
+    "lesion_outside_frac": 0.0867,
+    "added_beyond_hdbet_and_lesion_ml": 18.8,
+    "hdbet_brain_removed_ml": 1.7
+   },
+   "hdbet2": {
+    "volume_ml": 1181.0,
+    "lesion_outside_frac": 0.0064,
+    "added_beyond_hdbet_and_lesion_ml": 8.0,
+    "hdbet_brain_removed_ml": 33.1
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1343.1,
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 140.5,
+    "hdbet_brain_removed_ml": 3.8
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1149.3,
+    "lesion_outside_frac": 0.0163,
+    "added_beyond_hdbet_and_lesion_ml": 17.5,
+    "hdbet_brain_removed_ml": 73.8
+   }
+  }
+ },
+ {
+  "subject": "sub-M2048",
+  "session": "ses-215",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0007,
+    "added_beyond_hdbet_and_lesion_ml": 189.1,
+    "volume_ml": 1465.6
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0475,
+    "added_beyond_hdbet_and_lesion_ml": 18.5,
+    "volume_ml": 1291.5
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.045,
+    "added_beyond_hdbet_and_lesion_ml": 28.2,
+    "volume_ml": 1301.3
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1272.2,
+    "lesion_outside_frac": 0.0569,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1284.4,
+    "lesion_outside_frac": 0.0505,
+    "added_beyond_hdbet_and_lesion_ml": 11.7,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1291.2,
+    "lesion_outside_frac": 0.0427,
+    "added_beyond_hdbet_and_lesion_ml": 19.2,
+    "hdbet_brain_removed_ml": 1.4
+   },
+   "hdbet2": {
+    "volume_ml": 1254.0,
+    "lesion_outside_frac": 0.0225,
+    "added_beyond_hdbet_and_lesion_ml": 7.1,
+    "hdbet_brain_removed_ml": 28.0
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1464.8,
+    "lesion_outside_frac": 0.0007,
+    "added_beyond_hdbet_and_lesion_ml": 189.1,
+    "hdbet_brain_removed_ml": 0.8
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1234.0,
+    "lesion_outside_frac": 0.0351,
+    "added_beyond_hdbet_and_lesion_ml": 14.7,
+    "hdbet_brain_removed_ml": 54.6
+   }
+  }
+ },
+ {
+  "subject": "sub-M2051",
+  "session": "ses-284",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.013,
+    "added_beyond_hdbet_and_lesion_ml": 164.3,
+    "volume_ml": 1657.6
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.1785,
+    "added_beyond_hdbet_and_lesion_ml": 20.8,
+    "volume_ml": 1492.5
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.1744,
+    "added_beyond_hdbet_and_lesion_ml": 30.4,
+    "volume_ml": 1502.6
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1470.0,
+    "lesion_outside_frac": 0.1913,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1484.2,
+    "lesion_outside_frac": 0.1822,
+    "added_beyond_hdbet_and_lesion_ml": 13.1,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1491.1,
+    "lesion_outside_frac": 0.1643,
+    "added_beyond_hdbet_and_lesion_ml": 19.0,
+    "hdbet_brain_removed_ml": 1.4
+   },
+   "hdbet2": {
+    "volume_ml": 1473.2,
+    "lesion_outside_frac": 0.0655,
+    "added_beyond_hdbet_and_lesion_ml": 12.4,
+    "hdbet_brain_removed_ml": 25.7
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1654.8,
+    "lesion_outside_frac": 0.013,
+    "added_beyond_hdbet_and_lesion_ml": 164.3,
+    "hdbet_brain_removed_ml": 2.8
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1452.3,
+    "lesion_outside_frac": 0.0703,
+    "added_beyond_hdbet_and_lesion_ml": 25.1,
+    "hdbet_brain_removed_ml": 58.6
+   }
+  }
+ },
+ {
+  "subject": "sub-M2061",
+  "session": "ses-252",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 140.5,
+    "volume_ml": 1588.9
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0085,
+    "added_beyond_hdbet_and_lesion_ml": 19.0,
+    "volume_ml": 1466.7
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0078,
+    "added_beyond_hdbet_and_lesion_ml": 29.5,
+    "volume_ml": 1477.2
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1447.4,
+    "lesion_outside_frac": 0.0118,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1458.5,
+    "lesion_outside_frac": 0.0096,
+    "added_beyond_hdbet_and_lesion_ml": 10.9,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1477.8,
+    "lesion_outside_frac": 0.004,
+    "added_beyond_hdbet_and_lesion_ml": 30.2,
+    "hdbet_brain_removed_ml": 0.5
+   },
+   "hdbet2": {
+    "volume_ml": 1453.6,
+    "lesion_outside_frac": 0.002,
+    "added_beyond_hdbet_and_lesion_ml": 19.3,
+    "hdbet_brain_removed_ml": 14.0
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1585.5,
+    "lesion_outside_frac": 0.0007,
+    "added_beyond_hdbet_and_lesion_ml": 140.5,
+    "hdbet_brain_removed_ml": 3.4
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1362.7,
+    "lesion_outside_frac": 0.0459,
+    "added_beyond_hdbet_and_lesion_ml": 13.4,
+    "hdbet_brain_removed_ml": 95.3
+   }
+  }
+ },
+ {
+  "subject": "sub-M2066",
+  "session": "ses-235",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0013,
+    "added_beyond_hdbet_and_lesion_ml": 128.6,
+    "volume_ml": 1574.0
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0097,
+    "added_beyond_hdbet_and_lesion_ml": 14.8,
+    "volume_ml": 1459.2
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0089,
+    "added_beyond_hdbet_and_lesion_ml": 23.3,
+    "volume_ml": 1467.8
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1444.1,
+    "lesion_outside_frac": 0.0123,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1453.3,
+    "lesion_outside_frac": 0.0107,
+    "added_beyond_hdbet_and_lesion_ml": 9.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1469.6,
+    "lesion_outside_frac": 0.006,
+    "added_beyond_hdbet_and_lesion_ml": 26.0,
+    "hdbet_brain_removed_ml": 1.2
+   },
+   "hdbet2": {
+    "volume_ml": 1456.3,
+    "lesion_outside_frac": 0.0023,
+    "added_beyond_hdbet_and_lesion_ml": 25.1,
+    "hdbet_brain_removed_ml": 14.0
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1566.7,
+    "lesion_outside_frac": 0.0014,
+    "added_beyond_hdbet_and_lesion_ml": 128.6,
+    "hdbet_brain_removed_ml": 7.3
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1342.3,
+    "lesion_outside_frac": 0.0509,
+    "added_beyond_hdbet_and_lesion_ml": 17.7,
+    "hdbet_brain_removed_ml": 114.8
+   }
+  }
+ },
+ {
+  "subject": "sub-M2074",
+  "session": "ses-2183",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0246,
+    "added_beyond_hdbet_and_lesion_ml": 108.3,
+    "volume_ml": 1541.2
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0427,
+    "added_beyond_hdbet_and_lesion_ml": 14.5,
+    "volume_ml": 1446.8
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0397,
+    "added_beyond_hdbet_and_lesion_ml": 23.4,
+    "volume_ml": 1455.8
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1432.1,
+    "lesion_outside_frac": 0.0478,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1441.5,
+    "lesion_outside_frac": 0.0425,
+    "added_beyond_hdbet_and_lesion_ml": 9.2,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1455.2,
+    "lesion_outside_frac": 0.0506,
+    "added_beyond_hdbet_and_lesion_ml": 26.6,
+    "hdbet_brain_removed_ml": 3.5
+   },
+   "hdbet2": {
+    "volume_ml": 1433.0,
+    "lesion_outside_frac": 0.0421,
+    "added_beyond_hdbet_and_lesion_ml": 20.2,
+    "hdbet_brain_removed_ml": 19.6
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1527.0,
+    "lesion_outside_frac": 0.095,
+    "added_beyond_hdbet_and_lesion_ml": 108.3,
+    "hdbet_brain_removed_ml": 12.0
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1317.4,
+    "lesion_outside_frac": 0.2379,
+    "added_beyond_hdbet_and_lesion_ml": 10.1,
+    "hdbet_brain_removed_ml": 119.1
+   }
+  }
+ },
+ {
+  "subject": "sub-M2075",
+  "session": "ses-602",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 145.3,
+    "volume_ml": 1496.3
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0063,
+    "added_beyond_hdbet_and_lesion_ml": 20.2,
+    "volume_ml": 1371.0
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0033,
+    "added_beyond_hdbet_and_lesion_ml": 30.4,
+    "volume_ml": 1381.4
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1350.7,
+    "lesion_outside_frac": 0.0106,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1362.1,
+    "lesion_outside_frac": 0.0086,
+    "added_beyond_hdbet_and_lesion_ml": 11.3,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1380.7,
+    "lesion_outside_frac": 0.0086,
+    "added_beyond_hdbet_and_lesion_ml": 30.0,
+    "hdbet_brain_removed_ml": 0.2
+   },
+   "hdbet2": {
+    "volume_ml": 1348.0,
+    "lesion_outside_frac": 0.0064,
+    "added_beyond_hdbet_and_lesion_ml": 16.6,
+    "hdbet_brain_removed_ml": 19.4
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1492.2,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 145.3,
+    "hdbet_brain_removed_ml": 4.1
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1308.5,
+    "lesion_outside_frac": 0.0011,
+    "added_beyond_hdbet_and_lesion_ml": 13.8,
+    "hdbet_brain_removed_ml": 56.3
+   }
+  }
+ },
+ {
+  "subject": "sub-M2077",
+  "session": "ses-250",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0017,
+    "added_beyond_hdbet_and_lesion_ml": 123.5,
+    "volume_ml": 1343.9
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0132,
+    "added_beyond_hdbet_and_lesion_ml": 15.5,
+    "volume_ml": 1235.3
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0122,
+    "added_beyond_hdbet_and_lesion_ml": 23.9,
+    "volume_ml": 1243.8
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1219.7,
+    "lesion_outside_frac": 0.0168,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1228.6,
+    "lesion_outside_frac": 0.015,
+    "added_beyond_hdbet_and_lesion_ml": 8.8,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1244.2,
+    "lesion_outside_frac": 0.0114,
+    "added_beyond_hdbet_and_lesion_ml": 24.5,
+    "hdbet_brain_removed_ml": 0.2
+   },
+   "hdbet2": {
+    "volume_ml": 1229.7,
+    "lesion_outside_frac": 0.0094,
+    "added_beyond_hdbet_and_lesion_ml": 19.1,
+    "hdbet_brain_removed_ml": 9.4
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1342.5,
+    "lesion_outside_frac": 0.0017,
+    "added_beyond_hdbet_and_lesion_ml": 123.5,
+    "hdbet_brain_removed_ml": 1.4
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1181.2,
+    "lesion_outside_frac": 0.0284,
+    "added_beyond_hdbet_and_lesion_ml": 10.0,
+    "hdbet_brain_removed_ml": 47.9
+   }
+  }
+ },
+ {
+  "subject": "sub-M2088",
+  "session": "ses-604",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0216,
+    "added_beyond_hdbet_and_lesion_ml": 214.0,
+    "volume_ml": 1983.2
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0975,
+    "added_beyond_hdbet_and_lesion_ml": 21.4,
+    "volume_ml": 1786.2
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0917,
+    "added_beyond_hdbet_and_lesion_ml": 33.4,
+    "volume_ml": 1798.5
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1763.7,
+    "lesion_outside_frac": 0.1154,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1776.2,
+    "lesion_outside_frac": 0.1046,
+    "added_beyond_hdbet_and_lesion_ml": 11.8,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1801.1,
+    "lesion_outside_frac": 0.0817,
+    "added_beyond_hdbet_and_lesion_ml": 35.5,
+    "hdbet_brain_removed_ml": 0.1
+   },
+   "hdbet2": {
+    "volume_ml": 1783.6,
+    "lesion_outside_frac": 0.0788,
+    "added_beyond_hdbet_and_lesion_ml": 27.7,
+    "hdbet_brain_removed_ml": 9.9
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1979.5,
+    "lesion_outside_frac": 0.0216,
+    "added_beyond_hdbet_and_lesion_ml": 214.0,
+    "hdbet_brain_removed_ml": 3.7
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1698.5,
+    "lesion_outside_frac": 0.1394,
+    "added_beyond_hdbet_and_lesion_ml": 16.4,
+    "hdbet_brain_removed_ml": 80.3
+   }
+  }
+ },
+ {
+  "subject": "sub-M2094",
+  "session": "ses-3155",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0004,
+    "added_beyond_hdbet_and_lesion_ml": 149.8,
+    "volume_ml": 1763.0
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0068,
+    "added_beyond_hdbet_and_lesion_ml": 17.6,
+    "volume_ml": 1629.0
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0064,
+    "added_beyond_hdbet_and_lesion_ml": 29.0,
+    "volume_ml": 1640.5
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1611.2,
+    "lesion_outside_frac": 0.008,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1621.7,
+    "lesion_outside_frac": 0.0071,
+    "added_beyond_hdbet_and_lesion_ml": 10.3,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1642.7,
+    "lesion_outside_frac": 0.0031,
+    "added_beyond_hdbet_and_lesion_ml": 31.9,
+    "hdbet_brain_removed_ml": 1.6
+   },
+   "hdbet2": {
+    "volume_ml": 1635.5,
+    "lesion_outside_frac": 0.0024,
+    "added_beyond_hdbet_and_lesion_ml": 40.3,
+    "hdbet_brain_removed_ml": 17.5
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1758.1,
+    "lesion_outside_frac": 0.0004,
+    "added_beyond_hdbet_and_lesion_ml": 149.8,
+    "hdbet_brain_removed_ml": 4.9
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1532.1,
+    "lesion_outside_frac": 0.0182,
+    "added_beyond_hdbet_and_lesion_ml": 21.1,
+    "hdbet_brain_removed_ml": 97.5
+   }
+  }
+ },
+ {
+  "subject": "sub-M2109",
+  "session": "ses-364",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0127,
+    "added_beyond_hdbet_and_lesion_ml": 174.5,
+    "volume_ml": 1558.0
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0953,
+    "added_beyond_hdbet_and_lesion_ml": 21.2,
+    "volume_ml": 1397.2
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0905,
+    "added_beyond_hdbet_and_lesion_ml": 33.0,
+    "volume_ml": 1409.3
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1374.7,
+    "lesion_outside_frac": 0.1091,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1387.8,
+    "lesion_outside_frac": 0.101,
+    "added_beyond_hdbet_and_lesion_ml": 12.3,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1393.3,
+    "lesion_outside_frac": 0.0882,
+    "added_beyond_hdbet_and_lesion_ml": 23.7,
+    "hdbet_brain_removed_ml": 7.0
+   },
+   "hdbet2": {
+    "volume_ml": 1367.1,
+    "lesion_outside_frac": 0.0306,
+    "added_beyond_hdbet_and_lesion_ml": 13.8,
+    "hdbet_brain_removed_ml": 28.6
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1555.6,
+    "lesion_outside_frac": 0.013,
+    "added_beyond_hdbet_and_lesion_ml": 174.5,
+    "hdbet_brain_removed_ml": 2.4
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1298.7,
+    "lesion_outside_frac": 0.1247,
+    "added_beyond_hdbet_and_lesion_ml": 20.2,
+    "hdbet_brain_removed_ml": 94.7
+   }
+  }
+ },
+ {
+  "subject": "sub-M2120",
+  "session": "ses-749",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0011,
+    "added_beyond_hdbet_and_lesion_ml": 158.9,
+    "volume_ml": 1275.5
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0056,
+    "added_beyond_hdbet_and_lesion_ml": 16.3,
+    "volume_ml": 1132.8
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.005,
+    "added_beyond_hdbet_and_lesion_ml": 26.1,
+    "volume_ml": 1142.6
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1116.3,
+    "lesion_outside_frac": 0.0084,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1125.5,
+    "lesion_outside_frac": 0.0063,
+    "added_beyond_hdbet_and_lesion_ml": 9.1,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1139.0,
+    "lesion_outside_frac": 0.0057,
+    "added_beyond_hdbet_and_lesion_ml": 22.8,
+    "hdbet_brain_removed_ml": 0.2
+   },
+   "hdbet2": {
+    "volume_ml": 1124.5,
+    "lesion_outside_frac": 0.0029,
+    "added_beyond_hdbet_and_lesion_ml": 18.4,
+    "hdbet_brain_removed_ml": 10.5
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1275.1,
+    "lesion_outside_frac": 0.0012,
+    "added_beyond_hdbet_and_lesion_ml": 158.9,
+    "hdbet_brain_removed_ml": 0.4
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1081.9,
+    "lesion_outside_frac": 0.0821,
+    "added_beyond_hdbet_and_lesion_ml": 18.9,
+    "hdbet_brain_removed_ml": 50.2
+   }
+  }
+ },
+ {
+  "subject": "sub-M2121",
+  "session": "ses-258",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 167.0,
+    "volume_ml": 1645.8
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0003,
+    "added_beyond_hdbet_and_lesion_ml": 20.2,
+    "volume_ml": 1498.9
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0003,
+    "added_beyond_hdbet_and_lesion_ml": 29.9,
+    "volume_ml": 1508.6
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1478.7,
+    "lesion_outside_frac": 0.0006,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1490.9,
+    "lesion_outside_frac": 0.0004,
+    "added_beyond_hdbet_and_lesion_ml": 12.2,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1506.1,
+    "lesion_outside_frac": 0.0006,
+    "added_beyond_hdbet_and_lesion_ml": 28.7,
+    "hdbet_brain_removed_ml": 1.3
+   },
+   "hdbet2": {
+    "volume_ml": 1478.8,
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 17.5,
+    "hdbet_brain_removed_ml": 17.5
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1641.7,
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 167.0,
+    "hdbet_brain_removed_ml": 4.0
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1386.4,
+    "lesion_outside_frac": 0.0276,
+    "added_beyond_hdbet_and_lesion_ml": 13.2,
+    "hdbet_brain_removed_ml": 104.6
+   }
+  }
+ },
+ {
+  "subject": "sub-M2176",
+  "session": "ses-1237",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 166.4,
+    "volume_ml": 1709.8
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0012,
+    "added_beyond_hdbet_and_lesion_ml": 18.0,
+    "volume_ml": 1561.3
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0012,
+    "added_beyond_hdbet_and_lesion_ml": 28.3,
+    "volume_ml": 1571.6
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1543.3,
+    "lesion_outside_frac": 0.0016,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1554.3,
+    "lesion_outside_frac": 0.0013,
+    "added_beyond_hdbet_and_lesion_ml": 11.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1557.7,
+    "lesion_outside_frac": 0.0023,
+    "added_beyond_hdbet_and_lesion_ml": 19.9,
+    "hdbet_brain_removed_ml": 5.4
+   },
+   "hdbet2": {
+    "volume_ml": 1545.0,
+    "lesion_outside_frac": 0.0016,
+    "added_beyond_hdbet_and_lesion_ml": 22.3,
+    "hdbet_brain_removed_ml": 20.7
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1692.7,
+    "lesion_outside_frac": 0.0284,
+    "added_beyond_hdbet_and_lesion_ml": 166.4,
+    "hdbet_brain_removed_ml": 14.2
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1443.9,
+    "lesion_outside_frac": 0.0793,
+    "added_beyond_hdbet_and_lesion_ml": 17.1,
+    "hdbet_brain_removed_ml": 108.4
+   }
+  }
+ },
+ {
+  "subject": "sub-M2181",
+  "session": "ses-370",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 156.6,
+    "volume_ml": 1467.4
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0035,
+    "added_beyond_hdbet_and_lesion_ml": 16.3,
+    "volume_ml": 1327.0
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0027,
+    "added_beyond_hdbet_and_lesion_ml": 24.8,
+    "volume_ml": 1335.5
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1310.6,
+    "lesion_outside_frac": 0.006,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1320.3,
+    "lesion_outside_frac": 0.0042,
+    "added_beyond_hdbet_and_lesion_ml": 9.6,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1332.7,
+    "lesion_outside_frac": 0.0018,
+    "added_beyond_hdbet_and_lesion_ml": 22.9,
+    "hdbet_brain_removed_ml": 1.0
+   },
+   "hdbet2": {
+    "volume_ml": 1322.3,
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 22.6,
+    "hdbet_brain_removed_ml": 11.2
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1466.0,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 156.6,
+    "hdbet_brain_removed_ml": 1.4
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1248.3,
+    "lesion_outside_frac": 0.0226,
+    "added_beyond_hdbet_and_lesion_ml": 10.3,
+    "hdbet_brain_removed_ml": 72.0
+   }
+  }
+ },
+ {
+  "subject": "sub-M2185",
+  "session": "ses-2418",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 132.8,
+    "volume_ml": 1415.3
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0009,
+    "added_beyond_hdbet_and_lesion_ml": 14.8,
+    "volume_ml": 1297.2
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0009,
+    "added_beyond_hdbet_and_lesion_ml": 23.7,
+    "volume_ml": 1306.1
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1282.4,
+    "lesion_outside_frac": 0.001,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1291.3,
+    "lesion_outside_frac": 0.001,
+    "added_beyond_hdbet_and_lesion_ml": 8.9,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1297.3,
+    "lesion_outside_frac": 0.0021,
+    "added_beyond_hdbet_and_lesion_ml": 18.6,
+    "hdbet_brain_removed_ml": 3.6
+   },
+   "hdbet2": {
+    "volume_ml": 1289.4,
+    "lesion_outside_frac": 0.0018,
+    "added_beyond_hdbet_and_lesion_ml": 22.9,
+    "hdbet_brain_removed_ml": 15.8
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1408.4,
+    "lesion_outside_frac": 0.0062,
+    "added_beyond_hdbet_and_lesion_ml": 132.8,
+    "hdbet_brain_removed_ml": 6.1
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1192.1,
+    "lesion_outside_frac": 0.0702,
+    "added_beyond_hdbet_and_lesion_ml": 10.0,
+    "hdbet_brain_removed_ml": 90.6
+   }
+  }
+ },
+ {
+  "subject": "sub-M2185",
+  "session": "ses-388",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 146.2,
+    "volume_ml": 1432.0
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0033,
+    "added_beyond_hdbet_and_lesion_ml": 15.0,
+    "volume_ml": 1300.4
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0028,
+    "added_beyond_hdbet_and_lesion_ml": 24.8,
+    "volume_ml": 1310.2
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1285.2,
+    "lesion_outside_frac": 0.0043,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1294.3,
+    "lesion_outside_frac": 0.0035,
+    "added_beyond_hdbet_and_lesion_ml": 9.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1302.2,
+    "lesion_outside_frac": 0.0032,
+    "added_beyond_hdbet_and_lesion_ml": 21.1,
+    "hdbet_brain_removed_ml": 4.3
+   },
+   "hdbet2": {
+    "volume_ml": 1292.7,
+    "lesion_outside_frac": 0.0011,
+    "added_beyond_hdbet_and_lesion_ml": 23.6,
+    "hdbet_brain_removed_ml": 16.5
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1428.1,
+    "lesion_outside_frac": 0.0006,
+    "added_beyond_hdbet_and_lesion_ml": 146.2,
+    "hdbet_brain_removed_ml": 3.9
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1218.7,
+    "lesion_outside_frac": 0.0258,
+    "added_beyond_hdbet_and_lesion_ml": 12.5,
+    "hdbet_brain_removed_ml": 76.1
+   }
+  }
+ },
+ {
+  "subject": "sub-M2185",
+  "session": "ses-661",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0021,
+    "added_beyond_hdbet_and_lesion_ml": 136.6,
+    "volume_ml": 1425.1
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0067,
+    "added_beyond_hdbet_and_lesion_ml": 15.4,
+    "volume_ml": 1303.2
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0067,
+    "added_beyond_hdbet_and_lesion_ml": 24.9,
+    "volume_ml": 1312.8
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1287.7,
+    "lesion_outside_frac": 0.0074,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1297.0,
+    "lesion_outside_frac": 0.0068,
+    "added_beyond_hdbet_and_lesion_ml": 9.2,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1303.4,
+    "lesion_outside_frac": 0.0082,
+    "added_beyond_hdbet_and_lesion_ml": 19.9,
+    "hdbet_brain_removed_ml": 4.1
+   },
+   "hdbet2": {
+    "volume_ml": 1291.9,
+    "lesion_outside_frac": 0.0078,
+    "added_beyond_hdbet_and_lesion_ml": 21.7,
+    "hdbet_brain_removed_ml": 17.5
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1418.9,
+    "lesion_outside_frac": 0.0113,
+    "added_beyond_hdbet_and_lesion_ml": 136.6,
+    "hdbet_brain_removed_ml": 4.9
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1203.6,
+    "lesion_outside_frac": 0.0858,
+    "added_beyond_hdbet_and_lesion_ml": 11.1,
+    "hdbet_brain_removed_ml": 84.3
+   }
+  }
+ },
+ {
+  "subject": "sub-M2192",
+  "session": "ses-536",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 168.0,
+    "volume_ml": 1737.9
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.007,
+    "added_beyond_hdbet_and_lesion_ml": 19.1,
+    "volume_ml": 1588.2
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0065,
+    "added_beyond_hdbet_and_lesion_ml": 29.1,
+    "volume_ml": 1598.3
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1568.8,
+    "lesion_outside_frac": 0.0091,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1579.8,
+    "lesion_outside_frac": 0.0079,
+    "added_beyond_hdbet_and_lesion_ml": 10.8,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1600.8,
+    "lesion_outside_frac": 0.0052,
+    "added_beyond_hdbet_and_lesion_ml": 32.1,
+    "hdbet_brain_removed_ml": 0.7
+   },
+   "hdbet2": {
+    "volume_ml": 1582.3,
+    "lesion_outside_frac": 0.0025,
+    "added_beyond_hdbet_and_lesion_ml": 29.1,
+    "hdbet_brain_removed_ml": 16.4
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1734.4,
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 168.0,
+    "hdbet_brain_removed_ml": 3.5
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1478.6,
+    "lesion_outside_frac": 0.0399,
+    "added_beyond_hdbet_and_lesion_ml": 17.8,
+    "hdbet_brain_removed_ml": 104.2
+   }
+  }
+ },
+ {
+  "subject": "sub-M2237",
+  "session": "ses-397",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 150.4,
+    "volume_ml": 1323.1
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0372,
+    "added_beyond_hdbet_and_lesion_ml": 17.8,
+    "volume_ml": 1188.7
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0317,
+    "added_beyond_hdbet_and_lesion_ml": 26.8,
+    "volume_ml": 1198.0
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1170.0,
+    "lesion_outside_frac": 0.056,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1180.9,
+    "lesion_outside_frac": 0.0448,
+    "added_beyond_hdbet_and_lesion_ml": 10.3,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1195.2,
+    "lesion_outside_frac": 0.0277,
+    "added_beyond_hdbet_and_lesion_ml": 24.6,
+    "hdbet_brain_removed_ml": 0.8
+   },
+   "hdbet2": {
+    "volume_ml": 1185.1,
+    "lesion_outside_frac": 0.0024,
+    "added_beyond_hdbet_and_lesion_ml": 22.7,
+    "hdbet_brain_removed_ml": 10.3
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1322.8,
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 150.4,
+    "hdbet_brain_removed_ml": 0.4
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1100.7,
+    "lesion_outside_frac": 0.031,
+    "added_beyond_hdbet_and_lesion_ml": 15.4,
+    "hdbet_brain_removed_ml": 86.0
+   }
+  }
+ },
+ {
+  "subject": "sub-M2281",
+  "session": "ses-570",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 202.2,
+    "volume_ml": 1464.4
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0787,
+    "added_beyond_hdbet_and_lesion_ml": 21.5,
+    "volume_ml": 1280.4
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.074,
+    "added_beyond_hdbet_and_lesion_ml": 33.7,
+    "volume_ml": 1292.8
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1258.4,
+    "lesion_outside_frac": 0.091,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1270.3,
+    "lesion_outside_frac": 0.0836,
+    "added_beyond_hdbet_and_lesion_ml": 11.6,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1290.3,
+    "lesion_outside_frac": 0.053,
+    "added_beyond_hdbet_and_lesion_ml": 30.4,
+    "hdbet_brain_removed_ml": 0.1
+   },
+   "hdbet2": {
+    "volume_ml": 1271.3,
+    "lesion_outside_frac": 0.0295,
+    "added_beyond_hdbet_and_lesion_ml": 19.8,
+    "hdbet_brain_removed_ml": 9.4
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1463.8,
+    "lesion_outside_frac": 0.0005,
+    "added_beyond_hdbet_and_lesion_ml": 202.2,
+    "hdbet_brain_removed_ml": 0.6
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1231.6,
+    "lesion_outside_frac": 0.0352,
+    "added_beyond_hdbet_and_lesion_ml": 23.3,
+    "hdbet_brain_removed_ml": 52.4
+   }
+  }
+ },
+ {
+  "subject": "sub-M2285",
+  "session": "ses-714",
+  "masks": {
+   "union": {
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 129.7,
+    "volume_ml": 1303.5
+   },
+   "cavity_r10": {
+    "lesion_outside_frac": 0.0003,
+    "added_beyond_hdbet_and_lesion_ml": 17.0,
+    "volume_ml": 1190.8
+   },
+   "cavity_r15": {
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 26.2,
+    "volume_ml": 1200.0
+   },
+   "hdbet1_fast": {
+    "volume_ml": 1173.8,
+    "lesion_outside_frac": 0.0021,
+    "added_beyond_hdbet_and_lesion_ml": 0.0,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_fast_closed": {
+    "volume_ml": 1183.4,
+    "lesion_outside_frac": 0.0007,
+    "added_beyond_hdbet_and_lesion_ml": 9.6,
+    "hdbet_brain_removed_ml": 0.0
+   },
+   "hdbet1_accurate": {
+    "volume_ml": 1198.5,
+    "lesion_outside_frac": 0.0001,
+    "added_beyond_hdbet_and_lesion_ml": 24.8,
+    "hdbet_brain_removed_ml": 0.2
+   },
+   "hdbet2": {
+    "volume_ml": 1187.3,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 22.5,
+    "hdbet_brain_removed_ml": 9.0
+   },
+   "synthstrip_csf": {
+    "volume_ml": 1302.1,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 129.7,
+    "hdbet_brain_removed_ml": 1.4
+   },
+   "synthstrip_nocsf": {
+    "volume_ml": 1129.5,
+    "lesion_outside_frac": 0.0,
+    "added_beyond_hdbet_and_lesion_ml": 13.6,
+    "hdbet_brain_removed_ml": 58.0
+   }
+  }
+ }
+]

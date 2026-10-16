@@ -17,7 +17,7 @@ def test_cached_coreg_and_masks_share_layers_and_controls(tmp_path):
     with patch('calmar.overlay.reference_edges', return_value=path):
         panel = mask_review(helpers, 'review', [dict(data=image.to_bytes(),name='T1'),
             dict(data=image.to_bytes(),name='Manual',colormap='blue',opacity=.5),
-            dict(data=image.to_bytes(),name='LINDA',colormap='red',opacity=.85)], coreg_path=path)
+            dict(data=image.to_bytes(),name='LINDA',colormap='red',opacity=.85)], coreg_path=path, edge_path=path)
     try:
         original = list(viewer.volumes)
         assert panel.review_mode.value == 'coreg'

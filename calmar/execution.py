@@ -1,7 +1,6 @@
 """Explicit notebook checkpoints, including clients that continue after errors."""
 
 from IPython import get_ipython
-from IPython.core.error import InputRejected
 from IPython.display import display, Markdown
 import ast
 import json
@@ -164,7 +163,7 @@ def recovery_instructions(action):
 
 
 class ExecutionCheckpoint:
-    """Reject later cells until a widget click releases this kernel's checkpoint.
+    """Skip later cells until a widget click releases this kernel's checkpoint.
 
     Widget comm messages remain available while cell execution is blocked.
     Raising an exception alone depends on the client's stop_on_error setting.
@@ -199,7 +198,13 @@ class ExecutionCheckpoint:
                 return lines
             hint = (f" If widgets are unavailable, run %calmar_continue {action} "
                     "by itself in a temporary code cell." if action else "")
-            raise InputRejected(self.rejection_message + hint)
+            # Some clients keep sending Run All requests after the pause.
+            # Do not execute their contents or flood the notebook with error
+            # tracebacks for an intentional checkpoint.
+            if not getattr(self, '_pause_notice_shown', False):
+                print(self.rejection_message + hint)
+                self._pause_notice_shown = True
+            return ['pass\n']
         return lines
 
     def _cancel_queued(self):

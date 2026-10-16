@@ -22,34 +22,23 @@ class Viewer(widgets.HTML):
 
 
 class AlignmentDisplayTests(unittest.TestCase):
-    def test_comparison_cell_prepares_manual_mni_for_disconnectome_cells(self):
-        root = Path(__file__).resolve().parents[1]
-        cells = {c["id"]: c for c in json.loads((root / "lesion-interpretation-pipeline.ipynb").read_text())["cells"]}
-        with tempfile.TemporaryDirectory() as td:
-            folder = Path(td)
-            t1, manual = folder / "T1w.nii.gz", folder / "manual.nii.gz"
-            img = nib.Nifti1Image(np.ones((3, 3, 3), dtype=np.uint8), np.eye(4))
-            nib.save(img, t1); nib.save(img, manual)
-            calls = []
-            def warp(linda_dir, native, output, **kwargs):
-                calls.append((linda_dir, native, output))
-                nib.save(nib.load(native), output)
-                return 0
-            ns = dict(RUN_TEST=True, TEST_SUBJECT_IDX=0, Path=Path, nib=nib, np=np,
-                      SUBJECTS=[dict(subject="sub-test", session="ses-1", t1w=t1)],
-                      CONFIG=dict(MANUAL_MASK_PATH=str(manual), MANUAL_MASK_SPACE="t1",
-                                  OVERWRITE=False),
-                      deriv_path_for=lambda e: folder,
-                      synthstroke_path_for=lambda e: folder / "synth",
-                      q=SimpleNamespace(warp_native_mask_to_mni=warp),
-                      importlib=SimpleNamespace(reload=lambda obj: obj),
-                      image=SimpleNamespace(resample_to_img=lambda a, b, **kw: a),
-                      HTML=lambda text: text, display=lambda *args: None, cw=None)
-            with patch("shutil.which", return_value=None), patch("calmar.overlay.mask_review"):
-                exec("".join(cells["calmar-step-30"]["source"]), ns)
-            self.assertEqual(len(calls), 1)
-            self.assertEqual(calls[0][2], folder / "ExpertMask_in_MNI.nii.gz")
-            self.assertTrue(calls[0][2].exists())
+    def test_comparison_is_read_only_and_manual_processing_precedes_it(self):
+        from calmar.guided import source_cell
+        from unittest.mock import Mock
+        namespace = {"RUN_TEST": True, "SUBJECTS": [{"subject": "sub-a"}], "TEST_SUBJECT_IDX": 0,
+                     "study": None, "BATCH_TIMINGS": {}}
+        # Manual-mask processing is its own step after SynthStroke; its viewer and
+        # summary replace the separate registration/mask review cell.
+        from calmar.guided import notebook_cells
+        ids = [c.get("id") for c in notebook_cells()]
+        self.assertLess(ids.index("calmar-step-27"), ids.index("calmar-manual"))
+        self.assertNotIn("calmar-step-30", ids)
+        run = Mock()
+        namespace.update(submit_step=run, show_step=Mock())
+        if True:
+            exec("".join(source_cell(27)["source"]), namespace)
+            exec("".join(next(c for c in notebook_cells() if c.get("id") == "calmar-manual")["source"]), namespace)
+        self.assertEqual([c.args[0] for c in run.call_args_list], ["synthstroke", "manual"])
 
     def test_sparse_overlays_have_binary_ranges_and_independent_controls(self):
         viewer = NiiVue()
@@ -91,15 +80,15 @@ class AlignmentDisplayTests(unittest.TestCase):
     def test_new_subject_and_all_mask_settings(self):
         root = Path(__file__).resolve().parents[1]
         n = json.loads((root / "lesion-interpretation-pipeline.ipynb").read_text())
-        source = "".join(n["cells"][11]["source"])
+        source = "".join(next(c for c in n["cells"] if c.get("id") == "calmar-step-12")["source"])
         assignment = next(node for node in ast.parse(source).body
                           if isinstance(node, ast.Assign) and any(
                               isinstance(t, ast.Name) and t.id == "CONFIG" for t in node.targets))
         ns = {"Path": Path}
         exec(compile(ast.Module(body=[assignment], type_ignores=[]), "config", "exec"), ns)
         config = ns["CONFIG"]
-        self.assertCountEqual(config["SUBJECT_FILTER"], ["sub-M2001", "sub-M2075", "sub-M2077"])
-        self.assertCountEqual(config["SESSION_FILTER"], ["ses-1076", "ses-602", "ses-250"])
+        self.assertCountEqual(config["SUBJECT_FILTER"], ["sub-M2103", "sub-M2205", "sub-M2002"])
+        self.assertCountEqual(config["SESSION_FILTER"], ["ses-222", "ses-429", "ses-1440"])
         self.assertEqual(config["MAX_SUBJECTS"], 3)
         self.assertEqual(config["BCB_MASKS"], "all")
         self.assertEqual(config["DEEPDISCO_MASK_SOURCE"], "all")

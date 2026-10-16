@@ -87,51 +87,52 @@ class QCDecisionTests(unittest.TestCase):
         self.assertTrue(gate.skip_qc.disabled)
 
     def test_skip_notice_is_in_exported_pdf(self):
-        import datetime
         import fitz
-        import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
         import pandas as pd
+        from calmar.atlas_pdf import write_atlas_pdf
         from calmar.qc_decisions import report_qc_text
         record_qc_choice(self.directory, self.entry, "skipped", "pdf-choice")
+        # The notebook's export button passes exactly this QC text (calmar.atlas_pdf.attach_pdf_export).
         notebook = json.loads((ROOT / "lesion-interpretation-pipeline.ipynb").read_text())
-        tree = ast.parse("".join(next(c for c in notebook["cells"] if c["id"] == "calmar-step-75")["source"]))
-        function = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "write_pdf")
-        ns = dict(_pdf_dir=self.root, plt=plt, PdfPages=PdfPages, datetime=datetime.datetime,
-                  deriv_path_for=lambda e:self.directory, report_qc_text=report_qc_text)
-        exec(compile(ast.Module(body=[function],type_ignores=[]),'pdf-function','exec'),ns)
+        self.assertIn("attach_pdf_export", "".join(next(c for c in notebook["cells"] if c["id"] == "calmar-step-75")["source"]))
         frame = pd.DataFrame([dict(subject='sub-test',session='ses-1',region='fixture',
             lesion_in_roi_percent=100.,roi_coverage_percent=2.,overlap_voxels=3,total_lesion_voxels=3)])
-        path = ns['write_pdf']('sub-test','ses-1',frame,'fixture')
+        path = write_atlas_pdf('sub-test','ses-1',frame,'fixture', pdf_dir=self.root,
+                               qc_text=report_qc_text(self.directory, self.entry))
         with fitz.open(path) as document:
             self.assertIn('QC was skipped by the user.', document[0].get_text())
 
     def test_skip_note_is_in_actual_report_export_and_inline_title(self):
+        from calmar.participant_report import save_report
+        from calmar.qc_decisions import report_qc_notice
         record_qc_choice(self.directory, self.entry, "skipped", "checkpoint-1")
-        notebook = json.loads((ROOT / "lesion-interpretation-pipeline.ipynb").read_text())
-        tree = ast.parse("".join(next(c for c in notebook["cells"] if c["id"] == "calmar-step-81")["source"]))
-        report_branch = next(node.orelse for node in tree.body
-                             if isinstance(node, ast.If) and node.orelse
-                             and any(isinstance(n, ast.ImportFrom) and n.module == "calmar.qc_decisions"
-                                     for n in node.orelse))
-        start = next(i for i, node in enumerate(report_branch)
-                     if isinstance(node, ast.ImportFrom) and node.module == "calmar.qc_decisions")
-        end = next(i for i, node in enumerate(report_branch[start:], start)
-                   if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
-                   and isinstance(node.value.func, ast.Attribute) and node.value.func.attr == "write_text")
-        displayed = []
-        namespace = dict(INTERP_MASK_SOURCE="manual", e=self.entry, deriv_path_for=lambda e: self.directory,
-                         _title_card="<h1>Test report</h1>", html_body="<p>Results</p>",
-                         _lesion_overlay_img_tag=lambda: "", REPORTS_DIR=self.root / "reports",
-                         display=displayed.append, HTML=lambda text: text)
-        exec(compile(ast.Module(body=report_branch[start:end+1], type_ignores=[]), "report-export", "exec"), namespace)
-        html = namespace["_rpt_path"].read_text()
+        qc_notice = report_qc_notice(self.directory, self.entry)
+        path, page, inline = save_report(self.entry, "manual", self.root / "reports", "<h1>Test report</h1>",
+                                         qc_notice, "<div>Provenance</div>", "", "<p>Results</p>")
+        html = path.read_text()
+        self.assertEqual(html, page)
         self.assertIn("QC was skipped by the user", html)
-        self.assertIn("QC was skipped by the user", namespace["html"])
+        self.assertIn("QC was skipped by the user", inline)
         self.assertIn('<div role="note"', html)
         # The note is in the report body, not the no-print toolbar.
-        self.assertIn(namespace["_qc_notice"], namespace["html"])
-
+        self.assertIn(qc_notice, inline)
+        self.assertLess(html.index("</div>\n<h1>Test report</h1>"), html.index(qc_notice))
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_clear_stage_really_clears_and_backups_are_not_summarised(tmp_path):
+    import nibabel as nib, numpy as np
+    from calmar import qc as q
+    mask = tmp_path / 'sub-a' / 'anat' / 'Lesion_in_MNI.nii.gz'
+    mask.parent.mkdir(parents=True)
+    nib.save(nib.Nifti1Image(np.zeros((2, 2, 2), 'uint8'), np.eye(4)), mask)
+    rec = q.QCRecord.load(mask)
+    rec.set_stage('skull_strip', rating=3); rec.set_stage('lesion', rating=2)
+    rec.save()
+    rec.clear_stage('skull_strip'); rec.clear_stage('lesion')
+    assert rec.get_stage('skull_strip')['rating'] is None and rec.rating is None
+    backup = tmp_path / 'sub-a' / 'anat.previous.123' / 'Lesion_in_MNI.qc.json'
+    backup.parent.mkdir(); backup.write_text(q.sidecar_path_for(mask).read_text())
+    assert [p.parent.name for p in q._current_sidecars(tmp_path)] == ['anat']

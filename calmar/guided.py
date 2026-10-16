@@ -21,11 +21,24 @@ def notebook_cells():
     return json.loads(NOTEBOOK.read_text())["cells"]
 
 
-def source_cell(number, cells=None):
-    cells = notebook_cells() if cells is None else cells
+def cell_id(key):
+    """A notebook cell id, from the id itself or a legacy cell number."""
+    if isinstance(key, str) and key.startswith("calmar-"):
+        return key
     mapping = json.loads(Path(__file__).with_name("workflow_cells.json").read_text())
-    wanted = mapping[str(number)]
+    return mapping[str(key)]
+
+
+def source_cell(number, cells=None):
+    """The detailed notebook's cell, by id ("calmar-...") or legacy number."""
+    cells = notebook_cells() if cells is None else cells
+    wanted = cell_id(number)
     return next(cell for cell in cells if cell.get("id") == wanted)
+
+
+# Cells of the optional single-subject test (their titles are hidden when skipped).
+TEST_CELLS = {"calmar-step-23", "calmar-step-25", "calmar-step-27", "calmar-manual",
+              "calmar-step-32", "calmar-step-34", "calmar-step-35", "calmar-step-39"}
 
 
 def defaults():
@@ -58,12 +71,14 @@ async def run_cells(numbers, namespace, *, stop_at=None):
     """
     cells = notebook_cells()
     shell = get_ipython()
+    stop_at = cell_id(stop_at) if stop_at is not None else None
     for number in numbers:
         cell = source_cell(number, cells)
+        number = cell["id"]
         if cell["cell_type"] != "code":
             raise ValueError(f"Cell {number} is not code")
         source = "".join(cell["source"])
-        if not (23 <= number <= 39 and not namespace.get("RUN_TEST", False)):
+        if not (number in TEST_CELLS and not namespace.get("RUN_TEST", False)):
             display(HTML(f"<small>{escape(step_title(cell['id']))}</small>"))
         started = time.perf_counter()
         try:
@@ -78,7 +93,7 @@ async def run_cells(numbers, namespace, *, stop_at=None):
                 return
             raise
         finally:
-            if number != 10:
+            if number != "calmar-step-10":
                 namespace.setdefault('STEP_TIMINGS', {})[cell['id']] = time.perf_counter() - started
 
 

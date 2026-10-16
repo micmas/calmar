@@ -73,15 +73,19 @@ def reference_edges(path):
     return target
 
 
-def mask_review(cw, key, volumes, *, coreg_path=None, metrics_html=''):
+def mask_review(cw, key, volumes, *, coreg_path=None, metrics_html='', edge_path=None,
+                prepare_edges=False, outlines=True):
     """One canvas for registration review followed by lesion-mask comparison."""
     specs = [dict(v) for v in volumes]
     has_coreg = coreg_path is not None and Path(coreg_path).is_file()
+    if has_coreg and edge_path is None and prepare_edges:
+        edge_path = reference_edges(coreg_path)
+    has_coreg = has_coreg and edge_path is not None and Path(edge_path).is_file()
     mask_opacities = [s.get('opacity', 1.) for s in specs[1:]]
     for spec in specs[1:]:
         spec.update(cal_min=.5, cal_max=1., opacity=0. if has_coreg else spec.get('opacity', 1.))
     if has_coreg:
-        specs.append(dict(path=str(reference_edges(coreg_path)), name='Registered scan edges',
+        specs.append(dict(path=str(edge_path), name='Registered scan edges',
                           colormap='warm', cal_min=.5, cal_max=1., opacity=1.))
     viewer = cw.fresh_viewer(key, height=440)
     viewer.load_volumes(cw.vols(specs))
@@ -104,7 +108,8 @@ def mask_review(cw, key, volumes, *, coreg_path=None, metrics_html=''):
             'Check that the registered reference-scan edges follow the T1 anatomy, especially '
             'the ventricles and cortex. Use Scan edges to fade the overlay, then select Lesion masks.'
             if coreg else colors.legend([s.get('name', '').lower() for s in volumes[1:]]) +
-            '<br>Manual mask is filled; automatic masks are outlines. Toggle each mask to compare.' +
+            ('<br>Manual mask is filled; automatic masks are outlines. Toggle each mask to compare.' if outlines
+             else '<br>Toggle each filled mask to compare.') +
             ('' if has_coreg else '<br>No reference-scan coregistration is available for this comparison.'))
         # Visibility updates keep the same layers, canvas and slice position.
         for i, (control, value) in enumerate(zip(masks, mask_opacities), 1):
