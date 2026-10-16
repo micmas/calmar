@@ -53,6 +53,9 @@ MODEL_LABELS = {"whole_brain": "Whole brain", "association": "Association",
 HINTS = {"brain": "The brain mask should cover all brain tissue, including a lesion cavity, and no skull, scalp or neck.",
          "linda": "The lesion should follow the infarct; check for missed parts and spill into ventricles or CSF.",
          "synthstroke": "Compare with LINDA by ticking its layer.",
+         "registration": "The T1w warped to the MNI152 template: its brain should fill the cyan template brain "
+                         "outline, with ventricles and cortex in the same places. Every template-space mask, "
+                         "disconnectome and atlas overlap relies on this registration.",
          "manual": "The manual mask (registered to this T1w) is the reference for both automatic masks. "
                    "Tick the registered reference scan on and off: its anatomy should line up with the T1w; "
                    "if not, the manual mask is misplaced and the Dice scores are meaningless.",
@@ -104,12 +107,21 @@ def step_layers(stage, entry, study):
                 layers.append(_layer(f"{cm.MASK_LABELS[source]} lesion", source, path, "lesion", shown))
         if stage == "linda" and brain is not None:
             layers.append(_layer("Brain mask", "hdbet", brain, "mask", False))
-        reference = Path(d["linda"]) / "_manual_mask_compare" / "T2_in_T1_sitk.nii.gz"
+        reference = Path(d["template"]) / "_manual_mask_compare" / "T2_in_T1_sitk.nii.gz"
         if stage == "manual" and cm.present(reference):
             layers.append(_layer("Registered reference scan", "reference", reference, "scan", False))
+    elif stage == "registration":
+        # Template registration without LINDA: the warped T1 against MNI152.
+        from . import templates
+        background = Path(d["registration"]) / "Subject_in_MNI.nii.gz"
+        layers.append(_layer("MNI152 brain", "template", templates.BRAIN_MASK, "mask",
+                             colormap="cyan", css=cc.CSS["cyan"]))
+        lesion = study.masks(entry).get("synthstroke", {}).get("MNI")
+        if cm.present(lesion):
+            layers.append(_layer("SynthStroke lesion", "synthstroke", lesion, "lesion"))
     elif stage == "compare":
         # BCBToolkit and DeepDisco maps of one lesion source, each with its own checkbox.
-        background = Path(d["linda"]) / "Subject_in_MNI.nii.gz"
+        background = Path(d["template"]) / "Subject_in_MNI.nii.gz"
         for source, token in SOURCE_TOKENS.items():
             lesion = study.masks(entry).get(source, {}).get("MNI")
             if cm.present(lesion):
@@ -124,7 +136,7 @@ def step_layers(stage, entry, study):
                                          group=source, variant=model, role="deepdisco"))
     elif stage in ("bcb", "deepdisco"):
         # One lesion source at a time: its map and its lesion are shown together.
-        background = Path(d["linda"]) / "Subject_in_MNI.nii.gz"
+        background = Path(d["template"]) / "Subject_in_MNI.nii.gz"
         for source, token in SOURCE_TOKENS.items():
             if stage == "bcb":
                 maps = [("BCBToolkit map", "bcbtoolkit", Path(d["bcbtoolkit"]) / f"Disconnectome_{token}.nii.gz", "")]

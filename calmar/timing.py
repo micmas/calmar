@@ -52,7 +52,9 @@ def step_title(key):
     match = re.fullmatch(r'calmar-step-(\d+)', key)
     named = {'calmar-test-participant': 'Choose single-subject participant',
              'calmar-acquire': 'Fetch image content (datalad get)',
-             'calmar-manual': 'Manual mask registration — single subject'}
+             'calmar-manual': 'Manual mask registration — single subject',
+             'calmar-registration': 'Template registration (ANTs) — single subject',
+             'calmar-batch-registration': 'Template registration (ANTs) — all participants'}
     if not match and key not in named:
         return key
     title = TITLES.get(int(match[1]), 'Notebook step') if match else named[key]

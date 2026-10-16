@@ -26,6 +26,7 @@ def study(tmp_path):
     masks = {'linda': {'T1w': save(d['linda']/'Prediction3_native.nii.gz'),
                        'MNI': save(d['linda']/'Lesion_in_MNI.nii.gz')},
              'synthstroke': {'T1w': save(d['synthstroke']/'prediction_lesion_mask.nii.gz')}}
+    d['template'] = d['linda']
     return SimpleNamespace(dirs=lambda e: d, hdbet_dir=lambda e: d['hdbet'], masks=lambda e: masks)
 
 

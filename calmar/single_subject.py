@@ -16,7 +16,9 @@ def processing_status(entry, namespace):
     synth = Path(namespace['synthstroke_path_for'](entry))
     brain = Path(namespace['hdbet_path_for'](entry))
     present = lambda p: p.is_file() and p.stat().st_size > 0
-    if present(linda/'Lesion_in_MNI.nii.gz') and present(synth/'prediction_lesion_mask.nii.gz'):
+    from calmar.study import segmentation_methods
+    wanted = {'linda': linda/'Lesion_in_MNI.nii.gz', 'synthstroke': synth/'SynthStroke_in_MNI.nii.gz'}
+    if all(present(wanted[m]) for m in segmentation_methods(namespace.get('CONFIG', {}))):
         return 'Segmentations available'
     if any(present(p) for folder in (linda, synth, brain) for p in folder.glob('*.nii.gz')):
         return 'Partly processed'

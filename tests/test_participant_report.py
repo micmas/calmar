@@ -32,7 +32,7 @@ def fixture(tmp_path):
              "synthstroke": _mask(synth/"SynthStroke_in_MNI.nii.gz", np.s_[2:6, 2:6, 3:7])}
     _mask(linda/"Subject_in_MNI.nii.gz", np.s_[:, :, :])
     study = SimpleNamespace(mni_sources=lambda e: list(masks), mni_mask=lambda e, s: masks[s],
-                            linda_dir=lambda e: linda, lesion_mni=lambda e: masks["linda"])
+                            linda_dir=lambda e: linda, template_dir=lambda e: linda, lesion_mni=lambda e: masks["linda"])
     dataset = tmp_path/"data"; dataset.mkdir()
     (dataset/"participants.tsv").write_text(
         "participant_id\tsex\tage_at_stroke\twab_days\twab_aq\twab_type\n"
