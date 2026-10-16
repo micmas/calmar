@@ -3,6 +3,7 @@
 import ast
 import inspect
 import json
+import time
 from html import escape
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from IPython import get_ipython
 from IPython.display import display, HTML
 from .execution import ExecutionCheckpoint
 from .notebook_navigation import NotebookNavigation
+from .timing import step_title
 
 NOTEBOOK = Path(__file__).resolve().parents[1] / "lesion-interpretation-pipeline.ipynb"
 
@@ -19,11 +21,24 @@ def notebook_cells():
     return json.loads(NOTEBOOK.read_text())["cells"]
 
 
-def source_cell(number, cells=None):
-    cells = notebook_cells() if cells is None else cells
+def cell_id(key):
+    """A notebook cell id, from the id itself or a legacy cell number."""
+    if isinstance(key, str) and key.startswith("calmar-"):
+        return key
     mapping = json.loads(Path(__file__).with_name("workflow_cells.json").read_text())
-    wanted = mapping[str(number)]
+    return mapping[str(key)]
+
+
+def source_cell(number, cells=None):
+    """The detailed notebook's cell, by id ("calmar-...") or legacy number."""
+    cells = notebook_cells() if cells is None else cells
+    wanted = cell_id(number)
     return next(cell for cell in cells if cell.get("id") == wanted)
+
+
+# Cells of the optional single-subject test (their titles are hidden when skipped).
+TEST_CELLS = {"calmar-step-23", "calmar-step-25", "calmar-step-27", "calmar-manual",
+              "calmar-step-32", "calmar-step-34", "calmar-step-35", "calmar-step-39"}
 
 
 def defaults():
@@ -56,13 +71,16 @@ async def run_cells(numbers, namespace, *, stop_at=None):
     """
     cells = notebook_cells()
     shell = get_ipython()
+    stop_at = cell_id(stop_at) if stop_at is not None else None
     for number in numbers:
         cell = source_cell(number, cells)
+        number = cell["id"]
         if cell["cell_type"] != "code":
             raise ValueError(f"Cell {number} is not code")
         source = "".join(cell["source"])
-        if not (23 <= number <= 39 and not namespace.get("RUN_TEST", False)):
-            display(HTML(f"<small>Processing step {number}</small>"))
+        if not (number in TEST_CELLS and not namespace.get("RUN_TEST", False)):
+            display(HTML(f"<small>{escape(step_title(cell['id']))}</small>"))
+        started = time.perf_counter()
         try:
             transformed = shell.transform_cell(source)
             compiled = compile(transformed, f"{NOTEBOOK.name}:cell-{number}", "exec",
@@ -74,6 +92,9 @@ async def run_cells(numbers, namespace, *, stop_at=None):
             if number == stop_at and isinstance(error, namespace.get("StopExecution", type(None))):
                 return
             raise
+        finally:
+            if number != "calmar-step-10":
+                namespace.setdefault('STEP_TIMINGS', {})[cell['id']] = time.perf_counter() - started
 
 
 def action_button(label, role, *, all_below=False):
@@ -135,8 +156,6 @@ def show_inputs(namespace):
     fields["MAX_SUBJECTS"] = w.BoundedIntText(value=cfg["MAX_SUBJECTS"] or 0, min=0, max=100000,
         description="Participant limit (0 = all):", style=style)
     check("RUN_TEST", "Run a single-subject test before batch")
-    fields["TEST_SUBJECT_IDX"] = w.BoundedIntText(value=cfg["TEST_SUBJECT_IDX"], min=0, max=99999,
-        description="Test participant index (0 = first):", style=style)
     check("OVERWRITE", "Replace existing processing outputs")
     check("RANDOM_SAMPLE", "Randomly sample participants")
     text("MANUAL_MASK_PATH", "Manual mask (blank = discover):")
@@ -153,7 +172,6 @@ def show_inputs(namespace):
     single_input = w.VBox([fields["SINGLE_T1W"]])
     cohort_inputs = w.VBox([fields[key] for key in (
         "SUBJECT_FILTER", "SESSION_FILTER", "MAX_SUBJECTS", "RANDOM_SAMPLE")])
-    test_index = w.VBox([fields["TEST_SUBJECT_IDX"]])
 
     def update_input_mode(*_):
         mode = fields["DATASET_SOURCE"].value
@@ -162,7 +180,6 @@ def show_inputs(namespace):
             (local_inputs, mode in ("local", "flat")),
             (single_input, mode == "single"),
             (cohort_inputs, mode != "single"),
-            (test_index, mode != "single"),
         ):
             section.layout.display = "" if visible else "none"
 
@@ -225,13 +242,13 @@ def show_inputs(namespace):
             return False
     start.on_click(lambda _: nav.request("guided-start", prepare,
         prompt="Start processing with these inputs? The workflow will pause at QC."))
-    sections = [openneuro_inputs, local_inputs, single_input, cohort_inputs, test_index]
+    sections = [openneuro_inputs, local_inputs, single_input, cohort_inputs]
     gate.controls = [*fields.values(), *sections, sampling_note, start, message, nav]
     display(w.VBox([w.HTML("<b>Inputs and options</b> — leave manual mask blank to use dataset reference masks. "
                           "Leave both OpenNeuro participant/session fields blank for random selection."),
                     fields["DATASET_SOURCE"], fields["PROJECT_DIR"],
                     openneuro_inputs, local_inputs, single_input, cohort_inputs, sampling_note,
-                    fields["RUN_TEST"], test_index, fields["OVERWRITE"],
+                    fields["RUN_TEST"], fields["OVERWRITE"],
                     fields["MANUAL_MASK_PATH"], fields["MANUAL_MASK_SPACE"], fields["MANUAL_MASK_REF"],
                     fields["HDBET_MODE"], fields["SYNTHSTROKE_TTA"], start, message, nav]))
     gate._cancel_queued()

@@ -1,0 +1,257 @@
+id: workflow_acceptance
+version: "0.0.14"
+name: Fresh-cohort CALMaR workflow acceptance
+description: >
+  Complete sub-M2077/ses-250 and inspect it alongside the existing
+  sub-M2001/ses-1076 and sub-M2075/ses-602 derivatives. Preserve existing
+  masks, QC ratings and reports. The processing request pins ds004884 tag
+  1.0.2 and its cohort; scripts submit from the project root. New jobs use
+  hdbet/1.0.0 (fast, CPU, no TTA), linda/0.5.1 (brain-mask bypass;
+  R reports 3.6.1), synthstroke/0.0.0 (synth-plus), bcbtoolkit/0.0.0,
+  deepdisco/20251008 (three mask sources, four models), fsl/6.0.7.22.
+  Python 3.13.15 validates and publishes derivatives and stage manifests.
+  Segmentation uses the existing brain-mask dilation of two voxels and
+  nearest-neighbour native-to-Penn-to-ch2 transforms. Cached legacy
+  derivatives are identified explicitly; their presence is not new execution
+  provenance or completed scientific QC. Acquisition is performed by
+  src/analysis_22_acquisition.sh against the existing pinned DataLad checkout.
+inputs:
+  - id: bcb_request
+    type: data
+    source: workflow-acceptance/bcb-request.json
+    description: >
+      BCB-only retry after correcting Tractotron to the actual bundled atlas
+      grid (157x189x136, 1 mm), rather than assuming the module help's 2 mm.
+      Replacement preserves the completed first-attempt disconnectome and
+      its sidecars; segmentation masks and legacy participants are unchanged.
+  - id: decode_request
+    type: data
+    source: workflow-acceptance/decode-request.json
+    description: Neurosynth decoding of the fresh participant's SynthStroke MNI mask, using the existing local knowledge base and cache.
+  - id: preview_request
+    type: data
+    source: workflow-acceptance/preview-request.json
+    description: Static report overlay for the same participant and SynthStroke mask.
+  - id: overlap_request
+    type: data
+    source: workflow-acceptance/overlap-request.json
+    description: Three-participant, three-mask atlas-overlap request using the published atlas descriptors.
+  - id: atlas_request
+    type: data
+    source: workflow-acceptance/atlas-request.json
+    description: Existing five-atlas selection; acquire through the retained reporting job and preserve the atlas cache.
+  - id: inspection_request
+    type: data
+    source: workflow-acceptance/inspection-request.json
+    description: Portable three-participant inspection request; existing products retain their historical provenance.
+  - id: request
+    type: data
+    source: workflow-acceptance/request.json
+    description: Explicit dataset, participant/session/T1 and processing configuration.
+decisions:
+  lesion_threshold:
+    label: Lesion threshold for atlas overlap
+    rationale: Preserve the configured threshold of 0.5 for binary lesion masks and nearest-neighbour resampling.
+    default: half
+    options:
+      half:
+        label: Foreground greater than 0.5
+  brain_mode:
+    label: HD-BET ensemble
+    rationale: Retain the existing fast CPU mode for cohort comparability.
+    default: fast
+    options:
+      fast:
+        label: Fast (one model, no TTA)
+      accurate:
+        label: Accurate (five models, no TTA)
+  tta:
+    label: SynthStroke augmentation
+    rationale: Retain synth-plus with test-time augmentation as configured previously.
+    default: enabled
+    options:
+      enabled:
+        label: Enabled (--tta)
+      disabled:
+        label: Disabled (no --tta)
+  registration_seed:
+    label: Rigid-registration sampling seed
+    rationale: >
+      Existing registrations are retained. New registrations use the same
+      Mattes mutual-information algorithm with an explicit random seed,
+      replacing wall-clock seeding so a rerun can reproduce the sampling.
+    default: seed1729
+    options:
+      seed1729:
+        label: Fixed sampling (seed 1729)
+      seed42:
+        label: Alternative sampling (seed 42)
+outputs:
+  - id: decoding
+    type: data
+    format: directory
+    description: Serialized atlas and Neurosynth decoding results, including availability and warnings; incomplete decoding is not called successful.
+    inputs: [decode_request, synthstroke]
+    recipe:
+      command: bash src/analysis_35_reporting.sh {inputs.decode_request} {output}
+      container: python:3.13.15
+  - id: report_preview
+    type: data
+    format: directory
+    description: PNG of the selected lesion on anatomy and a glass-brain projection for report export.
+    inputs: [preview_request, synthstroke, linda]
+    recipe:
+      command: bash src/analysis_35_reporting.sh {inputs.preview_request} {output}
+      container: python:3.13.15
+  - id: atlas_overlap
+    type: data
+    format: directory
+    description: Fresh overlap tables and explicit zero/missing statuses for five atlases and three mask sources across the cohort.
+    inputs: [overlap_request, reporting, synthstroke, manual]
+    decisions: [lesion_threshold]
+    recipe:
+      command: CALMAR_LESION_THRESHOLD={decisions.lesion_threshold} bash src/analysis_35_reporting.sh {inputs.overlap_request} {output}
+      container: python:3.13.15
+  - id: reporting
+    type: data
+    format: directory
+    description: Published atlas images and explicit integer-label mappings for scheduler-based overlap and reporting.
+    inputs: [atlas_request]
+    recipe:
+      command: bash src/analysis_35_reporting.sh {inputs.atlas_request} {output}
+      container: python:3.13.15
+  - id: acquisition
+    type: data
+    format: directory
+    description: Validated T1, manual mask and its reference scan; acquisition summary.
+    inputs: [request]
+    recipe:
+      command: bash src/analysis_22_acquisition.sh {inputs.request} {output}
+      container: python:3.13.15
+  - id: brain
+    type: data
+    format: directory
+    description: Atomic HD-BET derivatives and manifest with numerical validation.
+    inputs: [request, acquisition]
+    decisions: [brain_mode]
+    recipe:
+      command: CALMAR_HDBET_MODE={decisions.brain_mode} bash src/analysis_23_brain.sh {inputs.request} {output} {inputs.acquisition}
+      container: python:3.13.15
+  - id: linda
+    type: data
+    format: directory
+    description: Atomic LINDA derivatives and manifest, including native and MNI images.
+    inputs: [request, brain]
+    recipe:
+      command: bash src/analysis_24_linda.sh {inputs.request} {output} {inputs.brain}
+      container: python:3.13.15
+  - id: synthstroke
+    type: data
+    format: directory
+    description: Atomic synth-plus derivatives, MNI mask and manifest.
+    inputs: [request, linda]
+    decisions: [tta]
+    recipe:
+      command: CALMAR_TTA={decisions.tta} bash src/analysis_25_synthstroke.sh {inputs.request} {output} {inputs.linda}
+      container: python:3.13.15
+  - id: manual
+    type: data
+    format: directory
+    description: Registered manual mask, reference scan, MNI mask and manifest.
+    inputs: [request, linda]
+    decisions: [registration_seed]
+    recipe:
+      command: CALMAR_REGISTRATION_SEED={decisions.registration_seed} bash src/analysis_26_manual.sh {inputs.request} {output} {inputs.linda}
+      container: python:3.13.15
+  - id: bcb
+    type: data
+    format: directory
+    description: BCB disconnectomes for LINDA, SynthStroke and manual masks, with manifest.
+    inputs: [bcb_request, synthstroke, manual]
+    recipe:
+      command: bash src/analysis_27_bcb.sh {inputs.bcb_request} {output} {inputs.synthstroke} {inputs.manual}
+      container: python:3.13.15
+  - id: deepdisco
+    type: data
+    format: directory
+    description: Twelve DeepDisco maps (three mask sources, four models), with manifest.
+    inputs: [request, synthstroke, manual]
+    recipe:
+      command: bash src/analysis_28_deepdisco.sh {inputs.request} {output} {inputs.synthstroke} {inputs.manual}
+      container: python:3.13.15
+  - id: inspection
+    type: data
+    format: directory
+    description: >
+      Numerical checks, native agreement metrics, registered T2-edge overlays,
+      and native/MNI/BCB/four-model DeepDisco PNG overlays for all three
+      participants and three lesion sources. The 69 individual overlays and
+      six contact sheets are inspection artifacts, not new segmentation
+      provenance. The generated summary records pending visual review; the
+      subsequent review and its flags are recorded in findings below.
+    inputs: [inspection_request, bcb, deepdisco]
+    recipe:
+      command: bash src/analysis_32_inspect_acceptance.sh {inputs.inspection_request} {output} {inputs.bcb} {inputs.deepdisco}
+      container: python:3.13.15
+findings:
+  image_integrity_and_visual_review:
+    label: Complete inspection with QC flags
+    claim: >
+      All 69 inspected images were finite and nonempty, and all disconnectome
+      values were within [0,1]. Six contact sheets were visually reviewed;
+      the sampled anatomy/registration views showed no gross displacement,
+      but segmentation disagreement remains and is not an automatic QC pass.
+    created_at: 2026-10-08T01:04:33Z
+    scope: >
+      Three orthogonal planes per image; sub-M2077 was processed afresh,
+      while sub-M2001 and sub-M2075 retain legacy execution provenance.
+      This inspection does not establish full-volume or clinical validity.
+    evidence:
+      - id: integrity_metrics
+        artifact: inspection
+        snapshot: workflow-acceptance/inspection/metrics.json
+      - id: fresh_mask_sheet
+        artifact: inspection
+        snapshot: workflow-acceptance/inspection/sub-M2077_ses-250_masks_contact.png
+      - id: fresh_disconnectome_sheet
+        artifact: inspection
+        snapshot: workflow-acceptance/inspection/sub-M2077_ses-250_disconnectomes_contact.png
+  fresh_mask_agreement:
+    label: Fresh masks require review
+    claim: >
+      For sub-M2077/ses-250, native Dice against the registered manual mask
+      was 0.6087 for LINDA and 0.7851 for SynthStroke; volumes were 73.406,
+      33.021 and 46.483 mL for LINDA, SynthStroke and manual respectively.
+      Separate small LINDA regions are visible in the inspected native slices
+      and are flagged for review rather than removed automatically.
+    created_at: 2026-10-08T01:04:33Z
+    scope: >
+      Agreement with this registered manual reference, not a general model
+      ranking or independently adjudicated segmentation accuracy. Original
+      masks, manual edits and saved QC ratings were not changed by inspection.
+    evidence:
+      - id: fresh_agreement_scores
+        artifact: inspection
+        snapshot: workflow-acceptance/inspection/sub-M2077_ses-250_agreement/metrics.json
+      - id: fresh_linda_regions
+        artifact: inspection
+        snapshot: workflow-acceptance/inspection/sub-M2077_ses-250_linda_native.png
+  legacy_linda_disagreement:
+    label: Legacy M2075 LINDA QC flag
+    claim: >
+      For legacy sub-M2075/ses-602, LINDA volume was 103.519 mL versus
+      25.448 mL for the registered manual mask, with Dice 0.3587 and
+      precision 0.2235. This substantial disagreement is flagged for
+      participant-level mask review; the legacy result was preserved.
+    created_at: 2026-10-08T01:04:33Z
+    scope: >
+      Inspection of existing derivatives only. Legacy SynthStroke model
+      identity is not established uniformly across participants, so these
+      results do not support a cohort-wide comparison of model performance.
+    evidence:
+      - id: legacy_agreement_scores
+        artifact: inspection
+        snapshot: workflow-acceptance/inspection/sub-M2075_ses-602_agreement/metrics.json
+      - id: legacy_masks
+        artifact: inspection
+        snapshot: workflow-acceptance/inspection/sub-M2075_ses-602_masks_contact.png

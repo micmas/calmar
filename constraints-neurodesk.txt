@@ -1,0 +1,9 @@
+# Compatible with the existing numerical outputs and Neurodesk's Snakemake.
+numpy==2.3.5
+pandas==3.0.5
+scipy==1.15.3
+nibabel==5.4.2
+nilearn==0.13.1
+packaging==25.0
+scikit-learn==1.7.2
+setuptools<82

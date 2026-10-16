@@ -1,5 +1,6 @@
 """Atlas overlap, including laterality of the actual intersecting lesion voxels."""
 
+from contextlib import nullcontext
 from pathlib import Path
 import json
 import os
@@ -50,7 +51,7 @@ def calculate_overlap(lesion_path, atlas_img, atlas_data, atlas_labels, threshol
 
 
 def cached_overlap(csv, entries, mask_path, atlas_name, atlas_img, atlas_data,
-                   atlas_labels, threshold=.5, overwrite=False):
+                   atlas_labels, threshold=.5, overwrite=False, participant_timer=None):
     """Cache completed subject/session pairs even when no atlas ROI was hit.
 
     Legacy CSVs are refreshed once to add measured laterality. Source file
@@ -64,26 +65,29 @@ def cached_overlap(csv, entries, mask_path, atlas_name, atlas_img, atlas_data,
     atlas_digest = hashlib.sha256(np.asarray(atlas_data).tobytes() + atlas_img.affine.tobytes()).hexdigest()
     statuses = {}
     for entry in entries:
-        subject, session = entry['subject'], entry.get('session') or ''
-        key = json.dumps([subject, session])
-        path = Path(mask_path(entry))
-        selected = (df.subject == subject) & (df.session == session)
-        if not path.is_file():
-            df = df.loc[~selected]
-            statuses[key] = {'status': 'missing_mask'}
-            continue
-        stat = path.stat()
-        identity = [str(path.resolve()), stat.st_mtime_ns, stat.st_size, float(threshold), atlas_digest]
-        previous = state.get(key, {})
-        if not overwrite and set(SIDE_COLUMNS).issubset(df.columns) and previous.get('identity') == identity:
-            statuses[key] = previous
-            continue
-        overlaps, total = calculate_overlap(path, atlas_img, atlas_data, atlas_labels, threshold)
-        rows = [dict(subject=subject, session=session, atlas=atlas_name, region=region,
-                     total_lesion_voxels=total, **stats) for region, stats in overlaps.items()]
-        df = pd.concat([df.loc[~selected], pd.DataFrame(rows, columns=COLUMNS)], ignore_index=True)
-        statuses[key] = dict(status='complete', total_lesion_voxels=total,
-                             regions=len(rows), identity=identity)
+        with participant_timer(entry) if participant_timer else nullcontext({}) as timing:
+            subject, session = entry['subject'], entry.get('session') or ''
+            key = json.dumps([subject, session])
+            path = Path(mask_path(entry))
+            selected = (df.subject == subject) & (df.session == session)
+            if not path.is_file():
+                df = df.loc[~selected]
+                timing['status'] = 'Missing input'
+                statuses[key] = {'status': 'missing_mask'}
+                continue
+            stat = path.stat()
+            identity = [str(path.resolve()), stat.st_mtime_ns, stat.st_size, float(threshold), atlas_digest]
+            previous = state.get(key, {})
+            if not overwrite and set(SIDE_COLUMNS).issubset(df.columns) and previous.get('identity') == identity:
+                timing['status'] = 'Cached'
+                statuses[key] = previous
+                continue
+            overlaps, total = calculate_overlap(path, atlas_img, atlas_data, atlas_labels, threshold)
+            rows = [dict(subject=subject, session=session, atlas=atlas_name, region=region,
+                         total_lesion_voxels=total, **stats) for region, stats in overlaps.items()]
+            df = pd.concat([df.loc[~selected], pd.DataFrame(rows, columns=COLUMNS)], ignore_index=True)
+            statuses[key] = dict(status='complete', total_lesion_voxels=total,
+                                 regions=len(rows), identity=identity)
     # Concatenating an empty (zero-overlap) result must not leave object arrays;
     # matplotlib heatmaps and numerical consumers require numeric dtypes.
     for column in COLUMNS[4:]:
@@ -96,7 +100,18 @@ def cached_overlap(csv, entries, mask_path, atlas_name, atlas_img, atlas_data,
     df.to_csv(tmp, index=False)
     tmp.replace(csv)
     tmp = manifest.with_name(f'.{manifest.name}.{os.getpid()}.tmp')
-    tmp.write_text(json.dumps(statuses, indent=2))
+    tmp.write_text(json.dumps({**state, **statuses}, indent=2))
     tmp.replace(manifest)
     df.attrs['overlap_status'] = statuses
     return df
+
+
+def prepare_report_overlap(namespace, entry, source):
+    """Prepare selected tables in Slurm; preserve historical shared CSVs."""
+    from .reporting import overlap_tables
+    selected = dict(namespace)
+    selected['ALL_ATLASES'] = {name: atlas for name, atlas in namespace.get('ALL_ATLASES', {}).items()
+                             if name in namespace.get('INTERP_KB_ATLASES', [])}
+    overlap_tables(selected, [entry], [source])
+    namespace.setdefault('OVERLAP_PATHS', {}).update(selected.get('OVERLAP_PATHS', {}))
+    namespace.setdefault('OVERLAP_DFS', {}).update(selected.get('OVERLAP_DFS', {}))

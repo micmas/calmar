@@ -31,26 +31,32 @@ async def check(base, token, relative, artifacts):
             await first.wait_for(timeout=30000)
             await first.click()
             await page.keyboard.press('Shift+Enter')
+            await page.get_by_role('heading', name='Preview and export results', exact=True).wait_for(timeout=45000)
+            atlas = page.get_by_role('combobox', name='Atlas:', exact=True)
+            mask = page.get_by_role('combobox', name='Mask:', exact=True)
+            assert await atlas.count() == 1
+            assert await mask.count() == 1
+            await page.get_by_role('heading', name='Preview and export results', exact=True).scroll_into_view_if_needed()
+            await page.screenshot(path=str(artifacts/'single-preview.png'))
+            assert not await page.get_by_role('button', name='Build selected group map').count()
+            await page.get_by_text('Group summaries (optional)', exact=True).click()
+            await page.get_by_role('tab', name='Lesion frequency', exact=True).click()
             build = page.get_by_role('button', name='Build selected group map')
             await build.wait_for(timeout=45000)
             await build.scroll_into_view_if_needed()
             assert await build.is_enabled()
             await page.screenshot(path=str(artifacts/'group-controls.png'))
-            print('Group controls visible.', flush=True)
+            print('One preview; group controls appear only when expanded.', flush=True)
             await build.click()
-            await page.get_by_text('Group map mask source: synthstroke', exact=False).wait_for(timeout=15000)
+            await page.get_by_text('Group map mask source: synthstroke', exact=False).wait_for(timeout=60000)
             await page.locator('.jp-Notebook canvas').first.wait_for(timeout=45000)
-            # The two atlas panels expose the same complete, labelled choices.
-            atlas = page.get_by_role('combobox', name='Atlas:', exact=True)
-            mask = page.get_by_role('combobox', name='Mask:', exact=True)
-            await atlas.first.select_option(index=1)
-            await mask.first.select_option(index=1)
+            await page.get_by_text('Group summaries (optional)', exact=True).click()
+            await atlas.select_option(index=1)
+            await mask.select_option(index=1)
             await page.get_by_role('heading', name='Atlas B — Manual mask — sub-ui', exact=True).wait_for()
             await page.get_by_role('heading', name='Atlas B — Manual mask — sub-ui', exact=True).scroll_into_view_if_needed()
             await page.screenshot(path=str(artifacts/'atlas-table.png'))
-            await mask.nth(1).select_option(index=1)  # Schaefer network summary
-            await atlas.nth(1).select_option(index=1)
-            await mask.nth(2).select_option(index=1)
+            await page.get_by_role('tab', name='Region chart', exact=True).click()
             await page.get_by_role('tab', name='Brain and selected mask', exact=True).click()
             await page.wait_for_timeout(1500)
             await page.get_by_role('button', name='Export selected atlas PDF', exact=True).click()
@@ -64,7 +70,9 @@ async def check(base, token, relative, artifacts):
             await generate.click()
             await page.get_by_role('heading', name='Fixture report: manual · Atlas B', exact=True).wait_for(timeout=30000)
             await page.get_by_role('tab', name='Brain viewer', exact=True).click()
-            result_area = page.locator('.jp-Notebook .jp-CodeCell').nth(1).locator('.jp-OutputArea')
+            result_area = page.locator('.jp-Notebook .jp-CodeCell').nth(1).locator('.jp-OutputArea').first
+            # Viewers defer WebGL initialization until their container is on screen.
+            await page.get_by_role('button', name='Choose another report', exact=True).scroll_into_view_if_needed()
             await result_area.locator('canvas').wait_for(timeout=45000)
             await result_area.locator('canvas').scroll_into_view_if_needed()
             await page.wait_for_timeout(2000)
@@ -75,7 +83,7 @@ async def check(base, token, relative, artifacts):
             assert await selected.inner_text() == 'Manual'
             assert not any('Failed to initialize model' in e for e in errors), errors
             assert not await page.get_by_text('Could not load the brain-image viewer:', exact=False).count()
-            print('PASS: visible group build; atlas/mask choices and titles; selected PDF export; report form navigates and renders.')
+            print('PASS: single results preview; optional group build; shared atlas/mask choices; selected PDF export; participant report.')
         except Exception:
             print('Browser errors:', errors)
             print((await page.locator('body').inner_text())[-7000:])
@@ -93,7 +101,7 @@ def main():
     base = args.server_url.rstrip('/')
     if not base.startswith(('http://127.0.0.1:', 'http://localhost:')):
         raise ValueError('A loopback server is required.')
-    token = os.environ['JUPYTERHUB_API_TOKEN']
+    token = os.environ.get('CALMAR_BROWSER_TOKEN') or os.environ['JUPYTERHUB_API_TOKEN']
     args.artifacts.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='calmar-results-', dir=ROOT/'notes') as temp:
         first = f'''import sys
@@ -137,7 +145,7 @@ ALL_ATLASES = {{}}
 INTERP_KB_ATLASES = ['Atlas A','Atlas B']
 INTERP_DISPLAY_ATLAS = 'Atlas A'
 class StopExecution(Exception): pass
-for number in (67,71,72,74,75):
+for number in (74,75):
     exec(''.join(source_cell(number)['source']), globals())
 try:
     exec(''.join(source_cell(79)['source']), globals())
@@ -150,7 +158,7 @@ path = root/'ui-report.html'
 full = '<html><body>'+title+'<p>UI fixture only.</p></body></html>'
 path.write_text(full)
 result = ParticipantReport(title, 'QC fixture status', [('Anatomy','<p>UI fixture only.</p>')],
-    path, full, root/'Subject_in_MNI.nii.gz', root/(INTERP_MASK_SOURCE+'.nii.gz'), cw)
+    path, full, root/'Subject_in_MNI.nii.gz', root/(INTERP_MASK_SOURCE+'.nii.gz'), cw, source=INTERP_MASK_SOURCE)
 display(result.widget)
 _report_inputs.message.value = 'Participant report ready below.'
 '''

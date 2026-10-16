@@ -76,7 +76,7 @@ RATING_DEFINITIONS = {
         "is missed entirely, large false-positive clusters in healthy "
         "tissue, lesion in the wrong hemisphere, or a pipeline-stage "
         "failure (registration off, skull-strip bled). Needs manual "
-        "painting (Tier 2 / Tier 3) or a re-run with a manual seed."
+        "editing (external editor round-trip) or a re-run (e.g. after skull-strip repair)."
     ),
 }
 
@@ -318,7 +318,8 @@ SKULL_STRIP_TAG_DEFINITIONS = {
         "it as extracranial space.",
         "This is the most consequential failure mode for chronic stroke "
         "data: the lesion gets excluded before LINDA ever sees it. "
-        "Re-strip with HD-BET (which is lesion-aware) is the right move.",
+        "The skull-strip repair then adds SynthStrip's CSF-inclusive mask "
+        "(BRAIN_MASK=\"hdbet+synthstrip\") so LINDA can reach the cavity.",
     ),
     "asymmetric_strip": (
         "Coverage",
@@ -346,6 +347,14 @@ STAGE_VOCAB = {
 # ============================================================
 # Sidecar JSON I/O
 # ============================================================
+def _current_sidecars(deriv_dir):
+    """QC sidecars of current outputs, skipping preserved (*.previous.*) and
+    in-progress (*.attempt.*) copies."""
+    for sp in Path(deriv_dir).rglob("*.qc.json"):
+        if not any(".previous." in part or ".attempt." in part for part in sp.parts):
+            yield sp
+
+
 def sidecar_path_for(mask_path: Path) -> Path:
     """`Lesion_in_MNI.nii.gz` -> `Lesion_in_MNI.qc.json` (sibling)."""
     p = Path(mask_path)
@@ -419,6 +428,13 @@ class QCRecord:
             self.rating     = s["rating"]
             self.issue_tags = list(s["issue_tags"])
             self.notes      = s["notes"]
+
+    def clear_stage(self, stage: str):
+        """Remove a stage's rating, tags and notes (set_stage cannot set None)."""
+        s = self.get_stage(stage)
+        s.update(rating=None, issue_tags=[], notes="")
+        if stage == "lesion":
+            self.rating, self.issue_tags, self.notes = None, [], ""
 
     def is_empty(self) -> bool:
         """True if this sidecar carries no meaningful QC content.
@@ -696,7 +712,7 @@ def summarize_qc(deriv_dir: Path,
     sidecar without ever rating it. Pass `include_empty=True` to keep
     them (useful for debugging stale state)."""
     rows = []
-    for sp in Path(deriv_dir).rglob("*.qc.json"):
+    for sp in _current_sidecars(deriv_dir):
         try:
             d = json.loads(sp.read_text())
         except Exception:
@@ -843,7 +859,7 @@ def reset_qc_sidecars(deriv_dir: Path,
         raise ValueError(f"Unknown stage {stage!r}; allowed: {STAGES}")
 
     affected = []
-    for sp in Path(deriv_dir).rglob("*.qc.json"):
+    for sp in _current_sidecars(deriv_dir):
         try:
             data = json.loads(sp.read_text())
         except Exception:
@@ -926,8 +942,9 @@ def rerun_subject(t1w_path: Path, linda_out_dir: Path, *,
     cmd = [linda_cmd, str(t1w_path), str(linda_out_dir)]
     if manual_seed is not None:
         cmd.append(str(manual_seed))
-    print(f"  ▶ {' '.join(cmd)}")
-    res = subprocess.run(cmd)
+    from .process_output import run_logged
+    print("Rerunning LINDA…")
+    res = run_logged(cmd, Path(linda_out_dir) / 'linda-processing.log')
     if res.returncode == 0:
         mask = linda_out_dir / "Lesion_in_MNI.nii.gz"
         if mask.exists():
@@ -964,7 +981,9 @@ def find_best_hdbet_mask(hdbet_dir, prefer_mode: str | None = None) -> Path | No
                   "*_desc-fast_brain_mask.nii.gz",
                   "*_brain_mask.nii.gz"])
     for pat in pats:
-        hits = sorted(d.glob(pat))
+        # The plain pattern also matches the component masks of the brain step
+        # (*_desc-hdbet_*, *_desc-synthstrip_*); only the combined mask counts.
+        hits = sorted(f for f in d.glob(pat) if pat != "*_brain_mask.nii.gz" or "_desc-" not in f.name)
         if hits:
             return hits[0]
     return None
@@ -980,8 +999,10 @@ def find_best_hdbet_brain(hdbet_dir, prefer_mode: str | None = None) -> Path | N
                   "*_desc-fast_brain.nii.gz",
                   "*_brain.nii.gz"])
     for pat in pats:
-        # *_brain.nii.gz also matches *_brain_mask.nii.gz — exclude masks
-        hits = sorted(f for f in d.glob(pat) if "_mask" not in f.name)
+        # *_brain.nii.gz also matches *_brain_mask.nii.gz — exclude masks —
+        # and the component images of the brain step (*_desc-hdbet_*, ...).
+        hits = sorted(f for f in d.glob(pat) if "_mask" not in f.name
+                      and (pat != "*_brain.nii.gz" or "_desc-" not in f.name))
         if hits:
             return hits[0]
     return None
@@ -1071,11 +1092,16 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
                             *,
                             interp: str = "NearestNeighbor",
                             reviewer: str | None = None,
-                            tool_label: str = "antsApplyTransforms") -> int:
+                            tool_label: str = "antsApplyTransforms",
+                            input_space: str = "native",
+                            reference: Path | None = None) -> int:
     """
-    Warp ANY native-space mask (LINDA / SynthStroke / manual) into MNI
-    space using LINDA's native→Penn→MNI (ch2) chain, including the
-    bundled Penn→ch2 warp and affine. LINDA stores the native/Penn affine
+    Warp ANY native-space mask (LINDA / SynthStroke / manual) into MNI152
+    (FSL MNI152NLin6Asym) using LINDA's native→Penn→ch2 chain, including the
+    bundled Penn→ch2 warp and affine, continued ch2→MNI152 with the
+    transform from analysis_38 (calmar.templates) — one resampling.
+    ``input_space="ch2"`` warps an image already on ch2 (LINDA's own
+    Subject_in_ch2) with the ch2→MNI152 part only. LINDA stores the native/Penn affine
     in the reverse direction: it must be inverted, before applying the
     Penn→ch2 transforms. The retained R wrapper matches linda_predict's
     transform order and inversion flags exactly.
@@ -1097,15 +1123,19 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
     Returns the bash wrapper's exit code; 0 = success. Raises
     FileNotFoundError if a required transform or the input is missing.
     """
+    from . import templates
     linda_out_dir = Path(linda_out_dir)
     src    = Path(native_mask)
-    ref    = linda_out_dir / "Subject_in_MNI.nii.gz"
+    ref    = Path(reference) if reference else linda_out_dir / "Subject_in_MNI.nii.gz"
     warp   = linda_out_dir / "Reg3_sub_to_template_warp.nii.gz"
     affine = linda_out_dir / "Reg3_sub_to_template_affine.mat"
     out    = Path(out_path)
+    template_warp, template_affine = templates.require()
 
-    for p, label in [(src, "native mask"), (ref, "reference"),
-                     (warp, "warp"), (affine, "affine")]:
+    needed = [(src, "input image"), (ref, "reference")]
+    if input_space == "native":
+        needed += [(warp, "warp"), (affine, "affine")]
+    for p, label in needed:
         if not p.exists():
             raise FileNotFoundError(
                 f"warp_native_mask_to_mni: {label} not found at {p}.\n"
@@ -1124,10 +1154,14 @@ def warp_native_mask_to_mni(linda_out_dir: Path,
         "--affine",    str(affine),
         "--output",    str(out),
         "--interp",    interp,
+        "--template-warp", str(template_warp),
+        "--template-affine", str(template_affine),
+        "--input-space", input_space,
     ]
-    print(f"  ▶ (warp native→MNI) bash {_WARP_BASH_STUB.name} "
-          f"{src.name} → {out.name} ...")
-    res = subprocess.run(cmd, env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
+    from .process_output import run_logged
+    print(f"Warping {src.name} to MNI…")
+    res = run_logged(cmd, out.with_name(out.name + '.log'),
+                     env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
 
     if res.returncode == 0 and out.exists():
         # Log on the mask's QC sidecar so the audit trail is intact.
@@ -1170,6 +1204,7 @@ def coregister_t2_mask_to_t1(
     *,
     t2_out_path: Path | None = None,
     overwrite: bool = False,
+    sampling_seed: int | None = None,
 ) -> Path:
     """
     Bring a lesion mask drawn on a T2w/FLAIR image into the subject's
@@ -1190,6 +1225,9 @@ def coregister_t2_mask_to_t1(
     Returns the path to the mask in T1 space (`out_mask_path`).
     """
     import SimpleITK as sitk
+    # One thread: with the fixed sampling seed this makes the registration
+    # reproducible (multi-threaded metric sums differ run to run). Rigid, so fast.
+    sitk.ProcessObject.SetGlobalDefaultNumberOfThreads(1)
 
     t1_path       = Path(t1_path)
     t2_path       = Path(t2_path)
@@ -1214,7 +1252,7 @@ def coregister_t2_mask_to_t1(
     reg = sitk.ImageRegistrationMethod()
     reg.SetMetricAsMattesMutualInformation(numberOfHistogramBins=50)
     reg.SetMetricSamplingStrategy(reg.RANDOM)
-    reg.SetMetricSamplingPercentage(0.10, sitk.sitkWallClock)
+    reg.SetMetricSamplingPercentage(0.10, sitk.sitkWallClock if sampling_seed is None else sampling_seed)
     reg.SetInterpolator(sitk.sitkLinear)
     reg.SetOptimizerAsRegularStepGradientDescent(
         learningRate=2.0, minStep=1e-4,
@@ -1287,11 +1325,9 @@ def run_linda_with_mask_via_R(
     )
 
     cmd = [r_cmd, "--no-save", "--quiet", "-e", r_expr]
-    print(f"  ▶ (R --no-save) bypassing LINDA's skull-strip with HD-BET mask")
-    print(f"      T1     = {t1}")
-    print(f"      mask   = {mask}")
-    print(f"      outdir = {out}")
-    res = subprocess.run(cmd)
+    from .process_output import run_logged
+    print("Running LINDA with the supplied brain mask…")
+    res = run_logged(cmd, Path(linda_out_dir) / 'linda-processing.log')
 
     if res.returncode == 0:
         lesion = linda_out_dir / "Lesion_in_MNI.nii.gz"
@@ -1402,17 +1438,13 @@ def run_linda_with_mask(
                 f"({rscript_cmd!r})."
             )
         cmd = [resolved, str(stub), *args_tail]
-        print(f"  ▶ (host Rscript override) {' '.join(cmd)}")
     elif container_wrapper:
         # Cleanest path — Neurodesk's transparent-singularity wrapper
         # for the in-container script. Same UX as linda_predict.sh.
         cmd = [container_wrapper, *args_tail]
-        print(f"  ▶ (container wrapper) {' '.join(cmd)}")
     elif _LINDA_BASH_STUB.exists():
         # Local bash wrapper — does the singularity exec dance itself.
         cmd = ["bash", str(_LINDA_BASH_STUB), *args_tail]
-        print(f"  ▶ (local bash wrapper → singularity exec) "
-              f"{' '.join(cmd)}")
     else:
         resolved = _find_rscript("Rscript")
         if resolved is None:
@@ -1434,14 +1466,16 @@ def run_linda_with_mask(
                 "CONFIG['HDBET_USE_MASK_BYPASS'] = False."
             )
         cmd = [resolved, str(stub), *args_tail]
-        print(f"  ▶ (host Rscript) {' '.join(cmd)}")
 
     if not verbose:
         cmd.append("--quiet")
     if not cache:
         cmd.append("--no-cache")
 
-    res = subprocess.run(cmd, env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
+    from .process_output import run_logged
+    print("Running LINDA with the supplied brain mask…")
+    res = run_logged(cmd, Path(linda_out_dir) / 'linda-processing.log',
+                     env={**os.environ, "CALMAR_SOURCE_DIR": str(_SOURCE_ROOT)})
 
     if res.returncode == 0:
         mask = linda_out_dir / "Lesion_in_MNI.nii.gz"
@@ -1491,25 +1525,12 @@ NEURODESK_MODULES = {
 
 
 def brain_extractor_help_text() -> str:
-    """A clear, ready-to-paste hint for loading HD-BET or SynthStrip on Neurodesk."""
+    """Hint shown when no brain extractor is on PATH (only inside Slurm jobs)."""
     return (
-        "No brain extractor on PATH yet.\n"
-        "\n"
-        "Scroll up to the cell titled \"Optional: load brain-extractor "
-        "modules (Neurodesk)\" near the top of THIS notebook and run it,\n"
-        "then come back here and re-run this cell.\n"
-        "\n"
-        "If that cell isn't there, paste this into a new cell anywhere\n"
-        "above and run it once per session:\n"
-        "\n"
-        "    import module\n"
-        "    await module.load('hd-bet/1.0.0')         # preferred\n"
-        "    # or, if HD-BET isn't available:\n"
-        "    await module.load('fsl/6.0.7.4')          # provides mri_synthstrip\n"
-        "\n"
-        "Outside Neurodesk, install one of:\n"
-        "    pip install hd-bet                        # HD-BET\n"
-        "    # or download FreeSurfer / SynthStrip\n"
+        "No brain extractor on PATH. Brain extraction runs in Slurm jobs whose scripts\n"
+        "load it: src/analysis_23_brain.sh (hdbet/1.0.0) or src/analysis_30_qc_operation.sh\n"
+        "(hdbet/1.0.0, freesurfer/7.4.1 for mri_synthstrip). From the notebook, use\n"
+        "submit_step('brain', ...) or in_slurm(q.run_hd_bet)(...)."
     )
 
 
@@ -1545,11 +1566,8 @@ def run_hd_bet(t1w_path: Path, out_dir: Path,
                "accurate" (5-model ensemble; only practical with a GPU)
       tta    : test-time augmentation (much slower, marginal gain; default off)
 
-    On Neurodesk, you may need to load the appropriate module first
-    in a separate cell of THIS notebook:
-        await module.load('hd-bet/1.0.0')
-        # or
-        await module.load('fsl/6.0.7.4')           # for mri_synthstrip
+    Runs only inside a Slurm job whose script loads hdbet/1.0.0 (or
+    freesurfer for mri_synthstrip); from the notebook use in_slurm(run_hd_bet).
     """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1585,8 +1603,9 @@ def run_hd_bet(t1w_path: Path, out_dir: Path,
         if device == "cpu" and mode == "accurate":
             print("  ⚠ HD-BET in 'accurate' mode is *very* slow on CPU "
                   "(5-model ensemble). Consider mode='fast'.")
-        print(f"  ▶ {' '.join(cmd)}")
-        res = subprocess.run(cmd)
+        from .process_output import run_logged
+        print(f"Running HD-BET ({mode})…")
+        res = run_logged(cmd, Path(out_dir) / 'brain-extraction.log')
         if res.returncode == 0:
             # HD-BET names: <prefix>.nii.gz and <prefix>_mask.nii.gz
             hd_brain = Path(f"{prefix}.nii.gz")
@@ -1601,12 +1620,86 @@ def run_hd_bet(t1w_path: Path, out_dir: Path,
                "-i", str(t1), "-o", str(brain), "-m", str(mask)]
         if extra_args:
             cmd.extend(extra_args)
-        print(f"  ▶ {' '.join(cmd)}")
-        res = subprocess.run(cmd)
+        from .process_output import run_logged
+        print("Running SynthStrip…")
+        res = run_logged(cmd, Path(out_dir) / 'brain-extraction.log')
         return {"tool": "mri_synthstrip", "brain": brain, "mask": mask,
                 "returncode": res.returncode}
 
     raise ValueError(f"Unknown brain extractor: {tool!r}")
+
+
+def repaired_mask_sidecar(mask_path) -> Path:
+    """``<T1>_desc-<mode>_brain_mask.json`` next to a skull-strip repair mask:
+    records the BRAIN_MASK method the repair used."""
+    return Path(str(mask_path).removesuffix(".nii.gz") + ".json")
+
+
+def add_synthstrip_mask(mask_path, hdbet_dir, t1w_path, method="hdbet") -> int:
+    """Finish a freshly made HD-BET mask (skull-strip repair) in place, with the
+    BRAIN_MASK ``method`` chosen for this participant:
+
+    * ``method="hdbet"`` (default): the HD-BET mask alone.
+    * ``method="hdbet+synthstrip"``: OR in the SynthStrip mask
+      (``*_desc-synthstrip_brain_mask``) so the repaired mask keeps CSF-filled
+      lesion cavities. A missing SynthStrip mask is an error, not a silent
+      fall-back to HD-BET alone.
+
+    The mask is always rewritten on the T1's exact header (brainmask.save_like):
+    HD-BET's own header can differ in pixdim when qform != sform, and LINDA/ITK
+    then rejects it. The method is written to :func:`repaired_mask_sidecar`.
+    Returns the number of voxels added (0 for ``"hdbet"``)."""
+    import json
+    from .brainmask import save_like
+    t1 = nib.load(str(t1w_path))
+    img = nib.load(str(mask_path))
+    if img.shape[:3] != t1.shape[:3] or not np.allclose(img.affine, t1.affine, atol=1e-4):
+        raise ValueError(f"Brain mask {mask_path} is not on the grid of {t1w_path}")
+    mask = np.asarray(img.dataobj).reshape(t1.shape[:3]) > 0
+    extra = np.zeros_like(mask)
+    if method == "hdbet+synthstrip":
+        synth = sorted(Path(hdbet_dir).glob("*_desc-synthstrip_brain_mask.nii.gz"))
+        if not synth:
+            raise FileNotFoundError(
+                f'BRAIN_MASK="hdbet+synthstrip" but {hdbet_dir} has no SynthStrip mask; '
+                'run SynthStrip for this participant first.')
+        other = nib.load(str(synth[0]))
+        if other.shape[:3] != t1.shape[:3] or not np.allclose(other.affine, t1.affine, atol=1e-4):
+            raise ValueError(f"SynthStrip mask {synth[0]} is not on the grid of {t1w_path}")
+        extra = (np.asarray(other.dataobj).reshape(t1.shape[:3]) > 0) & ~mask
+    elif method != "hdbet":
+        raise ValueError(f"Unknown BRAIN_MASK method {method!r}")
+    save_like(mask | extra, t1, mask_path)
+    repaired_mask_sidecar(mask_path).write_text(json.dumps(
+        {"BrainMask": method, "AddedSynthStripVoxels": int(extra.sum())}, indent=2))
+    return int(extra.sum())
+
+
+def check_repaired_mask(mask_path, hdbet_dir, method="hdbet") -> str:
+    """Return the BRAIN_MASK method of a skull-strip repair mask.
+
+    A repair records its method (:func:`repaired_mask_sidecar`), chosen per
+    participant, and that is returned. An older repair has no record: under the
+    config's ``method`` = union it must contain the SynthStrip mask (one made
+    while BRAIN_MASK="hdbet" does not), otherwise this raises."""
+    import json
+    sidecar = repaired_mask_sidecar(mask_path)
+    if sidecar.exists():
+        return json.loads(sidecar.read_text())["BrainMask"]
+    if method != "hdbet+synthstrip":
+        return method
+    synth = sorted(Path(hdbet_dir).glob("*_desc-synthstrip_brain_mask.nii.gz"))
+    if not synth:
+        raise FileNotFoundError(f'BRAIN_MASK="hdbet+synthstrip" but {hdbet_dir} has no SynthStrip mask; '
+                                'rerun the brain step with OVERWRITE.')
+    repaired, other = nib.load(str(mask_path)), nib.load(str(synth[0]))
+    if other.shape[:3] != repaired.shape[:3] or not np.allclose(other.affine, repaired.affine, atol=1e-4):
+        raise ValueError(f"Repaired brain mask {mask_path} and SynthStrip mask {synth[0]} are on different grids")
+    inside = np.asarray(repaired.dataobj).reshape(repaired.shape[:3]) > 0
+    if np.any((np.asarray(other.dataobj).reshape(repaired.shape[:3]) > 0) & ~inside):
+        raise RuntimeError(f'Repaired brain mask {Path(mask_path).name} lacks the SynthStrip mask, so it was '
+                           'made for BRAIN_MASK="hdbet". Run the skull-strip repair again (or delete it).')
+    return method
 
 
 def replace_linda_skull_strip(linda_out_dir: Path,
@@ -1741,13 +1834,6 @@ def make_brain_with_padding(t1_path: Path, brain_mask_path: Path,
     if csf_voxels > 0:
         padded[csf_rim] = csf_value
     padded[skull_rim] = skull_value
-
-    n_brain = int(mask_data.sum())
-    n_csf   = int(csf_rim.sum())
-    n_skull = int(skull_rim.sum())
-    print(f"  padded T1: brain {n_brain:,} (intensity ~{brain_mean:.0f})"
-          f"  +  CSF rim {n_csf:,} ({csf_voxels}vox @ ~{csf_value:.1f})"
-          f"  +  skull rim {n_skull:,} ({skull_voxels}vox @ ~{skull_value:.1f})")
 
     nib.save(nib.Nifti1Image(padded, t1.affine, t1.header),
              str(output_path))
@@ -1967,13 +2053,15 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
                     desc=hdbet_mode)
     if bx["returncode"] != 0:
         return {"phase": "brain_extraction", **bx, "linda_returncode": None}
+    added = add_synthstrip_mask(bx["mask"], work, t1w_path)
+    if added:
+        print(f"  Added the SynthStrip mask (lesion cavities): +{added} voxels")
 
     # Decide what we'll feed LINDA + which mode label to record.
     padded_path = None  # only set in legacy mode
     if use_mask_bypass:
         mode = "mask_bypass"
         linda_input = t1w_path  # original T1; mask is supplied separately
-        print(f"  Mode: mask-bypass — feeding HD-BET mask to LINDA's R API")
     else:
         mode = "legacy_padding"
         linda_input = bx["brain"]
@@ -2114,7 +2202,7 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
         )
         # Clear the stages — the new images need fresh QC.
         for st in STAGES:
-            rec.set_stage(st, rating=None, issue_tags=[], notes="")
+            rec.clear_stage(st)
         rec.marked_for_rerun = False
         rec.reviewer = None
         rec.reviewed_on = None
@@ -2130,3 +2218,30 @@ def restrip_and_rerun(t1w_path: Path, linda_out_dir: Path,
         "missing_after_rerun": missing_after,
         "mask_warning":      mask_warning,
     }
+
+
+# Processing/repair helpers above run tools directly and must execute inside a
+# Slurm job. From the notebook, submit them explicitly:
+#     from calmar.scheduled import in_slurm
+#     in_slurm(q.run_hd_bet)(t1, out_dir, mode="accurate")
+
+
+def _requires_slurm(function):
+    import functools
+
+    @functools.wraps(function)
+    def guarded(*args, **kwargs):
+        if not os.environ.get('SLURM_JOB_ID'):
+            raise RuntimeError(f'{function.__name__} runs imaging tools; submit it with '
+                               f'calmar.scheduled.in_slurm(q.{function.__name__})(...)')
+        return function(*args, **kwargs)
+    return guarded
+
+
+for _operation in (
+    "run_hd_bet", "run_linda_with_mask", "run_linda_with_mask_via_R",
+    "hdbet_then_linda", "restrip_and_rerun", "rerun_subject",
+    "warp_native_mask_to_mni", "warp_native_lesion_to_mni",
+    "coregister_t2_mask_to_t1",
+):
+    globals()[_operation] = _requires_slurm(globals()[_operation])

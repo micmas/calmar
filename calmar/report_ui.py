@@ -69,6 +69,7 @@ class ReportInputs:
         self.navigation = NotebookNavigation(
             self.message, on_cell_order=self.gate._update_cell_order if self.gate else None)
         self.compare_body = w.VBox()
+        self.preview_controls = None
         self.compare = w.Accordion(children=[self.compare_body], selected_index=None)
         self.compare.set_title(0, "Compare available MNI masks (optional)")
         self.subject.observe(self.refresh, names="value")
@@ -122,23 +123,21 @@ class ReportInputs:
             self.preview.load_volumes([])
             self.compare_body.children = (w.HTML("The MNI brain image is unavailable; complete the warp first."),)
             return
-        checks, specs = [], [{"path": str(brain), "colormap": "gray", "opacity": 1.}]
+        from .layer_controls import LayerControls
+        from .step_viewer import _layer, show_layers, viewer_layout
+        if self.preview_controls is None:
+            viewer_layout(self.preview)
+            self.preview_controls = LayerControls(plane=3)
+        layers = []
         for source in ordered_sources(inventory):
             path = inventory[source].get("MNI")
-            if path is None or not Path(path).exists():
-                continue
-            shown = source == self.source.value
-            specs.append({"path": str(path), "name": MASK_LABELS[source],
-                "colormap": colors.color(source),
-                "opacity": .55 if shown else 0., "cal_min": .5, "cal_max": 1.})
-            check = w.Checkbox(value=shown, description=MASK_LABELS[source], indent=False)
-            index = len(specs)-1
-            check.observe(lambda c, i=index: setattr(self.preview.volumes[i], "opacity", .55 if c["new"] else 0.),
-                          names="value")
-            checks.append(check)
-        helpers.set_volumes(self.preview, specs)
-        self.compare_body.children = (w.HTML(colors.legend(ordered_sources(inventory))),
-                                      w.HBox(checks), self.preview)
+            if path is not None and Path(path).exists():
+                layers.append(_layer(f"{MASK_LABELS[source]} lesion", source, path, "lesion"))
+        # The selected report mask is shown first; tick the others to compare.
+        self.preview_controls.roles = [{"key": l["role"], "label": l["name"], "shown": l["origin"] == self.source.value}
+                                       for l in layers]
+        show_layers(self.preview, self.preview_controls, brain, layers, helpers)
+        self.compare_body.children = (self.preview_controls, self.preview)
 
     def approve(self):
         if self.source.value not in self.ns["available_mni_sources"](self.entries[self.subject.value]):
@@ -216,11 +215,14 @@ class ParticipantReport:
         if not self.brain.exists() or not self.lesion.exists():
             self.brain_box.children = (w.HTML("The selected MNI brain or lesion image is unavailable."),)
             return
-        self.viewer = self.helpers.fresh_viewer("interp_viewer", height=400)
-        self.helpers.set_volumes(self.viewer, [
-            {"path": str(self.brain), "colormap": "gray", "opacity": 1.},
-            {"path": str(self.lesion), "colormap": colors.color(self.source), "opacity": .7, "cal_min": .5, "cal_max": 1.}])
-        self.brain_box.children = (w.HTML(colors.legend([self.source])), self.viewer)
+        from .layer_controls import LayerControls
+        from .step_viewer import _layer, show_layers, viewer_layout
+        self.viewer = viewer_layout(self.helpers.fresh_viewer("interp_viewer", height=400))
+        controls = LayerControls(plane=3)
+        show_layers(self.viewer, controls, self.brain,
+                    [_layer(f"{MASK_LABELS.get(self.source, self.source)} lesion", self.source, self.lesion, "lesion")],
+                    self.helpers)
+        self.brain_box.children = (controls, self.viewer)
 
     def add_decoding(self, html):
         self.decode_html.value = html

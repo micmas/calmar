@@ -1,0 +1,7 @@
+{
+  "task": "decode",
+  "output_id": "decoding",
+  "mask": "data/ds004884/derivatives/synthstroke/sub-M2077/ses-250/anat/SynthStroke_in_MNI.nii.gz",
+  "dataset": "data/ds004884",
+  "kb_root": "aphasia-kb"
+}

@@ -1,0 +1,117 @@
+"""The participant report cell, run end-to-end on tiny fixtures (Slurm helpers mocked)."""
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
+
+import ipywidgets as w
+import nibabel as nib
+import numpy as np
+import pandas as pd
+import pytest
+from IPython.display import HTML
+
+from calmar.guided import source_cell
+from calmar import participant_report as pr
+
+KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
+
+
+def _mask(path, box):
+    data = np.zeros((10, 10, 10), dtype=np.uint8)
+    data[box] = 1
+    path.parent.mkdir(parents=True, exist_ok=True)
+    nib.save(nib.Nifti1Image(data, np.diag([2., 2., 2., 1.])), path)
+    return path
+
+
+@pytest.fixture
+def fixture(tmp_path):
+    entry = dict(subject="sub-T1", session="ses-1", t1w="t1.nii.gz")
+    linda, synth = tmp_path/"linda", tmp_path/"synth"
+    masks = {"linda": _mask(linda/"Lesion_in_MNI.nii.gz", np.s_[2:6, 2:6, 2:6]),
+             "synthstroke": _mask(synth/"SynthStroke_in_MNI.nii.gz", np.s_[2:6, 2:6, 3:7])}
+    _mask(linda/"Subject_in_MNI.nii.gz", np.s_[:, :, :])
+    study = SimpleNamespace(mni_sources=lambda e: list(masks), mni_mask=lambda e, s: masks[s],
+                            linda_dir=lambda e: linda, lesion_mni=lambda e: masks["linda"])
+    dataset = tmp_path/"data"; dataset.mkdir()
+    (dataset/"participants.tsv").write_text(
+        "participant_id\tsex\tage_at_stroke\twab_days\twab_aq\twab_type\n"
+        "sub-T1\tF\t60\t400\t55.2\tTranscorticalMotor\n")
+    reports = tmp_path/"reports"; reports.mkdir()
+    pd.DataFrame([dict(subject="sub-T1", session="ses-1", region="Inferior Frontal Gyrus, pars opercularis",
+                       lesion_in_roi_percent=40., roi_coverage_percent=10., overlap_voxels=26,
+                       total_lesion_voxels=64, left_overlap_voxels=26, right_overlap_voxels=0,
+                       midline_overlap_voxels=0),
+                  dict(subject="sub-T1", session="ses-1", region="Tiny ROI", lesion_in_roi_percent=1.,
+                       roi_coverage_percent=1., overlap_voxels=1, total_lesion_voxels=64)]
+                 ).to_csv(reports/"lesion_atlas_overlap_HarvardOxford_linda.csv", index=False)
+    from calmar import qc as q
+    record = q.QCRecord.load(masks["linda"]); record.set_stage("lesion", rating=3); record.reviewer = "rater"
+    record.save()
+    png = tmp_path/"overlay.png"; png.write_bytes(b"\x89PNG fixture")
+    helpers = SimpleNamespace(fresh_viewer=Mock(return_value=w.HTML()), set_volumes=Mock())
+    return SimpleNamespace(entry=entry, study=study, dataset=dataset, reports=reports, png=png,
+                           helpers=helpers, masks=masks, root=tmp_path)
+
+
+def _run_cells(f, **extra):
+    ns = dict(SUBJECTS=[f.entry], TEST_SUBJECT_IDX=0, PROJECT_DIR=KB_ROOT.parent, CONFIG={"LESION_THRESHOLD": .5},
+              study=f.study, REPORTS_DIR=f.reports, RAW_DATASET_DIR=f.dataset, ATLAS_DIR=f.root,
+              cw=f.helpers, display=Mock(), HTML=HTML)
+    exec("".join(source_cell(77)["source"]), ns)
+    ns.update(INTERP_MASK_SOURCE="linda", INTERP_KB_ATLASES=["HarvardOxford"], **extra)
+    with patch("calmar.atlas_overlap.prepare_report_overlap") as prepare, \
+            patch("calmar.reporting.run_reporting_task", return_value=str(f.png)) as overlay:
+        exec("".join(source_cell(81)["source"]), ns)
+    return ns, prepare, overlay
+
+
+def test_report_cell_saves_report_with_provenance_and_rules(fixture):
+    ns, prepare, overlay = _run_cells(fixture)
+    report = ns["PARTICIPANT_REPORT"]
+    assert prepare.call_args.args[0]["INTERP_KB_ATLASES"] == ["HarvardOxford"]
+    assert overlay.call_args.args[1] == "report_overlay"
+    html = report.path.read_text()
+    assert report.path.name == "interpretation_sub-T1_ses-1_linda.html"
+    assert ns["_rpt_path"] == report.path and ns["_calmar_generated_report_selection"] == ("sub-T1", "ses-1", "linda")
+    # Provenance block: research use, mask + QC rating, Dice, template caveat.
+    assert "Research use only" in html and "not a diagnosis" in html
+    assert "Lesion_in_MNI.nii.gz" in html and "<b>poor</b>" in html and "rater" in html
+    assert "Rated poor" in html
+    assert "LINDA vs SynthStroke" in html and "0.75" in html   # 2*48/(64+64)
+    assert "Colin27" in html and "MNI152" in html
+    # Damaged regions use the min-overlap threshold (5 %): the 1 % ROI is not shown.
+    assert "pars opercularis" in html and "Tiny ROI" not in html
+    # WAB type spelt as in ds004884 is decomposed; 400 days -> chronic.
+    assert "TranscorticalMotor" in html and "flu" in html
+    assert "Chronic (&gt;6 mo)" in html or "Chronic (>6 mo)" in html
+    titles = [report.panel.tabs.children[0].get_title(i) for i in range(len(report.panel.tabs.children[0].children))]
+    assert titles[0] == "Provenance and caveats" and "Generation details" in titles
+    # The settings cell displays the rule tables.
+    shown = "".join(c.args[0].data for c in ns["display"].call_args_list if hasattr(c.args[0], "data"))
+    assert "Transcortical motor" in shown and "Bernhardt" in shown
+    report.panel.widget.close()
+
+
+def test_report_rejects_unavailable_mask_and_missing_selection(fixture):
+    with pytest.raises(ValueError, match="No existing MNI mask"):
+        pr.generate_participant_report(fixture.entry, "manual", pr.ReportSettings(), study=fixture.study,
+                                       namespace={}, reports_dir=fixture.reports, dataset_dir=fixture.dataset,
+                                       atlas_dir=fixture.root, kb_root=KB_ROOT, helpers=fixture.helpers)
+    with pytest.raises(ValueError, match="Choose a participant"):
+        pr.selected_entry([fixture.entry], 3)
+
+
+def test_mask_agreement_resamples_and_reports_dice(tmp_path):
+    a = _mask(tmp_path/"a.nii.gz", np.s_[2:6, 2:6, 2:6])
+    b = _mask(tmp_path/"b.nii.gz", np.s_[2:6, 2:6, 2:6])
+    img = nib.load(b); nib.save(nib.Nifti1Image(np.asanyarray(img.dataobj), np.diag([2., 2., 2., 1.]) @ np.eye(4)), b)
+    volumes, pairs = pr.mask_agreement({"linda": a, "manual": b})
+    assert pairs == [("linda", "manual", 1.0)]
+    assert volumes["linda"] == pytest.approx(64 * 8 / 1000)
+
+
+def test_kb_root_without_entries_is_an_error(tmp_path):
+    pr._kb_modules(KB_ROOT)  # modules come from the real KB; the entries root is empty
+    with pytest.raises(FileNotFoundError):
+        pr.load_kb(tmp_path, pr.ReportSettings())

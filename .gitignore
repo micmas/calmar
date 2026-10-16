@@ -43,6 +43,20 @@ logs/
 /workflow-validation/verification
 /workflow-validation/*.prov.json
 
+# Acceptance products are runtime data; retain only the plan and requests.
+/workflow-acceptance/*
+!/workflow-acceptance/astra.yaml
+!/workflow-acceptance/request.json
+!/workflow-acceptance/inspection-request.json
+!/workflow-acceptance/atlas-request.json
+!/workflow-acceptance/overlap-request.json
+!/workflow-acceptance/decode-request.json
+!/workflow-acceptance/preview-request.json
+!/workflow-acceptance/bcb-request.json
+
+# Notebook edit locks
+/.*.edit-lock
+
 # Local-extraction scratch files. These contain verbatim paper text —
 # committing them would undo the point of extracting locally.
 aphasia-kb/_extraction_dry_run.txt

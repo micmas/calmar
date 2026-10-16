@@ -1,0 +1,178 @@
+[
+ {
+  "subject": "sub-M2045",
+  "session": "ses-381",
+  "expert_ml": 269.2,
+  "expert_outside_hdbet_ml": 58.9,
+  "hdbet1_fast": {
+   "dice": 0.729,
+   "sensitivity": 0.685,
+   "precision": 0.779,
+   "linda_ml": 236.8,
+   "false_positive_ml": 52.3,
+   "cavity_detected_frac": 0.073
+  },
+  "union": {
+   "dice": 0.771,
+   "sensitivity": 0.813,
+   "precision": 0.734,
+   "linda_ml": 298.0,
+   "false_positive_ml": 79.2,
+   "cavity_detected_frac": 0.55
+  }
+ },
+ {
+  "subject": "sub-M2037",
+  "session": "ses-275",
+  "expert_ml": 35.6,
+  "expert_outside_hdbet_ml": 12.2,
+  "hdbet1_fast": {
+   "dice": 0.406,
+   "sensitivity": 0.43,
+   "precision": 0.385,
+   "linda_ml": 39.7,
+   "false_positive_ml": 24.4,
+   "cavity_detected_frac": 0.042
+  },
+  "union": {
+   "dice": 0.358,
+   "sensitivity": 0.758,
+   "precision": 0.234,
+   "linda_ml": 115.2,
+   "false_positive_ml": 88.2,
+   "cavity_detected_frac": 0.762
+  }
+ },
+ {
+  "subject": "sub-M2029",
+  "session": "ses-180",
+  "expert_ml": 153.8,
+  "expert_outside_hdbet_ml": 42.2,
+  "hdbet1_fast": {
+   "dice": 0.607,
+   "sensitivity": 0.545,
+   "precision": 0.686,
+   "linda_ml": 122.1,
+   "false_positive_ml": 38.4,
+   "cavity_detected_frac": 0.108
+  },
+  "union": {
+   "dice": 0.695,
+   "sensitivity": 0.702,
+   "precision": 0.688,
+   "linda_ml": 156.9,
+   "false_positive_ml": 49.0,
+   "cavity_detected_frac": 0.561
+  }
+ },
+ {
+  "subject": "sub-M2051",
+  "session": "ses-284",
+  "expert_ml": 131.0,
+  "expert_outside_hdbet_ml": 25.1,
+  "hdbet1_fast": {
+   "dice": 0.607,
+   "sensitivity": 0.705,
+   "precision": 0.532,
+   "linda_ml": 173.6,
+   "false_positive_ml": 81.2,
+   "cavity_detected_frac": 0.158
+  },
+  "union": {
+   "dice": 0.569,
+   "sensitivity": 0.878,
+   "precision": 0.42,
+   "linda_ml": 273.6,
+   "false_positive_ml": 158.6,
+   "cavity_detected_frac": 0.636
+  }
+ },
+ {
+  "subject": "sub-M2018",
+  "session": "ses-341",
+  "expert_ml": 46.6,
+  "expert_outside_hdbet_ml": 1.7,
+  "hdbet1_fast": {
+   "dice": 0.436,
+   "sensitivity": 0.855,
+   "precision": 0.293,
+   "linda_ml": 136.2,
+   "false_positive_ml": 96.3,
+   "cavity_detected_frac": 0.316
+  },
+  "union": {
+   "dice": 0.411,
+   "sensitivity": 0.873,
+   "precision": 0.269,
+   "linda_ml": 151.0,
+   "false_positive_ml": 110.4,
+   "cavity_detected_frac": 0.901
+  }
+ },
+ {
+  "subject": "sub-M2061",
+  "session": "ses-252",
+  "expert_ml": 82.5,
+  "expert_outside_hdbet_ml": 1.0,
+  "hdbet1_fast": {
+   "dice": 0.75,
+   "sensitivity": 0.812,
+   "precision": 0.698,
+   "linda_ml": 96.0,
+   "false_positive_ml": 29.0,
+   "cavity_detected_frac": 0.529
+  },
+  "union": {
+   "dice": 0.748,
+   "sensitivity": 0.855,
+   "precision": 0.664,
+   "linda_ml": 106.2,
+   "false_positive_ml": 35.7,
+   "cavity_detected_frac": 0.851
+  }
+ },
+ {
+  "subject": "sub-M2120",
+  "session": "ses-749",
+  "expert_ml": 41.7,
+  "expert_outside_hdbet_ml": 0.3,
+  "hdbet1_fast": {
+   "dice": 0.602,
+   "sensitivity": 0.815,
+   "precision": 0.477,
+   "linda_ml": 71.2,
+   "false_positive_ml": 37.2,
+   "cavity_detected_frac": 0.351
+  },
+  "union": {
+   "dice": 0.493,
+   "sensitivity": 0.857,
+   "precision": 0.346,
+   "linda_ml": 103.1,
+   "false_positive_ml": 67.4,
+   "cavity_detected_frac": 0.744
+  }
+ },
+ {
+  "subject": "sub-M2001",
+  "session": "ses-1076",
+  "expert_ml": 149.9,
+  "expert_outside_hdbet_ml": 0.2,
+  "hdbet1_fast": {
+   "dice": 0.665,
+   "sensitivity": 0.892,
+   "precision": 0.531,
+   "linda_ml": 252.0,
+   "false_positive_ml": 118.3,
+   "cavity_detected_frac": 0.319
+  },
+  "union": {
+   "dice": 0.61,
+   "sensitivity": 0.916,
+   "precision": 0.457,
+   "linda_ml": 300.4,
+   "false_positive_ml": 163.1,
+   "cavity_detected_frac": 0.862
+  }
+ }
+]

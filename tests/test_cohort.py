@@ -50,9 +50,9 @@ class CohortTests(unittest.TestCase):
                     t1.symlink_to(root / "unfetched-t1")
             config = normalize_selection(dict(DATASET_SOURCE="openneuro", SUBJECT_FILTER="",
                 SESSION_FILTER="", MAX_SUBJECTS=3, RANDOM_SAMPLE=False, T1W_SELECTION="first"))
-            ns = dict(Path=Path, re=re, RAW_DATASET_DIR=root, CONFIG=config)
-            # Execute real discovery and sampling, stopping before acquisition.
-            source = "".join(source_cell(19)["source"]).split("# ---- Lazy datalad get:")[0]
+            ns = dict(Path=Path, re=re, RAW_DATASET_DIR=root, PROJECT_DIR=root, CONFIG=config)
+            # Execute real discovery and sampling (acquisition is a separate cell).
+            source = "".join(source_cell(19)["source"])
             with contextlib.redirect_stdout(io.StringIO()):
                 exec(source, ns)
             self.assertEqual({e["subject"] for e in ns["SUBJECTS"]}, {"sub-1", "sub-2", "sub-3"})

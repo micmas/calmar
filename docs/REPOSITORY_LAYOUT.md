@@ -15,7 +15,8 @@ calmar/
   disconnectomes.py     # BCBToolkit and DeepDisco output discovery
   widgets.py            # shared NiiVue lifecycle and volume helpers
   overlay.py            # binary-mask overlay controls
-  atlas_ui.py           # independent atlas/mask/subject selection
+  atlas_ui.py           # validated atlas/mask/subject selection
+  atlas_results.py      # one results preview and optional cohort summaries
   atlas_overlap.py      # measured laterality and subject/session cache status
   colors.py             # consistent colours for each mask/map origin
   guided.py             # guided notebook and canonical cell lookup
