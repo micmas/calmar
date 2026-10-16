@@ -4,6 +4,7 @@ id: tms_right_ifg__Naeser2005
 name: Inhibitory rTMS to Right Pars Triangularis (BA45) for Anomia in Nonfluent Aphasia
 kind: therapy
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 short_description: 'Open-protocol pilot study applying slow (1 Hz) inhibitory repetitive TMS daily for

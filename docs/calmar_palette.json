@@ -1,0 +1,49 @@
+{
+  "name": "CALMaR",
+  "version": "1.0",
+  "updated": "2026-10-16",
+  "core": [
+    {"name": "Dusty Grape",    "hex": "#52489c", "rgb": [82, 72, 156],   "hsl": [247, 37, 45], "role": "brand ink; headings; the person"},
+    {"name": "Smart Blue",     "hex": "#4062bb", "rgb": [64, 98, 187],   "hsl": [223, 49, 49], "role": "primary data; the model; series 1"},
+    {"name": "Strong Cyan",    "hex": "#59c3c3", "rgb": [89, 195, 195],  "hsl": [180, 47, 56], "role": "approved / canonical; series 3; fill only"},
+    {"name": "Platinum",       "hex": "#ebebeb", "rgb": [235, 235, 235], "hsl": [0, 0, 92],    "role": "surfaces, gridlines; never data"},
+    {"name": "Bubblegum Pink", "hex": "#f45b69", "rgb": [244, 91, 105],  "hsl": [355, 87, 66], "role": "attention: lesion, rejection, warning; series 2"}
+  ],
+  "series_order": ["#4062bb", "#f45b69", "#59c3c3"],
+  "series_cap": 3,
+  "derived": {
+    "ink": "#2b2b3a",
+    "ink_secondary": "#5a5a66",
+    "cyan_ink": "#1f7f7f",
+    "neutral_data": "#bdbdbd",
+    "surface": "#ffffff",
+    "panel": "#f7f7f7",
+    "line": "#ebebeb",
+    "line_strong": "#d6d6d6"
+  },
+  "dark_surface": {
+    "surface": "#1a1a24",
+    "grape": "#7a6fc4",
+    "blue": "#5b7fd6",
+    "cyan": "#3fa9a9",
+    "pink": "#e04a58"
+  },
+  "annotated_pdf_tags": {
+    "claim": "#4062bb",
+    "statistics": "#f45b69",
+    "sample": "#59c3c3",
+    "limitation": "#52489c",
+    "method": "#bdbdbd",
+    "confounders": "#bdbdbd",
+    "region_definition": "#bdbdbd",
+    "imaging_details": "#bdbdbd"
+  },
+  "validation": {
+    "tool": "dataviz validate_palette.js (OKLab dE, CVD simulation, WCAG contrast)",
+    "notes": [
+      "Grape vs Blue: dE 7.9 normal / 6.3 deutan - never adjacent data series",
+      "Cyan: 2.1:1 on white - fill with visible label only; text uses cyan_ink",
+      "Blue -> Pink -> Cyan passes adjacent and all-pairs checks (worst dE 12.4 deutan)"
+    ]
+  }
+}

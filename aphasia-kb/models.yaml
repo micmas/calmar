@@ -1,0 +1,58 @@
+# models.yaml — which local Ollama model each task uses.
+#
+# Local models improve fast. This file is the ONE place to change when a
+# better one lands: edit a tag here and every script picks it up. No code
+# changes, no hunting through argparse defaults.
+#
+#   ollama list                     # what you already have
+#   ollama pull <tag>               # get a new one
+#   python model_config.py          # show resolved config + availability
+#
+# Precedence (highest wins):
+#   1. --model on the command line
+#   2. role-specific env var  (APHASIA_EXTRACT_MODEL, APHASIA_REVIEW_MODEL,
+#                              APHASIA_RAG_MODEL)
+#   3. APHASIA_LOCAL_MODEL env var — overrides every role at once,
+#      handy for A/B testing a new model across the pipeline
+#   4. this file
+#   5. the `default` key below
+
+default: gemma4:26b
+
+roles:
+
+  # Reads a full paper (~50K tokens) and emits structured drafts.
+  # Wants: long context, good instruction-following, reliable JSON.
+  # This is the most demanding role — upgrade this one first.
+  extract:
+    model: gemma4:26b
+    max_tokens: 16000
+    num_ctx: null        # null = size automatically from the prompt
+
+  # Skeptical second opinion on a flagged draft. Short prompt, but the
+  # judgement is subtle and it can promote into the KB, so accuracy
+  # matters more than speed. See the guardrails in auto_review.py.
+  review:
+    model: gemma4:26b
+    max_tokens: 2000
+    num_ctx: null
+
+  # Narrative summary over already-retrieved KB entries. Lowest stakes —
+  # grounded in text it's given, nothing is written back to the KB.
+  # A smaller/faster model is fine here.
+  rag:
+    model: gemma4:26b
+    max_tokens: 1200
+    num_ctx: null
+
+# Known-good alternatives, for reference. Uncomment/edit above to switch.
+#
+#   gemma4:31b          denser, slower, stronger reasoning
+#   gemma4:26b-mlx      faster on Apple Silicon (text-only)
+#   qwen3:32b           strong structured output
+#   llama4:17b          fast, lower quality — fine for `rag`
+#
+# Memory note: num_ctx dominates RAM once the weights are loaded. A 26B
+# model at ~17GB plus a 90K-token context can exceed a 32GB Mac. If
+# extraction is slow or gets killed, lower num_ctx for `extract` before
+# blaming the model.
