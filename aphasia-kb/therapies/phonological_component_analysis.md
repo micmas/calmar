@@ -4,6 +4,7 @@ id: phonological_component_analysis
 name: Phonological Component Analysis (PCA)
 kind: therapy
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 short_description: 'Anomia therapy in which patients generate phonological components of a target word

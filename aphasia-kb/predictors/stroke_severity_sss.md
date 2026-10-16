@@ -20,6 +20,7 @@ units: score 0–58 (SSS) or 0–42 (modified SSS); higher score = less severe i
 typical_range: mean 23.4 (SD 9.3) for modified SSS in this aphasia sample (n=82)
 direction_of_severity: lower_is_worse
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 findings:

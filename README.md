@@ -2,16 +2,14 @@
 
 CALMaR is an open-source Jupyter notebook pipeline for automated stroke lesion segmentation, quality control, and clinician-facing interpretation of structural brain MRI data. It is designed to run inside [Neurodesktop](https://www.neurodesk.org/), a browser-accessible neuroimaging environment that provides all required tools pre-installed.
 
-> [!CAUTION]
-> ⚠️ **Copyright — the extraction CLI sends paper text to the Anthropic API.**
-> On this (`main`) branch, `aphasia-kb/extract.py`,
-> `auto_review.py --llm-review`, and `aphasia_kb_rag.py --llm` transmit
-> **full paper text to a third-party API**. Do not run them on
-> copyrighted PDFs you can't share off-machine.
->
-> A fully local version — paper text never leaves your computer, via
-> Ollama — lives on the **`ollama-local-models`** branch. Use that branch
-> for copyright-sensitive material until it's merged.
+> [!NOTE]
+> **All model steps run locally.** `aphasia-kb/extract.py`,
+> `auto_review.py --llm-review` and `aphasia_kb_rag.py --llm` use a local
+> model via Ollama; paper text and patient-derived lesion data never leave
+> the machine. Model choice is in `aphasia-kb/models.yaml`
+> (see `aphasia-kb/MODELS.md`); who may approve what is in
+> `aphasia-kb/GOVERNANCE.md`. The CALMaR colour palette for figures and
+> UI is `docs/CALMAR_PALETTE.md`.
 
 Given a BIDS-formatted dataset, CALMaR will:
 
@@ -281,14 +279,24 @@ LINDA registers each brain to its **ch2 (Colin27)** template (single-subject ana
 
 ## Aphasia knowledge base
 
-The `aphasia-kb/` subdirectory is a structured literature database of aphasia findings, therapies, and their active ingredients (RTSS framework). Each entry links a brain region or clinical predictor to an expected impairment or outcome, with citations, sample metadata, and confidence levels.
-
-To add a paper to the KB, point the extraction agent at `aphasia-kb/EXTRACTION_SKILL.md`. Extracted drafts go to `aphasia-kb/drafts/`; promote reviewed entries with:
+`aphasia-kb/` is a curated, source-traceable literature base: each
+finding links a brain region, predictor or therapy to an outcome, with
+the verbatim passages from the paper that support it. CALMaR's
+clinical-interpretation stage queries it to turn a lesion mask into a
+cited report. Extraction and review run on a local model via Ollama;
+approval follows the two-tier policy in `aphasia-kb/GOVERNANCE.md`
+(an independent model may approve routine findings after re-reading
+the PDF; a person approves the rest and audits).
 
 ```bash
-python aphasia-kb/promote.py --list      # review drafts
-python aphasia-kb/promote.py --approve <id>
+python aphasia-kb/kb_status.py                                        # what is in it
+python aphasia-kb/extract.py --pdf aphasia-kb/papers/<Key>.pdf        # one paper → drafts
+python aphasia-kb/auto_review.py --all --llm-review --require-pdf-match
+python aphasia-kb/promote.py --list                                   # what needs a person
 ```
+
+See `aphasia-kb/README.md` for the layout and `aphasia-kb/HOWTO.md` for
+the full procedure.
 
 ---
 

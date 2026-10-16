@@ -113,7 +113,7 @@ def _ligaturize(s: str) -> str:
 
 
 def _normalize(s: str) -> str:
-    """Aggressive normalization: Unicode -> ASCII, ligatures expanded,
+    r"""Aggressive normalization: Unicode -> ASCII, ligatures expanded,
     elision markers stripped, soft hyphens joined, whitespace collapsed.
 
     Soft-hyphen handling (two passes, applied symmetrically to both PDF
@@ -340,7 +340,10 @@ def annotate(
     a list of Paths (multi-draft, e.g., region + therapy drafts from
     the same paper)."""
     try:
-        import fitz  # PyMuPDF
+        try:
+            import pymupdf as fitz  # PyMuPDF >= 1.24
+        except ImportError:  # pragma: no cover
+            import fitz  # older PyMuPDF
     except ImportError as e:
         raise SystemExit(
             "PyMuPDF is required. Install with:\n"

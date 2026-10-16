@@ -11,7 +11,7 @@ Given a binary lesion mask in MNI space, this module:
      ``term_decoding.impairment`` already names a KB impairment id.
   3. Produces TWO outputs from the *same* retrieved evidence:
        a. a deterministic, fully-cited markdown report  (always; offline),
-       b. an optional LLM narrative grounded in (a)      (Anthropic/OpenAI).
+       b. an optional LLM narrative grounded in (a)      (local, via Ollama).
 
 Design notes
 ------------
@@ -22,9 +22,10 @@ Design notes
   The deterministic report never invents anything; the LLM step is
   instructed to use ONLY the provided evidence and to cite entry ids. Both
   carry a research-only, not-clinical-advice caveat.
-* The LLM step reads its API key from the environment
-  (``ANTHROPIC_API_KEY`` or ``OPENAI_API_KEY``). This module never asks for
-  or stores a key.
+* The LLM step runs entirely locally against Ollama — no API key, no
+  network. Patient-derived lesion data never leaves the machine, which
+  matters more here than anywhere else in this repo.
+* Which model it uses comes from ``models.yaml`` (role: ``rag``).
 
 CLI
 ---
@@ -48,10 +49,12 @@ from typing import Any, Optional
 # Default KB root = the directory this file lives in.
 DEFAULT_KB_ROOT = Path(__file__).resolve().parent
 
-# Default model for the (optional) LLM synthesis step. Override with the
-# APHASIA_RAG_MODEL env var or the `model=` argument. This is just a string
-# passed to the provider SDK — change it to whatever your account exposes.
-DEFAULT_MODEL = os.environ.get("APHASIA_RAG_MODEL", "claude-sonnet-4-6")
+# Model for the (optional) LLM synthesis step comes from models.yaml
+# (role: `rag`). Override per-run with --model or APHASIA_RAG_MODEL.
+sys.path.insert(0, str(DEFAULT_KB_ROOT))
+from model_config import resolve as resolve_model  # noqa: E402
+
+DEFAULT_MODEL = resolve_model("rag")["model"]
 
 # Relative confidence weight by `direction` value (unknown -> 0.5). Used only
 # to RANK findings for display; it never changes their wording.
@@ -166,16 +169,32 @@ def _finding_record(kb, f: dict, *, base_score: float, reason: str) -> dict:
         "effect_size":   _clean(f.get("stat_effect_size")),
         "match_reason":  reason,
         "score":         round(float(base_score) * dw, 3),
+        # Review provenance (GOVERNANCE.md §4): who approved this finding.
+        # 'human' | 'model' | 'legacy' (pre-policy approval) | 'none'
+        "review_kind":   _clean(f.get("review_kind")) or "none",
+        "reviewer":      _clean(f.get("reviewer")),
     }
+
+
+REVIEW_KIND_LABEL = {
+    "human":  "",
+    "model":  " ⟨model-approved⟩",
+    "legacy": " ⟨pre-policy approval — re-review pending⟩",
+    "none":   " ⟨no reviewer⟩",
+}
 
 
 def retrieve(decode_result: dict, kb, *,
              min_overlap_pct: float = 1.0,
              min_term_r: float = 0.0,
-             max_findings: int = 40) -> dict:
+             max_findings: int = 40,
+             human_approved_only: bool = False) -> dict:
     """Turn a ``decode_lesion`` result into a ranked bundle of KB evidence.
 
     Returns a dict with keys: ``regions``, ``terms``, ``findings``, ``kb_meta``.
+    With ``human_approved_only`` findings approved by a model or before the
+    governance policy (review_kind != 'human') are dropped and counted in
+    ``kb_meta['n_excluded_by_review']``.
     """
     region_df = decode_result.get("region_overlap")
     term_df   = decode_result.get("term_decoding")
@@ -250,6 +269,12 @@ def retrieve(decode_result: dict, kb, *,
         for f in _findings_targeting(kb, imp_id):
             _add(_finding_record(kb, f, base_score=base * 0.9, reason=reason))
 
+    n_excluded = 0
+    if human_approved_only:
+        kept = [f for f in findings if f.get("review_kind") == "human"]
+        n_excluded = len(findings) - len(kept)
+        findings = kept
+
     findings.sort(key=lambda d: d["score"], reverse=True)
     findings = findings[:max_findings]
 
@@ -259,6 +284,12 @@ def retrieve(decode_result: dict, kb, *,
         "n_therapies":   int(getattr(kb, "therapies", _empty()).shape[0]),
         "n_predictors":  int(getattr(kb, "predictors", _empty()).shape[0]),
         "n_findings":    int(getattr(kb, "findings", _empty()).shape[0]),
+        "human_approved_only": human_approved_only,
+        "n_excluded_by_review": n_excluded,
+        "review_kinds": {k: int(v) for k, v in
+                         (getattr(kb, "findings", _empty())
+                          .get("review_kind", _empty_series())
+                          .value_counts().items())},
     }
 
     return {
@@ -272,6 +303,11 @@ def retrieve(decode_result: dict, kb, *,
 def _empty():
     import pandas as pd
     return pd.DataFrame()
+
+
+def _empty_series():
+    import pandas as pd
+    return pd.Series(dtype=object)
 
 
 # --------------------------------------------------------------------------
@@ -297,6 +333,16 @@ def render_report(retrieval: dict, *,
              f"({km.get('n_findings', 0)} findings)")
     L.append("")
     L.append(f"> {RESEARCH_CAVEAT}")
+    rk = km.get("review_kinds") or {}
+    if rk:
+        L.append(f"> Review provenance of the KB's findings: "
+                 + ", ".join(f"{k} {v}" for k, v in sorted(rk.items()))
+                 + ". Findings not approved by a named person are marked "
+                   "inline.")
+    if km.get("human_approved_only"):
+        L.append(f"> `--human-approved-only`: {km.get('n_excluded_by_review', 0)} "
+                 f"matched finding(s) approved by a model or before the "
+                 f"governance policy were excluded.")
     L.append("")
 
     # --- Regions ---
@@ -358,7 +404,8 @@ def render_report(retrieval: dict, *,
                     bits.append(f"n = {f['sample_n']}")
                 meta = (" · ".join(bits))
                 cite = f" [{f['citation']}]" if f.get("citation") else ""
-                L.append(f"- {_short(f.get('claim'))}{cite}{tgt}")
+                mark = REVIEW_KIND_LABEL.get(f.get("review_kind") or "none", "")
+                L.append(f"- {_short(f.get('claim'))}{cite}{tgt}{mark}")
                 if meta:
                     L.append(f"  <br><sub>{meta}</sub>")
                 if f.get("effect_size"):
@@ -426,82 +473,50 @@ def build_llm_prompt(retrieval: dict) -> tuple[str, str]:
 
 def llm_summary(retrieval: dict, *,
                 model: str | None = None,
-                backend: str = "auto",
-                max_tokens: int = 900) -> dict:
-    """Generate a grounded narrative. Returns
-    ``{"text": str|None, "backend": str|None, "model": str|None, "error": str|None}``.
+                host: str | None = None,
+                max_tokens: int | None = None) -> dict:
+    """Generate a grounded narrative with a LOCAL model via Ollama.
 
-    Never raises for missing keys/SDKs — returns an ``error`` string instead,
-    so the deterministic report path is never blocked.
+    Returns ``{"text": str|None, "backend": str|None, "model": str|None,
+    "error": str|None}``.
+
+    Never raises — returns an ``error`` string instead, so a missing or
+    unreachable model never blocks the deterministic report path, which
+    is the actual product here. The narrative is a convenience layer on
+    top of evidence that has already been retrieved and cited.
     """
-    model = model or DEFAULT_MODEL
+    cfg = resolve_model("rag", model)
+    model = cfg["model"]
+    max_tokens = max_tokens or cfg["max_tokens"]
     system, user = build_llm_prompt(retrieval)
 
-    def _try_anthropic() -> dict:
-        key = os.environ.get("ANTHROPIC_API_KEY")
-        if not key:
-            return {"text": None, "backend": None, "model": None,
-                    "error": "ANTHROPIC_API_KEY not set"}
-        try:
-            import anthropic
-        except ImportError:
-            return {"text": None, "backend": None, "model": None,
-                    "error": "anthropic SDK not installed (pip install anthropic)"}
-        try:
-            client = anthropic.Anthropic(api_key=key)
-            msg = client.messages.create(
-                model=model, max_tokens=max_tokens, system=system,
-                messages=[{"role": "user", "content": user}],
-            )
-            text = "".join(
-                blk.text for blk in msg.content if getattr(blk, "type", "") == "text"
-            )
-            return {"text": text.strip(), "backend": "anthropic",
-                    "model": model, "error": None}
-        except Exception as ex:  # noqa: BLE001
-            return {"text": None, "backend": "anthropic", "model": model,
-                    "error": f"{type(ex).__name__}: {ex}"}
+    try:
+        from ollama_client import DEFAULT_HOST, OllamaError, chat
+    except ImportError as ex:
+        return {"text": None, "backend": None, "model": model,
+                "error": f"ollama_client unavailable: {ex}"}
 
-    def _try_openai() -> dict:
-        key = os.environ.get("OPENAI_API_KEY")
-        if not key:
-            return {"text": None, "backend": None, "model": None,
-                    "error": "OPENAI_API_KEY not set"}
-        try:
-            from openai import OpenAI
-        except ImportError:
-            return {"text": None, "backend": None, "model": None,
-                    "error": "openai SDK not installed (pip install openai)"}
-        try:
-            client = OpenAI(api_key=key)
-            oai_model = model if not model.startswith("claude") else "gpt-4o"
-            resp = client.chat.completions.create(
-                model=oai_model, max_tokens=max_tokens,
-                messages=[{"role": "system", "content": system},
-                          {"role": "user", "content": user}],
-            )
-            return {"text": resp.choices[0].message.content.strip(),
-                    "backend": "openai", "model": oai_model, "error": None}
-        except Exception as ex:  # noqa: BLE001
-            return {"text": None, "backend": "openai", "model": model,
-                    "error": f"{type(ex).__name__}: {ex}"}
+    try:
+        res = chat(user, model=model, system=system, max_tokens=max_tokens,
+                   host=host or DEFAULT_HOST, temperature=0.2,
+                   num_ctx=cfg["num_ctx"], verbose=False)
+    except OllamaError as ex:
+        return {"text": None, "backend": "ollama", "model": model,
+                "error": str(ex)}
+    except Exception as ex:  # noqa: BLE001
+        return {"text": None, "backend": "ollama", "model": model,
+                "error": f"{type(ex).__name__}: {ex}"}
 
-    if backend == "anthropic":
-        return _try_anthropic()
-    if backend == "openai":
-        return _try_openai()
-    if backend == "auto":
-        a = _try_anthropic()
-        if a["text"] is not None:
-            return a
-        o = _try_openai()
-        if o["text"] is not None:
-            return o
-        # Both failed — surface both reasons so the user knows what to fix.
-        return {"text": None, "backend": None, "model": None,
-                "error": f"anthropic: {a['error']} | openai: {o['error']}"}
-    return {"text": None, "backend": None, "model": None,
-            "error": f"unknown backend '{backend}'"}
+    text = (res.get("text") or "").strip()
+    if not text:
+        return {"text": None, "backend": "ollama", "model": model,
+                "error": "empty response from local model"}
+    # A truncated narrative can read as complete while silently dropping
+    # findings — flag it rather than presenting it as the whole picture.
+    if res.get("truncated_output"):
+        text += ("\n\n_(Narrative truncated at the token limit — the "
+                 "deterministic report above is complete.)_")
+    return {"text": text, "backend": "ollama", "model": model, "error": None}
 
 
 # --------------------------------------------------------------------------
@@ -512,10 +527,11 @@ def decode_and_explain(lesion_path: str | Path,
                        kb_root: str | Path | None = None, *,
                        use_llm: bool = False,
                        model: str | None = None,
-                       backend: str = "auto",
+                       host: str | None = None,
                        min_overlap_pct: float = 1.0,
                        min_term_r: float = 0.0,
                        max_findings: int = 40,
+                       human_approved_only: bool = False,
                        decode_kwargs: dict | None = None) -> dict:
     """End-to-end: decode the lesion, retrieve KB evidence, build the report,
     and (optionally) an LLM narrative.
@@ -530,7 +546,8 @@ def decode_and_explain(lesion_path: str | Path,
     retrieval = retrieve(decode, kb,
                          min_overlap_pct=min_overlap_pct,
                          min_term_r=min_term_r,
-                         max_findings=max_findings)
+                         max_findings=max_findings,
+                         human_approved_only=human_approved_only)
     report_md = render_report(
         retrieval,
         lesion_path=str(lesion_path),
@@ -538,10 +555,11 @@ def decode_and_explain(lesion_path: str | Path,
     )
     llm = None
     if use_llm:
-        llm = llm_summary(retrieval, model=model, backend=backend)
+        llm = llm_summary(retrieval, model=model, host=host)
         if llm.get("text"):
             report_md += ("\n\n---\n\n## LLM narrative "
-                          f"<sub>({llm['backend']} · {llm['model']})</sub>\n\n"
+                          f"<sub>({llm['backend']} · {llm['model']} · "
+                          f"local)</sub>\n\n"
                           f"{llm['text']}\n")
         else:
             report_md += ("\n\n---\n\n## LLM narrative\n\n"
@@ -561,17 +579,26 @@ def _cli(argv=None):
     ap.add_argument("lesion", help="Binary lesion mask in MNI space (.nii.gz)")
     ap.add_argument("--kb-root", default=None, help="KB directory (default: this file's dir)")
     ap.add_argument("--llm", action="store_true", help="Also generate the LLM narrative")
-    ap.add_argument("--model", default=None, help=f"LLM model (default: {DEFAULT_MODEL})")
-    ap.add_argument("--backend", default="auto", choices=["auto", "anthropic", "openai"])
+    ap.add_argument("--model", default=None,
+                    help=f"Ollama model tag. Default from models.yaml "
+                         f"(currently {DEFAULT_MODEL}).")
+    ap.add_argument("--ollama-host", default=None,
+                    help="Ollama base URL (default: http://localhost:11434).")
     ap.add_argument("--min-overlap-pct", type=float, default=1.0)
     ap.add_argument("--min-term-r", type=float, default=0.0)
+    ap.add_argument("--human-approved-only", action="store_true",
+                    help="Use only findings a named person approved; drop "
+                         "model-approved and pre-policy (legacy) findings. "
+                         "The notebook's clinical-interpretation cell sets "
+                         "this by default (GOVERNANCE.md §4).")
     ap.add_argument("-o", "--output", default=None, help="Write the report markdown here")
     args = ap.parse_args(argv)
 
     res = decode_and_explain(
         args.lesion, args.kb_root,
-        use_llm=args.llm, model=args.model, backend=args.backend,
+        use_llm=args.llm, model=args.model, host=args.ollama_host,
         min_overlap_pct=args.min_overlap_pct, min_term_r=args.min_term_r,
+        human_approved_only=args.human_approved_only,
     )
     if args.output:
         Path(args.output).write_text(res["report_md"], encoding="utf-8")
