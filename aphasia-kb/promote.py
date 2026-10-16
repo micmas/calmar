@@ -20,6 +20,23 @@ Approve does the following, atomically:
   5. Appends a line to extraction_log.md.
 
 This script is the *only* way an entry is supposed to leave drafts/.
+
+Review provenance (GOVERNANCE.md, schema v2.5)
+----------------------------------------------
+--reviewer is normalised to `human:<name>` or `model:<ollama-tag>`.
+A bare name is treated as a person. `auto-reviewer` is refused: the
+deterministic checks never approve anything.
+
+A model reviewer may only approve Tier A drafts and must name the
+extractor it is independent of:
+
+    python promote.py --approve <draft> --reviewer model:gemma4:31b \
+        --tier A --extractor agent:gemma4:26b
+
+The approval is stamped on every finding (`review: {reviewer,
+reviewed_on, tier}`) so a canonical entry that accumulates findings from
+several reviews reports each one honestly, and the log line reads
+`MODEL-APPROVED` instead of `APPROVED`.
 """
 
 from __future__ import annotations
@@ -38,7 +55,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent))
 from aphasia_kb import (
     parse_markdown, _validate_v2_entry,
-    KnowledgeBase,
+    KnowledgeBase, REVIEWER_PREFIXES, REVIEW_TIER_VOCAB,
 )
 
 ROOT = Path(__file__).parent
@@ -60,6 +77,58 @@ def _write(path: Path, fm: dict, body: str):
     yaml_text = yaml.safe_dump(fm, sort_keys=False, allow_unicode=True,
                                default_flow_style=False)
     path.write_text(f"---\n{yaml_text}---\n{body}", encoding="utf-8")
+
+
+def normalize_reviewer(raw: str) -> str:
+    """`michele` -> `human:michele`; prefixed values pass through.
+
+    Refuses the deterministic reviewer name: under GOVERNANCE.md §2 the
+    automatic checks can reject or defer but never approve.
+    """
+    r = (raw or "").strip()
+    if not r:
+        raise ValueError("reviewer is required")
+    low = r.lower()
+    if low in ("auto-reviewer", "auto_reviewer", "auto"):
+        raise ValueError("'auto-reviewer' cannot approve or reject; "
+                         "use human:<name> or model:<tag>")
+    if low.startswith(REVIEWER_PREFIXES):
+        return r
+    if ":" in r:
+        raise ValueError(f"reviewer {r!r} must start with one of "
+                         f"{REVIEWER_PREFIXES}")
+    return f"human:{r}"
+
+
+def _bare_tag(s: str | None) -> str:
+    """Strip agent:/model: prefixes so extractor and reviewer tags compare."""
+    s = (s or "").strip()
+    for pre in ("agent:", "model:"):
+        if s.lower().startswith(pre):
+            s = s[len(pre):]
+    return s.lower()
+
+
+def validate_review_args(reviewer: str, tier: str | None,
+                         extractor: str | None, fm: dict) -> list[str]:
+    """Policy checks for an approval. Returns a list of problems."""
+    problems: list[str] = []
+    if tier is not None and tier not in REVIEW_TIER_VOCAB - {"legacy"}:
+        problems.append(f"--tier must be A or B, got {tier!r}")
+    if reviewer.lower().startswith("model:"):
+        if tier != "A":
+            problems.append("a model reviewer may only approve Tier A "
+                            "drafts (--tier A); anything else needs a person")
+        ext = extractor or fm.get("created_by")
+        if not ext:
+            problems.append("a model approval must name the extractor "
+                            "(--extractor agent:<tag>) so independence "
+                            "can be checked")
+        elif _bare_tag(ext) == _bare_tag(reviewer):
+            problems.append(f"reviewer {reviewer!r} is the same model as the "
+                            f"extractor {ext!r}; a model never reviews its "
+                            f"own drafts")
+    return problems
 
 
 def _bucket_for(draft_path: Path) -> str:
@@ -137,10 +206,30 @@ def cmd_approve(args):
             print(f"  {i}")
         sys.exit(1)
 
+    # 1b. Policy checks (GOVERNANCE.md §2–§3)
+    problems = validate_review_args(args.reviewer, args.tier,
+                                    args.extractor, fm)
+    if problems:
+        print("❌ Cannot approve — review policy:")
+        for pr in problems:
+            print(f"  {pr}")
+        sys.exit(1)
+
     # 2. Stamp approval
+    today = dt.date.today().isoformat()
     fm["status"]      = "approved"
     fm["reviewer"]    = args.reviewer
-    fm["reviewed_on"] = dt.date.today().isoformat()
+    fm["reviewed_on"] = today
+    if args.tier:
+        fm["review_tier"] = args.tier
+    review_block = {"reviewer": args.reviewer, "reviewed_on": today}
+    if args.tier:
+        review_block["tier"] = args.tier
+    extractor = args.extractor or fm.get("created_by")
+    if args.reviewer.lower().startswith("model:") and extractor:
+        review_block["extractor"] = extractor
+    for f in fm.get("findings") or []:
+        f["review"] = dict(review_block)
 
     # 3. Merge or move
     canonical = _canonical_path_for(fm, bucket)
@@ -158,6 +247,8 @@ def cmd_approve(args):
             added.append(new_id)
         fm_c["findings"] = merged
         fm_c["last_reviewed"] = fm["reviewed_on"]
+        # The file-level reviewer stays whoever approved the entry first;
+        # per-finding `review` blocks carry the truth for merged findings.
         _write(canonical, fm_c, body_c)
         print(f"✓ Merged {len(added)} new finding(s) ({', '.join(added)}) "
               f"into {canonical.relative_to(ROOT)}")
@@ -175,8 +266,15 @@ def cmd_approve(args):
         if f.get("citation"):
             cite = f["citation"]; break
     LOG.parent.mkdir(parents=True, exist_ok=True)
-    line = (f"{dt.date.today().isoformat()} | APPROVED | {cite} | "
-            f"{fm.get('id')} | reviewer: {args.reviewer}\n")
+    action = ("MODEL-APPROVED" if args.reviewer.lower().startswith("model:")
+              else "APPROVED")
+    extra = ""
+    if action == "MODEL-APPROVED":
+        extra += f" | extractor: {extractor}"
+    if args.tier:
+        extra += f" | tier: {args.tier}"
+    line = (f"{today} | {action} | {cite} | "
+            f"{fm.get('id')} | reviewer: {args.reviewer}{extra}\n")
     with LOG.open("a") as fh:
         fh.write(line)
     print(f"  logged: {line.strip()}")
@@ -217,14 +315,27 @@ def main(argv=None):
     g.add_argument("--diff",    metavar="PATH",      help="diff against canonical")
     g.add_argument("--approve", metavar="PATH",      help="approve a draft")
     g.add_argument("--reject",  metavar="PATH",      help="reject a draft")
-    p.add_argument("--reviewer", help="your name (required for approve/reject)")
+    p.add_argument("--reviewer", help="human:<name> (a bare name is a person) "
+                                      "or model:<ollama-tag>; required for "
+                                      "approve/reject")
     p.add_argument("--reason",   help="reason for rejection")
+    p.add_argument("--tier", choices=["A", "B"], default=None,
+                   help="review tier from auto_review.py's classification; "
+                        "required (and must be A) for a model reviewer")
+    p.add_argument("--extractor", default=None,
+                   help="agent:<tag> that wrote the draft (default: the "
+                        "draft's created_by); a model reviewer must differ")
     args = p.parse_args(argv)
 
     if args.approve and not args.reviewer:
         p.error("--approve requires --reviewer")
     if args.reject and not args.reviewer:
         p.error("--reject requires --reviewer")
+    if args.reviewer:
+        try:
+            args.reviewer = normalize_reviewer(args.reviewer)
+        except ValueError as e:
+            p.error(str(e))
 
     if args.list:    cmd_list(args)
     if args.show:    cmd_show(args)

@@ -4,6 +4,7 @@ id: phonological_production
 name: Phonological production
 kind: impairment
 status: approved
+review_tier: legacy
 created_by: agent:claude-opus-4-7
 created_on: 2026-05-01
 short_definition: Underlying language component capturing the ability to produce word

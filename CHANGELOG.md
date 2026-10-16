@@ -7,6 +7,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Knowledge base: local models, review governance, audit tooling
+
+- **Merged `ollama-local-models`**: extraction, the review second
+  opinion and the RAG narrative run on a local Ollama model; the
+  Anthropic-API path and `anthropic` dependency are gone. Model per role
+  in `aphasia-kb/models.yaml`; `aphasia-kb/MODELS.md` documents how to
+  choose and benchmark one (`compare_extraction.py`).
+- **Review governance** (`aphasia-kb/GOVERNANCE.md`, schema v2.5):
+  deterministic checks can reject or defer but never approve
+  (`auto_review.py --all` now yields `checks_passed`, not
+  `auto_approve`); drafts are classified into Tier A (an independent
+  model may approve after re-reading the PDF) or Tier B (a person
+  must); the model reviewer gets the paper's text layer and answers
+  seven per-finding checks under a constrained schema; approvals are
+  stamped `human:<name>`/`model:<tag>` with `review_tier` and a
+  per-finding `review` block; log lines `MODEL-APPROVED` and `AUDIT`;
+  `--allow-local-override` deprecated; `AUTO-APPROVED` path removed.
+- `promote.py`: normalises reviewers, refuses `auto-reviewer`, a model
+  on Tier B, or a model reviewing its own extraction; `--tier`,
+  `--extractor`.
+- `aphasia_kb.py`: `reviewer_kind()`, `review_kind`/`reviewer`/
+  `review_tier` columns in the findings table,
+  `KnowledgeBase(review_kinds=("human",))` for the clinical path.
+- `aphasia_kb_rag.py --human-approved-only`; reports mark
+  model-approved and pre-policy findings inline.
+- New `kb_status.py` (counts, review provenance, decoder reachability,
+  `--papers-needed`, `--tag-legacy`) and `audit_quotes.py` (every
+  canonical quote checked against its PDF).
+- 33 pre-policy entries stamped `review_tier: legacy` (GOVERNANCE.md §5).
+- `extract.py --pick-model` lists all pulled models, not only Gemma.
+- `test_review_guardrails.py` covers tiers, independence and promote
+  policy; `docs/CALMAR_PALETTE.md` + `calmar_palette.json` document the
+  project palette.
+
 ### Interactive-widget performance & UX overhaul
 
 - **New `calmar_widgets.py` helper module** shared by all viewer cells:

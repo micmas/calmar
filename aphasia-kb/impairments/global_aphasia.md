@@ -4,6 +4,7 @@ id: global_aphasia
 name: Global aphasia
 kind: impairment
 status: approved
+review_tier: legacy
 created_by: agent:claude-opus-4-7
 created_on: 2026-05-01
 short_definition: The most severe aphasia syndrome, characterized by profoundly impaired

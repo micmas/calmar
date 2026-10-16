@@ -164,3 +164,4 @@ add an `EXTRACTED` line for every run.
 2026-05-07 | AUTO-APPROVED | @NadeauCrosson1997 | subcortical_aphasia__NadeauCrosson1997 | reviewer: michele
 2026-05-07 | AUTO-APPROVED | @Crosson1999 | thalamic_language_mechanisms__Crosson1999 | reviewer: michele
 2026-05-07 | AUTO-APPROVED | @Simic2023 | treatment_neuroplasticity_aphasia__Simic2023 | reviewer: michele
+2026-10-16 | LEGACY-TAGGED | — | 33 entries | review_tier: legacy stamped per GOVERNANCE.md §5

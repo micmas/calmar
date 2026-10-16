@@ -22,6 +22,7 @@ typical_range: 0–30; cut-off for aphasia ≤28; mild-to-moderate range 14–28
   sample
 direction_of_severity: lower_is_worse
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 findings:

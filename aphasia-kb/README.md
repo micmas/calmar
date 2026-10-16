@@ -6,11 +6,14 @@ behavioural / clinical predictors. The format is **markdown with rich
 YAML frontmatter**, designed for both human review and machine
 consumption.
 
-> **The user is always in the loop.** No agent writes directly into the
-> canonical `regions/`, `impairments/`, `therapies/`, `predictors/`, or
-> `ingredients/` folders. Agents write to `drafts/`. A human reviewer
-> promotes drafts to canonical entries via `promote.py`. This separation
-> is the whole point of v2.
+> **Nothing is approved without a second reading of the paper, and a
+> named person is accountable for everything in the canonical folders.**
+> Agents write to `drafts/`. A draft reaches `regions/`, `impairments/`,
+> `therapies/`, `predictors/` or `ingredients/` only through
+> `promote.py`, approved either by a person or — for routine Tier A
+> findings — by an independent local model that re-read the PDF, with
+> a person auditing a sample. The policy is [`GOVERNANCE.md`](GOVERNANCE.md);
+> which local model does what is [`MODELS.md`](MODELS.md).
 
 ## Layout
 
@@ -20,6 +23,8 @@ aphasia-kb/
 ├── schema.md                  # YAML frontmatter spec (v2.3 — read first)
 ├── HOWTO.md                   # end-to-end walkthrough: one PDF → approved entry
 ├── EXTRACTION_SKILL.md        # the agent's instruction manual
+├── GOVERNANCE.md              # who may approve what, tiers, audit, legacy (read this)
+├── MODELS.md                  # choosing and benchmarking the local models
 ├── citations.md               # bibliography (@Key references)
 ├── extraction_log.md          # append-only audit log
 │
@@ -64,9 +69,11 @@ The scripts split into two phases: **building** the KB from papers
 | `batch_ocr.py`           | (Run first) detect and OCR any image-only PDFs in `papers/` so their text is searchable.   | local     |
 | `extract.py`             | Drive an LLM to turn a PDF into draft entries + an annotated PDF.                          | API       |
 | `annotate_paper.py`      | Render a color-coded PDF from a draft's `source_passages` so you can check the quotes.      | local     |
-| `auto_review.py`         | Deterministic safety checks (+ optional LLM second opinion) on pending drafts.             | local/API |
-| `aphasia_kb.py`          | Load, validate, and query the KB; `--check` validates drafts before promotion.             | local     |
-| `promote.py`             | Human review gate: list / diff / show / approve / reject drafts into the canonical folders. | local     |
+| `auto_review.py`         | Deterministic checks (reject/defer only), tier classification, and the independent model's second reading of the PDF. | local |
+| `aphasia_kb.py`          | Load, validate, and query the KB; `--check` validates drafts before promotion; `review_kinds=` filters by review provenance. | local     |
+| `promote.py`             | The only way into the canonical folders: approve/reject as `human:<name>` or (Tier A only) `model:<tag>`; stamps review provenance. | local     |
+| `audit_quotes.py`        | Verify every quote in the canonical KB against its PDF — the re-review triage (GOVERNANCE.md §5). | local     |
+| `kb_status.py`           | Counts, review provenance, decoder reachability, papers needed; `--tag-legacy` stamps pre-policy entries. | local     |
 | `neurosynth_bootstrap.py`| (Alternative to `extract.py`) scaffold region drafts from Neurosynth meta-analyses.        | local     |
 | `decode_lesion.py`       | Correlate an MNI lesion mask with Neurosynth v7 term maps + HarvardOxford regions.          | local     |
 | `aphasia_kb_rag.py`      | Join `decode_lesion` output to KB findings → a deterministic cited report (+ optional LLM). | local/API |
