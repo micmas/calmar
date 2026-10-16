@@ -41,12 +41,13 @@ def cohort_matrix(df, pairs, metric, limit):
 
 def build_results_panel(tables, entries, default_atlas, atlas_objects, helpers, *,
                         deriv_path_for, inventory_for, deriv_dir, atlas_dir,
-                        reports_dir, threshold=.5, previous=None):
+                        reports_dir, threshold=.5, previous=None, template_path_for=None):
     """Build the atlas-results preview (table, brain view, chart, group summaries).
 
     ``previous`` is the panel returned by an earlier call; it is closed first so
     re-running the cell does not leave a second live viewer. Returns None when
-    no overlap tables exist.
+    no overlap tables exist. ``template_path_for(entry)``: folder with the
+    participant's ``Subject_in_MNI`` (default ``deriv_path_for``, LINDA's).
     """
     if previous and callable(previous.get('close')):
         previous['close']()
@@ -85,7 +86,7 @@ def build_results_panel(tables, entries, default_atlas, atlas_objects, helpers, 
     def show_brain():
         _, sub, ses = selection.current()
         entry = by_pair[(sub, ses)]
-        background = Path(deriv_path_for(entry)) / 'Subject_in_MNI.nii.gz'
+        background = Path((template_path_for or deriv_path_for)(entry)) / 'Subject_in_MNI.nii.gz'
         if not background.exists():
             viewer.load_volumes([])
             message.value = f'Brain viewer needs Subject_in_MNI.nii.gz for {escape(_label((sub, ses)))}. Run the MNI warp first.'

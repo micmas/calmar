@@ -475,7 +475,7 @@ class QCVolumes:
     def _native_mask(self, entry, source):
         defaults = {"linda": self.study.linda_dir(entry) / "Prediction3_native.nii.gz",
                     "synthstroke": self.study.synthstroke_dir(entry) / "prediction_lesion_mask.nii.gz",
-                    "manual": self.study.linda_dir(entry) / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz"}
+                    "manual": self.study.template_dir(entry) / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz"}
         return Path(self.study.masks(entry).get(source, {}).get("T1w", defaults[source]))
 
     def skull_strip(self, entry):
@@ -512,7 +512,7 @@ class QCVolumes:
         return volumes
 
     def mni_warp(self, entry, show_synth=True):
-        subject = self.study.linda_dir(entry) / "Subject_in_MNI.nii.gz"
+        subject = self.study.template_dir(entry) / "Subject_in_MNI.nii.gz"
         volumes = [{"path": str(subject)}] if subject.exists() else []
         layers = [("linda", 0.50), ("manual", self.settings.manual_overlay_opacity)]
         if show_synth:

@@ -691,7 +691,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
                          f"{entry.get('session') or ''}. Choose an available mask in the report selector.")
     mask = Path(study.mni_mask(entry, source))
     linda_dir = Path(study.linda_dir(entry))
-    brain = linda_dir / "Subject_in_MNI.nii.gz"
+    brain = Path(study.template_dir(entry)) / "Subject_in_MNI.nii.gz"
     # prepare_report_overlap reads the atlas list from INTERP_KB_ATLASES; give it ours.
     view = dict(namespace, INTERP_KB_ATLASES=list(settings.kb_atlases))
     prepare_report_overlap(view, entry, source)

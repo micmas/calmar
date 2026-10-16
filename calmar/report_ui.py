@@ -118,7 +118,7 @@ class ReportInputs:
             self.preview = helpers.fresh_viewer("report_mask_comparison", height=330)
         entry = self.entries[self.subject.value]
         inventory = self.ns["mask_inventory_for"](entry)
-        brain = self.ns["deriv_path_for"](entry) / "Subject_in_MNI.nii.gz"
+        brain = self.ns.get("template_path_for", self.ns["deriv_path_for"])(entry) / "Subject_in_MNI.nii.gz"
         if not brain.exists():
             self.preview.load_volumes([])
             self.compare_body.children = (w.HTML("The MNI brain image is unavailable; complete the warp first."),)
