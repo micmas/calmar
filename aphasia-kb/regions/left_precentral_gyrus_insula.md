@@ -10,6 +10,7 @@ aliases:
 kind: classical
 hemisphere: left
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 findings:

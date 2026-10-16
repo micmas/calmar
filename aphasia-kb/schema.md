@@ -1,4 +1,4 @@
-# Schema v2.4
+# Schema v2.5
 
 Every entry is a single markdown file with **YAML frontmatter** followed by
 **prose**. The frontmatter is the contract that `aphasia_kb.py`,
@@ -36,8 +36,15 @@ documented change to *this file* and the loader together.
 >   evidence distinctly from quantitative findings and may filter it
 >   out by default.
 >
-> New entries must declare `schema_version: 2.4`. The loader reads older
-> entries (v1, v2.0–v2.3) for backwards compatibility.
+> - **v2.5** adds review provenance (see `GOVERNANCE.md`): optional
+>   file-level `review_tier` (`A` | `B` | `legacy`) and an optional
+>   per-finding `review: {reviewer, reviewed_on, tier, extractor}` block
+>   written by `promote.py`, so an entry that accumulates findings from
+>   several reviews reports each one. `reviewer` values are
+>   `human:<name>` or `model:<ollama-tag>`. No other structural change.
+>
+> New entries must declare `schema_version: 2.5`. The loader reads older
+> entries (v1, v2.0–v2.4) for backwards compatibility.
 
 ## File-level fields (every entry)
 
@@ -49,7 +56,8 @@ documented change to *this file* and the loader together.
 | `aliases`        | list    | no       | Other names that should resolve to this entry. |
 | `kind`           | enum    | yes      | See per-bucket section below. |
 | `status`         | enum    | yes      | `draft` \| `in_review` \| `approved` \| `rejected` \| `legacy_v1`. |
-| `reviewer`       | string  | when status=`approved` | Free text identifying the human reviewer. |
+| `reviewer`       | string  | when status=`approved` | `human:<name>` or `model:<ollama-tag>` (a bare name is read as a person). |
+| `review_tier`    | enum    | no       | `A` \| `B` \| `legacy` (v2.5). `legacy` = approved before the governance policy, not PDF-re-read. |
 | `reviewed_on`    | ISO date | when status=`approved` | When the reviewer signed off. |
 | `created_by`     | string  | yes | E.g. `agent:claude-opus-4-7` or `human:michele`. |
 | `created_on`     | ISO date | yes | When the entry was first written. |

@@ -4,6 +4,7 @@ id: left_superior_temporal_gyrus
 name: Left Superior Temporal Gyrus (Dorsal Stream Node)
 kind: classical
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 aliases:

@@ -8,6 +8,7 @@ aliases:
 - SSS spelling treatment
 kind: therapy
 status: approved
+review_tier: legacy
 created_by: agent:claude-opus-4-7
 created_on: 2026-05-01
 short_description: An impairment-based treatment for acquired dysgraphia in which

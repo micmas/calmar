@@ -4,6 +4,7 @@ id: left_supramarginal_gyrus_premotor
 name: Left Supramarginal Gyrus and Premotor Cortex (supra-Sylvian)
 kind: classical
 status: approved
+review_tier: legacy
 created_by: agent:claude-sonnet-4-6
 created_on: 2026-05-06
 hemisphere: left

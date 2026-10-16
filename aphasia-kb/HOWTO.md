@@ -19,10 +19,13 @@ whichever fits the moment.
 
 | | Cowork (chat) | CLI (`extract.py`) |
 |---|---|---|
-| **Cost** | Covered by your Cowork subscription | **Pay-per-call against the Anthropic API** (~$0.35–0.50 / paper at Sonnet) |
-| **Auth** | Logged into the desktop app | `ANTHROPIC_API_KEY` env var |
+| **Cost** | Covered by your Cowork subscription | Free — local inference |
+| **Auth** | Logged into the desktop app | None; needs `ollama serve` running |
+| **Paper text leaves the machine?** | Yes — full text is sent to Anthropic | **No** — stays local |
+| **Quality** | Frontier model | Lower; review drafts more carefully |
+| **Speed** | Fast | Minutes per paper |
 | **Style** | Interactive — Claude can ask clarifying questions, you can steer mid-extraction, you read the drafts as they're written | Fire-and-forget — drop a PDF, run a command, get drafts back |
-| **Best for** | One paper at a time, judgment calls, when you want to read along | Batch (`--batch`), unattended runs, scripted pipelines |
+| **Best for** | One paper at a time, judgment calls, when you want to read along | Batch (`--batch`), unattended runs, copyright-sensitive PDFs |
 
 Anywhere this doc says **"calls the Anthropic API"** below, the cost
 note applies — only to those steps. The validator, auto-review's
@@ -42,12 +45,12 @@ cp ~/Downloads/Foo2024.pdf  aphasia-kb/papers/
 #      aphasia-kb/papers/Foo2024.pdf following EXTRACTION_SKILL.md.
 #      Subscription cost; no per-paper charge.
 #  (b) CLI:    python aphasia-kb/extract.py --pdf aphasia-kb/papers/Foo2024.pdf
-#              ⚠ calls the Anthropic API (~$0.35–0.50 / paper).
+#              free + fully local (Ollama); slower, lower quality.
 
 python aphasia-kb/aphasia_kb.py --check aphasia-kb/drafts/   # free, local
 
 python aphasia-kb/auto_review.py --all                       # free, local
-python aphasia-kb/auto_review.py --deferred --llm-review     # ⚠ API call
+python aphasia-kb/auto_review.py --deferred --llm-review     # free, local
 python aphasia-kb/auto_review.py --emit-worksheet worksheet.yaml   # free
 # fill in verdicts in worksheet.yaml
 python aphasia-kb/auto_review.py --apply-verdicts worksheet.yaml \
@@ -106,22 +109,87 @@ that should have been refused.
 **Cost:** covered by your Cowork subscription. No per-paper charge,
 no API key needed.
 
-### Option B — CLI `extract.py` (pay-per-paper API call)
+### Option B — CLI `extract.py` (fully local, via Ollama)
 
 ```bash
+ollama pull gemma4:26b                    # once
+python aphasia-kb/model_config.py         # check what's configured
 python aphasia-kb/extract.py --pdf aphasia-kb/papers/Foo2024.pdf
 ```
 
-> ⚠ **This calls the Anthropic API.** Roughly $0.35–0.50 per paper
-> at the default Sonnet model. Requires `ANTHROPIC_API_KEY` set
-> (`export ANTHROPIC_API_KEY="sk-ant-..."`). Get a key at
-> https://console.anthropic.com → API Keys.
+#### Choosing the model
+
+Local models improve constantly, so the model choice lives in
+**`models.yaml`**, not in the scripts. Three roles, each independently
+settable:
+
+| Role | Used by | Demands |
+|---|---|---|
+| `extract` | `extract.py` | Hardest — 50K-token context, structured JSON. Upgrade this first. |
+| `review` | `auto_review.py --llm-review` | Subtle judgement; can promote into the KB. |
+| `rag` | `aphasia_kb_rag.py --llm` | Easiest — summarises text it's handed. A smaller model is fine. |
+
+To adopt a newer model, pull it and edit one line:
+
+```bash
+ollama pull <new-model>
+$EDITOR aphasia-kb/models.yaml     # set roles.extract.model
+python aphasia-kb/model_config.py  # confirm it resolved + is pulled
+```
+
+Resolution order, highest first: `--pick-model` → `--model` → role env
+var (`APHASIA_EXTRACT_MODEL` etc.) → `APHASIA_LOCAL_MODEL` (all roles at
+once, handy for A/B testing) → `models.yaml` → `default`. Every script
+prints which layer won, so there's no guessing.
+
+```bash
+# try a new model across the whole pipeline without editing anything
+APHASIA_LOCAL_MODEL=gemma4:31b python aphasia-kb/extract.py --batch
+```
+
+**Interactive picker.** To choose a model at run time — e.g. to A/B a
+12B against a 26B — add `--pick-model`. It lists your locally-pulled
+gemma models (biggest first, with size and parameter count) and lets
+you pick one for that run only:
+
+```bash
+python aphasia-kb/extract.py --pdf papers/Foo2024.pdf \
+    --out-dir _compare/gemma12 --pick-model
+```
+
+#### Live GPU/CPU monitor
+
+Every real extraction run now samples load in the background and prints
+a one-line summary when the model returns:
+
+```
+resource: GPU offload min 100% / avg 100%  ·  CPU avg 140% (peak 220%)  ·  RAM peak 63%  ✓ stayed fully on GPU
+```
+
+The number that matters is **GPU offload**: the fraction of the model
+held in VRAM. At 100% the model is fully GPU-resident; below that it has
+spilled to CPU RAM and inference slows by roughly an order of magnitude.
+If a spill happens mid-run you get a live warning, not just a slow run —
+lower `num_ctx` (or pick a smaller model) to fit. Disable with
+`--no-monitor`. Sample the currently-loaded model on its own with:
+
+```bash
+python aphasia-kb/resource_monitor.py
+```
+
+> ✅ **Nothing leaves this machine.** Paper full text goes only to a
+> local Ollama server, so no publisher PDF is transmitted to a
+> third-party API. No API key, no per-paper cost.
+>
+> ⚠ Trade-off: slower (minutes per paper) and lower extraction
+> quality than a frontier model. Expect more validation issues at the
+> `promote.py` review step — review local drafts more carefully.
 
 What happens under the hood (same as Option A, just non-interactive):
 
 - The PDF is loaded with PyMuPDF and converted to plain text.
 - `EXTRACTION_SKILL.md` + `schema.md` + the paper text are sent to
-  the Anthropic API as a single prompt.
+  the local model as a single prompt via `POST /api/chat`.
 - The model returns one or more draft markdown files, written to the
   appropriate `drafts/{regions,impairments,therapies,predictors}/`
   subfolder.
@@ -132,13 +200,45 @@ What happens under the hood (same as Option A, just non-interactive):
 
 Variants:
 - `--batch` to process every PDF in `papers/` that doesn't yet have
-  drafts (useful after dropping in 5 papers at once — and the cost
-  scales linearly, ~$0.35–0.50 per paper).
+  drafts. Free, but budget real wall-clock time — run it overnight.
 - `--citation '@Foo2024'` to set the citation key explicitly; otherwise
   inferred from the filename.
-- `--model claude-haiku-4-5-20251001` for ~10× cheaper / lower quality.
-- `--model claude-opus-4-6` for ~3× more expensive / highest quality.
-- `--dry-run` to preview the prompt without spending API calls.
+- `--model <tag>` for any model in `ollama list` (default `gemma4:26b`).
+- `--num-ctx N` if you see the truncation warning (prompt filled the
+  context) or if you run out of RAM and need to shrink it.
+- `--ollama-host http://host:11434` if Ollama runs elsewhere.
+- `--dry-run` to preview the prompt and the num_ctx that would be used.
+
+**Troubleshooting**
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `Couldn't reach Ollama` | server not running | `ollama serve` |
+| HTTP 404 on the model | not pulled | `ollama pull gemma4:26b` |
+| "prompt filled num_ctx" warning | paper truncated | raise `--num-ctx` |
+| "0 drafts returned" | silent truncation, or model ignored the JSON contract | check `_last_extraction_response_*.txt`; raise `--num-ctx` |
+| Empty response / process killed | out of RAM | lower `--num-ctx` or use a smaller model |
+| "output hit num_predict" | JSON cut off | raise `--max-tokens` |
+| Extraction very slow, `ollama ps` shows `100% GPU` → partly CPU | KV cache for a large `num_ctx` no longer fits in memory | lower `num_ctx` for `extract` in models.yaml |
+
+#### About `ollama ps` and CONTEXT
+
+`ollama ps` shows the context of the **currently loaded instance**,
+which reflects whatever last called the model — often 4096, Ollama's
+default for an interactive `ollama run`. That number does *not* limit
+these scripts: they pass `num_ctx` explicitly on every request, which
+makes Ollama reload the model at the requested size.
+
+What it does tell you is **memory cost**. A 26B model is ~17GB of
+weights; a 90K-token KV cache adds several GB on top. On a Mac with
+unified memory, exceeding what's available doesn't error — Ollama
+quietly spills to CPU and extraction slows by an order of magnitude.
+If that happens, check `ollama ps` mid-run: a PROCESSOR reading that's
+no longer `100% GPU` is the tell. Fix by lowering `num_ctx` for the
+`extract` role in `models.yaml`.
+
+Worth doing one paper before a `--batch` run, to see the real timing
+and memory behaviour on your hardware.
 
 ### Either way
 
@@ -168,42 +268,107 @@ If you re-extract the same paper (say, with a stronger model or
 after updating the EXTRACTION_SKILL), the agent overwrites the
 existing drafts. Diff with git to see what changed.
 
-## 4. Auto-review (deterministic + optional LLM)
+## 4. Review: checks, tiers, and the second reading
 
-`auto_review.py` is the agentic pre-screening pass — it runs
-deterministic checks per draft, optionally adds an LLM second
-opinion, and writes a sidecar audit YAML to
-`auto_review_log/<draft_basename>.yaml`. The verdicts are:
+Policy lives in [`GOVERNANCE.md`](GOVERNANCE.md); this section is the
+procedure. `auto_review.py` runs deterministic checks per draft,
+classifies the draft into a review tier, optionally asks an
+*independent* local model to re-read the paper, and writes a sidecar
+audit YAML to `auto_review_log/<draft_basename>.yaml`.
 
-- `auto_approve` — all checks pass; safe to promote without human
-  intervention. Will `shell out` to `promote.py --approve` unless
-  you pass `--no-promote` or `--dry-run`.
-- `defer_to_human` — at least one soft check failed. Needs your
-  judgment. The sidecar lists exactly which check tripped and why.
-- `auto_reject` — a hard check failed (schema invalid,
-  contradictions, low-confidence finding). Stays in drafts/ with the
-  failure recorded.
-- `provisional_approve` — only set by the LLM-second-opinion pass:
-  deterministic deferred but the LLM read the source quotes and
-  vouched for the draft. You still see this and confirm.
+**The deterministic checks never approve.** Their verdicts are:
 
-Run two passes:
+- `checks_passed` — schema valid, every quote found in the PDF, no
+  low-confidence findings, no contradictions, no review flags. The
+  draft is *eligible* for review; nothing is promoted.
+- `defer_to_human` — a soft check tripped (a `verify`/`todo`-style
+  flag, inconsistent `sample.n`) or the PDF was unavailable under
+  `--require-pdf-match`. The sidecar lists which and why.
+- `auto_reject` — schema invalid or quotes not found in the PDF.
+  Stays in drafts/ with the failure recorded.
+- `provisional_approve` — only with `--provisional-without-pdf`: would
+  be eligible but the PDF check was skipped on this machine.
+
+**Tiers.** Every draft is classified from its frontmatter before any
+model sees it (`review_tier` and `tier_reasons` in the sidecar and in
+the worksheet):
+
+| Tier | Who may approve | What falls in it |
+|---|---|---|
+| **A** | an independent model, or a person | appends findings to an *existing* regions/impairments/predictors entry · every passage matched exactly · confidence high/medium · no flags · strength weak/moderate · primary quantitative evidence |
+| **B** | a person only | anything else — and always therapies, ingredients, reviews, new entry ids, `strength: strong`, flagged or low-confidence drafts |
 
 ```bash
-# Pass 1: deterministic only. Free — local Python, no API call.
-# Anything that's clearly fine auto-promotes; anything iffy lands
-# in defer_to_human.
+# Pass 1: deterministic checks + tier classification. Promotes nothing.
 python aphasia-kb/auto_review.py --all
 
-# Pass 2: re-review the deferred ones with an LLM second opinion.
-# ⚠ This calls the Anthropic API (sonnet by default; cost scales
-# with the number of deferred drafts × tokens per draft, typically
-# a few cents per draft).
-# This is where the "weak strength because Z=1.14 is marginal but
-# the agent's own author_limitation already explains why" kind of
-# edge case gets resolved.
-python aphasia-kb/auto_review.py --deferred --llm-review
+# Pass 2: the second reading. An independent local model (a different
+# tag from the extractor — see models.yaml `review`) re-reads the paper's
+# text layer and answers, per finding: is each passage there, does it
+# support the field it is tagged for, is the relationship faithful, is
+# strength fair, do the numbers match, are limitations captured, is a
+# contradicting result omitted? A unanimous `approve` on a Tier A draft
+# promotes it as `model:<tag>` (log line MODEL-APPROVED). On Tier B the
+# verdict is recorded and the draft waits for you.
+python aphasia-kb/auto_review.py --all --llm-review --require-pdf-match
+
+# While calibrating a new reviewer model: record verdicts, promote nothing.
+python aphasia-kb/auto_review.py --all --llm-review --no-model-approve
 ```
+
+#### Guardrails on the model reviewer
+
+A wrong approval is the most expensive mistake in the pipeline, and a
+mid-size local model is more likely to make it than a frontier model,
+because small models are agreeable. So every net fails toward "leave it
+for a person":
+
+| Model says | Effect |
+|---|---|
+| `defer` | Stays deferred (fails safe) |
+| `reject` | Honoured — always, on any tier |
+| `approve` | Promoted **only** if Tier A, reviewer ≠ extractor, paper text was available, and all votes agree; otherwise recorded as `agree_defer` |
+
+1. **Independence** — the reviewer tag must differ from the draft's
+   `created_by`. `promote.py` enforces the same rule, so it cannot be
+   bypassed by calling it directly.
+2. **Paper present** — without the text layer there is no second
+   reading; `approve` is downgraded.
+3. **Schema-constrained decoding** — Ollama restricts sampling to the
+   response schema, so the verdict cannot fall outside the enum and no
+   per-finding check can be skipped.
+4. **Structural validation** — exactly the real finding ids, no
+   self-contradiction (approving while any check is false), a rationale
+   long enough to audit, prompt not truncated at `num_ctx`.
+5. **Self-consistency** — `--votes 3` (default) runs the review three
+   times at temperature 0.4 and honours an approval only if all agree.
+6. **Tier** — Tier B is never model-approved, whatever the model says.
+
+Everything that fires is recorded under `llm_review.guardrails` in the
+sidecar YAML:
+
+```bash
+grep -A3 guardrails aphasia-kb/auto_review_log/*.yaml
+```
+
+`--allow-local-override` is deprecated and ignored: the tier decides.
+
+To verify the guardrails and the tier rules after editing the review
+code:
+
+```bash
+python aphasia-kb/test_review_guardrails.py   # no Ollama needed
+```
+
+#### Auditing model approvals
+
+After every 20 `MODEL-APPROVED` lines, or monthly, re-review a random
+20 % (minimum 3) against the annotated PDFs and log `AUDIT | pass|fail`.
+One substantive failure pauses model approval (`--no-model-approve`)
+and returns the entries since the last clean audit to a person. The
+downstream report marks model-approved findings and
+`aphasia_kb_rag.py --human-approved-only` (or
+`KnowledgeBase(..., review_kinds=("human",))`) drops them.
 
 **Cowork alternative for Pass 2:** instead of `--llm-review`, you
 can open the deferred drafts in Cowork and ask Claude to read them
@@ -250,9 +415,10 @@ python aphasia-kb/auto_review.py --apply-verdicts worksheet.yaml \
     --reviewer "michele"
 ```
 
-`approve` lifts a deferred draft to `auto_approve` and shells out to
-`promote.py --approve --reviewer michele`. `reject` marks it
-`auto_reject`. `agree_defer` keeps it deferred.
+`approve` promotes via `promote.py --approve --reviewer human:michele
+--tier <A|B>` (a bare name is normalised to `human:<name>`; the tier is
+stamped on every finding). `reject` marks it `auto_reject`.
+`agree_defer` keeps it deferred.
 
 The annotated PDF is the visual aid you use while filling out the
 worksheet. Open it in any PDF viewer side-by-side with worksheet.yaml.
@@ -261,15 +427,19 @@ Each `source_passages[].supports` field maps to a color
 exactly the sentence that justifies each claim/sample/method
 field.
 
-For drafts that already auto-approved (didn't go to defer), you've
-got nothing to do — they were promoted in step 4.
+Drafts the model approved in pass 2 are already in the canonical
+folders with `reviewer: model:<tag>`; they are what the periodic audit
+samples from.
 
 ## 6. Spot-check the canonical KB and commit
 
 `promote.py` (called by auto_review.py during apply-verdicts):
 
 1. Validates the draft once more.
-2. Stamps `status: approved`, `reviewer:`, `reviewed_on:`.
+2. Stamps `status: approved`, `reviewer:` (`human:`/`model:`),
+   `reviewed_on:`, `review_tier:`, and a `review:` block on every
+   finding; refuses `auto-reviewer`, a model on Tier B, or a model
+   reviewing its own extraction.
 3. If the canonical entry doesn't exist, moves the draft to
    `regions/` / `impairments/` / `therapies/` / `predictors/`.
 4. If the canonical entry **does** exist (multi-paper consolidation),
@@ -329,26 +499,29 @@ hand.
 
 ## Quick reference: commands
 
-The "Cost" column flags whether running the command spends Anthropic
-API credits. Cowork-equivalent paths exist for the API rows; see
-the prose above.
+Every CLI command is now free and fully local. The "Where it runs"
+column flags whether any text leaves this machine.
 
-| Command | Purpose | Cost |
+| Command | Purpose | Where it runs |
 |---|---|---|
-| (Cowork chat) "Extract from papers/X.pdf following the SKILL" | Extract one paper, interactively | Subscription |
-| `python extract.py --pdf papers/X.pdf` | Extract one paper | ⚠ API (~$0.35–0.50) |
-| `python extract.py --batch` | Extract every un-extracted PDF in papers/ | ⚠ API (~$0.35–0.50 per paper) |
-| `python aphasia_kb.py --check drafts/` | Validate drafts | Free |
-| `python aphasia_kb.py --check` | Validate the whole KB | Free |
-| `python auto_review.py --all` | Deterministic auto-review pass | Free |
-| `python auto_review.py --deferred --llm-review` | LLM second opinion on deferred | ⚠ API (a few cents / draft) |
-| (Cowork chat) "Review the deferred drafts in auto_review_log/" | LLM second opinion, interactive | Subscription |
+| (Cowork chat) "Extract from papers/X.pdf following the SKILL" | Extract one paper, interactively | ⚠ Off-machine (Anthropic) |
+| `python extract.py --pdf papers/X.pdf` | Extract one paper | Local (Ollama) |
+| `python extract.py --batch` | Extract every un-extracted PDF in papers/ | Local (Ollama) |
+| `python aphasia_kb.py --check drafts/` | Validate drafts | Local |
+| `python aphasia_kb.py --check` | Validate the whole KB | Local |
+| `python auto_review.py --all` | Deterministic checks + tier classification (promotes nothing) | Local |
+| `python auto_review.py --all --llm-review --require-pdf-match` | Independent model re-reads the PDF; approves Tier A only | Local (Ollama) |
+| `python audit_quotes.py` | Verify every canonical quote against its PDF | Local |
+| `python kb_status.py` | Entries, findings, review provenance, decoder reachability | Local |
+| `python kb_status.py --papers-needed` | Cited papers missing from papers/, with DOIs | Local |
+| `python test_review_guardrails.py` | Verify the review guardrails | Local (no model needed) |
+| (Cowork chat) "Review the deferred drafts in auto_review_log/" | LLM second opinion, interactive | ⚠ Off-machine (Anthropic) |
 | `python auto_review.py --emit-worksheet worksheet.yaml` | Generate reviewer worksheet | Free |
-| `python auto_review.py --apply-verdicts worksheet.yaml --reviewer "X"` | Apply human verdicts | Free |
+| `python auto_review.py --apply-verdicts worksheet.yaml --reviewer human:X` | Apply a person's verdicts | Free |
 | `python promote.py --list` | List pending drafts | Free |
 | `python promote.py --show drafts/X.md` | Print one draft | Free |
 | `python promote.py --diff drafts/X.md` | Diff against canonical | Free |
-| `python promote.py --approve drafts/X.md --reviewer "X"` | Approve single draft | Free |
+| `python promote.py --approve drafts/X.md --reviewer human:X` | Approve single draft (stamps tier + per-finding review) | Free |
 | `python promote.py --reject drafts/X.md --reviewer "X" --reason "Y"` | Reject single draft | Free |
 | `python annotate_paper.py --pdf P.pdf --draft D.md` | Re-render the annotated PDF (rarely needed; extract.py / Cowork runs this for you) | Free |
 
@@ -372,10 +545,21 @@ the prose above.
   the agent rewrites the file and your edits are gone (visible via
   `git diff`). Either don't re-extract, or commit your edits first
   and merge after.
-- **API cost surprise.** Only `extract.py` and
-  `auto_review.py --llm-review` hit the Anthropic API. The rest is
-  free local Python. If you're cost-sensitive, do the extraction in
-  Cowork (subscription-covered) and use only the deterministic
+- **`OLLAMA_HOST` set to a remote box.** Both scripts warn if the host
+  isn't local, but the warning is easy to miss in a batch run — and it
+  silently defeats the reason for running locally. Check with
+  `echo $OLLAMA_HOST`, or pass `--ollama-host http://localhost:11434`.
+- **The model never approves anything.** Check the sidecar: either the
+  draft is Tier B (`tier_reasons` says why — most often a new entry id
+  or `strength: strong`), the reviewer tag equals the extractor tag,
+  the PDF is missing, or the votes disagreed. All are by design.
+- **Everything defers after switching to local extraction.** Likely the
+  extraction, not the review: check whether the extract run printed a
+  `num_ctx` truncation warning. A truncated paper produces plausible-
+  looking drafts whose quotes don't match the source.
+- **Legacy cost note.** Only the Cowork chat paths now go off-machine.
+  The CLI is free local Python. If you're cost-sensitive, do the
+  extraction locally and use only the deterministic
   auto-review pass (no `--llm-review`); for borderline drafts, ask
   Cowork-Claude to weigh in instead of running `--llm-review`.
 - **`promote.py --approve` refuses on validation.** Run

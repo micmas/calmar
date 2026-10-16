@@ -56,3 +56,13 @@ logs/
 
 # Notebook edit locks
 /.*.edit-lock
+
+# Local-extraction scratch files. These contain verbatim paper text —
+# committing them would undo the point of extracting locally.
+aphasia-kb/_extraction_dry_run.txt
+aphasia-kb/_last_extraction_response_*.txt
+aphasia-kb/_compare/
+.env
+
+# Local Python virtual environment
+.venv/

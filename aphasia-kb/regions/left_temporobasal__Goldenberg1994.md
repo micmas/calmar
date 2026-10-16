@@ -4,6 +4,7 @@ id: left_temporobasal__Goldenberg1994
 name: Left Temporobasal Cortex (basal temporal lobe / entorhinal–perisylvian junction)
 kind: classical
 status: approved
+review_tier: legacy
 created_by: agent:claude-opus-4-7
 created_on: 2026-05-07
 hemisphere: left
