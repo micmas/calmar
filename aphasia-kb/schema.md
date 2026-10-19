@@ -171,7 +171,7 @@ to know what e.g. `direction: likely` actually means.
 
 | `relationship`   | Typical methods                        | "likely" means                                                                                          |
 |------------------|----------------------------------------|---------------------------------------------------------------------------------------------------------|
-| `causal`         | LSM, VLSM, VBCM, MLPA, lesion_network_mapping, disconnectome | "Damage to this region is associated with the impairment" — the canonical lesion-symptom claim. |
+| `causal`         | LSM, VLSM, RLSM, VBCM, MLPA, lesion_network_mapping, disconnectome | "Damage to this region is associated with the impairment" — the canonical lesion-symptom claim. |
 | `correlational`  | fMRI_FC, rs_fMRI, DTI, NODDI, EEG, MEG | "Activity / integrity of this region tracks behavior" — no causal claim, just covariation.              |
 | `recruitment`    | fMRI_activation                        | "This region is recruited (active) during this task" — task-functional claim.                           |
 | `responder`      | clinical_RCT, behavioral_only          | "Patients with this lesion / region pattern respond well to this therapy" — a moderator claim.          |
@@ -354,7 +354,7 @@ predictor_type    = behavioural | demographic | clinical | imaging_metric
 direction_of_severity = higher_is_worse | lower_is_worse | nonmonotonic
                       | not_applicable
 target_kind       = impairment | therapy | region | prognosis | predictor
-method            = LSM | VLSM | VBCM | MLPA | MVPA
+method            = LSM | VLSM | RLSM | VBCM | MLPA | MVPA
                   | fMRI_activation | fMRI_FC | rs_fMRI
                   | DTI | NODDI | tractography
                   | lesion_network_mapping | disconnectome
@@ -395,6 +395,12 @@ region_definition.kind = atlas | manual_ROI | peak_coord_sphere | tract
   behavioural scores. Use `VBCM` rather than `VLSM` when the paper
   explicitly cites Tyler et al. 2005 or describes a continuous-intensity
   approach.
+
+- **`RLSM`** (region-based lesion-symptom mapping): lesion load per
+  atlas region (proportion damaged) regressed against behaviour, as in
+  Fridriksson et al. 2018 *Brain*. Use `RLSM` when the unit of analysis
+  is an atlas region rather than a voxel (`VLSM`) or a multivariate
+  voxel pattern (`MLPA`). Added v2.5.
 
 ## Naming conventions for target IDs
 

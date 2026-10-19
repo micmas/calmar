@@ -506,6 +506,16 @@ highlighted PDF, so quotes must be **exact** — `Ctrl+F` should find
 each one in the PDF. Use `[…]` to elide irrelevant clauses; never edit
 the substantive claim.
 
+**Prose only.** A passage is a run of sentences from the body text.
+Never quote a table row, a figure caption cell, or a set of values
+joined with `|`: a text-layer search cannot find those, so the quote
+fails the fidelity check and the draft is rejected. When a number is
+reported only in a table, quote the results sentence that refers to
+the table and record the number in `statistics.effect_size` /
+`statistics.threshold`. If a claim has no sentence in the prose that
+states it, the paper does not make that claim extractably — leave it
+out.
+
 Aim for one passage per `supports` category that the finding actually
 makes a claim about. Typical complete set per finding:
 
