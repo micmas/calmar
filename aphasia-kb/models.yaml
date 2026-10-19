@@ -25,7 +25,8 @@ roles:
   # Wants: long context, good instruction-following, reliable JSON.
   # This is the most demanding role — upgrade this one first.
   extract:
-    model: gemma4:26b
+    model: gemma4:31b-it-q8_0   # adopted 2026-10-19 — see MODELS.md decision log;
+                                # needs ~48 GB RAM; on 32 GB use gemma4:26b
     max_tokens: 16000
     num_ctx: null        # null = size automatically from the prompt
 
