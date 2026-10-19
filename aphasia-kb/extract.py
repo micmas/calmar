@@ -272,7 +272,15 @@ The complete workflow is in EXTRACTION_SKILL.md (below). Key rules:
 
 5. SOURCE PASSAGES: every finding needs verbatim quotes (1-3 sentences
    each) tagged with their `supports` field. The annotator uses these
-   to highlight the source PDF.
+   to highlight the source PDF, so a quote must be a run of sentences
+   copied exactly from the paper's prose — never a table row, a figure
+   caption cell, or values joined with "|". If a number lives only in a
+   table, quote the results sentence that refers to the table (e.g.
+   "Posterior STG was the strongest predictor of sentence comprehension
+   (Table 3)") and put the number itself in the `statistics` fields.
+   A finding with no prose passage for its claim is not extractable.
+   Aim for one passage per aspect the finding uses: claim, sample,
+   method, statistics, and the authors' own limitation.
 
 6. NEVER INVENT: statistics, sample sizes, citations, or effect
    directions. If the paper doesn't report it, use `not_reported`.
