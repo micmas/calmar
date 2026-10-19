@@ -119,112 +119,55 @@ def _schema_issues(paths: list[Path]) -> dict[str, list[str]]:
 
 
 def _quote_check(findings: list[dict], papers_dir: Path) -> dict:
-    """Grade every quote against the source PDF.
+    """Grade every quote against the source PDF via the shared
+    `quote_check.grade_quote` — the same grader `auto_review.py` and
+    `audit_quotes.py` use, so a benchmark and the real pipeline agree.
 
-    Graded, not pass/fail, because PDF text extraction is lossy: quotes
-    that legitimately span a column break, page break or figure caption
-    come back mangled even when the curator copied them faithfully.
-    Across this KB's *approved* entries roughly 13% of quotes fail a
-    strict containment test, and the overwhelming majority of those are
-    extraction artifacts rather than bad quotes.
-
-    So we separate FOUR outcomes, not two:
-      exact    — verbatim (modulo the shared normalizer)
-      anchored — a long opening run matches, then diverges. Almost always
-                 a PDF layout artifact; the quote is real.
-      near     — not verbatim, but a high-similarity passage exists at
-                 the same spot. This is a PARAPHRASE or a silent fix of
-                 an OCR error in the PDF (e.g. the model "corrects"
-                 "showed Jess improvement" to "less"). The content is
-                 real; the quote just isn't verbatim — a quality issue
-                 for a verbatim-quote KB, but NOT fabrication.
+    Graded, not pass/fail, because PDF text extraction is lossy. The
+    grades that matter here:
+      exact / elided / table — verifiable content (FOUND)
+      anchored — a glyph the PDF font encodes oddly was corrected;
+                 real, not verbatim
+      near     — paraphrase or lost space; real content, not verbatim
       absent   — no similar passage anywhere. THIS is the fabrication
                  signal, and the only one that should condemn a model.
-
-    Keeping `near` distinct matters: a model that paraphrases is fixable
-    with a stricter prompt; a model that invents quotes is not usable at
-    all. Collapsing them (as a naive verbatim check does) would condemn
-    the first for the crime of the second.
     """
-    import difflib
+    from quote_check import PaperText, find_paper, grade_quote
 
-    from auto_review import _extract_pdf_text, _normalize
-
-    ANCHOR = 60      # chars that must match to call a quote "anchored"
-    NEAR_RATIO = 0.82   # similarity to call a non-verbatim quote "near"
-
-    def _near_match(q: str, text: str) -> bool:
-        """Is there a passage in `text` highly similar to `q`?
-
-        Anchor on a few words to locate the region cheaply, then run
-        difflib only on that window — sliding difflib over the whole PDF
-        would be far too slow. Try several anchors so an OCR error in the
-        opening words doesn't hide an otherwise-real quote.
-        """
-        words = q.split()
-        if len(words) < 5:
-            return False
-        for start in (0, 3, len(words) // 2):
-            anchor = " ".join(words[start:start + 4])
-            if len(anchor) < 8:
-                continue
-            idx = text.find(anchor)
-            if idx < 0:
-                continue
-            lo = max(0, idx - start * 8)
-            window = text[lo:lo + len(q) + 60]
-            if difflib.SequenceMatcher(None, q, window[:len(q)]).ratio() \
-                    >= NEAR_RATIO:
-                return True
-        return False
-
-    cache: dict[str, str] = {}
-    exact = anchored = near = absent = total = 0
-    absent_list: list[str] = []
-    anchored_list: list[str] = []
-    near_list: list[str] = []
+    cache: dict[str, PaperText | None] = {}
+    counts = {g: 0 for g in ("exact", "elided", "table", "anchored",
+                             "near", "absent")}
+    total = 0
+    lists: dict[str, list[str]] = {g: [] for g in counts}
     no_quotes: list[str] = []
 
     for f in findings:
-        cite = (f.get("citation") or "").lstrip("@")
+        cite = (f.get("citation") or "")
         sps = f.get("source_passages") or []
         if not sps:
             no_quotes.append(f"{f['_entry']}:{f.get('id')}")
             continue
         if cite not in cache:
-            pdf = next((papers_dir / f"{cite}{e}" for e in (".pdf", ".txt")
-                        if (papers_dir / f"{cite}{e}").exists()), None)
-            if pdf is None:
-                cache[cite] = ""
-            else:
-                try:
-                    cache[cite] = _normalize(_extract_pdf_text(pdf)).casefold()
-                except Exception:
-                    cache[cite] = ""
-        text = cache.get(cite, "")
-        if not text:
+            pdf = find_paper(cite, papers_dir)
+            try:
+                cache[cite] = PaperText.from_pdf(pdf) if pdf else None
+            except Exception:
+                cache[cite] = None
+        paper = cache.get(cite)
+        if paper is None:
             continue
         for sp in sps:
             raw = (sp.get("quote") or "").strip()
             if not raw:
                 continue
             total += 1
-            q = _normalize(raw).casefold()
+            g = grade_quote(raw, paper)
+            counts[g] += 1
             where = f"{f['_entry']}:{f.get('id')} p.{sp.get('page','?')}"
-            if q in text:
-                exact += 1
-            elif len(q) > ANCHOR and q[:ANCHOR] in text:
-                anchored += 1
-                anchored_list.append(f"{where} “{raw[:70]}…”")
-            elif _near_match(q, text):
-                near += 1
-                near_list.append(f"{where} “{raw[:80]}…”")
-            else:
-                absent += 1
-                absent_list.append(f"{where} “{raw[:90]}…”")
-    return {"total": total, "exact": exact, "anchored": anchored,
-            "near": near, "absent": absent, "absent_list": absent_list,
-            "anchored_list": anchored_list, "near_list": near_list,
+            lists[g].append(f"{where} “{raw[:90]}…”")
+    return {"total": total, **counts,
+            "absent_list": lists["absent"], "anchored_list": lists["anchored"],
+            "near_list": lists["near"], "table_list": lists["table"],
             "no_quotes": no_quotes}
 
 
@@ -254,12 +197,14 @@ def _print_side(a: dict, b: dict) -> None:
     for side in (a, b):
         q = side["quotes"]
         t = q["total"] or 1
-        side["_ok"] = q["exact"] + q["anchored"]
+        side["_ok"] = q["exact"] + q["elided"] + q["table"] + q["anchored"]
         side["_okpct"] = 100 * side["_ok"] / t
         side["_abspct"] = 100 * q["absent"] / t
 
     row("quotes total", a["quotes"]["total"], b["quotes"]["total"])
     row("  exact match", a["quotes"]["exact"], b["quotes"]["exact"])
+    row("  elided (fragments ok)", a["quotes"]["elided"], b["quotes"]["elided"])
+    row("  table row (cells)", a["quotes"]["table"], b["quotes"]["table"])
     row("  anchored (PDF artifact)",
         a["quotes"]["anchored"], b["quotes"]["anchored"])
     row("  near (paraphrase/OCR)",
@@ -284,6 +229,11 @@ def _print_detail(side: dict) -> None:
               f"paraphrased or OCR-corrected (content real, not verbatim):")
         for m in q["near_list"][:8]:
             print(f"    ~ {m}")
+    if q.get("table_list"):
+        print(f"\nℹ {side['label']}: {len(q['table_list'])} quote(s) are table "
+              f"rows (verifiable cells, but the extractor is asked for prose):")
+        for m in q["table_list"][:8]:
+            print(f"    ▤ {m}")
     if q["no_quotes"]:
         print(f"\n⚠ {side['label']}: finding(s) with NO source_passages: "
               f"{', '.join(q['no_quotes'][:8])}")
