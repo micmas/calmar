@@ -54,7 +54,8 @@ extraction_log.md — append-only: EXTRACTED · REJECTED · MODEL-APPROVED · AP
 Minimal session, from the repository root with the venv active:
 
 ```bash
-cp ~/Downloads/Foo2024.pdf aphasia-kb/papers/Foo2024.pdf       # name = citation key
+cp ~/Downloads/1-s2.0-S00939.pdf aphasia-kb/papers/            # any name
+python aphasia-kb/intake_papers.py --execute                      # rename → strip covers → OCR
 python aphasia-kb/extract.py --pdf aphasia-kb/papers/Foo2024.pdf
 python aphasia-kb/aphasia_kb.py --check aphasia-kb/drafts/
 python aphasia-kb/auto_review.py --all --llm-review --require-pdf-match
@@ -78,6 +79,9 @@ aphasia-kb/
 ├── extraction_log.md          # append-only audit log
 │
 │   # ---- building the KB ----
+├── intake_papers.py           # the three steps below in one command
+├── match_papers.py            # rename downloaded PDFs to their citation key (DOI / title)
+├── strip_cover_pages.py       # drop JSTOR / T&F / ProQuest … cover sheets from PDFs
 ├── batch_ocr.py               # OCR image-only PDFs in papers/
 ├── extract.py                 # local model: PDF → drafts + annotated PDF
 ├── annotate_paper.py          # colour-highlight a PDF from a draft's source_passages
@@ -114,6 +118,9 @@ aphasia-kb/
 
 | Script | Role | Needs |
 |---|---|---|
+| `intake_papers.py` | Download → extractor-ready in one command: runs the three scripts below in order, then prints the papers line of `kb_status.py`. Dry run by default; `--execute` applies all three. | local |
+| `match_papers.py` | Rename PDFs dropped into `papers/` under publisher names to `<Key>.pdf`, matching on the DOI in the text, the DOI in the filename or the title in the filename; `--execute` renames, nothing is overwritten. | local |
+| `strip_cover_pages.py` | Remove leading publisher sheets (JSTOR, HighWire, Taylor & Francis, ProQuest, ResearchGate …) so page numbers and quotes refer to the article; scanned pages are never removed; originals kept in `papers/_originals/`. | local |
 | `batch_ocr.py` | Detect and OCR image-only PDFs so their text layer is searchable. Run before extracting an older paper. | local |
 | `extract.py` | Read a PDF's text layer and emit schema-bound drafts plus the annotated PDF. `--dry-run` previews prompt size and `num_ctx`; `--batch` does every un-extracted PDF; `--out-dir _compare/<model>` sandboxes a benchmark run. | Ollama |
 | `annotate_paper.py` | Highlight each `source_passage` in the PDF, colour-coded by what it supports. The reviewer's primary tool. | local |
@@ -133,10 +140,12 @@ configuration error and the scripts warn about it.
 ## Papers
 
 Source PDFs are not redistributed. `citations.md` carries the DOI for
-every key; fetch papers through your own access and save them as
-`papers/<Key>.pdf` (the key exactly, e.g. `Fridriksson2018Anatomy.pdf`).
-`kb_status.py --papers-needed` lists what the canonical KB depends on
-and is missing. Annotated copies (`<Key>_annotated.pdf`) are generated
+every key; fetch papers through your own access, drop them into
+`papers/` under any name and run `intake_papers.py --execute`: the
+file is renamed to `<Key>.pdf` from its DOI, publisher cover sheets are
+removed and scans are OCR'd. (Or name it yourself, e.g.
+`Fridriksson2018Anatomy.pdf`, and run the steps separately.) `kb_status.py --papers-needed` lists
+what the canonical KB depends on and is missing. Annotated copies (`<Key>_annotated.pdf`) are generated
 locally and stay local.
 
 ## What each finding captures

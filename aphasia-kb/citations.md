@@ -567,6 +567,52 @@ doi:10.1177/1545968319862561
 
 ---
 
+## @Maher2006  [cited]
+Maher LM, Kendall D, Swearengin JA, Rodriguez A, Leon SA, Pingel K, Holland AL,
+Rothi LJG.
+A pilot study of use-dependent learning in the context of Constraint Induced
+Language Therapy.
+*J Int Neuropsychol Soc*. 2006;12(6):843–852.
+doi:10.1017/S1355617706061029
+
+> Cited by `therapies/constraint_induced_aphasia_therapy.md` f2, which was
+> written from clinical knowledge in 2026-05 without the paper (its only
+> passage is a placeholder). Added 2026-10-19 with the PDF in `papers/`
+> so the finding can be re-extracted properly (GOVERNANCE.md §5).
+
+## @Stahl2013  [cited]
+Stahl B, Henseler I, Turner R, Geyer S, Kotz SA.
+How to engage the right brain hemisphere in aphasics without even singing:
+evidence for two paths of speech recovery.
+*Front Hum Neurosci*. 2013;7:35.
+doi:10.3389/fnhum.2013.00035
+
+> Cited by `therapies/melodic_intonation_therapy.md` f3 (placeholder
+> passage; see @Maher2006 note). Added 2026-10-19 with the PDF.
+
+## @vanderMeulen2012  [cited]
+van der Meulen I, van de Sandt-Koenderman WME, Ribbers GM.
+Melodic Intonation Therapy: present controversies and future opportunities.
+*Arch Phys Med Rehabil*. 2012;93(1 Suppl):S46–S52.
+doi:10.1016/j.apmr.2011.05.029
+
+> Cited by `therapies/melodic_intonation_therapy.md` f2 (placeholder
+> passage; see @Maher2006 note). Added 2026-10-19 with the PDF. The
+> finding also mentions RCT evidence, which is van der Meulen et al.
+> 2014 *Neurorehabil Neural Repair* (doi:10.1177/1545968313517754), not
+> this paper — resolve when re-extracting.
+
+## @Raymer  [extracted-as-review]
+Raymer AM, Roitsch J.
+Effectiveness of Constraint-Induced Language Therapy for Aphasia: Evidence
+From Systematic Reviews and Meta-Analyses.
+*Am J Speech Lang Pathol*. 2022.
+doi:10.1044/2022_AJSLP-22-00248
+
+> Key kept as `@Raymer` (no year) to match the existing
+> `reviews/constraint_induced_language_therapy__Raymer.md`; entry added
+> 2026-10-19 so the DOI is on record. PDF: `papers/Raymer.pdf`.
+
 ## Extracted papers (added 2026-05-06, batch 3)
 
 ## @DenOuden2019  [extracted]
