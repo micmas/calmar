@@ -178,7 +178,7 @@ def _gather_existing_citation_keys(kb_root: Path) -> set[str]:
     cit = kb_root / "citations.md"
     if cit.exists():
         for line in cit.read_text().splitlines():
-            m = re.match(r"^##\s+(@\S+)\s*$", line)
+            m = re.match(r"^##\s+(@\S+)", line)      # "## @Key" or "## @Key  [status]"
             if m:
                 keys.add(m.group(1))
     for d in list((kb_root / "drafts").rglob("*.md")) \
@@ -189,6 +189,45 @@ def _gather_existing_citation_keys(kb_root: Path) -> set[str]:
         m = re.match(r".+__(.+)\.md$", d.name)
         if m:
             keys.add("@" + m.group(1))
+    return keys
+
+
+def _citation_statuses(kb_root: Path) -> dict[str, str]:
+    """@Key -> status tag from the `## @Key  [status]` headers of
+    citations.md (extracted / cited / seed / refused …)."""
+    out: dict[str, str] = {}
+    cit = kb_root / "citations.md"
+    if cit.exists():
+        for line in cit.read_text(encoding="utf-8").splitlines():
+            m = re.match(r"^##\s+(@\S+)\s*(?:\[([\w\-]+)\])?", line)
+            if m:
+                out[m.group(1)] = (m.group(2) or "").lower()
+    return out
+
+
+MAX_BATCH_PAGES = 60   # --batch skips longer PDFs (monographs, 300-page HTA reports)
+
+_CITATION_LINE = re.compile(r"^\s*citation:\s*['\"]?(@[\w\-]+)", re.M)
+
+
+def _extracted_citation_keys(kb_root: Path) -> set[str]:
+    """Citation keys that already have findings somewhere — in drafts/
+    or in any canonical bucket — read from the `citation:` lines of the
+    entries themselves, not from filenames (canonical entries are
+    named by topic, e.g. regions/left_angular_gyrus.md, and one entry
+    can cite many papers). This is what --batch must not re-extract."""
+    keys: set[str] = set()
+    folders = [kb_root / "drafts"] + [kb_root / b for b in
+                                      ("regions", "impairments", "therapies",
+                                       "predictors", "reviews", "ingredients")]
+    for folder in folders:
+        if not folder.is_dir():
+            continue
+        for md in folder.rglob("*.md"):
+            try:
+                keys.update(_CITATION_LINE.findall(md.read_text(encoding="utf-8")))
+            except OSError:
+                continue
     return keys
 
 
@@ -945,30 +984,40 @@ def main(argv=None):
 
     pdfs = list(args.pdf)
     if args.batch:
-        # Build set of citation keys for which drafts (or canonical
-        # entries) already exist — same convention as the file naming.
-        existing_keys = set()
-        for d in list((kb_root / "drafts").rglob("*.md")) \
-               + list((kb_root / "regions").glob("*.md")) \
-               + list((kb_root / "impairments").glob("*.md")) \
-               + list((kb_root / "therapies").glob("*.md")) \
-               + list((kb_root / "predictors").glob("*.md")):
-            # Filename pattern: <id>__<citation_key_no_at>.md
-            m = re.match(r".+__(.+)\.md$", d.name)
-            if m:
-                existing_keys.add("@" + m.group(1))
+        # Citation keys that already have findings, in drafts/ or in the
+        # canonical folders — read from the entries' `citation:` lines.
+        # (Until 2026-10 this read filenames only, which canonical
+        # entries don't carry, so --batch would have re-extracted the
+        # whole KB.)
+        existing_keys = _extracted_citation_keys(kb_root)
+        all_keys = existing_keys | _gather_existing_citation_keys(kb_root)
+        statuses = _citation_statuses(kb_root)
 
         for pdf in sorted((kb_root / "papers").glob("*.pdf")):
             # Skip the annotator's own outputs
             if pdf.stem.endswith("_annotated"):
                 continue
 
-            cit = _infer_citation_key(pdf, existing_keys=existing_keys)
+            cit = _infer_citation_key(pdf, existing_keys=all_keys)
             annotated = pdf.with_name(f"{pdf.stem}_annotated.pdf")
 
             if cit in existing_keys:
                 print(f"  ⏭  {pdf.name}  "
-                      f"(drafts already exist for {cit})")
+                      f"(findings already exist for {cit})")
+                continue
+            if statuses.get(cit) == "refused":
+                print(f"  ⏭  {pdf.name}  "
+                      f"({cit} is [refused] in citations.md — change the tag to extract it)")
+                continue
+            try:
+                import pymupdf as _fz
+            except ImportError:  # pragma: no cover
+                import fitz as _fz
+            with _fz.open(str(pdf)) as _d:
+                n_pg = _d.page_count
+            if n_pg > MAX_BATCH_PAGES:
+                print(f"  ⏭  {pdf.name}  ({n_pg} pages > {MAX_BATCH_PAGES}; too long for one "
+                      f"pass — run it alone with --pdf after trimming to the relevant sections)")
                 continue
             if annotated.exists():
                 print(f"  ⏭  {pdf.name}  "
