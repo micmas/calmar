@@ -118,7 +118,7 @@ aphasia-kb/
 
 | Script | Role | Needs |
 |---|---|---|
-| `intake_papers.py` | Download → extractor-ready in one command: runs the three scripts below in order, then prints the papers line of `kb_status.py`. Dry run by default; `--execute` applies all three. | local |
+| `intake_papers.py` | Download → extractor-ready in one command: `--from ~/Downloads` copies in PDFs that match a cited paper, then the three scripts below run in order and the papers line of `kb_status.py` is printed; `--extract` goes on to `extract.py --batch`. Every step skips what is already done, so re-running is safe. Dry run by default; `--execute` applies. | local / Ollama with `--extract` |
 | `match_papers.py` | Rename PDFs dropped into `papers/` under publisher names to `<Key>.pdf`, matching on the DOI in the text, the DOI in the filename or the title in the filename; `--execute` renames, nothing is overwritten. | local |
 | `strip_cover_pages.py` | Remove leading publisher sheets (JSTOR, HighWire, Taylor & Francis, ProQuest, ResearchGate …) so page numbers and quotes refer to the article; scanned pages are never removed; originals kept in `papers/_originals/`. | local |
 | `batch_ocr.py` | Detect and OCR image-only PDFs so their text layer is searchable. Run before extracting an older paper. | local |

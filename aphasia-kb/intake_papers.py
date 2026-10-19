@@ -8,6 +8,9 @@ download and the extractor, in one command.
     python intake_papers.py --from ~/Downloads --execute
                                         # also pull in PDFs from Downloads that
                                         # match a cited paper not yet in papers/
+    python intake_papers.py --execute --extract
+                                        # … and then extract every paper that
+                                        # has no findings yet (20–30 min each)
 
 Steps, in order, each one of the standalone scripts:
   0. (--from DIR) copy PDFs out of DIR whose DOI / filename matches a
@@ -20,6 +23,16 @@ Steps, in order, each one of the standalone scripts:
                             still runs)
   4. kb_status.py           the papers line: cited / present / missing,
                             plus files that match no citation key
+  5. (--extract) extract.py --batch
+                            run the local model on every PDF that has no
+                            findings in drafts/ or the canonical folders
+
+Every step is idempotent, so re-running is the way to "skip what is
+done": a file already named after its key is not renamed, a PDF whose
+cover sheet is gone is not stripped again, a PDF with a text layer is
+not OCR'd again, and a paper that already has findings is not
+re-extracted (delete its drafts, or pass --pdf to extract.py, to redo
+one on purpose).
 
 Each step is dry-run unless --execute is given. --allow-probable lets
 step 1 also rename author/year/title matches (see match_papers.py).
@@ -30,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -82,6 +96,9 @@ def _cli(argv=None) -> int:
     ap.add_argument("--no-ocr", action="store_true", help="skip the OCR step")
     ap.add_argument("--from", dest="from_dir", type=Path, metavar="DIR",
                     help="first copy matching PDFs out of DIR (e.g. ~/Downloads)")
+    ap.add_argument("--extract", action="store_true",
+                    help="afterwards run extract.py --batch on the papers with no findings "
+                         "(with --execute; dry run lists them)")
     args = ap.parse_args(argv)
 
     ex = ["--execute"] if args.execute else []
@@ -123,6 +140,14 @@ def _cli(argv=None) -> int:
               + ", ".join(st["papers_unmatched"][:8])
               + (" …" if len(st["papers_unmatched"]) > 8 else ""))
         print("  (add a @Key to citations.md, or remove the file)")
+
+    if args.extract:
+        _banner(5, "Extract papers that have no findings yet  (extract.py --batch)")
+        cmd = [sys.executable, str(ROOT / "extract.py"), "--batch"]
+        if not args.execute:
+            cmd.append("--dry-run")
+        print("  $ " + " ".join(cmd[1:]) + "\n")
+        rc |= subprocess.call(cmd, cwd=str(ROOT.parent))
 
     if not args.execute:
         print("\nDry run throughout. Re-run with --execute to apply all steps.")
