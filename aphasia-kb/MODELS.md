@@ -155,6 +155,15 @@ at the first failure:
 Only then weigh speed and memory. A model that is twice as slow but
 never fabricates a quote is the better extractor.
 
+**Known limit — output length, not model.** A dense paper (Alyahya
+2018: 33 curated findings, ~155 passages) needs ~40K output tokens to
+extract in full; the `extract` role caps at `max_tokens: 16000`, so a
+single call returns the headline finding per region and stops. Raising
+`max_tokens` costs time roughly linearly (31b-q8 writes ~7 tok/s). The
+alternative is a second pass per paper ("here are the findings already
+drafted; what significant results in the Results text are not yet
+covered?"), which is on the to-do list for `extract.py`.
+
 **Decision rule:** change `roles.extract.model` only if the candidate
 has zero absent quotes on all test papers **and** is at least as good
 as the incumbent on schema validity and calibration. Log the result in
@@ -236,6 +245,9 @@ Append one row per experiment. Keep failures; they are the useful part.
 | Date | Role | Candidate | Papers | Absent quotes | Schema | Coverage vs curated | Calibration | Speed / GPU | Decision | By |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-09-24 | extract | `gemma4:26b` | — | — | — | — | — | — | Adopted as initial default (fits 32 GB; MoE speed). Not yet benchmarked with `compare_extraction.py`. | branch author |
+| 2026-10-16 | extract | `gemma4:31b-it-q8_0` run 1 | Fridriksson2018Anatomy | 9/18 absent | 10 issues (`method: RLSM` not in vocab) | 10 findings / 5 entries vs 8 / 2 | 2.50 vs 2.75 (under-claims) | 20 m 21 s, 58K in / 8.4K out, 100 % GPU, RAM 69 % | **Not adopted yet.** All 9 "absent" quotes were table rows written as `a \| b \| 0.60` — real cells, wrong form. Fixes: prose-only passage rule in the prompt + skill; `RLSM` added to vocab (v2.5). | michele + Claude |
+| 2026-10-19 | extract | `gemma4:31b-it-q8_0` run 2 | Fridriksson2018Anatomy | **0/16 absent** (6 exact, 4 elided, 3 table, 3 anchored) | 0 | 7 findings / 5 entries vs 8 / 2 (dropped the naming→AG finding) | 2.71 vs 2.75 | 22 m 43 s, 58K in / 9.3K out, 100 % GPU | **Passes fidelity on paper 1.** Still cites table cells for statistics despite the rule; thin on sample/method/limitation passages (16 vs 60). Reference entries for this paper are `legacy`, so coverage/calibration need a human-reviewed paper next: Alyahya2018NounVerb, Bonilha2014, then Goldenberg1994 (OCR). | michele + Claude |
+| 2026-10-19 | extract | `gemma4:31b-it-q8_0` | Alyahya2018NounVerb (human-reviewed reference) | **0/37 absent** (14 exact, 16 elided, 7 anchored) | 8 issues: `author_limitations` omitted on every draft; empty `region_definition` on the predictor draft | 8 findings / 8 entries vs 33 / 6 | 2.12 vs 2.18 | 30 m 37 s, 67K in / 12.2K out, 100 % GPU | **Passes fidelity on paper 2.** Coverage is the gap: one headline finding per region, and 33 full findings would need ~40K output tokens against a 16K `max_tokens` cap — dense papers cannot be extracted in one call. Fixes: limitations rule in the prompt; `extract.py` now fills `author_limitations: []` with a verify flag (→ Tier B), drops empty predictor `region_definition`, and keeps the citation key's case (`NounVerb`, not `Nounverb`). Next: run `gemma4:26b` on both papers for the incumbent comparison the rule asks for. | michele + Claude |
 | | | | | | | | | | | |
 
 ---
