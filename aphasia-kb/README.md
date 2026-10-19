@@ -85,6 +85,7 @@ aphasia-kb/
 ├── promote.py                 # the only way into the canonical folders
 ├── compare_extraction.py      # benchmark a model against entries you already curated
 ├── audit_quotes.py            # every canonical quote vs its PDF (graded)
+├── quote_check.py             # the ONE quote grader the three checkers share
 ├── kb_status.py               # counts, review provenance, decoder reachability, papers needed
 ├── model_config.py            # resolves models.yaml / env vars; lists pulled models
 ├── ollama_client.py           # the one HTTP client to the local Ollama server
@@ -119,7 +120,8 @@ aphasia-kb/
 | `auto_review.py` | Deterministic checks (schema, every quote in the PDF, no low confidence, no contradictions) that **reject or defer, never approve**; Tier A/B classification; with `--llm-review`, an independent model re-reads the paper and may approve Tier A. | local / Ollama |
 | `promote.py` | Approve or reject as `human:<name>` or (Tier A only) `model:<tag>`; refuses a model on Tier B or reviewing its own extraction; stamps review provenance; writes the log line. | local |
 | `compare_extraction.py` | Run a candidate model on a paper you already curated and grade quote fidelity, schema, coverage and calibration. The model-selection test in `MODELS.md` §3. | local |
-| `audit_quotes.py` | Grade every canonical quote against its PDF: found / elided / near / absent / no_pdf. The legacy re-review triage. | local |
+| `audit_quotes.py` | Grade every canonical quote against its PDF: found / elided / table / anchored / near / absent / no_pdf. The legacy re-review triage. | local |
+| `quote_check.py` | The shared grader behind `auto_review.py`, `compare_extraction.py` and `audit_quotes.py`, so one quote gets one grade. Module, not a CLI. | local |
 | `kb_status.py` | Entries and findings per bucket, review provenance, relationship and strength counts, which KB regions the lesion decoder can reach, papers missing from `papers/` (`--papers-needed`), `--tag-legacy`. | local |
 | `aphasia_kb.py` | Load, validate (`--check DIR`, `--issues`), query (`--lookup`); `KnowledgeBase(review_kinds=("human",))` restricts to person-approved findings. | local |
 | `decode_lesion.py` | Atlas overlap and Neurosynth term decoding of an MNI mask. | local |

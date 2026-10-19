@@ -30,7 +30,8 @@ Design
 - Hard checks (cannot be overridden, even by LLM):
     * schema validation
     * non-empty `contradictions:` on any finding
-    * PDF quote-match below threshold (likely fabricated quotes)
+    * PDF quote-match below threshold (quotes absent from the paper —
+      graded by the shared quote_check.py)
     * `provenance.confidence: low`
 - Soft checks (defer to a reviewer; a model may still approve Tier A):
     * suspicious words in `provenance.flags` (placeholder, verify, todo,
@@ -321,75 +322,82 @@ def _extract_pdf_text(pdf_path: Path) -> str:
 def check_pdf_quote_match(fm: dict, papers_dir: Path = PAPERS_DIR,
                           threshold: float = PDF_MATCH_THRESHOLD) -> Check:
     """For each finding's citation, locate the PDF in `papers_dir` and
-    verify each `source_passages` quote substring-matches the PDF text.
+    grade each `source_passages` quote with the shared
+    `quote_check.grade_quote`.
+
+    A quote counts as located when its grade is in `quote_check.FOUND`
+    (exact, elided, table). `anchored`/`near` quotes are real content
+    that is not verbatim; they do not count here and they keep a draft
+    out of Tier A (classify_tier reads the "matched m/n" detail), so a
+    person looks at them. `absent` is the fabrication signal.
 
     Returns Check.passed = None (skipped) when no PDF is available for
     any of the cited papers — caller decides how to treat that.
     """
-    citations = {f.get("citation") for f in (fm.get("findings") or [])
-                 if f.get("citation")}
-    citations.discard(None)
+    from quote_check import FOUND, PaperText, find_paper, grade_quote
 
-    cite_to_pdf: dict[str, Path] = {}
-    for cite in citations:
-        key = cite.lstrip("@")
-        for ext in (".pdf", ".txt"):
-            cand = papers_dir / f"{key}{ext}"
-            if cand.exists():
-                cite_to_pdf[cite] = cand
-                break
-
+    citations = [f.get("citation") for f in (fm.get("findings") or [])
+                 if f.get("citation")]
+    cite_to_pdf = {c: find_paper(c, papers_dir) for c in dict.fromkeys(citations)}
+    cite_to_pdf = {c: p for c, p in cite_to_pdf.items() if p}
     if not cite_to_pdf:
         return Check("pdf_quote_match", passed=None, blocker=True,
                      details=[f"no PDFs available in {papers_dir} for any "
                               f"cited paper"])
 
-    text_cache: dict[str, str] = {}
+    cache: dict[str, PaperText | None] = {}
+    grades: dict[str, int] = {}
     misses: list[str] = []
-    total = 0
-    matched = 0
+    soft: list[str] = []
+    total = matched = 0
     read_errors: list[str] = []
 
     for f in fm.get("findings") or []:
         cite = f.get("citation")
         if cite not in cite_to_pdf:
             continue
-        if cite not in text_cache:
+        if cite not in cache:
             try:
-                text_cache[cite] = _normalize(_extract_pdf_text(cite_to_pdf[cite]))
+                cache[cite] = PaperText.from_pdf(cite_to_pdf[cite])
             except Exception as e:
                 read_errors.append(f"{cite}: {e}")
-                text_cache[cite] = ""
-        norm_text = text_cache[cite]
+                cache[cite] = None
+        paper = cache[cite]
+        if paper is None:
+            continue
         for sp in f.get("source_passages") or []:
             quote = (sp.get("quote") or "").strip()
             if not quote:
                 continue
             total += 1
-            # Case-insensitive: `_normalize` deliberately preserves case
-            # (annotate_paper needs it to locate highlight rects), but for
-            # a containment test case only produces false failures — a
-            # curator quoting mid-sentence writes "the two groups…" where
-            # the paper has "The two groups…". This is a BLOCKER check, so
-            # a false failure auto-rejects a perfectly good draft.
-            qnorm = _normalize(quote).casefold()
-            if qnorm in norm_text.casefold():
+            g = grade_quote(quote, paper)
+            grades[g] = grades.get(g, 0) + 1
+            where = (f"{f.get('id')}.{sp.get('supports', '?')} "
+                     f"(p.{sp.get('page', '?')}): {quote[:80]}…")
+            if g in FOUND:
                 matched += 1
+            elif g == "absent":
+                misses.append(where)
             else:
-                misses.append(
-                    f"{f.get('id')}.{sp.get('section', '?')} (p.{sp.get('page', '?')}): "
-                    f"{quote[:80]}…")
+                soft.append(f"[{g}] {where}")
 
     if total == 0:
         return Check("pdf_quote_match", passed=None, blocker=True,
                      details=["no quotes to match"])
 
-    score = matched / total
-    details = [f"matched {matched}/{total} quotes ({score:.0%})"]
+    # absent quotes are what fail the check; anchored/near merely keep
+    # the draft out of Tier A
+    score = (total - len(misses)) / total
+    details = [f"matched {matched}/{total} quotes ({matched / total:.0%}) — "
+               + ", ".join(f"{k} {v}" for k, v in sorted(grades.items()))]
     if read_errors:
         details.extend(read_errors)
+    if soft:
+        details.append(f"{len(soft)} quote(s) real but not verbatim "
+                       f"(a person confirms) — first 3:")
+        details.extend(f"  - {m}" for m in soft[:3])
     if misses:
-        details.append(f"{len(misses)} quotes did not match — first 3:")
+        details.append(f"{len(misses)} quote(s) absent from the PDF — first 3:")
         details.extend(f"  - {m}" for m in misses[:3])
     return Check("pdf_quote_match", passed=score >= threshold,
                  blocker=True, details=details)
