@@ -67,6 +67,8 @@ import sys
 import time
 from pathlib import Path
 
+import yaml
+
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
@@ -125,6 +127,15 @@ def _infer_citation_key(pdf_path: Path,
     pre-existing entry so users can read both as "Foo2024a / Foo2024b").
     """
     stem = pdf_path.stem
+    # The documented naming is papers/<Key>.pdf. If the stem IS an
+    # existing key (case-insensitively), use that key exactly — never
+    # re-infer it (which lower-cased "NounVerb" to "Nounverb") and never
+    # treat it as a collision.
+    if existing_keys:
+        by_lower = {k.lstrip("@").lower(): k for k in existing_keys}
+        hit = by_lower.get(stem.lower())
+        if hit:
+            return hit if hit.startswith("@") else f"@{hit}"
     m = re.match(r"^([A-Z][A-Za-z]+)[-_\s]?(\d{4})[-_\s]?(.*)", stem)
     if not m:
         # Last resort: full stem, no collision check possible
@@ -284,6 +295,11 @@ The complete workflow is in EXTRACTION_SKILL.md (below). Key rules:
 
 6. NEVER INVENT: statistics, sample sizes, citations, or effect
    directions. If the paper doesn't report it, use `not_reported`.
+
+7. AUTHOR LIMITATIONS: `author_limitations` is required on every
+   finding. Fill it from the authors' own stated caveats (usually the
+   Discussion's limitations paragraph) and quote one of them with
+   `supports: limitation`. Write `[]` only if the paper states none.
 
 # Existing KB entries you can target
 
@@ -574,8 +590,72 @@ def _repair_frontmatter(content: str, created_by: str) -> tuple[str, list[str]]:
     return out, notes
 
 
+_LIMITATIONS_FLAG = ("author_limitations not extracted by the model — "
+                     "verify against the paper's limitations paragraph")
+
+
+def _normalize_findings(content: str, bucket: str,
+                        citation: str | None) -> tuple[str, list[str]]:
+    """Parse the repaired draft and fix the omissions a local model makes
+    on nearly every draft, each one visibly:
+
+      * `author_limitations` missing → set to [] AND add a provenance
+        flag, so the draft validates but lands in Tier B for a person
+        (an empty list without the flag would read as "the authors
+        stated none", which is almost never true).
+      * `region_definition` with no `kind` on a predictor finding →
+        dropped (predictors have no region to define).
+      * `citation` differing from the resolved key only in case → set
+        to the resolved key, so promoted findings join citations.md.
+
+    Re-serialises the frontmatter through YAML; this is a draft, so the
+    model's formatting is not worth preserving.
+    """
+    notes: list[str] = []
+    m = re.match(r"^---\n(.*?)\n---\n?(.*)$", content, re.DOTALL)
+    if not m:
+        return content, notes
+    try:
+        fm = yaml.safe_load(m.group(1)) or {}
+    except Exception as e:  # noqa: BLE001
+        return content, [f"frontmatter not parseable ({e}); left as written"]
+    body = m.group(2)
+    changed = False
+    for f in fm.get("findings") or []:
+        if not isinstance(f, dict):
+            continue
+        if f.get("author_limitations") is None:
+            f["author_limitations"] = []
+            prov = f.setdefault("provenance", {})
+            flags = prov.setdefault("flags", [])
+            if _LIMITATIONS_FLAG not in flags:
+                flags.append(_LIMITATIONS_FLAG)
+            changed = True
+            notes.append(f"{f.get('id')}: author_limitations missing → [] + flag")
+        rd = f.get("region_definition")
+        if bucket == "predictors" and isinstance(rd, dict) and not rd.get("kind"):
+            del f["region_definition"]
+            changed = True
+            notes.append(f"{f.get('id')}: dropped empty region_definition")
+        if citation and isinstance(f.get("citation"), str) and \
+                f["citation"] != citation and \
+                f["citation"].lstrip("@").lower() == citation.lstrip("@").lower():
+            f["citation"] = citation
+            changed = True
+            notes.append(f"{f.get('id')}: citation case → {citation}")
+    if not changed:
+        return content, notes
+    fm_text = yaml.safe_dump(fm, sort_keys=False, allow_unicode=True,
+                             width=100)
+    out = f"---\n{fm_text.rstrip()}\n---\n"
+    if body.strip():
+        out += body if body.endswith("\n") else body + "\n"
+    return out, notes
+
+
 def save_drafts(drafts: list, kb_root: Path,
-                created_by: str = "agent:local-extract-cli") -> list[Path]:
+                created_by: str = "agent:local-extract-cli",
+                citation: str | None = None) -> list[Path]:
     saved = []
     for d in drafts:
         bucket = d["bucket"]
@@ -585,6 +665,8 @@ def save_drafts(drafts: list, kb_root: Path,
         out = kb_root / "drafts" / bucket / d["filename"]
         out.parent.mkdir(parents=True, exist_ok=True)
         content, notes = _repair_frontmatter(d["content"], created_by)
+        content, more = _normalize_findings(content, bucket, citation)
+        notes.extend(more)
         out.write_text(content, encoding="utf-8")
         saved.append(out)
         suffix = f"   [{'; '.join(notes)}]" if notes else ""
@@ -745,7 +827,8 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
                   f"{citation}")
 
     saved = save_drafts(drafts, out_dir or kb_root,
-                        created_by=f"agent:ollama-extract-cli/{model}")
+                        created_by=f"agent:ollama-extract-cli/{model}",
+                        citation=citation)
     n_issues = validate_drafts(saved)
     if n_issues:
         print(f"  ⚠ {n_issues} validation issue(s) — drafts saved anyway "
