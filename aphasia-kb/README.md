@@ -59,6 +59,7 @@ python aphasia-kb/intake_papers.py --execute                      # rename → s
 python aphasia-kb/extract.py --pdf aphasia-kb/papers/Foo2024.pdf
 python aphasia-kb/aphasia_kb.py --check aphasia-kb/drafts/
 python aphasia-kb/auto_review.py --all --llm-review --require-pdf-match
+python aphasia-kb/review_sheet.py --all --fix-pages                # open drafts/_review/*.html
 python aphasia-kb/promote.py --list                               # what still needs you
 python aphasia-kb/promote.py --approve aphasia-kb/drafts/<...>.md --reviewer michele
 git add aphasia-kb && git commit -m "Foo2024 extraction"
@@ -81,11 +82,13 @@ aphasia-kb/
 │   # ---- building the KB ----
 ├── intake_papers.py           # the three steps below in one command
 ├── match_papers.py            # rename downloaded PDFs to their citation key (DOI / title)
+├── verify_dois.py             # check citations.md DOIs against Crossref
 ├── strip_cover_pages.py       # drop JSTOR / T&F / ProQuest … cover sheets from PDFs
 ├── batch_ocr.py               # OCR image-only PDFs in papers/
 ├── extract.py                 # local model: PDF → drafts + annotated PDF
 ├── annotate_paper.py          # colour-highlight a PDF from a draft's source_passages
 ├── auto_review.py             # checks, tier classification, independent model review
+├── review_sheet.py            # per-draft HTML: every quote shown on its page, graded
 ├── promote.py                 # the only way into the canonical folders
 ├── compare_extraction.py      # benchmark a model against entries you already curated
 ├── audit_quotes.py            # every canonical quote vs its PDF (graded)
@@ -119,12 +122,14 @@ aphasia-kb/
 | Script | Role | Needs |
 |---|---|---|
 | `intake_papers.py` | Download → extractor-ready in one command: `--from ~/Downloads` copies in PDFs that match a cited paper, then the three scripts below run in order and the papers line of `kb_status.py` is printed; `--extract` goes on to `extract.py --batch`. Every step skips what is already done, so re-running is safe. Dry run by default; `--execute` applies. | local / Ollama with `--extract` |
+| `verify_dois.py` | Look every DOI in `citations.md` up at Crossref and flag title/author mismatches — run it after adding entries, since `match_papers.py` keys on those DOIs. Needs network. | network |
 | `match_papers.py` | Rename PDFs dropped into `papers/` under publisher names to `<Key>.pdf`, matching on the DOI in the text, the DOI in the filename or the title in the filename; `--execute` renames, nothing is overwritten. | local |
 | `strip_cover_pages.py` | Remove leading publisher sheets (JSTOR, HighWire, Taylor & Francis, ProQuest, ResearchGate …) so page numbers and quotes refer to the article; scanned pages are never removed; originals kept in `papers/_originals/`. | local |
 | `batch_ocr.py` | Detect and OCR image-only PDFs so their text layer is searchable. Run before extracting an older paper. | local |
 | `extract.py` | Read a PDF's text layer and emit schema-bound drafts plus the annotated PDF. `--dry-run` previews prompt size and `num_ctx`; `--batch` does every un-extracted PDF; `--out-dir _compare/<model>` sandboxes a benchmark run. | Ollama |
 | `annotate_paper.py` | Highlight each `source_passage` in the PDF, colour-coded by what it supports. The reviewer's primary tool. | local |
 | `auto_review.py` | Deterministic checks (schema, every quote in the PDF, no low confidence, no contradictions) that **reject or defer, never approve**; Tier A/B classification; with `--llm-review`, an independent model re-reads the paper and may approve Tier A. | local / Ollama |
+| `review_sheet.py` | One HTML page per draft for the reviewer: each finding's claim, then every quote with its grade, the page it was found on, and a crop of that page with the passage highlighted. `--fix-pages` writes the real page numbers back into the draft. Output in `drafts/_review/` (git-ignored: page images). | local |
 | `promote.py` | Approve or reject as `human:<name>` or (Tier A only) `model:<tag>`; refuses a model on Tier B or reviewing its own extraction; stamps review provenance; writes the log line. | local |
 | `compare_extraction.py` | Run a candidate model on a paper you already curated and grade quote fidelity, schema, coverage and calibration. The model-selection test in `MODELS.md` §3. | local |
 | `audit_quotes.py` | Grade every canonical quote against its PDF: found / elided / table / anchored / near / absent / no_pdf. The legacy re-review triage. | local |

@@ -82,7 +82,7 @@ def _image_coverage(page) -> float:
     return cov / area
 
 
-def cover_reason(text: str, page=None) -> str | None:
+def cover_reason(text: str, page=None, ignore: set[str] = frozenset()) -> str | None:
     """Name of the publisher sheet this page looks like, or None."""
     t = " ".join(text.split())
     if not t:
@@ -90,6 +90,8 @@ def cover_reason(text: str, page=None) -> str | None:
     if page is not None and _image_coverage(page) >= SCAN_COVERAGE:
         return None               # a scanned article page, whatever is stamped on it
     for name, rx in _COMPILED:
+        if name in ignore:
+            continue
         if rx.search(t):
             # SAGE's permission line also appears on real first pages;
             # only call it a sheet when the page is otherwise empty
@@ -103,9 +105,15 @@ def leading_covers(path: Path) -> list[tuple[int, str]]:
     """[(page_index, reason), ...] for consecutive cover pages at the front."""
     doc = _open(path)
     try:
+        # A pattern that hits on most of the first pages is a running
+        # stamp (ClinicalKey / ProQuest footers), not a cover sheet.
+        texts = [" ".join(doc[i].get_text().split())
+                 for i in range(min(4, doc.page_count))]
+        stamps = {name for name, rx in _COMPILED
+                  if len(texts) >= 3 and sum(bool(rx.search(t)) for t in texts) >= 3}
         out = []
         for i in range(min(MAX_COVER, doc.page_count - 1)):   # never all pages
-            why = cover_reason(doc[i].get_text(), doc[i])
+            why = cover_reason(doc[i].get_text(), doc[i], ignore=stamps)
             if not why:
                 break
             out.append((i, why))

@@ -60,6 +60,7 @@ logs/
 # Local-extraction scratch files. These contain verbatim paper text —
 # committing them would undo the point of extracting locally.
 aphasia-kb/_extraction_dry_run.txt
+aphasia-kb/drafts/_review/
 aphasia-kb/_last_extraction_response_*.txt
 aphasia-kb/_compare/
 .env
