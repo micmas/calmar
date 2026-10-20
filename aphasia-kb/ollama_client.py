@@ -189,6 +189,12 @@ def chat(prompt: str,
               "incomplete. Rerun with a larger max-tokens.")
 
     if not text.strip():
+        if trunc_out:
+            raise OllamaError(
+                "output hit num_predict and Ollama returned no text: with "
+                "format=json a response cut off mid-object is discarded. "
+                "The model wrote more than max_tokens allows — rerun with "
+                "a larger --max-tokens, or a leaner prompt.")
         raise OllamaError(
             "Ollama returned an empty response. Usually means the model was "
             "killed for memory — try a smaller --num-ctx or a smaller model.")

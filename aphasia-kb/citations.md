@@ -19,6 +19,8 @@ Each entry below carries a status tag indicating how it's used:
     aphasia / aphasia-therapy literature, not yet cited by any
     finding. Available for future extractions to use without having
     to re-add to this file.
+  - **[refused]** — Deliberately not extracted (see the note under
+    the entry); `extract.py --batch` skips it.
 
 The status of each entry is shown in the `## @Key  [tag]` header.
 Within each section entries are ordered by year, then alphabetically
@@ -900,3 +902,463 @@ of functional imaging studies of reorganization of language processing.
 > Extracted as review on 2026-05-06 under schema v2.4 narrative_review.
 > Draft: `drafts/reviews/neuroplasticity_poststroke_aphasia__Wilson2021.md`.
 > Available in `papers/Wilson2021.pdf`.
+
+---
+
+## Seed references (added 2026-10-20)
+
+> Fetched after the 2026-10-19 gap analysis; none has findings yet.
+> The note under each entry says which KB entry it is meant to
+> strengthen. `extract.py --batch` picks them up in `papers/`.
+
+## @Dronkers2004  [seed]
+Dronkers NF, Wilkins DP, Van Valin RD, Redfern BB, Jaeger JJ.
+Lesion analysis of the brain areas involved in language comprehension.
+*Cognition*. 2004;92(1–2):145–177.
+doi:10.1016/j.cognition.2003.11.002
+
+> A. Sentence comprehension VLSM (n=64): posterior MTG, anterior STG,
+> STS, BA 39, BA 47 — not BA 44/45. The counterweight the
+> `syntactic_processing` and `brocas_aphasia` entries lack.
+
+## @Hillis2004  [seed]
+Hillis AE, Work M, Barker PB, Jacobs MA, Breese EL, Maurer K.
+Re-examining the brain regions crucial for orchestrating speech articulation.
+*Brain*. 2004;127(7):1479–1487.
+doi:10.1093/brain/awh172
+
+> A. Acute hypoperfusion study (n=80) placing apraxia of speech in
+> posterior IFG, not insula — the direct reply to Dronkers 1996 that
+> `left_precentral_gyrus_insula` currently cites alone.
+
+## @Kummerer2013  [seed]
+Kümmerer D, Hartwigsen G, Kellmeyer P, Glauche V, Mader I, Klöppel S, Suchan J, Karnath H-O, Weiller C, Saur D.
+Damage to ventral and dorsal language pathways in acute aphasia.
+*Brain*. 2013;136(2):619–629.
+doi:10.1093/brain/aws354
+
+> A. Acute-stage VLSM (n=100): repetition → dorsal (AF/SLF),
+> comprehension → ventral (extreme capsule). Primary evidence for
+> `left_extreme_capsule` and `left_arcuate_fasciculus_slf`, which rest
+> on Saur2008 (healthy DTI) and Fridriksson2018.
+
+## @Fridriksson2013  [seed]
+Fridriksson J, Guo D, Fillmore P, Holland A, Rorden C.
+Damage to the anterior arcuate fasciculus predicts non-fluent speech production in aphasia.
+*Brain*. 2013;136(11):3451–3460.
+doi:10.1093/brain/awt267
+
+> A. The paper behind `left_anterior_arcuate_fasciculus`, which the KB
+> currently supports only second-hand.
+
+## @Henseler2014  [seed]
+Henseler I, Regenbrecht F, Obrig H.
+Lesion correlates of patholinguistic profiles in chronic aphasia: comparisons of syndrome-, modality- and symptom-level assessment.
+*Brain*. 2014;137(3):918–930.
+doi:10.1093/brain/awt374
+
+> A. VLSM (n=102) at syndrome, modality and symptom level — the one
+> study that maps classical syndromes (`brocas_aphasia`,
+> `wernickes_aphasia`, `global_aphasia`, `anomic_aphasia`) with the
+> same method as symptom-level maps.
+
+## @Butler2014  [seed]
+Butler RA, Lambon Ralph MA, Woollams AM.
+Capturing multidimensionality in stroke aphasia: mapping principal behavioural components to neural structures.
+*Brain*. 2014;137(12):3248–3266.
+doi:10.1093/brain/awu286
+
+> A. PCA of a broad battery (n=31) → phonology (dorsal), semantics
+> (ventral ATL), cognition. Origin of the multidimensional framing in
+> Stefaniak2022 and Alyahya2018; pairs with Mirman2015's
+> form-to-meaning / form-to-articulation split.
+
+## @Halai2017  [seed]
+Halai AD, Woollams AM, Lambon Ralph MA.
+Using principal component analysis to capture individual differences within a unified neuropsychological model of chronic post-stroke aphasia: revealing the unique neural correlates of speech fluency, phonology and semantics.
+*Cortex*. 2017;86:275–289.
+doi:10.1016/j.cortex.2016.04.016
+
+> A. Extends Butler2014 (n=70) with a separate fluency factor →
+> insular–motor cortex. Primary for `fluency` and `semantics`.
+
+## @Alyahya2020  [seed]
+Alyahya RSW, Halai AD, Conroy P, Lambon Ralph MA.
+A unified model of post-stroke language deficits including discourse production and their neural correlates.
+*Brain*. 2020;143(5):1541–1554.
+doi:10.1093/brain/awaa074
+
+> A. Same programme, adds discourse; the KB has no connected-speech
+> finding at all.
+
+## @Griffis2017  [seed]
+Griffis JC, Nenert R, Allendorfer JB, Szaflarski JP.
+Damage to white matter bottlenecks contributes to language impairments after left hemispheric stroke.
+*NeuroImage Clin*. 2017;14:552–565.
+doi:10.1016/j.nicl.2017.02.019
+
+> A. The origin of the "bottleneck" concept in
+> `left_frontal_white_matter_bottleneck`, which currently cites only
+> Fridriksson2018Anatomy.
+
+## @Thye2018  [seed]
+Thye M, Mirman D.
+Relative contributions of lesion location and lesion size to predictions of varied language deficits in post-stroke aphasia.
+*NeuroImage Clin*. 2018;20:1129–1138.
+doi:10.1016/j.nicl.2018.10.017
+
+> A/C. Location vs volume for each deficit type (n=128) — exactly the
+> question CALMaR's `lesion_volume` predictor and region findings
+> must answer together.
+
+## @GajardoVidal2021  [seed]
+Gajardo-Vidal A, Lorca-Puls DL, PLORAS team, Warner H, Dhanjal NS, Erbs J, et al. (Price CJ, senior).
+Damage to Broca's area does not contribute to long-term speech production outcome after stroke.
+*Brain*. 2021;144(3):817–832.
+doi:10.1093/brain/awaa460
+
+> A. PLORAS (n=134): long-term speech production outcome depends on
+> underlying white matter and insula, not BA 44/45 damage per se. The
+> contradiction `left_ifg_pars_opercularis` should carry.
+
+## @Rogalsky2018  [seed]
+Rogalsky C, LaCroix AN, Chen K-H, Anderson SW, Damasio H, Love T, Hickok G.
+The neurobiology of agrammatic sentence comprehension: a lesion study.
+*J Cogn Neurosci*. 2018;30(2):234–255.
+doi:10.1162/jocn_a_01200
+
+> A. Sentence comprehension VLSM (n=57): temporal–parietal, not
+> Broca's area, for non-canonical sentences. Pairs with Dronkers2004.
+
+## @Ivanova2016  [seed]
+Ivanova MV, Isaev DY, Dragoy OV, Akinina YS, Petrushevskiy AG, Fedina ON, Shklovsky VM, Dronkers NF.
+Diffusion-tensor imaging of major white matter tracts and their role in language processing in aphasia.
+*Cortex*. 2016;85:165–181.
+doi:10.1016/j.cortex.2016.04.019
+
+> A. Tract integrity (AF, IFOF, ILF, UF) vs comprehension,
+> repetition, naming (n=37). Needed once `decode_lesion.py` gains the
+> JHU tract labels.
+
+## @Breitenstein2017  [seed]
+Breitenstein C, Grewe T, Flöel A, Ziegler W, Springer L, Martus P, et al.; FCET2EC study group.
+Intensive speech and language therapy in patients with chronic aphasia after stroke: a randomised, open-label, blinded-endpoint, controlled trial in a health-care setting.
+*Lancet*. 2017;389(10078):1528–1538.
+doi:10.1016/S0140-6736(17)30067-3
+
+> B. The largest RCT of intensive therapy in chronic aphasia (n=158).
+> Primary evidence for the `massed_practice` ingredient and the
+> intensity claim behind CIAT.
+
+## @Bhogal2003  [seed]
+Bhogal SK, Teasell R, Speechley M.
+Intensity of aphasia therapy, impact on recovery.
+*Stroke*. 2003;34(4):987–993.
+doi:10.1161/01.STR.0000062343.64383.D0
+
+> B. The dose–response review every therapy entry cites for
+> intensity; belongs in `reviews/`.
+
+## @Brady2016  [seed]
+Brady MC, Kelly H, Godwin J, Enderby P, Campbell P.
+Speech and language therapy for aphasia following stroke.
+*Cochrane Database Syst Rev*. 2016;(6):CD000425.
+doi:10.1002/14651858.CD000425.pub4
+
+> B. The Cochrane review (57 RCTs). Brady2022RELEASE was refused as
+> an IPD meta-analysis; this is the citable summary of trial-level
+> evidence for `reviews/`.
+
+## @Efstratiadou2018  [seed]
+Efstratiadou EA, Papathanasiou I, Holland R, Archonti A, Hilari K.
+A systematic review of semantic feature analysis therapy studies for aphasia.
+*J Speech Lang Hear Res*. 2018;61(5):1261–1278.
+doi:10.1044/2018_JSLHR-L-16-0330
+
+> B. Boyle2004 is the single SFA primary in the KB; this review gives
+> the effect range and the responder profile for
+> `typicality_semantic_feature_analysis` / `semantic_feature_generation`.
+
+## @Leonard2008  [seed]
+Leonard C, Rochon E, Laird L.
+Treating naming impairments in aphasia: findings from a phonological components analysis treatment.
+*Aphasiology*. 2008;22(9):923–947.
+doi:10.1080/02687030701831474
+
+> B. The original PCA treatment study; `phonological_component_analysis`
+> currently cites only MassonTrottier2021 (an fMRI follow-up).
+
+## @Zumbansen2014  [seed]
+Zumbansen A, Peretz I, Hébert S.
+Melodic intonation therapy: back to basics for future research.
+*Front Neurol*. 2014;5:7.
+doi:10.3389/fneur.2014.00007
+
+> B. Separates the melodic and rhythmic ingredients of MIT — the
+> evidence behind `melodic_intoning` vs `rhythmic_hand_tapping`.
+
+## @Thompson2003  [seed]
+Thompson CK, Shapiro LP, Kiran S, Sobecks J.
+The role of syntactic complexity in treatment of sentence deficits in agrammatic aphasia: the complexity account of treatment efficacy (CATE).
+*J Speech Lang Hear Res*. 2003;46(3):591–607.
+doi:10.1044/1092-4388(2003/047)
+
+> B. The primary behind `treatment_of_underlying_forms` and the
+> `verb_argument_structure_training` ingredient.
+
+## @Fridriksson2018JAMA  [seed]
+Fridriksson J, Rorden C, Elm J, Sen S, George MS, Bonilha L.
+Transcranial direct current stimulation vs sham stimulation to treat aphasia after stroke: a randomized clinical trial.
+*JAMA Neurol*. 2018;75(12):1470–1476.
+doi:10.1001/jamaneurol.2018.2287
+
+> B. The futility-design tDCS RCT (n=74) that Fridriksson2018BDNF is
+> the secondary analysis of; `tdcs_aphasia_treatment` needs the
+> primary outcome.
+
+## @Elsner2019  [seed]
+Elsner B, Kugler J, Pohl M, Mehrholz J.
+Transcranial direct current stimulation (tDCS) for improving aphasia in adults with aphasia after stroke.
+*Cochrane Database Syst Rev*. 2019;(5):CD009760.
+doi:10.1002/14651858.CD009760.pub4
+
+> B. Cochrane tDCS review: naming improves, functional communication
+> does not. The calibration `anodal_tdcs` needs.
+
+## @Thiel2013  [seed]
+Thiel A, Hartmann A, Rubi-Fessen I, Anglade C, Kracht L, Weiduschat N, Kessler J, Rommel T, Heiss W-D.
+Effects of noninvasive brain stimulation on language networks and recovery in early poststroke aphasia.
+*Stroke*. 2013;44(8):2240–2246.
+doi:10.1161/STROKEAHA.111.000574
+
+> B. Inhibitory rTMS over right IFG in subacute aphasia (n=24) with
+> PET: the trial-level primary for `inhibitory_rtms`, which rests on
+> Naeser2005's open-protocol series.
+
+## @Meinzer2010  [seed]
+Meinzer M, Mohammadi S, Kugel H, Schiffbauer H, Flöel A, Albers J, et al.
+Integrity of the hippocampus and surrounding white matter is correlated with language training success in aphasia.
+*NeuroImage*. 2010;53(1):283–290.
+doi:10.1016/j.neuroimage.2010.06.004
+
+> B/C. Responder predictor outside the language network; the
+> decoder reaches the hippocampus (HO subcortical).
+
+## @Bonilha2016  [seed]
+Bonilha L, Gleichgerrcht E, Nesland T, Rorden C, Fridriksson J.
+Success of anomia treatment in aphasia is associated with preserved architecture of global and left temporal lobe structural networks.
+*Neurorehabil Neural Repair*. 2016;30(3):266–279.
+doi:10.1177/1545968315593808
+
+> B/C. Connectome predictor of naming-treatment response (n=24).
+
+## @Forkel2014  [seed]
+Forkel SJ, Thiebaut de Schotten M, Dell'Acqua F, Kalra L, Murphy DGM, Williams SCR, Catani M.
+Anatomical predictors of aphasia recovery: a tractography study of bilateral perisylvian language networks.
+*Brain*. 2014;137(7):2027–2039.
+doi:10.1093/brain/awu113
+
+> C. Right-hemisphere arcuate volume predicts 6-month recovery
+> (n=16); the right-hemisphere predictor Hope2017 and
+> `bilateral_middle_frontal_gyrus_recovery` need alongside them.
+
+## @Hope2013  [seed]
+Hope TMH, Seghier ML, Leff AP, Price CJ.
+Predicting outcome and recovery after stroke with lesions extracted from MRI images.
+*NeuroImage Clin*. 2013;2:424–433.
+doi:10.1016/j.nicl.2013.03.005
+
+> C. PLORAS prediction from lesion images (n=270): lesion site +
+> time post-stroke explain most variance. The benchmark for
+> `time_post_onset` and `lesion_volume`.
+
+## @Hope2018  [seed]
+Hope TMH, Leff AP, Price CJ.
+Predicting language outcomes after stroke: is structural disconnection a useful predictor?
+*NeuroImage Clin*. 2018;19:22–29.
+doi:10.1016/j.nicl.2018.03.037
+
+> C. Tests whether disconnection adds to lesion-location prediction
+> (it adds little) — directly relevant to what `decode_lesion.py`
+> should compute.
+
+## @Benghanem2019  [seed]
+Benghanem S, Rosso C, Arbizu C, Moulton E, Dormont D, Leger A, Pires C, Samson Y.
+Aphasia outcome: the interactions between initial severity, lesion size and location.
+*J Neurol*. 2019;266(6):1303–1309.
+doi:10.1007/s00415-019-09259-3
+
+> C. Initial severity × lesion size × site in one model (n=88);
+> ties together `initial_aphasia_severity`, `lesion_volume` and the
+> region findings.
+
+## @Plowman2012  [seed]
+Plowman E, Hentz B, Ellis C Jr.
+Post-stroke aphasia prognosis: a review of patient-related and stroke-related factors.
+*J Eval Clin Pract*. 2012;18(3):689–694.
+doi:10.1111/j.1365-2753.2011.01650.x
+
+> C. Prognosis review preceding Watila2015; covers age, sex,
+> handedness, education, lesion variables. Belongs in `reviews/`.
+
+## @Kristinsson2021  [seed]
+Kristinsson S, Zhang W, Rorden C, Newman-Norlund R, Basilakos A, Bonilha L, Yourganov G, Xiao F, Hillis A, Fridriksson J.
+Machine learning-based multimodal prediction of language improvements in chronic aphasia.
+*Hum Brain Mapp*. 2021;42(6):1682–1698.
+doi:10.1002/hbm.25321
+
+> C. Treatment-gain prediction from lesion, connectome and fMRI
+> (n=55); the predecessor of Kristinsson2025 and Teghipco2024.
+
+## @Billot2022  [seed]
+Billot A, Lai S, Varkanitsa M, Braun EJ, Rapp B, Parrish TB, Higgins J, Kurani AS, Caplan D, Thompson CK, Ishwar P, Betke M, Kiran S.
+Multimodal neural and behavioral data predict response to rehabilitation in chronic poststroke aphasia.
+*Stroke*. 2022;53(5):1606–1614.
+doi:10.1161/STROKEAHA.121.036749
+
+> C. Independent-cohort replication of multimodal response prediction
+> (n=55, Boston).
+
+## @Saur2006  [seed]
+Saur D, Lange R, Baumgaertner A, Schraknepper V, Willmes K, Rijntjes M, Weiller C.
+Dynamics of language reorganization after stroke.
+*Brain*. 2006;129(6):1371–1384.
+doi:10.1093/brain/awl090
+
+> C. The three-phase recovery model (acute left hypoactivation →
+> subacute right upregulation → chronic left re-normalisation,
+> n=14). Framework for every recovery-phase finding.
+
+## @Turkeltaub2011  [seed]
+Turkeltaub PE, Messing S, Norise C, Hamilton RH.
+Are networks for residual language function and recovery consistent across aphasic patients?
+*Neurology*. 2011;76(20):1726–1734.
+doi:10.1212/WNL.0b013e31821a44c1
+
+> C. ALE meta-analysis of recovery activations (12 studies): spared
+> left IFG, right IFG homologue, bilateral MTG. Belongs in `reviews/`.
+
+## @Stockert2020  [seed]
+Stockert A, Wawrzyniak M, Klingbeil J, Wrede K, Kümmerer D, Hartwigsen G, Kaller CP, Weiller C, Saur D.
+Dynamics of language reorganization after left temporo-parietal and frontal stroke.
+*Brain*. 2020;143(3):844–861.
+doi:10.1093/brain/awaa023
+
+> C. Longitudinal fMRI (n=34) showing reorganisation differs by
+> lesion site — frontal vs temporo-parietal. Lets region entries carry
+> a recovery-trajectory finding.
+
+## @Hartwigsen2019  [seed]
+Hartwigsen G, Saur D.
+Neuroimaging of stroke recovery from aphasia – insights into plasticity of the human language network.
+*NeuroImage*. 2019;190:14–31.
+doi:10.1016/j.neuroimage.2017.11.056
+
+> D. Review of recovery imaging; the narrative source for the RAG
+> report's recovery paragraph.
+
+## @Hickok2007  [seed]
+Hickok G, Poeppel D.
+The cortical organization of speech processing.
+*Nat Rev Neurosci*. 2007;8(5):393–402.
+doi:10.1038/nrn2113
+
+> D. The dual-stream model Fridriksson2018 tests; `reviews/` should
+> hold the framework the region entries are organised by.
+
+## @Catani2008  [seed]
+Catani M, Mesulam M.
+The arcuate fasciculus and the disconnection theme in language and aphasia: history and current state.
+*Cortex*. 2008;44(8):953–961.
+doi:10.1016/j.cortex.2008.04.002
+
+> D. Direct and indirect arcuate segments; the anatomical basis for
+> splitting `left_arcuate_fasciculus` from `left_anterior_arcuate_fasciculus`
+> and for the Geschwind1965 lineage.
+
+## @Dick2012  [seed]
+Dick AS, Tremblay P.
+Beyond the arcuate fasciculus: consensus and controversy in the connectional anatomy of language.
+*Brain*. 2012;135(12):3529–3550.
+doi:10.1093/brain/aws222
+
+> D. Tract-by-tract review (AF/SLF, IFOF, UF, ILF, MdLF, ECFS) — the
+> glossary the JHU-tract extension of the decoder will need.
+
+## @Binder2009  [seed]
+Binder JR, Desai RH, Graves WW, Conant LL.
+Where is the semantic system? A critical review and meta-analysis of 120 functional neuroimaging studies.
+*Cereb Cortex*. 2009;19(12):2767–2796.
+doi:10.1093/cercor/bhp055
+
+> D. The semantic-network meta-analysis that Neurosynth term decoding
+> in `decode_lesion.py` implicitly leans on; lets `semantics` cite a
+> convergence source.
+
+## @Benjamin2014  [seed]
+Benjamin ML, Towler S, Garcia A, Park H, Sudhyadhom A, Harnish S, McGregor KM, Zlatar Z, Reilly JJ, Rosenbek JC, Gonzalez Rothi LJ, Crosson B.
+A behavioral manipulation engages right frontal cortex during aphasia therapy.
+*Neurorehabil Neural Repair*. 2014;28(6):545–553.
+doi:10.1177/1545968313517754
+
+> Added 2026-10-20. Intention (left-hand movement) manipulation during
+> naming therapy shifts activity to right frontal cortex (fMRI, n=14).
+> Candidate `ingredients/` entry; the lesion–response link for the
+> `bilateral_middle_frontal_gyrus_recovery` region entry.
+
+## @Brookshire2014  [seed]
+Brookshire CE, Wilson JP, Nadeau SE, Gonzalez Rothi LJ, Kendall DL.
+Frequency, nature, and predictors of alexia in a convenience sample of individuals with chronic aphasia.
+*Aphasiology*. 2014;28(12):1464–1480.
+doi:10.1080/02687038.2014.945389
+
+> Added 2026-10-20. Alexia in 68 % of a chronic aphasia sample;
+> predicted by aphasia severity and phonological impairment. The
+> behavioural anchor for a future `alexia` impairment entry.
+
+## @Wilson2019  [seed]
+Wilson SM, Eriksson DK, Yen M, Demarco AT, Schneck SM, Lucanie JM.
+Language mapping in aphasia.
+*J Speech Lang Hear Res*. 2019;62(11):3937–3946.
+doi:10.1044/2019_JSLHR-L-RSNP-19-0031
+
+> Added 2026-10-20. Review of fMRI language mapping in aphasia and the
+> methodological problems of recovery studies; belongs in `reviews/`.
+
+## @WilsonHula2019  [seed]
+Wilson SM, Hula WD.
+Multivariate approaches to understanding aphasia and its neural substrates.
+*Curr Neurol Neurosci Rep*. 2019;19(8):53.
+doi:10.1007/s11910-019-0971-6
+
+> Added 2026-10-20. Review of multivariate (PCA / factor) approaches to
+> aphasia and their lesion correlates — the framework behind Butler2014,
+> Halai2017, Alyahya2020 and Stefaniak2022. `reviews/`.
+
+## @Mitchell2017  [seed]
+Mitchell C, Bowen A, Tyson S, Butterfint Z, Conroy P.
+Interventions for dysarthria due to stroke and other adult-acquired, non-progressive brain injury.
+*Cochrane Database Syst Rev*. 2017;(1):CD002088.
+doi:10.1002/14651858.CD002088.pub3
+
+> Added 2026-10-20. Post-stroke dysarthria is the motor-speech
+> neighbour of aphasia and co-occurs with it; a `reviews/` entry so the
+> RAG report can separate the two when a lesion touches motor cortex.
+
+## @Hazelton2022  [seed]
+Hazelton C, Thomson K, Todhunter-Brown A, Campbell P, Chung CSY, Dorris L, Gillespie DC, Hunter SM, McGill K, Nicolson DJ, Williams LJ, Brady MC.
+Interventions for perceptual disorders following stroke.
+*Cochrane Database Syst Rev*. 2022;(11):CD007039.
+doi:10.1002/14651858.CD007039.pub3
+
+> Added 2026-10-20. Perceptual disorders (agnosias, neglect) after
+> stroke — co-morbidities the lesion decoder will meet in the same
+> masks. `reviews/`.
+
+## @Laver2025  [seed]
+Laver KE, Lange B, George S, Deutsch JE, Saposnik G, Chapman M, Crotty M.
+Virtual reality for stroke rehabilitation.
+*Cochrane Database Syst Rev*. 2025;(6):CD008349.
+doi:10.1002/14651858.CD008349.pub5
+
+> Added 2026-10-20. Post-stroke rehabilitation delivery; `reviews/`.

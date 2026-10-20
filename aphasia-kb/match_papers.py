@@ -119,8 +119,10 @@ def match_one(text: str, cites: dict[str, dict],
     for d in {_norm_doi(d) for d in _DOI.findall(text)}:
         if d in by_doi:
             return by_doi[d], "doi"
-        for cd, k in by_doi.items():   # suffix printed without/with extras
-            if len(d) > 16 and (cd.startswith(d) or d.startswith(cd)):
+        for cd, k in by_doi.items():   # trailing char lost / extra punctuation
+            short, long_ = sorted((d, cd), key=len)
+            if len(short) >= len(long_) - 2 and long_.startswith(short) \
+                    and re.search(r"\d", short.split("/", 1)[-1]):
                 return k, "doi"
 
     stem = Path(filename).stem if filename else ""

@@ -471,14 +471,29 @@ def _autosize_num_ctx(prompt: str, max_tokens: int) -> int:
     return autosize_num_ctx(prompt, max_tokens, floor=NUM_CTX_FLOOR)
 
 
+RETRY_HINT = """
+
+IMPORTANT — SECOND ATTEMPT. Your previous response exceeded the output
+budget and was discarded. This time: report only the findings that carry
+a quantitative result or a direct region–impairment claim (at most 8),
+give each at most 3 source_passages, keep every string short, and do
+not repeat any object. Produce the complete JSON object."""
+
+
 def call_ollama(prompt: str, model: str, max_tokens: int = 16000,
                 host: str = DEFAULT_OLLAMA_HOST,
                 num_ctx: int | None = None,
-                timeout: int = 3600, monitor: bool = True) -> str:
+                timeout: int = 3600, monitor: bool = True,
+                _attempt: int = 1) -> str:
     """Send the prompt to a local Ollama model, return raw response text.
 
     Wraps the (long, blocking) call in a background GPU/CPU monitor so a
     CPU spill shows up as it happens rather than as unexplained slowness.
+
+    If the output hits max_tokens (Ollama then returns nothing, because
+    a JSON object cut off mid-way is discarded), the call is retried
+    ONCE with a 50 % larger budget and a hint to be selective. A second
+    failure raises OllamaError; the batch loop reports it and moves on.
     """
     if num_ctx is None:
         num_ctx = _autosize_num_ctx(prompt, max_tokens)
@@ -503,7 +518,35 @@ def call_ollama(prompt: str, model: str, max_tokens: int = 16000,
                        num_ctx=num_ctx, temperature=0.0, fmt="json",
                        timeout=timeout)
     except OllamaError as e:
-        raise SystemExit(str(e)) from e
+        if "num_predict" in str(e) and _attempt == 1:
+            bigger = int(max_tokens * 1.5)
+            print(f"  ↻ output overflowed {max_tokens:,} tokens — retrying once "
+                  f"with max_tokens={bigger:,} and a be-selective hint "
+                  f"({dt.datetime.now():%H:%M:%S})", flush=True)
+            return call_ollama(prompt + RETRY_HINT, model, max_tokens=bigger,
+                               host=host, num_ctx=None, timeout=timeout,
+                               monitor=monitor, _attempt=2)
+        # A plain error, not SystemExit: in --batch the loop logs it and
+        # continues with the next paper instead of dying.
+        raise OllamaError(str(e)) from e
+    if res.get("truncated_output") and _attempt == 1:
+        # Keep the cut-off text: it shows whether the model was being
+        # thorough (many findings) or looping (same block repeated),
+        # which decides whether a bigger budget or a leaner prompt is
+        # the right fix. Name matches the .gitignore pattern.
+        dump = HERE / f"_last_extraction_response_overflow_{dt.datetime.now():%H%M%S}.txt"
+        try:
+            dump.write_text(res["text"], encoding="utf-8")
+            print(f"  ⚠ cut-off output kept in {dump.name} ({len(res['text']):,} chars)")
+        except OSError:
+            pass
+        bigger = int(max_tokens * 1.5)
+        print(f"  ↻ output was cut at {max_tokens:,} tokens — retrying once "
+              f"with max_tokens={bigger:,} and a be-selective hint "
+              f"({dt.datetime.now():%H:%M:%S})", flush=True)
+        return call_ollama(prompt + RETRY_HINT, model, max_tokens=bigger,
+                           host=host, num_ctx=None, timeout=timeout,
+                           monitor=monitor, _attempt=2)
     return res["text"]
 
 
@@ -774,9 +817,11 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
                 out_dir: Path | None = None,
                 monitor: bool = True,
                 timeout: int = 3600,
-                lean: bool = False) -> bool:
+                lean: bool = False,
+                progress: tuple[int, int] | None = None) -> bool:
     t_start = time.monotonic()
-    print(f"\n=== {pdf_path.name} ===  started {dt.datetime.now():%Y-%m-%d %H:%M:%S}")
+    tag = f"[{progress[0]}/{progress[1]}]  " if progress else ""
+    print(f"\n=== {tag}{pdf_path.name} ===  started {dt.datetime.now():%Y-%m-%d %H:%M:%S}")
     if not pdf_path.exists():
         print(f"  ❌ not found: {pdf_path}")
         return False
@@ -879,7 +924,7 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
         print(f"  ⊙ sandbox mode: skipped annotator + extraction_log "
               f"(nothing outside {out_dir.name}/ was modified)")
         print(f"  Done {dt.datetime.now():%H:%M:%S} — total "
-              f"{_fmt_elapsed(time.monotonic() - t_start)} for this paper")
+              f"{_fmt_elapsed(time.monotonic() - t_start)} for this paper{_left(progress)}")
         return True
 
     run_annotator(pdf_path, saved, kb_root)
@@ -894,8 +939,16 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
     if notes:
         print(f"  For reviewer: {notes}")
     print(f"  Done {dt.datetime.now():%H:%M:%S} — total "
-          f"{_fmt_elapsed(time.monotonic() - t_start)} for this paper")
+          f"{_fmt_elapsed(time.monotonic() - t_start)} for this paper{_left(progress)}")
     return True
+
+
+def _left(progress: tuple[int, int] | None) -> str:
+    """'; 3 paper(s) left' / '; batch complete' / '' for a single paper."""
+    if not progress or progress[1] < 2:
+        return ""
+    n = progress[1] - progress[0]
+    return f"; {n} paper(s) left in the batch" if n else "; batch complete"
 
 
 def _fmt_elapsed(seconds: float) -> str:
@@ -1046,19 +1099,25 @@ def main(argv=None):
 
     t_batch = time.monotonic()
     n_ok, n_fail = 0, 0
-    for pdf in pdfs:
+    if len(pdfs) > 1:
+        print(f"\n{len(pdfs)} paper(s) to extract, in this order: "
+              + ", ".join(p.stem for p in pdfs))
+    for i, pdf in enumerate(pdfs, 1):
         try:
             ok = process_one(
                 pdf, args.citation, args.model, kb_root, args.dry_run,
                 host=args.ollama_host, num_ctx=args.num_ctx,
                 max_tokens=args.max_tokens, out_dir=args.out_dir,
                 monitor=not args.no_monitor, timeout=args.timeout,
-                lean=args.lean,
+                lean=args.lean, progress=(i, len(pdfs)),
             )
             if ok:
                 n_ok += 1
             else:
                 n_fail += 1
+        except OllamaError as e:
+            print(f"  ❌ {pdf.name}: {e}")
+            n_fail += 1
         except Exception as e:
             print(f"  ❌ unhandled error: {e}")
             n_fail += 1
