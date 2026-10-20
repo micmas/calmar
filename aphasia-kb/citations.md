@@ -1362,3 +1362,106 @@ Virtual reality for stroke rehabilitation.
 doi:10.1002/14651858.CD008349.pub5
 
 > Added 2026-10-20. Post-stroke rehabilitation delivery; `reviews/`.
+
+## @Pflugshaupt2009  [extracted]
+Pflugshaupt T, Gutbrod K, Wurtz P, von Wartburg R, Nyffeler T, de Haan B, Karnath H-O, Müri RM.
+About the role of visual field defects in pure alexia.
+*Brain*. 2009;132(7):1907–1917.
+doi:10.1093/brain/awp141
+
+> Added 2026-10-20. Pure alexia after left occipito-temporal lesions
+> (fusiform, inferior temporal, occipito-temporal sulcus), with the
+> right hemianopia confound controlled. Extracted 2026-10-19 by
+> `extract.py --batch`; drafts in `drafts/regions/`. Reading
+> impairment, not aphasia proper — pairs with Brookshire2014.
+
+## @Bates2003  [seed]
+Bates E, Wilson SM, Saygin AP, Dick F, Sereno MI, Knight RT, Dronkers NF.
+Voxel-based lesion–symptom mapping.
+*Nat Neurosci*. 2003;6(5):448–450.
+doi:10.1038/nn1050
+
+> A. The method paper and the first fluency / comprehension VLSM
+> (n=101): insula and anterior frontal for fluency, MTG for
+> comprehension. Needed as the primary behind `fluency` and the
+> `left_middle_temporal_gyrus` entry.
+
+## @Baldo2011  [seed]
+Baldo JV, Wilkins DP, Ogar J, Willock S, Dronkers NF.
+Role of the precentral gyrus of the insula in complex articulatory movements.
+*Cortex*. 2011;47(7):800–807.
+doi:10.1016/j.cortex.2010.07.001
+
+> A. VLSM (n=33) replicating Dronkers 1996 with a quantitative method;
+> completes the insula pair with Hillis2004.
+
+## @Yourganov2016  [seed]
+Yourganov G, Fridriksson J, Rorden C, Gleichgerrcht E, Bonilha L.
+Multivariate connectome-based symptom mapping in post-stroke patients: networks supporting language and speech.
+*J Neurosci*. 2016;36(25):6668–6679.
+doi:10.1523/JNEUROSCI.4396-15.2016
+
+> A. Connectome-based LSM (n=90) for naming, fluency, comprehension,
+> repetition. Primary for the white-matter entries, and the method
+> Bonilha2014 relies on.
+
+## @Matchin2020  [seed]
+Matchin W, Basilakos A, Stark BC, den Ouden D-B, Fridriksson J, Hickok G.
+Agrammatism and paragrammatism: a cortical double dissociation revealed by lesion-symptom mapping.
+*Neurobiol Lang*. 2020;1(2):208–225.
+doi:10.1162/nol_a_00010
+
+> A. Agrammatism → IFG/insula, paragrammatism → posterior temporal
+> (n=53). Splits `syntactic_processing` into the two deficits the
+> decoder can actually tell apart.
+
+## @Rapcsak2009  [seed]
+Rapcsak SZ, Beeson PM, Henry ML, Leyden A, Kim E, Rising K, Andersen S, Cho H.
+Phonological dyslexia and dysgraphia: cognitive mechanisms and neural substrates.
+*Cortex*. 2009;45(5):575–591.
+doi:10.1016/j.cortex.2008.04.006
+
+> A. The KB has no reading or writing impairment; this is the
+> lesion-anatomy anchor (perisylvian phonological network) for an
+> `alexia` / `agraphia` entry.
+
+## @Fridriksson2010Anomia  [seed]
+Fridriksson J.
+Preservation and modulation of specific left hemisphere regions is vital for treated recovery from anomia in stroke.
+*J Neurosci*. 2010;30(35):11558–11564.
+doi:10.1523/JNEUROSCI.2227-10.2010
+
+> B/C. Anomia-treatment response predicted by preserved left frontal
+> and temporal tissue (n=26). The region→treatment-response link
+> CALMaR exists to make.
+
+## @Karnath2018  [seed]
+Karnath H-O, Sperber C, Rorden C.
+Mapping human brain lesions and their functional consequences.
+*NeuroImage*. 2018;165:180–189.
+doi:10.1016/j.neuroimage.2017.10.028
+
+> D. Methods review: what lesion–symptom mapping can and cannot
+> infer (vascular bias, displacement of peaks). The caveat text the
+> RAG report's research-only notice should be able to cite.
+
+## @vanderMeulen2014  [seed]
+van der Meulen I, van de Sandt-Koenderman WME, Heijenbrok-Kal MH, Visch-Brink EG, Ribbers GM.
+The efficacy and timing of melodic intonation therapy in subacute aphasia.
+*Neurorehabil Neural Repair*. 2014;28(6):536–544.
+doi:10.1177/1545968313517753
+
+> Added 2026-10-20. The MIT RCT (n=27, subacute) that vanderMeulen2012
+> announced; the treatment-response primary `melodic_intonation_therapy`
+> lacks. (DOI corrected from the 2026-10-19 list, which pointed at the
+> adjacent article, Benjamin2014.)
+
+## @Kasdan2025  [seed]
+Kasdan AV, Casilio M, Bryan K, Jacoby N, Fram NR, Walljasper L, Levy DF, de Riesthal M, Gordon RL, Wilson SM.
+Neural correlates of rhythm in post-stroke aphasia.
+*Neurobiol Lang*. 2025;6:nol.a.9.
+doi:10.1162/nol.a.9
+
+> Added 2026-10-20. Lesion correlates of rhythm perception and
+> production in aphasia — the lesion side of the `rhythmic_hand_tapping`
+> / `melodic_intoning` ingredients.

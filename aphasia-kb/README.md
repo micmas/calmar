@@ -81,7 +81,9 @@ aphasia-kb/
 │
 │   # ---- building the KB ----
 ├── intake_papers.py           # the three steps below in one command
+├── register_papers.py         # unknown PDF → citations.md entry from its DOI (Crossref)
 ├── match_papers.py            # rename downloaded PDFs to their citation key (DOI / title)
+├── rekey_paper.py             # move drafts/log/PDF from a wrong citation key to the right one
 ├── verify_dois.py             # check citations.md DOIs against Crossref
 ├── strip_cover_pages.py       # drop JSTOR / T&F / ProQuest … cover sheets from PDFs
 ├── batch_ocr.py               # OCR image-only PDFs in papers/
@@ -123,7 +125,9 @@ aphasia-kb/
 |---|---|---|
 | `intake_papers.py` | Download → extractor-ready in one command: `--from ~/Downloads` copies in PDFs that match a cited paper, then the three scripts below run in order and the papers line of `kb_status.py` is printed; `--extract` goes on to `extract.py --batch`. Every step skips what is already done, so re-running is safe. Dry run by default; `--execute` applies. | local / Ollama with `--extract` |
 | `verify_dois.py` | Look every DOI in `citations.md` up at Crossref and flag title/author mismatches — run it after adding entries, since `match_papers.py` keys on those DOIs. Needs network. | network |
+| `register_papers.py` | Any PDF in `papers/` with no `citations.md` entry gets one built from its DOI via Crossref, tagged `[seed]` with a dated "registered automatically" note. Needs network. The intake runs it first; `extract.py --batch` refuses a PDF that has no entry. | network |
 | `match_papers.py` | Rename PDFs dropped into `papers/` under publisher names to `<Key>.pdf`, matching on the DOI in the text, the DOI in the filename or the title in the filename; `--execute` renames, nothing is overwritten. | local |
+| `rekey_paper.py` | Repair after a paper was extracted under the wrong key: renames the PDF, annotated copy, drafts and sidecars, rewrites `citation:`/`id:` and the log. `--auto` finds every draft key missing from `citations.md` and matches by DOI. | local |
 | `strip_cover_pages.py` | Remove leading publisher sheets (JSTOR, HighWire, Taylor & Francis, ProQuest, ResearchGate …) so page numbers and quotes refer to the article; scanned pages are never removed; originals kept in `papers/_originals/`. | local |
 | `batch_ocr.py` | Detect and OCR image-only PDFs so their text layer is searchable. Run before extracting an older paper. | local |
 | `extract.py` | Read a PDF's text layer and emit schema-bound drafts plus the annotated PDF. `--dry-run` previews prompt size and `num_ctx`; `--batch` does every un-extracted PDF; `--out-dir _compare/<model>` sandboxes a benchmark run. | Ollama |
@@ -146,9 +150,10 @@ configuration error and the scripts warn about it.
 
 Source PDFs are not redistributed. `citations.md` carries the DOI for
 every key; fetch papers through your own access, drop them into
-`papers/` under any name and run `intake_papers.py --execute`: the
-file is renamed to `<Key>.pdf` from its DOI, publisher cover sheets are
-removed and scans are OCR'd. (Or name it yourself, e.g.
+`papers/` under any name and run `intake_papers.py --execute`: a
+`citations.md` entry is written from the DOI if there is none, the
+file is renamed to `<Key>.pdf`, publisher cover sheets are removed and
+scans are OCR'd. (Or name it yourself, e.g.
 `Fridriksson2018Anatomy.pdf`, and run the steps separately.) `kb_status.py --papers-needed` lists
 what the canonical KB depends on and is missing. Annotated copies (`<Key>_annotated.pdf`) are generated
 locally and stay local.
