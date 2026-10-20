@@ -165,3 +165,15 @@ add an `EXTRACTED` line for every run.
 2026-05-07 | AUTO-APPROVED | @Crosson1999 | thalamic_language_mechanisms__Crosson1999 | reviewer: michele
 2026-05-07 | AUTO-APPROVED | @Simic2023 | treatment_neuroplasticity_aphasia__Simic2023 | reviewer: michele
 2026-10-16 | LEGACY-TAGGED | — | 33 entries | review_tier: legacy stamped per GOVERNANCE.md §5
+2026-01-01 | EXTRACTED | @Basilakos2019 | leukoaraiosis, lesion_volume, severity_metric | 3 predictor drafts; confidence: high
+2026-01-01 | EXTRACTED | @Boyle2004 | semantic_feature_analysis | 1 therapy draft, 4 findings
+2026-01-01 | EXTRACTED | @Breier2008 | left_arcuate_fasciculus, left_superior_longitudinal_fasciculus, left_uncinate_fasciculus | 3 drafts, confidence: high
+2026-01-01 | EXTRACTED | @Buchsbaum2011 | left_posterior_planum_temporale_spt | Lesion overlap and aggregate fMRI link area Spt to conduction aphasia.
+2026-01-01 | EXTRACTED | @DeWitt2012 | left_superior_temporal_gyrus, left_superior_temporal_sulcus | 2 drafts, 3 findings, confidence: high
+2026-01-01 | EXTRACTED | @Fridriksson2010 | left_arcuate_fasciculus, left_supramarginal_gyrus, left_temporoparietal_junction, left_ifg_pars_opercularis | 4 findings
+2026-01-01 | EXTRACTED | @Geschwind1965 | left_angular_gyrus, left_superior_temporal_gyrus_wernicke, corpus_callosum, disconnexion_syndromes | Theoretical synthesis of disconnexion syndromes.
+2026-01-01 | EXTRACTED | @Hope2017 | right_middle_temporal_gyrus, right_precentral_gyrus, anomic_aphasia, lesion_volume, age, time_post_onset | 6 drafts, confidence: high
+2026-01-01 | EXTRACTED | @Hosomi2009 | left_arcuate_fasciculus | AF fiber asymmetry predicts aphasia at discharge
+2026-01-01 | EXTRACTED | @Pflugshaupt2009 | left_fusiform_gyrus, left_occipito_temporal_sulcus, left_inferior_temporal_gyrus, pure_alexia | 4 drafts, confidence: high
+2026-01-01 | EXTRACTED | @Schwartz2009 | left_anterior_temporal_lobe, left_middle_temporal_gyrus, left_ifg_pars_triangularis, left_superior_temporal_gyrus_wernicke | VLSM study on semantic naming errors (n=64).
+2026-01-01 | EXTRACTED | @Schwartz2012 | left_precentral_gyrus, left_supramarginal_gyrus, left_arcuate_fasciculus, left_posterior_stg | VLSM of phonological errors in naming
