@@ -44,7 +44,8 @@ class H(BaseHTTPRequestHandler):
             "message": {"content": content},
             "prompt_eval_count": 900, "eval_count": 120,
             "total_duration": 2_000_000_000, "done_reason": "stop",
-        }).encode()
+            "done": True,   # the client streams: one chunk that is also the final one
+        }).encode() + b"\n"
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()

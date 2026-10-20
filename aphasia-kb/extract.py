@@ -235,7 +235,7 @@ def _existing_kb_summary(kb_root: Path) -> str:
     """Build a compact list of region/impairment/therapy/predictor IDs
     already in the canonical folders, for the prompt."""
     parts = []
-    for bucket in ("regions", "impairments", "therapies", "predictors"):
+    for bucket in ("regions", "impairments", "therapies", "predictors", "reviews"):
         ids = []
         d = kb_root / bucket
         if d.is_dir():
@@ -269,7 +269,7 @@ prose or markdown around it:
 {
   "drafts": [
     {
-      "bucket": "regions" | "impairments" | "therapies" | "predictors",
+      "bucket": "regions" | "impairments" | "therapies" | "predictors" | "reviews",
       "filename": "<entry_id>__<citation_key_no_at>.md",
       "content": "<full markdown including YAML frontmatter and prose body>"
     },
@@ -457,7 +457,7 @@ def build_prompt(skill_md: str, schema_md: str, citations_md: str,
 # ============================================================
 from model_config import resolve as resolve_model  # noqa: E402
 from ollama_client import (DEFAULT_HOST as DEFAULT_OLLAMA_HOST,  # noqa: E402
-                           OllamaError, autosize_num_ctx, chat,
+                           OllamaError, RepetitionLoop, autosize_num_ctx, chat,
                            check_model_available, is_local)
 
 # Which model to use lives in models.yaml, not here — see model_config.py.
@@ -479,6 +479,24 @@ a quantitative result or a direct region–impairment claim (at most 8),
 give each at most 3 source_passages, keep every string short, and do
 not repeat any object. Produce the complete JSON object."""
 
+LOOP_HINT = """
+
+IMPORTANT — SECOND ATTEMPT. Your previous response was cut off because
+you started repeating the same finding or passage over and over. Each
+finding, and each source passage, must appear EXACTLY ONCE. Report at
+most 8 findings with at most 3 source_passages each, then close the
+JSON object and stop."""
+
+
+def _keep(kind: str, text: str) -> None:
+    """Save a cut-off or looped response so the failure can be read."""
+    dump = HERE / f"_last_extraction_response_{kind}_{dt.datetime.now():%H%M%S}.txt"
+    try:
+        dump.write_text(text, encoding="utf-8")
+        print(f"  ⚠ {kind} output kept in {dump.name} ({len(text):,} chars)")
+    except OSError:
+        pass
+
 
 def call_ollama(prompt: str, model: str, max_tokens: int = 16000,
                 host: str = DEFAULT_OLLAMA_HOST,
@@ -490,9 +508,13 @@ def call_ollama(prompt: str, model: str, max_tokens: int = 16000,
     Wraps the (long, blocking) call in a background GPU/CPU monitor so a
     CPU spill shows up as it happens rather than as unexplained slowness.
 
-    If the output hits max_tokens (Ollama then returns nothing, because
-    a JSON object cut off mid-way is discarded), the call is retried
-    ONCE with a 50 % larger budget and a hint to be selective. A second
+    The response is streamed (ollama_client.chat): a progress line every
+    two minutes, and a repetition loop is cut after a few hundred wasted
+    tokens. Two retry paths, each used once:
+      * loop     → same budget, LOOP_HINT appended (it is a prompt problem)
+      * overflow → 50 % larger budget, RETRY_HINT appended (be selective)
+    Whatever was generated before a cut is kept in
+    _last_extraction_response_{loop,overflow}_<time>.txt. A second
     failure raises OllamaError; the batch loop reports it and moves on.
     """
     if num_ctx is None:
@@ -517,36 +539,35 @@ def call_ollama(prompt: str, model: str, max_tokens: int = 16000,
             res = chat(prompt, model=model, max_tokens=max_tokens, host=host,
                        num_ctx=num_ctx, temperature=0.0, fmt="json",
                        timeout=timeout)
+    except RepetitionLoop as e:
+        # Caught by the streaming client after a few hundred wasted
+        # tokens, not after the whole budget. Same budget, different
+        # instruction: the loop is a prompt problem, not a length one.
+        _keep("loop", e.partial)
+        if _attempt == 1:
+            print(f"  ↻ {e} — retrying once with a no-repetition instruction "
+                  f"({dt.datetime.now():%H:%M:%S})", flush=True)
+            return call_ollama(prompt + LOOP_HINT, model, max_tokens=max_tokens,
+                               host=host, num_ctx=num_ctx, timeout=timeout,
+                               monitor=monitor, _attempt=2)
+        raise OllamaError(f"looped twice: {e}") from e
     except OllamaError as e:
-        if "num_predict" in str(e) and _attempt == 1:
+        # A plain error, not SystemExit: in --batch the loop logs it and
+        # continues with the next paper instead of dying.
+        raise OllamaError(str(e)) from e
+    if res.get("truncated_output"):
+        # Genuinely long (the loop detector did not fire): keep what was
+        # written, then once ask for a selective pass with a bigger budget.
+        _keep("overflow", res["text"])
+        if _attempt == 1:
             bigger = int(max_tokens * 1.5)
-            print(f"  ↻ output overflowed {max_tokens:,} tokens — retrying once "
-                  f"with max_tokens={bigger:,} and a be-selective hint "
+            print(f"  ↻ output was cut at {max_tokens:,} tokens without looping — "
+                  f"retrying once with max_tokens={bigger:,} and a be-selective hint "
                   f"({dt.datetime.now():%H:%M:%S})", flush=True)
             return call_ollama(prompt + RETRY_HINT, model, max_tokens=bigger,
                                host=host, num_ctx=None, timeout=timeout,
                                monitor=monitor, _attempt=2)
-        # A plain error, not SystemExit: in --batch the loop logs it and
-        # continues with the next paper instead of dying.
-        raise OllamaError(str(e)) from e
-    if res.get("truncated_output") and _attempt == 1:
-        # Keep the cut-off text: it shows whether the model was being
-        # thorough (many findings) or looping (same block repeated),
-        # which decides whether a bigger budget or a leaner prompt is
-        # the right fix. Name matches the .gitignore pattern.
-        dump = HERE / f"_last_extraction_response_overflow_{dt.datetime.now():%H%M%S}.txt"
-        try:
-            dump.write_text(res["text"], encoding="utf-8")
-            print(f"  ⚠ cut-off output kept in {dump.name} ({len(res['text']):,} chars)")
-        except OSError:
-            pass
-        bigger = int(max_tokens * 1.5)
-        print(f"  ↻ output was cut at {max_tokens:,} tokens — retrying once "
-              f"with max_tokens={bigger:,} and a be-selective hint "
-              f"({dt.datetime.now():%H:%M:%S})", flush=True)
-        return call_ollama(prompt + RETRY_HINT, model, max_tokens=bigger,
-                           host=host, num_ctx=None, timeout=timeout,
-                           monitor=monitor, _attempt=2)
+        raise OllamaError(f"output still cut at {max_tokens:,} tokens on the second attempt")
     return res["text"]
 
 
@@ -741,7 +762,7 @@ def save_drafts(drafts: list, kb_root: Path,
     saved = []
     for d in drafts:
         bucket = d["bucket"]
-        if bucket not in ("regions", "impairments", "therapies", "predictors"):
+        if bucket not in ("regions", "impairments", "therapies", "predictors", "reviews"):
             print(f"  ⚠ skipping draft with invalid bucket={bucket!r}")
             continue
         out = kb_root / "drafts" / bucket / d["filename"]
@@ -868,9 +889,8 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
 
     t_model = time.monotonic()
     print(f"  Model call started {dt.datetime.now():%H:%M:%S} "
-          f"({model}, num_ctx={num_ctx or 'auto'}); output arrives in one "
-          f"piece when the model finishes — see `ollama ps` meanwhile.",
-          flush=True)
+          f"({model}, num_ctx={num_ctx or 'auto'}); progress every 2 min, "
+          f"loops cut early.", flush=True)
     raw = call_ollama(prompt, model, max_tokens=max_tokens,
                       host=host, num_ctx=num_ctx, monitor=monitor,
                       timeout=timeout)
@@ -933,6 +953,13 @@ def process_one(pdf_path: Path, citation: str | None, model: str,
         f"{','.join(d['filename'] for d in drafts)} | "
         f"{len(saved)} draft(s) | model: {model}"
     )
+    # The model has no clock: it writes whatever date it likes (the
+    # 2026-10 batches all came back dated 2026-01-01). Stamp today's.
+    today = f"{dt.date.today():%Y-%m-%d}"
+    if re.match(r"^\s*\d{4}-\d{2}-\d{2}\s*\|", log_line):
+        log_line = re.sub(r"^\s*\d{4}-\d{2}-\d{2}", today, log_line, count=1)
+    else:
+        log_line = f"{today} | {log_line.strip()}"
     append_extraction_log(kb_root / "extraction_log.md", log_line)
     print(f"  Summary: {result.get('summary', '(no summary)')}")
     notes = result.get("notes_for_reviewer")
@@ -1057,6 +1084,12 @@ def main(argv=None):
             if cit in existing_keys:
                 print(f"  ⏭  {pdf.name}  "
                       f"(findings already exist for {cit})")
+                continue
+            if cit not in all_keys:
+                # Never extract under a key made up from a download name:
+                # drafts, log lines and the annotated PDF would all carry it.
+                print(f"  ⏭  {pdf.name}  (no entry in citations.md — run "
+                      f"intake_papers.py, which registers it from its DOI, or add a block)")
                 continue
             if statuses.get(cit) == "refused":
                 print(f"  ⏭  {pdf.name}  "

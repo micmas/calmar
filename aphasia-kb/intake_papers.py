@@ -16,14 +16,17 @@ Steps, in order, each one of the standalone scripts:
   0. (--from DIR) copy PDFs out of DIR whose DOI / filename matches a
                             cited key that has no PDF yet; other files in
                             DIR are left untouched, nothing is moved
-  1. match_papers.py        rename publisher-named PDFs to <Key>.pdf
-  2. strip_cover_pages.py   drop JSTOR / T&F / HighWire / ProQuest … sheets
-  3. batch_ocr.py           OCR scanned PDFs (needs ocrmypdf — the step
+  1. register_papers.py     a PDF with no citation entry gets one, built
+                            from its DOI via Crossref (needs network;
+                            skipped with a note when offline)
+  2. match_papers.py        rename publisher-named PDFs to <Key>.pdf
+  3. strip_cover_pages.py   drop JSTOR / T&F / HighWire / ProQuest … sheets
+  4. batch_ocr.py           OCR scanned PDFs (needs ocrmypdf — the step
                             says what is missing and is skipped, the rest
                             still runs)
-  4. kb_status.py           the papers line: cited / present / missing,
+  5. kb_status.py           the papers line: cited / present / missing,
                             plus files that match no citation key
-  5. (--extract) extract.py --batch
+  6. (--extract) extract.py --batch
                             run the local model on every PDF that has no
                             findings in drafts/ or the canonical folders
 
@@ -53,6 +56,7 @@ sys.path.insert(0, str(ROOT))
 import batch_ocr  # noqa: E402
 import kb_status  # noqa: E402
 import match_papers  # noqa: E402
+import register_papers  # noqa: E402
 import strip_cover_pages  # noqa: E402
 
 
@@ -94,6 +98,8 @@ def _cli(argv=None) -> int:
     ap.add_argument("--allow-probable", action="store_true",
                     help="also rename author/year/title matches (match_papers.py)")
     ap.add_argument("--no-ocr", action="store_true", help="skip the OCR step")
+    ap.add_argument("--no-register", action="store_true",
+                    help="do not add citation entries for unknown PDFs (register_papers.py)")
     ap.add_argument("--from", dest="from_dir", type=Path, metavar="DIR",
                     help="first copy matching PDFs out of DIR (e.g. ~/Downloads)")
     ap.add_argument("--extract", action="store_true",
@@ -113,14 +119,20 @@ def _cli(argv=None) -> int:
             return 2
         rc |= pull_from(src, args.papers_dir, args.execute)
 
-    _banner(1, "Rename downloads to their citation key  (match_papers.py)")
+    if not args.no_register:
+        _banner(1, "Register new PDFs in citations.md  (register_papers.py)")
+        r = register_papers.register(args.papers_dir, ROOT / "citations.md", args.execute)
+        if r:
+            print("  ↑ these files will not be renamed or extracted until they have an entry")
+
+    _banner(2, "Rename downloads to their citation key  (match_papers.py)")
     rc |= match_papers._cli(papers + ex + (["--allow-probable"] if args.allow_probable else []))
 
-    _banner(2, "Strip publisher cover sheets  (strip_cover_pages.py)")
+    _banner(3, "Strip publisher cover sheets  (strip_cover_pages.py)")
     rc |= strip_cover_pages._cli(papers + ex)
 
     if not args.no_ocr:
-        _banner(3, "OCR scanned PDFs  (batch_ocr.py)")
+        _banner(4, "OCR scanned PDFs  (batch_ocr.py)")
         missing = batch_ocr.missing_tools() if args.execute else []
         if missing:
             print("skipped — OCR tools missing:\n  " + "\n  ".join(missing))
@@ -129,7 +141,7 @@ def _cli(argv=None) -> int:
             r = batch_ocr.main(papers + ex)
             rc |= (r if r != 1 else 0)   # 1 = some file failed; reported above
 
-    _banner(4, "Papers status  (kb_status.py)")
+    _banner(5, "Papers status  (kb_status.py)")
     st = kb_status.collect(ROOT)
     missing_keys = [k for k, v in st["papers"].items() if not v["pdf_present"]]
     print(f"  {len(st['papers'])} cited · {len(st['papers']) - len(missing_keys)} with a PDF · "
@@ -142,7 +154,7 @@ def _cli(argv=None) -> int:
         print("  (add a @Key to citations.md, or remove the file)")
 
     if args.extract:
-        _banner(5, "Extract papers that have no findings yet  (extract.py --batch)")
+        _banner(6, "Extract papers that have no findings yet  (extract.py --batch)")
         cmd = [sys.executable, str(ROOT / "extract.py"), "--batch"]
         if not args.execute:
             cmd.append("--dry-run")
