@@ -90,13 +90,18 @@ def _saved_upstream_ids(shell, boundary_role=None):
     return set()
 
 
+# Recovery commands a paused checkpoint accepts: the batch checkpoint can be
+# released towards batch processing or towards reporting (its two buttons).
+RECOVERY_COMMANDS = {"batch": ("batch", "report"), "skip-qc": ("skip-qc",)}
+
+
 def _recovery_action(lines):
     """Recognize only a standalone recovery magic, after IPython transforms it."""
     try:
         tree = ast.parse("".join(lines))
     except SyntaxError:
         return None
-    for action in ("batch", "skip-qc"):
+    for action in ("batch", "report", "skip-qc"):
         expected = ast.parse(f"get_ipython().run_line_magic('calmar_continue', {action!r})")
         if ast.dump(tree) == ast.dump(expected):
             return action
@@ -121,6 +126,20 @@ def enable_checkpoint_recovery(shell=None):
             checkpoint._resume()
             print("Batch checkpoint released. Select the first code cell in Batch processing, "
                   "then choose Run > Run All Cells Below. Processing will pause at QC.")
+        elif action == "report":
+            # The code equivalent of the "Jump to reporting" button.
+            checkpoint = getattr(shell, "_calmar_batch_checkpoint", None)
+            if checkpoint is None or not checkpoint.paused:
+                raise RuntimeError("There is no paused batch checkpoint.")
+            checkpoint._report()
+            print("Reporting opened; batch processing was not run and saved QC is unchanged.\n"
+                  "Next, run these cells one by one (Shift+Enter), not Run All Below:\n"
+                  "  1. the report settings cell ('Settings for the participant interpretation report'),\n"
+                  "  2. the report form cell, choose the participant and mask, click Generate;\n"
+                  "     or, without the form, run a cell such as\n"
+                  "       INTERP_SUBJECT_IDX = [e['subject'] for e in SUBJECTS].index('sub-...')\n"
+                  "       INTERP_MASK_SOURCE = 'manual'\n"
+                  "     and then the report cell ('Generate the interpretation report ...').")
         elif action == "skip-qc":
             checkpoint = getattr(shell, "_calmar_qc_checkpoint", None)
             if checkpoint is None or not checkpoint.paused:
@@ -130,7 +149,7 @@ def enable_checkpoint_recovery(shell=None):
             print("QC skipped by the user. The decision was saved for the final reports. "
                   "Select the next stage to run and use the notebook Run menu.")
         else:
-            raise ValueError("Use %calmar_continue batch or %calmar_continue skip-qc.")
+            raise ValueError("Use %calmar_continue batch, %calmar_continue report or %calmar_continue skip-qc.")
 
     register = getattr(shell, "register_magic_function", None)
     if callable(register):
@@ -156,7 +175,9 @@ def recovery_instructions(action):
         "and run this command by itself:\n\n"
         f"```python\n%calmar_continue {action}\n```\n\n"
         + ("This releases the batch checkpoint. Then select the first batch code cell "
-           "below and choose **Run → Run All Cells Below**. Execution will pause at QC."
+           "below and choose **Run → Run All Cells Below**. Execution will pause at QC.\n\n"
+           "To go to reporting instead (the **Jump to reporting** button), run "
+           "`%calmar_continue report` by itself, then run the report cells one by one."
            if action == "batch" else
            "This explicitly skips QC and saves ‘QC skipped by user’ for the reports. "
            "It does not start subsequent processing cells."))
@@ -189,14 +210,15 @@ class ExecutionCheckpoint:
     def _reject_while_paused(self, lines):
         if self.paused:
             action = getattr(self, "recovery_action", None)
-            if action and _recovery_action(lines) == action:
+            if action and _recovery_action(lines) in RECOVERY_COMMANDS.get(action, (action,)):
                 return lines
             # JupyterLab includes the executing cell's stable ID in each
             # request. Earlier cells can be edited/rerun without releasing
             # the checkpoint. Unidentified requests remain blocked.
             if _request_cell_id(self.shell) in getattr(self, "upstream_cell_ids", ()):
                 return lines
-            hint = (f" If widgets are unavailable, run %calmar_continue {action} "
+            hint = (f" If widgets are unavailable, run %calmar_continue "
+                    f"{' or %calmar_continue '.join(RECOVERY_COMMANDS.get(action, (action,)))} "
                     "by itself in a temporary code cell." if action else "")
             # Some clients keep sending Run All requests after the pause.
             # Do not execute their contents or flood the notebook with error
