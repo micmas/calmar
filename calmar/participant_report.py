@@ -611,8 +611,8 @@ LEGEND_HTML = '''
         <span style="color:#2e7d32">+</span> preserved,
         <span style="color:#c62828">&#8722;</span> impaired (WAB type taxonomy).<br>
         <b>Stage badge</b>:
-        <span style="background:#ffebee;color:#d32f2f;border:1px solid #d32f2f;padding:0 5px;border-radius:3px;font-size:10px">Acute &lt;2 wk</span>
-        <span style="background:#fff3e0;color:#e65100;border:1px solid #e65100;padding:0 5px;border-radius:3px;font-size:10px">Subacute 2 wk–6 mo</span>
+        <span style="background:#ffebee;color:#d32f2f;border:1px solid #d32f2f;padding:0 5px;border-radius:3px;font-size:10px">Acute &lt;7 d</span>
+        <span style="background:#fff3e0;color:#e65100;border:1px solid #e65100;padding:0 5px;border-radius:3px;font-size:10px">Subacute 7 d–6 mo</span>
         <span style="background:#e3f2fd;color:#1565c0;border:1px solid #1565c0;padding:0 5px;border-radius:3px;font-size:10px">Chronic &gt;6 mo</span> &nbsp;
         &#9888; = therapy evidence from a different recovery stage (hover for detail).
         Rules and their sources: <code>aphasia-kb/aphasia_rules.py</code>.
