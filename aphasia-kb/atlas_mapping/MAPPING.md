@@ -56,6 +56,11 @@ do not edit by hand. Rules and decisions: [README.md](README.md). ⚑ = judgemen
 | `ifof` Inferior fronto-occipital fasciculus | JHU | left: Inferior fronto-occipital fasciculus L / right: Inferior fronto-occipital fasciculus R | JHU label of the same tract. |
 | `uncinate_fasciculus` Uncinate fasciculus | JHU | left: Uncinate fasciculus L / right: Uncinate fasciculus R | JHU label of the same tract. |
 | ⚑ `forceps` Corpus callosum (forceps major and minor) | JHU | Forceps major; Forceps minor (side from voxels) | Midline labels without a side in JHU, so the side is taken from the lesion voxels. JHU labels only the anterior and posterior callosal radiations (forceps minor, major), not the callosal body; a lesion in the body is not measured. |
+| `arcuate_fasciculus` Arcuate fasciculus | XTRACT | left: Arcuate Fasciculus L / right: Arcuate Fasciculus R | XTRACT label of the same tract (the whole arcuate; its segments are not separated). |
+| `slf_iii` Superior longitudinal fasciculus III (ventral, fronto-parietal) | XTRACT | left: Superior Longitudinal Fasciculus 3 L / right: Superior Longitudinal Fasciculus 3 R | XTRACT label of the same tract; SLF III links the inferior frontal gyrus with the supramarginal gyrus. |
+| `frontal_aslant_tract` Frontal aslant tract | XTRACT | left: Frontal Aslant Tract L / right: Frontal Aslant Tract R | XTRACT label of the same tract. |
+| `middle_longitudinal_fasciculus` Middle longitudinal fasciculus | XTRACT | left: Middle Longitudinal Fasciculus L / right: Middle Longitudinal Fasciculus R | XTRACT label of the same tract. |
+| `optic_radiation` Optic radiation | XTRACT | left: Optic Radiation L / right: Optic Radiation R | XTRACT label of the same tract. |
 
 ## Knowledge-base regions
 
@@ -65,16 +70,17 @@ do not edit by hand. Rules and decisions: [README.md](README.md). ⚑ = judgemen
 | ⚑ `corpus_callosum` | both | `forceps` | Only the callosal forceps are labelled in JHU (units.yaml, forceps). |
 | `ho-cort_44` | left | `ifg_pars_opercularis` | Legacy entry for HarvardOxford cortical label 44 region (IFG pars opercularis, BA 44); the entry is the left one. |
 | `left_angular_gyrus` | left | `angular_gyrus` | Same structure (BA 39). |
-| ⚑ `left_anterior_arcuate_fasciculus` | left | `slf` | The anterior segment (Catani et al. 2005; fronto-parietal) lies in JHU's fronto-parietal SLF. |
+| ⚑ `left_anterior_arcuate_fasciculus` | left | `slf_iii` | The anterior segment (Catani et al. 2005) links the inferior frontal and inferior parietal cortex: in XTRACT, SLF III. |
 | `left_anterior_middle_temporal_gyrus` | left | `mtg_anterior` | Same structure. |
 | `left_anterior_supramarginal_gyrus` | left | `smg_anterior` | Same structure. |
 | ⚑ `left_anterior_temporal_lobe` | left | `temporal_pole`, `stg_anterior`, `mtg_anterior` | Anterior temporal lobe as the entry defines it (aliases ATL, temporal pole) = temporal pole with the anterior superior and middle temporal gyri. |
 | ⚑ `left_anterior_temporal_lobe__Robson2014` | left | `temporal_pole`, `stg_anterior`, `mtg_anterior`, `temporal_fusiform_anterior` | Robson et al. 2014 region; its aliases add the anterior fusiform gyrus to the anterior temporal lobe. |
-| ⚑ `left_arcuate_fasciculus` | left | `slf_temporal` | The arcuate fasciculus is JHU's temporal part of the SLF (units.yaml, slf_temporal). Alternative to decide; also count the fronto-parietal SLF label. |
-| `left_arcuate_fasciculus_slf` | left | `slf`, `slf_temporal` | The entry combines the arcuate and the SLF ("dorsal language pathway"), so both JHU SLF labels. |
+| `left_arcuate_fasciculus` | left | `arcuate_fasciculus` | XTRACT arcuate fasciculus. |
+| `left_arcuate_fasciculus_slf` | left | `arcuate_fasciculus`, `slf` | The entry combines the arcuate and the SLF ("dorsal language pathway"), so XTRACT's arcuate and JHU's SLF. |
 | `left_central_opercular_cortex` | left | `central_operculum` | Same structure. |
 | ⚑ `left_dorsolateral_prefrontal_cortex` | left | `middle_frontal_gyrus` | The dorsolateral prefrontal cortex (BA 9/46) lies mainly on the middle frontal gyrus; the atlases have no DLPFC label. |
 | ⚑ `left_dorsomedial_prefrontal_cortex` | left | `superior_frontal_gyrus_medial` | The dorsomedial prefrontal cortex is the medial superior frontal gyrus (AAL Frontal_Sup_Medial). |
+| `left_frontal_aslant_tract` | left | `frontal_aslant_tract` | XTRACT frontal aslant tract. |
 | `left_fusiform_gyrus` | left | `fusiform_gyrus` | Same structure. |
 | `left_heschls_gyrus` | left | `heschls_gyrus` | Same structure. |
 | `left_hippocampus` | left | `hippocampus` | Same structure. |
@@ -86,17 +92,19 @@ do not edit by hand. Rules and decisions: [README.md](README.md). ⚑ = judgemen
 | `left_inferior_longitudinal_fasciculus` | left | `ilf` | Same tract. |
 | `left_inferior_temporal_gyrus` | left | `itg` | Same structure. |
 | `left_insula` | left | `insula` | Same structure. |
-| ⚑ `left_long_segment_arcuate_fasciculus` | left | `slf_temporal` | The long (direct) segment runs fronto-temporally, i.e. JHU's SLF temporal part. |
+| ⚑ `left_long_segment_arcuate_fasciculus` | left | `arcuate_fasciculus` | The long (direct fronto-temporal) segment is part of XTRACT's arcuate, which does not separate the segments. |
 | `left_middle_frontal_gyrus` | left | `middle_frontal_gyrus` | Same structure. |
+| `left_middle_longitudinal_fasciculus` | left | `middle_longitudinal_fasciculus` | XTRACT middle longitudinal fasciculus. |
 | `left_middle_temporal_gyrus` | left | `mtg_anterior`, `mtg_posterior`, `mtg_temporooccipital` | Whole middle temporal gyrus. |
 | ⚑ `left_occipito_temporal_sulcus` | left | `itg_temporooccipital`, `temporooccipital_fusiform` | The occipito-temporal sulcus has no atlas label; it separates the inferior temporal and fusiform gyri, whose temporo-occipital parts are used. |
+| `left_optic_radiations` | left | `optic_radiation` | XTRACT optic radiation. |
 | `left_pallidum` | left | `pallidum` | Same structure. |
 | `left_paracingulate_gyrus` | left | `paracingulate_gyrus` | Same structure. |
 | ⚑ `left_parietal_association_cortex` | left | `smg_anterior`, `smg_posterior`, `angular_gyrus`, `superior_parietal_lobule` | Parietal association cortex = inferior parietal lobule (supramarginal, angular) and superior parietal lobule. |
 | `left_parietal_operculum_cortex` | left | `parietal_operculum` | Same structure. |
 | `left_planum_temporale` | left | `planum_temporale` | Same structure. |
 | `left_postcentral_gyrus` | left | `postcentral_gyrus` | Same structure. |
-| ⚑ `left_posterior_arcuate_fasciculus` | left | `slf_temporal` | The posterior segment (temporo-parietal) is closest to JHU's SLF temporal part. |
+| ⚑ `left_posterior_arcuate_fasciculus` | left | `arcuate_fasciculus` | The posterior (temporo-parietal) segment has no XTRACT label; XTRACT's arcuate is the closest tract. |
 | `left_posterior_cingulate_gyrus` | left | `posterior_cingulate` | Same structure. |
 | `left_posterior_middle_temporal_gyrus` | left | `mtg_posterior` | Same structure (the temporo-occipital part is not included). |
 | ⚑ `left_posterior_planum_temporale_spt` | left | `planum_temporale` | Area Spt lies in the posterior planum temporale, which the atlases do not subdivide. |
@@ -131,7 +139,7 @@ do not edit by hand. Rules and decisions: [README.md](README.md). ⚑ = judgemen
 | `left_uncinate_fasciculus` | left | `uncinate_fasciculus` | Same tract. |
 | `right_anterior_middle_temporal_gyrus` | right | `mtg_anterior` | Same structure, right hemisphere. |
 | `right_anterior_superior_temporal_gyrus` | right | `stg_anterior` | Same structure, right hemisphere. |
-| ⚑ `right_arcuate_fasciculus` | right | `slf_temporal` | As left_arcuate_fasciculus, right hemisphere. |
+| `right_arcuate_fasciculus` | right | `arcuate_fasciculus` | XTRACT arcuate fasciculus, right hemisphere. |
 | ⚑ `right_dlpfc` | right | `middle_frontal_gyrus` | As left_dorsolateral_prefrontal_cortex, right hemisphere. |
 | `right_ifg_pars_opercularis` | right | `ifg_pars_opercularis` | Same structure, right hemisphere. |
 | `right_ifg_pars_triangularis` | right | `ifg_pars_triangularis` | Same structure, right hemisphere. |
@@ -148,11 +156,8 @@ do not edit by hand. Rules and decisions: [README.md](README.md). ⚑ = judgemen
 | Region | Reason |
 |---|---|
 | `left_anterior_prefrontal_bottleneck` | As left_frontal_white_matter_bottleneck. |
-| `left_extreme_capsule` | No atlas used here labels the extreme capsule. It carries the inferior fronto-occipital and uncinate fasciculi, but those tracts are not the extreme-capsule fibre system itself, so it is not approximated. |
-| `left_frontal_aslant_tract` | JHU has no frontal aslant tract. |
+| `left_extreme_capsule` | No atlas used here (JHU, XTRACT) labels the extreme capsule. It carries the inferior fronto-occipital and uncinate fasciculi, but those tracts are not the extreme-capsule fibre system itself, so it is not approximated. |
 | `left_frontal_white_matter_bottleneck` | A "bottleneck" is a region defined in its source paper by the convergence of several tracts, not an atlas structure. |
-| `left_middle_longitudinal_fasciculus` | JHU has no middle longitudinal fasciculus. |
-| `left_optic_radiations` | JHU's tract atlas has no optic radiation. |
 | `left_perisylvian_network` | A network, not a single anatomical structure. |
 | `left_posterior_middle_temporal_white_matter` | White matter under the posterior middle temporal gyrus; no tract label. |
 | `left_posterior_temporal_bottleneck` | As left_frontal_white_matter_bottleneck. |

@@ -187,23 +187,33 @@ def unit_damage(rows_by_atlas: dict[str, pd.DataFrame], directory: str = str(DIR
 
 
 def region_damage(units_df: pd.DataFrame, directory: str = str(DIR)) -> pd.DataFrame:
-    """Damage per knowledge-base region: its units' shares added (units do not
-    overlap), on its side (both sides for ``side: both``)."""
+    """Damage per knowledge-base region, on its side (both sides for ``side: both``).
+
+    Within one atlas the region's units do not overlap, so their shares are
+    added. Labels of different atlases can overlap (XTRACT's arcuate and JHU's
+    SLF), so across atlases the larger value is taken, never the sum.
+    """
     _, regions, _ = load(directory)
     by_key = {(r.unit, r.side): r for r in units_df.itertuples()}
     out = []
     for rid, region in regions.items():
         sides = SIDES if region["side"] == "both" else (region["side"],)
         parts = [by_key[(u, s)] for u in region["units"] for s in sides if (u, s) in by_key]
-        measured = any(p.measured for p in parts)
-        hit = [p for p in parts if p.overlap_voxels]
-        sizes = [p.overlap_voxels / (p.region_pct / 100.0) for p in parts if p.region_pct]
-        complete = all(p.region_pct is not None or not p.overlap_voxels for p in parts)
+        per_atlas = []
+        for atlas in dict.fromkeys(p.atlas for p in parts):
+            own = [p for p in parts if p.atlas == atlas]
+            hit = [p for p in own if p.overlap_voxels]
+            sizes = [p.overlap_voxels / (p.region_pct / 100.0) for p in own if p.region_pct]
+            complete = all(p.region_pct is not None or not p.overlap_voxels for p in own)
+            per_atlas.append(dict(
+                lesion_pct=sum(p.lesion_pct for p in own),
+                region_pct=(100.0 * sum(p.overlap_voxels for p in hit) / sum(sizes)) if hit and sizes and complete else None,
+                measured=any(p.measured for p in own)))
+        best = max(per_atlas, key=lambda d: (d["region_pct"] or 0, d["lesion_pct"]), default=None)
         out.append(dict(
-            region=rid, side=region["side"], measured=measured,
-            lesion_pct=sum(p.lesion_pct for p in parts),
-            region_pct=(100.0 * sum(p.overlap_voxels for p in hit) / sum(sizes)) if hit and sizes and complete else None,
-            units_hit=[p.unit for p in hit], review=bool(region.get("review"))))
+            region=rid, side=region["side"], measured=any(d["measured"] for d in per_atlas),
+            lesion_pct=best["lesion_pct"] if best else 0.0, region_pct=best["region_pct"] if best else None,
+            units_hit=[p.unit for p in parts if p.overlap_voxels], review=bool(region.get("review"))))
     return pd.DataFrame(out)
 
 

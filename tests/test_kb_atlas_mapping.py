@@ -77,7 +77,7 @@ def test_findings_match_by_exact_region_name_and_thin_tracts_count_by_destroyed_
         "longitudinal").any()
 
 
-@pytest.mark.parametrize("rid", ["left_arcuate_fasciculus", "left_precentral_gyrus_insula", "left_extreme_capsule"])
+@pytest.mark.parametrize("rid", ["left_long_segment_arcuate_fasciculus", "left_precentral_gyrus_insula", "left_extreme_capsule"])
 def test_flagged_decisions_are_documented(rid):
     _, regions, unmapped = atlas_mapping.load()
     assert (rid in unmapped) or (regions[rid].get("review") and regions[rid]["basis"])
@@ -85,7 +85,7 @@ def test_flagged_decisions_are_documented(rid):
 
 def test_evidence_gaps_name_known_areas_and_papers():
     gaps = atlas_mapping.load_gaps()
-    assert {"arcuate_and_long_tracts", "thalamus_basal_ganglia", "right_hemisphere"} <= set(gaps)
+    assert {"thalamus_basal_ganglia", "right_hemisphere"} <= set(gaps) and "arcuate_and_long_tracts" not in set(gaps)
     status = atlas_mapping.citation_status()
     for gap in gaps.values():
         for paper in gap.get("papers") or []:
@@ -93,3 +93,17 @@ def test_evidence_gaps_name_known_areas_and_papers():
     kb = KnowledgeBase(KB_ROOT, include=("approved", "in_review", "draft"))
     text = atlas_mapping.gaps_markdown(kb.findings)
     assert "@Han2013 [seed]" in text and "`left_extreme_capsule` (" in text
+
+
+def test_arcuate_comes_from_xtract_and_atlases_are_not_double_counted():
+    _, regions, unmapped = atlas_mapping.load()
+    assert regions["left_arcuate_fasciculus"]["units"] == ["arcuate_fasciculus"]
+    assert not regions["left_arcuate_fasciculus"].get("review")
+    assert {"left_frontal_aslant_tract", "left_optic_radiations"} <= set(regions) and "left_extreme_capsule" in unmapped
+    xtract = overlap_rows("XTRACT", [dict(region="Arcuate Fasciculus L", overlap_voxels=100, total_region_voxels=200,
+                                          left_overlap_voxels=100, right_overlap_voxels=0)])
+    jhu = overlap_rows("JHU", [dict(region="Superior longitudinal fasciculus L", overlap_voxels=80,
+                                    total_region_voxels=100, left_overlap_voxels=80, right_overlap_voxels=0)])
+    damage = atlas_mapping.region_damage(atlas_mapping.unit_damage({"XTRACT": xtract, "JHU": jhu})).set_index("region")
+    combined = damage.loc["left_arcuate_fasciculus_slf"]          # XTRACT arcuate + JHU SLF overlap
+    assert combined["lesion_pct"] == 8.0 and combined["region_pct"] == 80.0   # the larger, not 18 % summed

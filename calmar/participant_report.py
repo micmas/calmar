@@ -48,7 +48,7 @@ from . import colors as cc
 from .masks import MASK_LABELS
 
 #: Atlases the KB lookup uses by default.
-DEFAULT_KB_ATLASES = ("AAL", "HarvardOxford", "Destrieux", "Schaefer400", "JHU")
+DEFAULT_KB_ATLASES = ("AAL", "HarvardOxford", "Destrieux", "Schaefer400", "JHU", "XTRACT")
 
 #: QC stages (calmar.qc) whose rating describes each mask source.
 QC_STAGES_FOR_SOURCE = {
@@ -81,7 +81,7 @@ class ReportSettings:
     include_drafts: bool = True              # older setting: True = evidence "all", False = "approved"
     evidence: str | None = None              # "approved", "in_review" (approved + in review) or "all" (+ drafts)
     min_overlap_pct: float = 5.0             # an ROI counts as damaged if it holds >= this % of the lesion
-    min_region_pct: float = 10.0             # ... or if >= this % of the ROI is destroyed (thin tracts)
+    min_region_pct: float = 25.0             # ... or if >= this % of the ROI is destroyed (small regions, thin tracts)
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
     threshold: float = 0.5                   # mask threshold for Dice between masks
