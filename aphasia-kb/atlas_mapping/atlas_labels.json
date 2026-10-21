@@ -1,5 +1,5 @@
 {
- "_about": "Region labels of the atlases the report queries, as written in the lesion-atlas overlap tables (calmar.atlas_loader: HarvardOxford cort-maxprob-thr25-2mm, AAL SPM12, JHU-ICBM-tracts-maxprob-thr50-2mm and XTRACT HCP xtract-tract-atlases-maxprob5-1mm from FSL 6.0.7.22, Destrieux 2009, Schaefer 2018 400/7). Used to check that every label named in units.yaml exists.",
+ "_about": "Region labels of the atlases the report queries, as written in the lesion-atlas overlap tables (calmar.atlas_loader: HarvardOxford cort-maxprob-thr25-2mm, AAL SPM12, JHU-ICBM-tracts-maxprob-thr50-2mm and XTRACT HCP xtract-tract-atlases-maxprob5-1mm from FSL 6.0.7.22, Destrieux 2009, Schaefer 2018 400/7). Used to check that every label named in units.yaml exists. Only labels with voxels in the image are listed: JHU-ICBM-tracts-maxprob-thr50-2mm has no voxels for the cingulum, uncinate fasciculus or the temporal part of the SLF (too thin at 50 %).",
  "HarvardOxford": [
   "Angular Gyrus",
   "Central Opercular Cortex",
@@ -171,10 +171,6 @@
  "JHU": [
   "Anterior thalamic radiation L",
   "Anterior thalamic radiation R",
-  "Cingulum (cingulate gyrus) L",
-  "Cingulum (cingulate gyrus) R",
-  "Cingulum (hippocampus) L",
-  "Cingulum (hippocampus) R",
   "Corticospinal tract L",
   "Corticospinal tract R",
   "Forceps major",
@@ -183,12 +179,8 @@
   "Inferior fronto-occipital fasciculus R",
   "Inferior longitudinal fasciculus L",
   "Inferior longitudinal fasciculus R",
-  "Superior longitudinal fasciculus (temporal part) L",
-  "Superior longitudinal fasciculus (temporal part) R",
   "Superior longitudinal fasciculus L",
-  "Superior longitudinal fasciculus R",
-  "Uncinate fasciculus L",
-  "Uncinate fasciculus R"
+  "Superior longitudinal fasciculus R"
  ],
  "Destrieux": [
   "L G_Ins_lg_and_S_cent_ins",

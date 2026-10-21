@@ -107,3 +107,33 @@ def test_arcuate_comes_from_xtract_and_atlases_are_not_double_counted():
     damage = atlas_mapping.region_damage(atlas_mapping.unit_damage({"XTRACT": xtract, "JHU": jhu})).set_index("region")
     combined = damage.loc["left_arcuate_fasciculus_slf"]          # XTRACT arcuate + JHU SLF overlap
     assert combined["lesion_pct"] == 8.0 and combined["region_pct"] == 80.0   # the larger, not 18 % summed
+
+
+def test_every_mapped_label_has_voxels_in_its_atlas_image():
+    """JHU's 50 %-threshold image has no uncinate, cingulum or temporal SLF:
+    atlas_labels.json lists only labels present in the images."""
+    labels = atlas_mapping.atlas_labels()
+    assert "Uncinate fasciculus L" not in labels["JHU"]
+    units, _, _ = atlas_mapping.load()
+    assert units["uncinate_fasciculus"]["atlas"] == "XTRACT"
+
+
+def test_tract_disconnection_from_a_map(tmp_path):
+    import nibabel as nib
+    import numpy as np
+    affine = np.diag([-1.0, 1.0, 1.0, 1.0]); affine[:3, 3] = [5, -5, -5]      # x > 0 for i < 5
+    atlas = np.zeros((10, 10, 10), dtype=np.uint8)
+    atlas[6:9, 2:8, 2:8] = 2                                                    # "Arcuate Fasciculus L" (x < 0)
+    atlas[1:4, 2:8, 2:8] = 3                                                    # "Arcuate Fasciculus R"
+    prob = np.zeros((10, 10, 10), dtype=np.float32)
+    prob[6:9, 2:8, 2:5] = 0.9                                                   # half of the left arcuate
+    nib.save(nib.Nifti1Image(atlas, affine), tmp_path / "x.nii.gz")
+    nib.save(nib.Nifti1Image(prob, affine), tmp_path / "map.nii.gz")
+    units = atlas_mapping.tract_disconnection(
+        tmp_path / "map.nii.gz", {"XTRACT": (tmp_path / "x.nii.gz", {2: "Arcuate Fasciculus L", 3: "Arcuate Fasciculus R"})})
+    arcuate = units[units.unit == "arcuate_fasciculus"].set_index("side")
+    assert arcuate.loc["left", "disconnected_pct"] == 50.0 and arcuate.loc["right", "disconnected_pct"] == 0.0
+    assert not units[units.atlas == "JHU"]["measured"].any()                    # JHU not given
+    regions = atlas_mapping.region_disconnection(units).set_index("region")
+    assert regions.loc["left_arcuate_fasciculus", "region_pct"] == 50.0
+    assert regions.loc["left_arcuate_fasciculus", "lesion_pct"] == 0.0

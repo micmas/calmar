@@ -17,6 +17,7 @@ A predictor finding marked "likely" in the KB means "an association was found",
 not "this outcome is likely"; these sections never show it as a prediction.
 """
 from html import escape
+from pathlib import Path
 import re
 
 import pandas as pd
@@ -59,7 +60,9 @@ def _pill(text):
 
 
 def _claims(rows, *, show_target):
-    """One line per finding: direction, (target,) claim, method and citation."""
+    """One line per finding: direction, (target,) claim, method and citation.
+    The same claim from the same paper stored in two KB entries is shown once."""
+    rows = rows.drop_duplicates(subset=[c for c in ("predicts", "claim", "citation") if c in rows.columns])
     items = []
     for _, r in rows.iterrows():
         direction = DIRECTION_TEXT.get(r.get("direction"), str(r.get("direction") or "—"))
@@ -245,3 +248,68 @@ def measures_section(kb, predictors, days=None, min_confidence=None):
             "<th style='text-align:left;padding:4px 8px'>Measure (this participant)</th>"
             "<th style='text-align:left;padding:4px 8px'>What the evidence says</th></tr>"
             + "".join(rows) + "</table>")
+
+
+MAP_LABELS = {"bcb": "BCBToolkit", "deepdisco": "DeepDisco (whole-brain model)"}
+
+
+def disconnectome_map(study, entry, source, which):
+    """Path of the participant's disconnectome map for ``source``, or None."""
+    from .study import file_token
+    if which not in MAP_LABELS:
+        return None
+    d = study.dirs(entry)
+    token = file_token(source)
+    folder = d.get("bcbtoolkit" if which == "bcb" else "deepdisco")
+    if folder is None:
+        return None
+    path = Path(folder) / (f"Disconnectome_{token}.nii.gz" if which == "bcb" else f"DeepDisco_{token}_whole_brain.nii.gz")
+    return path if path.is_file() else None
+
+
+def tract_atlases(all_atlases):
+    """``{name: (image, labels)}`` of the tract atlases in the notebook's ALL_ATLASES."""
+    return {name: (str(a.maps), dict(a.labels)) for name, a in (all_atlases or {}).items()
+            if name in ("JHU", "XTRACT")}
+
+
+def disconnection_section(kb, rows, disconnection, damage, settings, map_label):
+    """HTML: tracts disconnected by the lesion (from a disconnectome map), with their findings.
+
+    ``rows``: ``KnowledgeBase.location_findings`` on ``disconnection``
+    (``atlas_mapping.region_disconnection``); ``damage``: direct damage, to
+    say which tracts are also hit.
+    """
+    if map_label is None:
+        return ("<p style='color:#666'><em>No disconnectome map for this lesion mask "
+                "(run the BCBToolkit or DeepDisco step, or choose another map in the report settings).</em></p>")
+    intro = (f"<p style='font-size:12px;color:#555;margin:4px 0 8px 0'>The {escape(map_label)} map gives, for every "
+             "voxel, the probability that its fibres pass through the lesion. A tract counts as disconnected when "
+             f"&ge;{settings.min_disconnected_pct:g}% of its voxels have a probability above 0.5. This catches tracts "
+             "cut by the lesion away from where it lies, which direct overlap misses.</p>")
+    if rows is None or rows.empty:
+        return intro + "<p style='color:#666'><em>No knowledge-base tract is disconnected above the threshold.</em></p>"
+    direct = damage.set_index("region") if damage is not None and len(damage) else None
+    rows = rows.assign(target_name=rows["predicts"].map(lambda t: _name(kb, t)),
+                       region_name=rows["region"].map(lambda t: _name(kb, t)),
+                       anatomy=rows["region"].map(_anatomy_key))
+    names = {key: g["region_name"].value_counts().index.tolist() for key, g in rows.groupby("anatomy")}
+    blocks = []
+    for key in rows.groupby("anatomy")["region_pct"].max().sort_values(ascending=False).index:
+        g = rows[rows["anatomy"] == key]
+        first = g.iloc[0]
+        hit = ""
+        if direct is not None:
+            destroyed = direct.reindex(g["region"].unique())["region_pct"].dropna()
+            if len(destroyed) and destroyed.max() > 0:
+                hit = f" · also directly damaged ({destroyed.max():.0f}% destroyed)"
+        studies = g["citation"].dropna().nunique()
+        thin = (f" <span style='color:#856404;font-size:11px'>⚠ based on {studies} "
+                f"stud{'y' if studies == 1 else 'ies'}</span>") if studies <= THIN_STUDIES else ""
+        also = (f"<div style='font-size:11px;color:#888;margin-left:16px'>Also recorded in the knowledge base as: "
+                f"{escape(', '.join(names[key][1:]))}</div>") if len(names[key]) > 1 else ""
+        blocks.append(f"<details style='margin:4px 0'><summary style='cursor:pointer;font-size:12.5px'>"
+                      f"<b>{escape(names[key][0])}</b> ({escape(first['side'])}){thin} · "
+                      f"{first['region_pct']:.0f}% of the tract disconnected{escape(hit)} · "
+                      f"{len(g)} finding{'s' if len(g) != 1 else ''}</summary>{also}{_claims(g, show_target=True)}</details>")
+    return intro + "".join(blocks)
