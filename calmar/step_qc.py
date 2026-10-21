@@ -24,6 +24,7 @@ import numpy as np
 import nibabel as nib
 
 from . import masks as cm
+from .study import mni_masks
 
 # Outline colours follow the notebook's mask-origin colours.
 COLORS = {"linda": "red", "synthstroke": "lime", "manual": "dodgerblue",
@@ -267,13 +268,40 @@ def _linda(dirs, entry, t1):
     return rows, metrics, flags
 
 
+def _registration(dirs, entry, t1):
+    """Template registration without LINDA: the warped T1 against MNI152, and the
+    SynthStroke lesion's volume before and after the warp."""
+    sub_mni = dirs["registration"] / "Subject_in_MNI.nii.gz"
+    if not cm.present(sub_mni):
+        return None
+    corr, tpl_mask = template_correlation(sub_mni)
+    mni = _load(sub_mni)
+    metrics, flags = {"template_correlation": round(corr, 3)}, []
+    if not corr >= TEMPLATE_CORR_MIN:
+        flags.append(f"warped T1 correlates unusually weakly with MNI152 (r={corr:.2f}; "
+                     f"typical 0.35–0.55): the registration every template-space output relies on may have failed")
+    overlays, lesion = [(tpl_mask.astype(float), COLORS["template"])], None
+    native, warped = dirs["synthstroke"] / "prediction_lesion_mask.nii.gz", mni_masks(dirs)["synthstroke"]
+    if cm.present(native) and cm.present(warped):
+        anat = _load(t1)
+        native_ml = float((_data(_load(native, anat)) > .5).sum() * voxel_ml(anat))
+        lesion = _data(_load(warped, mni))
+        metrics["synthstroke_mni_volume_ml"] = round(float((lesion > .5).sum() * voxel_ml(mni)), 2)
+        flags += warp_check("synthstroke", native_ml, metrics["synthstroke_mni_volume_ml"])
+        overlays.append((lesion, COLORS["synthstroke"]))
+    keys = ["template"] + (["synthstroke"] if lesion is not None else [])
+    rows = [dict(bg=_data(mni), overlays=overlays, focus=lesion,
+                 label=f"Subject_in_MNI · {legend(*keys)} · r={corr:.2f}")]
+    return rows, metrics, flags
+
+
 def _native_masks(dirs, entry, anat):
     """Native-space lesion masks that exist for this entry, on the T1 grid."""
     found = {}
     for source, path in [("linda", dirs["linda"] / "Prediction3_native.nii.gz"),
                          ("synthstroke", dirs["synthstroke"] / "prediction_lesion_mask.nii.gz"),
-                         ("manual", dirs["linda"] / "_manual_mask_compare" / "ManualLesion_in_T1_sitk.nii.gz"),
-                         ("manual", dirs["linda"] / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz")]:
+                         ("manual", dirs["template"] / "_manual_mask_compare" / "ManualLesion_in_T1_sitk.nii.gz"),
+                         ("manual", dirs["template"] / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz")]:
         if source not in found and cm.present(path):
             found[source] = _data(_load(path, anat))
     return found
@@ -295,7 +323,7 @@ def _synthstroke(dirs, entry, t1):
         metrics["synthstroke_removed_outside_brain_ml"] = round(removed, 2)
     if "linda" in found:
         metrics["dice_synthstroke_vs_linda"] = round(dice(found["synthstroke"], found["linda"]), 3)
-    warped, sub_mni = dirs["synthstroke"] / "SynthStroke_in_MNI.nii.gz", dirs["linda"] / "Subject_in_MNI.nii.gz"
+    warped, sub_mni = mni_masks(dirs)["synthstroke"], dirs["template"] / "Subject_in_MNI.nii.gz"
     if cm.present(warped) and cm.present(sub_mni):
         mni = _load(sub_mni)
         metrics["synthstroke_mni_volume_ml"] = round(float((_data(_load(warped, mni)) > .5).sum() * voxel_ml(mni)), 2)
@@ -343,13 +371,13 @@ def _manual(dirs, entry, t1, manual_info=None):
         keys = [k for k in ("manual", "linda", "synthstroke") if k in found]
         rows.append(dict(bg=_data(anat), overlays=[(found[k], COLORS[k]) for k in keys],
                          focus=found["manual"], label="Native T1w · " + legend(*keys)))
-        ref = dirs["linda"] / "_manual_mask_compare" / "T2_in_T1_sitk.nii.gz"
+        ref = dirs["template"] / "_manual_mask_compare" / "T2_in_T1_sitk.nii.gz"
         if cm.present(ref):
             rows.append(dict(bg=_data(_load(ref, anat, order=1)), overlays=[(found["manual"], COLORS["manual"])],
                              focus=found["manual"],
                              label="Reference scan registered to T1 · manual outline should sit on the lesion"))
-    expert = dirs["linda"] / "ExpertMask_in_MNI.nii.gz"
-    sub_mni = dirs["linda"] / "Subject_in_MNI.nii.gz"
+    expert = dirs["template"] / "ExpertMask_in_MNI.nii.gz"
+    sub_mni = dirs["template"] / "Subject_in_MNI.nii.gz"
     if cm.present(expert) and cm.present(sub_mni):
         mni = _load(sub_mni)
         e = _data(_load(expert, mni))
@@ -389,16 +417,14 @@ def _produced_maps(stage, outputs):
 
 
 def _disconnectome(stage, dirs, entry, t1, outputs=None):
-    sub_mni = dirs["linda"] / "Subject_in_MNI.nii.gz"
+    sub_mni = dirs["template"] / "Subject_in_MNI.nii.gz"
     maps = _produced_maps(stage, outputs)
     flags = [f"{o.get('reason', 'stale output')[:160]}" for o in outputs or [] if o.get("status") == "stale"]
     if not cm.present(sub_mni) or not maps:
         return ([], {}, flags) if flags else None
     mni = _load(sub_mni)
     bg = _data(mni)
-    lesions = {"linda": dirs["linda"] / "Lesion_in_MNI.nii.gz",
-               "synthstroke": dirs["synthstroke"] / "SynthStroke_in_MNI.nii.gz",
-               "manual": dirs["linda"] / "ExpertMask_in_MNI.nii.gz"}
+    lesions = mni_masks(dirs)
     rows, metrics = [], {}
     for source in ("linda", "synthstroke", "manual"):
         if source not in maps:
@@ -433,6 +459,7 @@ def _disconnectome(stage, dirs, entry, t1, outputs=None):
 
 TITLES = {"brain": "HD-BET brain extraction", "linda": "LINDA lesion segmentation",
           "synthstroke": "SynthStroke lesion segmentation", "manual": "Manual mask alignment",
+          "registration": "Template registration (ANTs)",
           "bcb": "BCBToolkit disconnectome", "deepdisco": "DeepDisco disconnectome"}
 
 
@@ -448,7 +475,7 @@ def stage_evidence(stage, entry, dirs, reports_dir, *, manual_info=None, outputs
     A failure to draw never hides a processing result: it is reported as a flag.
     """
     t1 = Path(entry["t1w"])
-    makers = {"brain": _brain, "linda": _linda, "synthstroke": _synthstroke,
+    makers = {"brain": _brain, "linda": _linda, "synthstroke": _synthstroke, "registration": _registration,
               "manual": lambda d, e, t: _manual(d, e, t, manual_info),
               "bcb": lambda d, e, t: _disconnectome("bcb", d, e, t, outputs),
               "deepdisco": lambda d, e, t: _disconnectome("deepdisco", d, e, t, outputs)}

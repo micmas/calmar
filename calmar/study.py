@@ -23,7 +23,11 @@ DERIVATIVE_KEYS = {
     "synthstroke": "SYNTHSTROKE_SUBDIR",
     "bcbtoolkit": "BCB_SUBDIR",
     "deepdisco": "DEEPDISCO_SUBDIR",
+    "registration": "REGISTRATION_SUBDIR",
 }
+
+# Automatic lesion segmentations the workflow can run (CONFIG["SEGMENTATION_METHODS"]).
+SEGMENTATION_METHODS = ("linda", "synthstroke")
 
 # Generated filenames still use the historical "expert" token for manual masks
 # (ExpertMask_in_MNI.nii.gz, *_expert.csv), so existing derivatives stay valid.
@@ -38,14 +42,57 @@ def file_token(source):
     return FILE_TOKENS.get(source, source)
 
 
+def segmentation_methods(config):
+    """The automatic segmentations selected in CONFIG (default: both)."""
+    methods = config.get("SEGMENTATION_METHODS")
+    methods = tuple(SEGMENTATION_METHODS if methods is None else methods)
+    unknown = [m for m in methods if m not in SEGMENTATION_METHODS]
+    if unknown or not methods:
+        raise ValueError(f"SEGMENTATION_METHODS must list one or more of {SEGMENTATION_METHODS}, not {list(methods)}")
+    return methods
+
+
+def template_source(config):
+    """Who registers each brain to the template: "linda" (its own registration,
+    reused for every mask) or, without LINDA, "ants" (the registration step)."""
+    return "linda" if "linda" in segmentation_methods(config) else "ants"
+
+
+def stage_selected(stage, config):
+    """False for a step the selected methods do not need."""
+    if stage in SEGMENTATION_METHODS:
+        return stage in segmentation_methods(config)
+    if stage == "registration":
+        return template_source(config) == "ants"
+    return True
+
+
+def mni_masks(dirs):
+    """Template-space lesion mask of each source (whether or not it exists).
+
+    Masks warped with LINDA's registration live with their tool (and the manual
+    mask in LINDA's folder); masks warped by the registration step (LINDA not
+    run) live in its folder, so the two registrations never share a file.
+    """
+    own = dirs["template"] == dirs["linda"]
+    return {"linda": dirs["linda"] / "Lesion_in_MNI.nii.gz",
+            "manual": dirs["template"] / "ExpertMask_in_MNI.nii.gz",
+            "synthstroke": (dirs["synthstroke"] if own else dirs["template"]) / "SynthStroke_in_MNI.nii.gz"}
+
+
 def derivative_dirs(dataset, config, entry):
     """BIDS-derivatives folder of every tool for one entry.
 
-    ``<dataset>/<TOOL_SUBDIR>/sub-X[/ses-Y]/anat``
+    ``<dataset>/<TOOL_SUBDIR>/sub-X[/ses-Y]/anat``. ``template`` is the folder
+    holding the participant's template registration (``Subject_in_MNI``) and the
+    manual mask's products: LINDA's folder when LINDA runs, otherwise the
+    registration step's.
     """
     suffix = Path(entry["subject"]) / (entry.get("session") or "") / "anat"
-    return {tool: Path(dataset) / config.get(key, f"derivatives/{tool}") / suffix
+    dirs = {tool: Path(dataset) / config.get(key, f"derivatives/{tool}") / suffix
             for tool, key in DERIVATIVE_KEYS.items()}
+    dirs["template"] = dirs["linda" if template_source(config) == "linda" else "registration"]
+    return dirs
 
 
 # ── Participant discovery ────────────────────────────────────────────────────
@@ -143,6 +190,7 @@ class Study:
     def synthstroke_dir(self, entry): return self.dirs(entry)["synthstroke"]
     def bcb_dir(self, entry): return self.dirs(entry)["bcbtoolkit"]
     def deepdisco_dir(self, entry): return self.dirs(entry)["deepdisco"]
+    def template_dir(self, entry): return self.dirs(entry)["template"]
 
     def lesion_native(self, entry):
         """LINDA's native-space lesion mask (the one to edit)."""
@@ -161,7 +209,7 @@ class Study:
     def masks(self, entry):
         """Existing masks as ``{source: {space: path}}``; nothing is computed."""
         return cm.discover_masks(entry, self.linda_dir(entry), self.synthstroke_dir(entry),
-                                 manual_path=self.manual_mask_template(entry),
+                                 template_dir=self.template_dir(entry), manual_path=self.manual_mask_template(entry),
                                  manual_space=self.config.get("MANUAL_MASK_SPACE", "t1"))
 
     def mni_sources(self, entry):
@@ -174,10 +222,7 @@ class Study:
         found = self.masks(entry).get(source, {}).get("MNI")
         if found is not None:
             return found
-        d = self.dirs(entry)
-        return {"linda": d["linda"] / "Lesion_in_MNI.nii.gz",
-                "manual": d["linda"] / "ExpertMask_in_MNI.nii.gz",
-                "synthstroke": d["synthstroke"] / "SynthStroke_in_MNI.nii.gz"}[source]
+        return mni_masks(self.dirs(entry))[source]
 
     def qc_stages(self, entry):
         from . import qc as q
@@ -185,7 +230,7 @@ class Study:
         if not cm.present(brain):
             brain = q.find_best_hdbet_mask(self.hdbet_dir(entry))
         return cm.qc_stages(self.masks(entry), brain_mask=brain,
-                            mni_reference=self.linda_dir(entry) / "Subject_in_MNI.nii.gz")
+                            mni_reference=self.template_dir(entry) / "Subject_in_MNI.nii.gz")
 
     def label(self, entry):
         return f"{entry['subject']} {entry.get('session') or ''}".strip()
@@ -195,7 +240,8 @@ class Study:
         return {
             "deriv_path_for": self.linda_dir, "hdbet_path_for": self.hdbet_dir,
             "synthstroke_path_for": self.synthstroke_dir, "bcb_path_for": self.bcb_dir,
-            "deepdisco_path_for": self.deepdisco_dir, "lesion_native_for": self.lesion_native,
+            "deepdisco_path_for": self.deepdisco_dir, "template_path_for": self.template_dir,
+            "lesion_native_for": self.lesion_native,
             "lesion_mni_for": self.lesion_mni, "mask_inventory_for": self.masks,
             "available_mni_sources": self.mni_sources, "_mask_path_for": self.mni_mask,
             "qc_available_stages": self.qc_stages, "mask_file_token": file_token,

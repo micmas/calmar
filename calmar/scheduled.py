@@ -14,7 +14,7 @@ from .job_progress import JobProgress
 
 SCRIPTS = {name: f'analysis_{number}_{name}.sh' for number,name in
            [(22,'acquisition'),(23,'brain'),(24,'linda'),(25,'synthstroke'),
-            (26,'manual'),(27,'bcb'),(28,'deepdisco')]}
+            (29,'registration'),(26,'manual'),(27,'bcb'),(28,'deepdisco')]}
 SCRIPTS['qc_operation'] = 'analysis_30_qc_operation.sh'
 SCRIPTS['reporting'] = 'analysis_35_reporting.sh'
 
@@ -64,7 +64,7 @@ def scheduled_operation(function):
     return wrapper
 
 
-PROCESSING_STAGES = ('acquisition', 'brain', 'linda', 'synthstroke', 'manual', 'bcb', 'deepdisco')
+PROCESSING_STAGES = ('acquisition', 'brain', 'linda', 'synthstroke', 'registration', 'manual', 'bcb', 'deepdisco')
 # Bump when saved QC evidence changes, so older receipts without it are refreshed.
 QC_VERSION = 6
 
@@ -140,7 +140,9 @@ def run_step_sync(stage, namespace, *, single=False, timeout=43200):
         result = _run_payloads(stage, [namespace['_operation_request']], project, timeout)
     else:
         request = request_from_namespace(namespace, single)
-        result = _run_payloads(stage, _split(stage, request), project, timeout)
+        from .study import stage_selected
+        result = (_run_payloads(stage, _split(stage, request), project, timeout)
+                  if stage_selected(stage, request['config']) else _not_selected(stage, request))
     namespace.setdefault('SCHEDULED_RESULTS', {})[stage] = result
     if stage in PROCESSING_STAGES:
         _record_timings(stage, result, namespace.setdefault('BATCH_TIMINGS', {}))
@@ -159,10 +161,24 @@ def submit_step(stage, entries, study, *, timings=None, timeout=43200):
     ``StepResult``; nothing runs in the kernel.
     """
     request = {'dataset': str(study.dataset), 'config': study.config, 'entries': list(entries)}
+    from .study import stage_selected
+    if not stage_selected(stage, study.config):
+        return _not_selected(stage, request)
     result = _run_payloads(stage, _split(stage, request), Path(study.project), timeout)
     if timings is not None:
         _record_timings(stage, result, timings, show=False)  # show_step displays the times
     return result
+
+
+def _not_selected(stage, request):
+    """A step the selected segmentation methods do not need: no job is submitted."""
+    from .processing import NOT_SELECTED
+    reason = NOT_SELECTED[stage]
+    print(f'{stage}: skipped, {reason}.', flush=True)
+    return StepResult({'stage': stage, 'request': request, 'qc_version': QC_VERSION, 'elapsed': 0,
+                       'results': [{'subject': e['subject'], 'session': e.get('session'), 'seconds': 0,
+                                    'outputs': [{'status': 'skipped', 'reason': reason}]}
+                                   for e in request['entries']]})
 
 
 def _split(stage, request):
@@ -238,6 +254,9 @@ def _resources(stage, payload):
     if stage == 'linda':
         from .processing import linda_threads
         return [f'--cpus-per-task={linda_threads(payload.get("config", {}))}']
+    if stage == 'registration':
+        from .processing import registration_threads
+        return [f'--cpus-per-task={registration_threads(payload.get("config", {}))}']
     return []
 
 

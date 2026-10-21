@@ -54,7 +54,8 @@ class FakeStudy:
         self.folder, self.project = folder, folder(dict(subject="x", session="x"), "project")
 
     def dirs(self, entry):
-        return {"linda": self.folder(entry, "linda"), "synthstroke": self.folder(entry, "synthstroke"),
+        return {"linda": self.folder(entry, "linda"), "template": self.folder(entry, "linda"),
+                "synthstroke": self.folder(entry, "synthstroke"),
                 "bcbtoolkit": self.folder(entry, "bcb"), "deepdisco": self.folder(entry, "dd")}
 
     def masks(self, entry):

@@ -13,7 +13,7 @@ CALMaR is an open-source Jupyter notebook pipeline for automated stroke lesion s
 
 Given a BIDS-formatted dataset, CALMaR will:
 
-1. **Segment lesions** using an HD-BET brain mask, LINDA, SynthStroke, and optionally BCBToolkit
+1. **Segment lesions** using an HD-BET brain mask, LINDA and/or SynthStroke (`SEGMENTATION_METHODS`), and optionally BCBToolkit
 2. **QC every mask** with an interactive dashboard, stage-aware rubric, and edit audit trail
 3. **Analyse regional overlap** against five atlases (HarvardOxford, AAL, Destrieux, Schaefer400, JHU)
 4. **Decode the lesion** against Neurosynth v7 meta-analytic language/cognitive maps
@@ -242,9 +242,10 @@ whether any correlations exceeded its display threshold; warnings remain visible
 Dataset (BIDS)
     │
     ├─ Brain mask (HD-BET; + SynthStrip per participant when a cavity is left out)
-    ├─ Lesion segmentation (LINDA)      ─┐
-    ├─ Lesion segmentation (SynthStroke)  ├─ warped to MNI space
-    └─ Expert/manual mask               ─┘
+    ├─ Lesion segmentation (LINDA, optional)      ─┐
+    ├─ Lesion segmentation (SynthStroke, optional)  ├─ warped to MNI space (LINDA's registration,
+    ├─ (no LINDA: ANTs template registration)        │  or the ANTs registration step)
+    └─ Expert/manual mask                          ─┘
             │
             ├─ QC dashboard (interactive, stage-aware)
             │
@@ -274,6 +275,8 @@ Every processing step follows the same pattern: a markdown cell (what, why, inpu
 ### Template space
 
 LINDA registers each brain to its **ch2 (Colin27)** template (single-subject anatomy in MNI coordinates). The atlases, BCBToolkit tractograms and DeepDisco are defined on **FSL MNI152** (MNI152NLin6Asym), so ch2 is registered to MNI152 once (`src/analysis_38_template_ch2_to_mni152.sh`, ANTs SyN; transforms in `atlases/templates/ch2_to_MNI152NLin6Asym/`) and every mask is warped native → Penn → ch2 → MNI152 in one resampling. `*_in_MNI.nii.gz` are on MNI152 (182×218×182); LINDA's original ch2 outputs are kept as `*_in_ch2.nii.gz`.
+
+`SEGMENTATION_METHODS` (default `["linda", "synthstroke"]`) chooses the automatic segmentations; at least one is required. LINDA takes 1.5-3.7 h per participant, almost all of it its registration to the template. Without LINDA, the **registration step** (`src/analysis_29_registration.sh`, ANTs 2.6.5) registers the brain-extracted T1w directly to the MNI152 brain, with the SynthStroke lesion (dilated 2 voxels) excluded from the cost function: an affine stage (Mattes MI, one thread, seeded), then SyN (cross-correlation, `REGISTRATION_THREADS`), ANTs' documented route to a reproducible result. It took 9 min with 4 threads for sub-M2051 ses-284 (template correlation 0.66, vs 0.63 for LINDA's registration; SynthStroke's template-space mask Dice 0.80 between the two registrations). Its outputs, and the manual mask's products and template-space SynthStroke mask made with it, are in `derivatives/registration/`, so masks warped by the two registrations never share a file.
 
 ---
 

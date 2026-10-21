@@ -32,7 +32,9 @@ def fixture(tmp_path):
              "synthstroke": _mask(synth/"SynthStroke_in_MNI.nii.gz", np.s_[2:6, 2:6, 3:7])}
     _mask(linda/"Subject_in_MNI.nii.gz", np.s_[:, :, :])
     study = SimpleNamespace(mni_sources=lambda e: list(masks), mni_mask=lambda e, s: masks[s],
-                            linda_dir=lambda e: linda, lesion_mni=lambda e: masks["linda"])
+                            linda_dir=lambda e: linda, template_dir=lambda e: linda, lesion_mni=lambda e: masks["linda"],
+                            dirs=lambda e: {"linda": linda, "synthstroke": synth, "hdbet": tmp_path/"hdbet",
+                                            "template": linda, "registration": tmp_path/"registration"})
     dataset = tmp_path/"data"; dataset.mkdir()
     (dataset/"participants.tsv").write_text(
         "participant_id\tsex\tage_at_stroke\twab_days\twab_aq\twab_type\n"
@@ -74,12 +76,13 @@ def test_report_cell_saves_report_with_provenance_and_rules(fixture):
     html = report.path.read_text()
     assert report.path.name == "interpretation_sub-T1_ses-1_linda.html"
     assert ns["_rpt_path"] == report.path and ns["_calmar_generated_report_selection"] == ("sub-T1", "ses-1", "linda")
-    # Provenance block: research use, mask + QC rating, Dice, template caveat.
+    # Provenance block: research use, mask + QC rating, how the mask was made, template caveat.
     assert "Research use only" in html and "not a diagnosis" in html
     assert "Lesion_in_MNI.nii.gz" in html and "<b>poor</b>" in html and "rater" in html
     assert "Rated poor" in html
-    assert "LINDA vs SynthStroke" in html and "0.75" in html   # 2*48/(64+64)
-    assert "Colin27" in html and "MNI152" in html
+    assert "How this lesion mask was made" in html and "Segmented by LINDA" in html
+    assert "LINDA vs SynthStroke" not in html                  # agreement is shown before, in the form
+    assert "MNI152" in html
     assert "<b>Knowledge base:</b> version " in html and "papers ·" in html and "extracted findings" in html
     # Damaged regions use the min-overlap threshold (5 %): the 1 % ROI is not shown.
     assert "pars opercularis" in html and "Tiny ROI" not in html
@@ -132,3 +135,12 @@ def test_kb_version_counts_what_the_report_used(tmp_path):
         "statuses used: approved")
     version = pr.kb_version(KB_ROOT, kb)                      # the repository's KB is in git
     assert version["commit"] and version["date"]
+
+
+def test_evidence_levels_choose_the_kb_statuses():
+    assert pr.ReportSettings(evidence="approved").include == ("approved",)
+    assert pr.ReportSettings(evidence="in_review").include == ("approved", "in_review")
+    assert pr.ReportSettings(evidence="all").include == ("approved", "in_review", "draft")
+    assert pr.ReportSettings(include_drafts=False).include == ("approved",)       # older setting still works
+    with pytest.raises(ValueError):
+        pr.ReportSettings(evidence="everything").include

@@ -64,3 +64,38 @@ def test_agreement_tools_are_columns_and_missing_tool_stays_visible():
     dice=re.findall(r'<tr>(.*?)</tr>',html)[1]
     assert [plain(c) for c in re.findall(r'<td[^>]*>(.*?)</td>',dice)]==['Dice','0.800','—']
     assert 'Not yet run' in html
+
+
+def test_segmentation_tick_boxes_set_the_config_for_test_and_batch(tmp_path):
+    ns = fixture_namespace(tmp_path)
+    shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
+    panel = SingleSubjectInputs(ns, shell)
+    try:
+        boxes = panel.methods.boxes
+        assert boxes['linda'].value and boxes['synthstroke'].value       # default: both
+        boxes['linda'].value = False
+        assert ns['CONFIG']['SEGMENTATION_METHODS'] == ['synthstroke']
+        assert 'registration step' in panel.methods.note.value
+        boxes['synthstroke'].value = False                                 # none ticked: cannot start
+        assert panel.start.disabled and ns['CONFIG']['SEGMENTATION_METHODS'] == ['synthstroke']
+        assert panel.approve() is False and panel.gate.paused
+        boxes['linda'].value = True
+        assert not panel.start.disabled and ns['CONFIG']['SEGMENTATION_METHODS'] == ['linda']
+        assert panel.approve() is True and boxes['linda'].disabled        # fixed once processing starts
+    finally:
+        panel.close()
+
+
+def test_batch_checkpoint_offers_the_same_choice():
+    from calmar import execution as ex
+    config = {'SEGMENTATION_METHODS': ['linda', 'synthstroke']}
+    shell = SimpleNamespace(input_transformers_post=[], user_ns={'CONFIG': config},
+                            kernel=SimpleNamespace(_abort_queues=Mock(), get_parent=lambda: {}))
+    gate = ex.BatchCheckpoint(shell)
+    try:
+        gate.methods.boxes['linda'].value = False
+        assert config['SEGMENTATION_METHODS'] == ['synthstroke']
+        gate._resume()
+        assert not gate.paused and 'SynthStroke' in gate.message.value
+    finally:
+        gate.close()

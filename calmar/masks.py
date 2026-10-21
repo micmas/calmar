@@ -22,15 +22,21 @@ def present(path):
         return False
 
 
-def discover_masks(entry, linda_dir, synthstroke_dir, *, manual_path=None,
+def discover_masks(entry, linda_dir, synthstroke_dir, *, template_dir=None, manual_path=None,
                    manual_space="t1"):
     """Return {source: {space: path}} for locally present, known lesion outputs.
 
 Spaces are ``T1w`` and ``MNI``. A configured manual mask in another space is
 not treated as T1w: its registered output must exist before it is offered.
 Directories are already scoped to a single subject/session by the caller.
+``template_dir`` holds the template registration when LINDA did not run
+(``calmar.study.derivative_dirs``): the manual mask's products and the
+template-space SynthStroke mask are then taken from it, never mixed with
+masks warped by LINDA's registration.
 """
     linda, synth = Path(linda_dir), Path(synthstroke_dir)
+    template = Path(template_dir or linda_dir)
+    synth_mni = synth if template == linda else template
     stem = "_".join(x for x in (entry["subject"], entry.get("session")) if x)
     candidates = {
         "linda": {
@@ -40,12 +46,12 @@ Directories are already scoped to a single subject/session by the caller.
         },
         "synthstroke": {
             "T1w": [synth / "prediction_lesion_mask.nii.gz"],
-            "MNI": [synth / "SynthStroke_in_MNI.nii.gz"],
+            "MNI": [synth_mni / "SynthStroke_in_MNI.nii.gz"],
         },
         "manual": {
-            "T1w": [linda / "_manual_mask_compare" / "ManualLesion_in_T1_sitk.nii.gz",
-                    linda / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz"],
-            "MNI": [linda / "ExpertMask_in_MNI.nii.gz"],
+            "T1w": [template / "_manual_mask_compare" / "ManualLesion_in_T1_sitk.nii.gz",
+                    template / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz"],
+            "MNI": [template / "ExpertMask_in_MNI.nii.gz"],
         },
     }
     if manual_path is not None and manual_space in ("t1", "mni"):

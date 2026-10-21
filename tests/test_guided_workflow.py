@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class GuidedWorkflowTests(unittest.TestCase):
     def test_every_disabled_test_cell_only_prints_continuation(self):
-        for number in (20,23,25,27,"calmar-manual",32,34,35,39):
+        for number in (20,23,25,27,"calmar-registration","calmar-manual",32,34,35,39):
             with self.subTest(cell=number):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
@@ -30,7 +30,7 @@ class GuidedWorkflowTests(unittest.TestCase):
     def test_guided_defaults_preserve_selected_cohort(self):
         config = defaults()
         self.assertEqual(config['MAX_SUBJECTS'], 3)
-        self.assertCountEqual(config['SUBJECT_FILTER'], ['sub-M2103','sub-M2205','sub-M2002'])
+        self.assertCountEqual(config['SUBJECT_FILTER'], ['sub-M2234','sub-M2173','sub-M2030'])
 
     def test_navigation_targets_exist_once_in_each_notebook(self):
         for name in ('calmar-guided.ipynb', 'lesion-interpretation-pipeline.ipynb'):

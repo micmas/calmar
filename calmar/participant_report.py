@@ -57,10 +57,18 @@ QC_STAGES_FOR_SOURCE = {
 }
 
 TEMPLATE_CAVEAT = (
-    "Lesion masks are on the FSL MNI152 template (MNI152NLin6Asym): LINDA's ch2 (Colin27) "
-    "registration continued ch2 -> MNI152 in one resampling. Atlases are resampled to the lesion by "
-    "world coordinates. Overlaps still depend on how well this individual brain was registered to "
-    "MNI152, which matters most for small or thin regions.")
+    "Lesion masks are on the FSL MNI152 template (MNI152NLin6Asym, 1 mm); the registration used for this "
+    "mask is named above. Atlases are resampled to the lesion by world coordinates. Overlaps still depend "
+    "on how well this individual brain was registered to MNI152, which matters most for small or thin regions.")
+
+
+# KB entry statuses a report may draw on, by evidence level (report form "Evidence").
+EVIDENCE_LEVELS = {"approved": ("approved",),
+                   "in_review": ("approved", "in_review"),
+                   "all": ("approved", "in_review", "draft")}
+EVIDENCE_LABELS = {"approved": "Approved entries only",
+                   "in_review": "Approved + in review",
+                   "all": "All, including unreviewed drafts"}
 
 
 @dataclass
@@ -69,7 +77,8 @@ class ReportSettings:
     kb_atlases: tuple = DEFAULT_KB_ATLASES   # atlases used to query the KB
     display_atlas: str = "HarvardOxford"     # atlas for the damaged-regions table
     high_conf_only: bool = False             # only KB findings with confidence "high"
-    include_drafts: bool = True              # also use draft / in-review KB entries
+    include_drafts: bool = True              # older setting: True = evidence "all", False = "approved"
+    evidence: str | None = None              # "approved", "in_review" (approved + in review) or "all" (+ drafts)
     min_overlap_pct: float = 5.0             # min % of lesion in an ROI to count it
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
@@ -77,7 +86,10 @@ class ReportSettings:
 
     @property
     def include(self):
-        return ("approved", "in_review", "draft") if self.include_drafts else ("approved",)
+        level = self.evidence or ("all" if self.include_drafts else "approved")
+        if level not in EVIDENCE_LEVELS:
+            raise ValueError(f"evidence must be one of {list(EVIDENCE_LEVELS)}, not {level!r}")
+        return EVIDENCE_LEVELS[level]
 
 
 @dataclass
@@ -360,8 +372,11 @@ def mask_agreement(masks, threshold=0.5):
     return volumes, pairs
 
 
-def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scope, generated=None, kb=None):
-    """Research-use caveat, mask source and QC, method agreement, template caveat."""
+def provenance_html(source, mask_path, qc, *, kb_scope, method=None, generated=None, kb=None):
+    """Research-use caveat, the lesion mask (QC and how it was made), template caveat,
+    knowledge base. ``method``: HTML list of the steps that made the mask
+    (calmar.mask_method). Agreement with the manual mask is shown in the report
+    form before generating, not in the report."""
     label = MASK_LABELS.get(source, source)
     if qc["ratings"]:
         rated = "; ".join(f"{escape(stage)}: <b>{escape(lbl)}</b>"
@@ -372,16 +387,6 @@ def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scop
     warn = (" <b style='color:#c62828'>Rated poor — interpret this report with caution.</b>"
             if qc["poor"] else "")
     edits = f" Edits recorded on this mask: {qc['edits']}." if qc["edits"] else ""
-    if pairs:
-        rows = "".join(
-            f"<tr><td style='padding:1px 8px'>{escape(MASK_LABELS.get(a, a))} vs {escape(MASK_LABELS.get(b, b))}</td>"
-            f"<td style='padding:1px 8px;text-align:right'>{d:.2f}</td></tr>" for a, b, d in pairs)
-        vols = ", ".join(f"{escape(MASK_LABELS.get(s, s))} {v:.1f} mL" for s, v in volumes.items())
-        agreement = (f"Dice between available MNI masks (voxels &gt; {threshold:g}); "
-                     "1 = identical; lower values mean the methods disagree on lesion extent:"
-                     f"<table style='font-size:12px;margin:2px 0'>{rows}</table>Volumes: {vols}.")
-    else:
-        agreement = "Only one MNI mask is available, so agreement between methods was not computed."
     generated = generated or datetime.now()
     return (
         "<div class='calmar-provenance' role='note' style='border:1px solid #90a4ae;background:#eef3f6;"
@@ -394,7 +399,7 @@ def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scop
         "<ul style='margin:6px 0 0 18px;padding:0'>"
         f"<li><b>Lesion mask:</b> {escape(label)} (MNI) <code>{escape(Path(mask_path).name)}</code>. "
         f"QC: {rated}.{edits}{warn}</li>"
-        f"<li><b>Method agreement:</b> {agreement}</li>"
+        + (f"<li><b>How this lesion mask was made:</b>{method}</li>" if method else "") +
         f"<li><b>Template space:</b> {escape(TEMPLATE_CAVEAT)}</li>"
         + (f"<li><b>Knowledge base:</b> {escape(kb)}</li>" if kb else "") +
         f"<li><b>Generated:</b> {generated:%Y-%m-%d %H:%M} · KB scope: {escape(kb_scope)}</li>"
@@ -691,7 +696,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
                          f"{entry.get('session') or ''}. Choose an available mask in the report selector.")
     mask = Path(study.mni_mask(entry, source))
     linda_dir = Path(study.linda_dir(entry))
-    brain = linda_dir / "Subject_in_MNI.nii.gz"
+    brain = Path(study.template_dir(entry)) / "Subject_in_MNI.nii.gz"
     # prepare_report_overlap reads the atlas list from INTERP_KB_ATLASES; give it ours.
     view = dict(namespace, INTERP_KB_ATLASES=list(settings.kb_atlases))
     prepare_report_overlap(view, entry, source)
@@ -805,15 +810,14 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     '''
 
     # 5. Provenance, QC notice, overlay; save
-    masks = {s: study.mni_mask(entry, s) for s in study.mni_sources(entry)}
+    from .mask_method import mask_method_html
     try:
-        volumes, pairs = mask_agreement(masks, settings.threshold)
-    except Exception as exc:
-        volumes, pairs = {}, []
-        note(f"  mask agreement not computed: {exc}")
+        method = mask_method_html(study, entry, source)
+    except Exception as exc:          # the report is still useful without it
+        method = None
+        note(f"  mask method not described: {exc}")
     qc = mask_qc_summary(study.lesion_mni(entry), mask, source)
-    provenance = provenance_html(source, mask, qc, volumes, pairs,
-                                 threshold=settings.threshold, kb_scope=kb_scope, kb=kb_line)
+    provenance = provenance_html(source, mask, qc, kb_scope=kb_scope, method=method, kb=kb_line)
     qc_notice = report_qc_notice(linda_dir, entry)
     overlay = _overlay_img(namespace, entry, mask, brain, source)
     path, page, _ = save_report(entry, source, reports_dir, title_card, qc_notice, provenance, overlay, body)
