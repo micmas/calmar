@@ -25,6 +25,7 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -51,26 +52,35 @@ class RepetitionLoop(OllamaError):
         self.tokens = tokens
 
 
-LOOP_BLOCK = 160        # chars: the tail block looked for earlier in the window
-LOOP_WINDOW = 12000     # chars of recent output searched for that block
-LOOP_REPEATS = 3        # occurrences (including the tail itself) that mean a loop
-LOOP_MIN_CHARS = 3000   # do not judge before this much output exists
+LOOP_MIN_PERIOD = 40     # chars: shortest repeating unit that counts
+LOOP_MAX_PERIOD = 2500   # chars: longest (a whole finding object)
+LOOP_REPEATS = 3         # consecutive identical copies at the tail
+LOOP_MIN_CHARS = 1500    # do not judge before this much output exists
 _WS = re.compile(r"\s+")
 
 
 def looks_like_loop(text: str) -> bool:
-    """True when the last LOOP_BLOCK chars already occur LOOP_REPEATS
-    times in the last LOOP_WINDOW chars. Structured output legitimately
-    repeats keys and short phrases; a 160-char block three times is not
-    that — it is the model cycling through the same findings or the
-    same passage again, which is how every overflow so far happened."""
+    """True when the output ENDS in LOOP_REPEATS consecutive, identical
+    copies of some block between LOOP_MIN_PERIOD and LOOP_MAX_PERIOD
+    chars long — the signature of a model cycling.
+
+    Only consecutive copies count. Structured output legitimately
+    repeats the same boilerplate (schema keys, a paper's sample block)
+    in every finding, separated by content that differs; a test that
+    merely counted occurrences of the tail in a window flagged every
+    one of those (nine false positives on 2026-10-21, four papers lost).
+    """
     if len(text) < LOOP_MIN_CHARS:
         return False
-    tail = _WS.sub(" ", text[-LOOP_WINDOW:])
-    block = tail[-LOOP_BLOCK:]
-    if len(block) < LOOP_BLOCK or block.strip() in ("", "}", "]"):
-        return False
-    return tail.count(block) >= LOOP_REPEATS
+    tail = _WS.sub(" ", text[-(LOOP_MAX_PERIOD * LOOP_REPEATS + 200):])
+    n = len(tail)
+    for p in range(LOOP_MIN_PERIOD, min(LOOP_MAX_PERIOD, n // LOOP_REPEATS) + 1):
+        block = tail[-p:]
+        if block.strip() in ("", "}", "]", "},", "],"):
+            continue
+        if all(tail[-(k + 1) * p: -k * p or None] == block for k in range(1, LOOP_REPEATS)):
+            return True
+    return False
 
 
 def normalize_host(host: str | None) -> str:
@@ -232,58 +242,73 @@ def chat(prompt: str,
     n_think = 0
     body: dict = {}
     t0 = time.monotonic()
-    t_report = t0
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            for raw_line in resp:
-                if not raw_line.strip():
-                    continue
-                part = json.loads(raw_line.decode("utf-8"))
-                msg = part.get("message") or {}
-                piece = msg.get("content", "") or ""
-                if msg.get("thinking"):
-                    n_think += 1
-                if piece:
-                    chunks.append(piece)
-                    n_chunks += 1
-                if part.get("done"):
-                    body = part
-                    break
-                now = time.monotonic()
-                if verbose and now - t_report >= progress_every:
-                    t_report = now
-                    el = now - t0
-                    phase = ("reading the prompt" if not n_chunks and not n_think else
-                             f"{n_chunks:,} out tokens" + (f" + {n_think:,} thinking" if n_think else ""))
-                    print(f"  … {phase} ({(n_chunks + n_think) / el:.1f} tok/s, "
-                          f"{int(el // 60)}m{int(el % 60):02d}s)", flush=True)
-                if loop_detect and n_chunks % 128 == 0 and looks_like_loop("".join(chunks)):
-                    partial = "".join(chunks)
-                    raise RepetitionLoop(
-                        f"repetition loop detected after {n_chunks:,} output tokens "
-                        f"({int((now - t0) // 60)}m): the model was repeating a "
-                        f"{LOOP_BLOCK}-char block — stream cut, Ollama stopped",
-                        partial, n_chunks)
-    except RepetitionLoop:
-        raise
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode("utf-8", "replace")[:500]
-        if e.code == 404:
-            raise OllamaError(
-                f"Ollama has no model named {model!r} (HTTP 404).\n"
-                f"  Pull it:  ollama pull {model}\n"
-                f"  Server said: {detail}") from e
-        raise OllamaError(f"Ollama HTTP {e.code}: {detail}") from e
-    except urllib.error.URLError as e:
-        raise OllamaError(
-            f"Couldn't reach Ollama at {host} ({e.reason}).\n"
-            f"  Start it with:  ollama serve\n"
-            f"  Or point elsewhere with --ollama-host / OLLAMA_HOST.") from e
-    except TimeoutError as e:
-        raise OllamaError(
-            f"Ollama timed out after {timeout}s. Large num_ctx on a big "
-            f"model can be very slow — try a smaller --num-ctx.") from e
+    state = {"out": 0, "think": 0}
+    stop = threading.Event()
 
+    def _report() -> None:
+        # Runs in a thread so the line appears on time even while the
+        # main thread is blocked waiting for the first token (prompt
+        # evaluation alone takes minutes on a 60K-token prompt).
+        while not stop.wait(progress_every):
+            el = time.monotonic() - t0
+            o, t = state["out"], state["think"]
+            phase = ("reading the prompt — no token yet" if not o and not t else
+                     f"{o:,} out tokens" + (f" + {t:,} thinking" if t else ""))
+            print(f"  … {phase} ({(o + t) / el:.1f} tok/s, "
+                  f"{int(el // 60)}m{int(el % 60):02d}s)", flush=True)
+
+    reporter = None
+    if verbose and progress_every > 0:
+        reporter = threading.Thread(target=_report, daemon=True)
+        reporter.start()
+    try:
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                for raw_line in resp:
+                    if not raw_line.strip():
+                        continue
+                    part = json.loads(raw_line.decode("utf-8"))
+                    msg = part.get("message") or {}
+                    piece = msg.get("content", "") or ""
+                    if msg.get("thinking"):
+                        n_think += 1
+                        state["think"] = n_think
+                    if piece:
+                        chunks.append(piece)
+                        n_chunks += 1
+                        state["out"] = n_chunks
+                    if part.get("done"):
+                        body = part
+                        break
+                    now = time.monotonic()
+                    if loop_detect and n_chunks % 128 == 0 and looks_like_loop("".join(chunks)):
+                        partial = "".join(chunks)
+                        raise RepetitionLoop(
+                            f"repetition loop detected after {n_chunks:,} output tokens "
+                            f"({int((now - t0) // 60)}m): the model was repeating a "
+                            f"{LOOP_BLOCK}-char block — stream cut, Ollama stopped",
+                            partial, n_chunks)
+        except RepetitionLoop:
+            raise
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", "replace")[:500]
+            if e.code == 404:
+                raise OllamaError(
+                    f"Ollama has no model named {model!r} (HTTP 404).\n"
+                    f"  Pull it:  ollama pull {model}\n"
+                    f"  Server said: {detail}") from e
+            raise OllamaError(f"Ollama HTTP {e.code}: {detail}") from e
+        except urllib.error.URLError as e:
+            raise OllamaError(
+                f"Couldn't reach Ollama at {host} ({e.reason}).\n"
+                f"  Start it with:  ollama serve\n"
+                f"  Or point elsewhere with --ollama-host / OLLAMA_HOST.") from e
+        except TimeoutError as e:
+            raise OllamaError(
+                f"Ollama timed out after {timeout}s. Large num_ctx on a big "
+                f"model can be very slow — try a smaller --num-ctx.") from e
+    finally:
+        stop.set()
     text = "".join(chunks)
     n_in = body.get("prompt_eval_count")
     n_out = body.get("eval_count") or n_chunks
