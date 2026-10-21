@@ -749,6 +749,14 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     row = participant_row(dataset_dir, entry["subject"])
     predictors = row_to_predictors(row)
     stage_id, stage_label = rules.classify_stage((row or {}).get("wab_days"))
+    # STROKE_PHASE overrides; without onset data the acute (DWI) route is acute.
+    from .study import modality
+    configured = (getattr(study, "config", None) or {}).get("STROKE_PHASE")
+    if configured in ("acute", "subacute", "chronic"):
+        stage_id = configured
+        stage_label = {s: label for s, label, *_ in rules.RECOVERY_STAGES}[configured]
+    elif stage_id is None and modality(getattr(study, "config", None) or {}) == "dwi":
+        stage_id, stage_label = "acute", {s: label for s, label, *_ in rules.RECOVERY_STAGES}["acute"]
     try:
         therapy_stages = rules.therapy_evidence_stages(kb_root)
     except Exception:
@@ -817,17 +825,17 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       {behaviour_html(rules, row, predictors, volume)}
 
       <h4 style="margin-top:18px">Lesion location: what the evidence says</h4>
-      {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings)}
+      {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings, phase=stage_id)}
 
       <h4 style="margin-top:18px">White-matter disconnection: what the evidence says</h4>
-      {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label)}
+      {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id)}
 
       <h4 style="margin-top:18px">This participant&rsquo;s measures: what the evidence says</h4>
       <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
         Findings about measures such as lesion volume or aphasia severity report associations
         (e.g. larger lesions with more severe aphasia), not predictions for one person.
       </p>
-      {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None)}
+      {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None, phase=stage_id)}
 
       <h4 style="margin-top:18px">Therapy recommendations ({n_therapy} matched)</h4>
       <p style="font-size:12px;color:#555;margin:4px 0 8px 0">

@@ -51,6 +51,9 @@ def _brain_mask(dirs):
 def _registration(dirs, mni_path):
     """The template registration that produced ``mni_path``."""
     options = _options(mni_path) or {}
+    if options.get("registration") == "openads":
+        return ("Warped to the FSL MNI152 template (MNI152NLin6Asym, 1 mm) with OpenADS's registration of this DWI "
+                "(affine, then SyN, against its JHU ADC template), nearest-neighbour resampling.")
     if options.get("registration") == "ants":
         reg = _options(dirs["registration"]) or {}
         seed = f", seed {reg['random_seed']}" if "random_seed" in reg else ""
@@ -91,6 +94,14 @@ def mask_method(study, entry, source):
                          f"{tta} test-time augmentation) on the T1w {t1}; predicted voxels outside the brain mask "
                          f"dilated by {options.get('brain_dilation', 2)} voxels were removed.")
         return [_brain_mask(dirs), segmented, _registration(dirs, mni)]
+    if source == "openads":
+        options = _options(dirs["openads"])
+        dwi = Path(entry.get("dwi") or entry["t1w"]).name
+        adc = Path(entry["adc"]).name if entry.get("adc") else "its ADC map"
+        segmented = (f"Segmented by OpenADS ({options.get('module', 'openadscpu/1.0.0')}) on the diffusion-weighted "
+                     f"image {dwi} with {adc}, inside OpenADS's own DWI brain mask."
+                     if options is not None else f"Segmented by OpenADS on {dwi} ({NO_RECORD}).")
+        return [segmented, _registration(dirs, mni)]
     if source == "manual":
         from .processing import manual_inputs
         mask, reference, space = manual_inputs({"dataset": str(study.dataset), "config": study.config}, entry)

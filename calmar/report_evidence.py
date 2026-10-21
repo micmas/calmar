@@ -59,9 +59,53 @@ def _pill(text):
             f"color:#fff;font-size:10px;white-space:nowrap'>{escape(text)}</span>")
 
 
-def _claims(rows, *, show_target):
-    """One line per finding: direction, (target,) claim, method and citation.
-    The same claim from the same paper stored in two KB entries is shown once."""
+PHASE_LABELS = {"acute": "acute", "subacute": "subacute", "chronic": "chronic"}
+
+
+def finding_phases(row):
+    """Recovery phases a finding was studied in: its explicit ``phase`` field,
+    else those named in its sample population (aphasia_rules); empty = unknown."""
+    import aphasia_rules
+    explicit = row.get("phase")
+    if isinstance(explicit, str):
+        return {explicit}
+    if isinstance(explicit, (list, tuple, set)):
+        return set(explicit)
+    return aphasia_rules.stages_in_population(row.get("population"))
+
+
+def _phase_tag(row, participant_phase):
+    phases = finding_phases(row)
+    if not phases:
+        return "<span style='color:#999;font-size:10px'> [phase not stated]</span>"
+    text = "/".join(sorted(phases))
+    if participant_phase and participant_phase not in phases:
+        return (f" <span title='Studied in {text} stroke; this participant is {participant_phase}' "
+                f"style='color:#856404;font-size:10px'>[{escape(text)} ⚠]</span>")
+    return f"<span style='color:#888;font-size:10px'> [{escape(text)}]</span>"
+
+
+def phase_summary(rows, participant_phase):
+    """One sentence: the phase mix of the findings shown, against the participant's."""
+    if rows is None or rows.empty or not participant_phase:
+        return ""
+    phases = rows.apply(finding_phases, axis=1)
+    same = sum(participant_phase in p for p in phases)
+    other = sum(bool(p) and participant_phase not in p for p in phases)
+    unknown = sum(not p for p in phases)
+    note = (f"<p style='font-size:12px;color:#555;margin:2px 0 6px 0'>This participant is in the <b>{escape(participant_phase)}</b> "
+            f"phase. Of these {len(rows)} findings, {same} were studied in the same phase, {other} in another phase "
+            f"(marked ⚠) and {unknown} do not state it.")
+    if other > same:
+        note += (" Most of this evidence comes from another recovery phase; lesion–symptom associations can differ "
+                 "between phases (e.g. hypoperfusion and diaschisis after an acute stroke), so read it with caution.")
+    return note + "</p>"
+
+
+def _claims(rows, *, show_target, phase=None):
+    """One line per finding: direction, (target,) claim, method, citation and the
+    recovery phase it was studied in. The same claim from the same paper stored
+    in two KB entries is shown once."""
     rows = rows.drop_duplicates(subset=[c for c in ("predicts", "claim", "citation") if c in rows.columns])
     items = []
     for _, r in rows.iterrows():
@@ -72,7 +116,7 @@ def _claims(rows, *, show_target):
         detail = " · ".join(x for x in (method, r.get("strength") or "") if x)
         items.append(f"<li style='margin:2px 0'>{_pill(direction)} {target}{escape(str(r.get('claim') or ''))} "
                      f"<span style='color:#888'>({escape(detail)}{' · ' if detail else ''}"
-                     f"{escape(str(r.get('citation') or ''))})</span></li>")
+                     f"{escape(str(r.get('citation') or ''))})</span>{_phase_tag(r, phase)}</li>")
     return "<ul style='margin:2px 0 0 16px;padding:0;font-size:11.5px'>" + "".join(items) + "</ul>"
 
 
@@ -83,7 +127,7 @@ def _damage_text(r):
     return " · ".join(parts)
 
 
-def location_section(kb, rules, rows, damage, coverage, settings):
+def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
     """HTML for the lesion-location evidence.
 
     ``rows``: ``KnowledgeBase.location_findings``; ``damage``:
@@ -151,7 +195,8 @@ def location_section(kb, rules, rows, damage, coverage, settings):
         blocks.append(f"<details style='margin:4px 0'><summary style='cursor:pointer;font-size:12.5px'>"
                       f"<b>{escape(first['region_name'])}</b> ({escape(first['side'])}){flag}{thin} · "
                       f"{escape(_damage_text(first))} · {len(g)} finding{'s' if len(g) != 1 else ''}</summary>"
-                      f"{also}{_claims(g, show_target=True)}</details>")
+                      f"{also}{_claims(g, show_target=True, phase=phase)}</details>")
+    html += phase_summary(rows, phase)
     html += ("<p style='font-size:12px;color:#555;margin:10px 0 2px 0'><b>Evidence by damaged region</b> "
              "(click a region to see each finding; ⚠ marks regions whose evidence comes from "
              f"{THIN_STUDIES} studies or fewer):</p>" + "".join(blocks))
@@ -203,7 +248,7 @@ def _value_text(pid, value, days):
     return escape(str(value))
 
 
-def measures_section(kb, predictors, days=None, min_confidence=None):
+def measures_section(kb, predictors, days=None, min_confidence=None, phase=None):
     """HTML: one row per measure of the participant that the KB has findings about."""
     f = kb.findings
     f = f[f["source_kind"] == "predictor"]
@@ -241,7 +286,7 @@ def measures_section(kb, predictors, days=None, min_confidence=None):
             f"<div style='font-size:12px'>{escape(polarity.capitalize() + '.') if polarity else 'Direction: see each finding.'} "
             f"<span style='color:#666'>({len(g)} findings: {escape(counts)})</span></div>"
             f"<details><summary style='cursor:pointer;font-size:11.5px;color:#1a3a6b'>Show the findings</summary>"
-            f"{_claims(g, show_target=True)}</details>{caution}</td></tr>")
+            f"{_claims(g, show_target=True, phase=phase)}</details>{caution}</td></tr>")
     if not rows:
         return "<p style='color:#666'><em>No knowledge-base findings concern this participant's measures.</em></p>"
     return ("<table style='border-collapse:collapse;width:100%;font-size:13px'><tr style='background:#eee'>"
@@ -273,7 +318,7 @@ def tract_atlases(all_atlases):
             if name in ("JHU", "XTRACT")}
 
 
-def disconnection_section(kb, rows, disconnection, damage, settings, map_label):
+def disconnection_section(kb, rows, disconnection, damage, settings, map_label, phase=None):
     """HTML: tracts disconnected by the lesion (from a disconnectome map), with their findings.
 
     ``rows``: ``KnowledgeBase.location_findings`` on ``disconnection``
@@ -311,5 +356,5 @@ def disconnection_section(kb, rows, disconnection, damage, settings, map_label):
         blocks.append(f"<details style='margin:4px 0'><summary style='cursor:pointer;font-size:12.5px'>"
                       f"<b>{escape(names[key][0])}</b> ({escape(first['side'])}){thin} · "
                       f"{first['region_pct']:.0f}% of the tract disconnected{escape(hit)} · "
-                      f"{len(g)} finding{'s' if len(g) != 1 else ''}</summary>{also}{_claims(g, show_target=True)}</details>")
-    return intro + "".join(blocks)
+                      f"{len(g)} finding{'s' if len(g) != 1 else ''}</summary>{also}{_claims(g, show_target=True, phase=phase)}</details>")
+    return intro + phase_summary(rows, phase) + "".join(blocks)

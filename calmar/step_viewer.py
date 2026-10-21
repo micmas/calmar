@@ -53,6 +53,8 @@ MODEL_LABELS = {"whole_brain": "Whole brain", "association": "Association",
 HINTS = {"brain": "The brain mask should cover all brain tissue, including a lesion cavity, and no skull, scalp or neck.",
          "linda": "The lesion should follow the infarct; check for missed parts and spill into ventricles or CSF.",
          "synthstroke": "When LINDA ran, compare with it by ticking its layer.",
+         "openads": "Acute lesion from OpenADS on the diffusion-weighted image (bright = restricted diffusion). "
+                    "Tick the ADC map: the lesion should be dark there. Very small lesions are often missed.",
          "registration": "The T1w warped to the MNI152 template. Tick MNI152 brain on and off: the warped brain "
                          "should fill the template's brain, with ventricles and cortex in the same places. Every "
                          "template-space mask, disconnectome and atlas overlap relies on this registration.",
@@ -88,7 +90,7 @@ def step_layers(stage, entry, study):
     """``(background path or None, overlay layers)`` that exist for one participant."""
     d = study.dirs(entry)
     layers = []
-    if stage in ("brain", "linda", "synthstroke", "manual"):
+    if stage in ("brain", "linda", "synthstroke", "manual", "openads"):
         n4 = Path(d["linda"]) / "N4corrected.nii.gz"
         native = n4 if cm.present(n4) else Path(entry["t1w"])
         brain = q.find_best_hdbet_mask(study.hdbet_dir(entry))
@@ -96,17 +98,20 @@ def step_layers(stage, entry, study):
         background = Path(entry["t1w"])
         if brain is not None:
             layers.append(_layer("HD-BET brain mask", "hdbet", brain, "mask"))
-    elif stage in ("linda", "synthstroke", "manual"):
+    elif stage in ("linda", "synthstroke", "manual", "openads"):
         background = native
         order = {"linda": [("linda", True)],
                  "synthstroke": [("synthstroke", True), ("linda", False)],
-                 "manual": [("manual", True), ("linda", True), ("synthstroke", False)]}[stage]
+                 "openads": [("openads", True), ("manual", False)],
+                 "manual": [("manual", True), ("linda", True), ("synthstroke", False), ("openads", True)]}[stage]
         for source, shown in order:
             path = _native_lesion(study, entry, source)
             if cm.present(path):
                 layers.append(_layer(f"{cm.MASK_LABELS[source]} lesion", source, path, "lesion", shown))
         if stage == "linda" and brain is not None:
             layers.append(_layer("Brain mask", "hdbet", brain, "mask", False))
+        if stage == "openads" and entry.get("adc") and cm.present(entry["adc"]):
+            layers.append(_layer("ADC map", "reference", Path(entry["adc"]), "scan", False))
         reference = Path(d["template"]) / "_manual_mask_compare" / "T2_in_T1_sitk.nii.gz"
         if stage == "manual" and cm.present(reference):
             layers.append(_layer("Registered reference scan", "reference", reference, "scan", False))

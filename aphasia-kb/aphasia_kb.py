@@ -666,6 +666,11 @@ class KnowledgeBase:
                                "strength",
                            )},
                         "sample_n": (f.get("sample") or {}).get("n"),
+                        "population": (f.get("sample") or {}).get("population"),
+                        # Recovery phase the finding was studied in: an explicit
+                        # `phase:` (acute | subacute | chronic, or a list), else
+                        # derived from sample.population by aphasia_rules.
+                        "phase": f.get("phase"),
                         "stat_threshold": (f.get("statistics") or {}).get("threshold"),
                         "stat_effect_size": (f.get("statistics") or {}).get("effect_size"),
                         "confidence":  (f.get("provenance") or {}).get("confidence"),
