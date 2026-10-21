@@ -323,38 +323,36 @@ regions:
 
   # ── White-matter tracts ───────────────────────────────────────────────────
   left_arcuate_fasciculus:
-    units: [slf_temporal]
+    units: [arcuate_fasciculus]
     side: left
-    basis: The arcuate fasciculus is JHU's temporal part of the SLF (units.yaml, slf_temporal). Alternative to decide; also count the fronto-parietal SLF label.
-    review: true
+    basis: XTRACT arcuate fasciculus.
   left_long_segment_arcuate_fasciculus:
-    units: [slf_temporal]
+    units: [arcuate_fasciculus]
     side: left
-    basis: The long (direct) segment runs fronto-temporally, i.e. JHU's SLF temporal part.
+    basis: The long (direct fronto-temporal) segment is part of XTRACT's arcuate, which does not separate the segments.
     review: true
   left_anterior_arcuate_fasciculus:
-    units: [slf]
+    units: [slf_iii]
     side: left
-    basis: The anterior segment (Catani et al. 2005; fronto-parietal) lies in JHU's fronto-parietal SLF.
+    basis: "The anterior segment (Catani et al. 2005) links the inferior frontal and inferior parietal cortex: in XTRACT, SLF III."
     review: true
   left_posterior_arcuate_fasciculus:
-    units: [slf_temporal]
+    units: [arcuate_fasciculus]
     side: left
-    basis: The posterior segment (temporo-parietal) is closest to JHU's SLF temporal part.
+    basis: The posterior (temporo-parietal) segment has no XTRACT label; XTRACT's arcuate is the closest tract.
     review: true
   left_arcuate_fasciculus_slf:
-    units: [slf, slf_temporal]
+    units: [arcuate_fasciculus, slf]
     side: left
-    basis: The entry combines the arcuate and the SLF ("dorsal language pathway"), so both JHU SLF labels.
+    basis: The entry combines the arcuate and the SLF ("dorsal language pathway"), so XTRACT's arcuate and JHU's SLF.
   left_superior_longitudinal_fasciculus:
     units: [slf]
     side: left
     basis: Same tract.
   right_arcuate_fasciculus:
-    units: [slf_temporal]
+    units: [arcuate_fasciculus]
     side: right
-    basis: As left_arcuate_fasciculus, right hemisphere.
-    review: true
+    basis: XTRACT arcuate fasciculus, right hemisphere.
   left_inferior_longitudinal_fasciculus:
     units: [ilf]
     side: left
@@ -377,15 +375,25 @@ regions:
     basis: Only the callosal forceps are labelled in JHU (units.yaml, forceps).
     review: true
 
+  left_frontal_aslant_tract:
+    units: [frontal_aslant_tract]
+    side: left
+    basis: XTRACT frontal aslant tract.
+  left_middle_longitudinal_fasciculus:
+    units: [middle_longitudinal_fasciculus]
+    side: left
+    basis: XTRACT middle longitudinal fasciculus.
+  left_optic_radiations:
+    units: [optic_radiation]
+    side: left
+    basis: XTRACT optic radiation.
+
 # Region names that no atlas label can represent. Their findings cannot be
 # matched from lesion location; the report counts them as "not mappable".
 unmapped:
   left_extreme_capsule: >-
-    No atlas used here labels the extreme capsule. It carries the inferior fronto-occipital and uncinate
+    No atlas used here (JHU, XTRACT) labels the extreme capsule. It carries the inferior fronto-occipital and uncinate
     fasciculi, but those tracts are not the extreme-capsule fibre system itself, so it is not approximated.
-  left_frontal_aslant_tract: JHU has no frontal aslant tract.
-  left_middle_longitudinal_fasciculus: JHU has no middle longitudinal fasciculus.
-  left_optic_radiations: JHU's tract atlas has no optic radiation.
   left_posterior_middle_temporal_white_matter: White matter under the posterior middle temporal gyrus; no tract label.
   left_frontal_white_matter_bottleneck: >-
     A "bottleneck" is a region defined in its source paper by the convergence of several tracts, not an atlas

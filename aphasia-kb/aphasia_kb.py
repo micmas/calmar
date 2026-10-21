@@ -908,7 +908,7 @@ class KnowledgeBase:
         damage: pd.DataFrame,
         min_overlap: float = 5.0,
         min_confidence: str | None = None,
-        min_region: float = 10.0,
+        min_region: float = 25.0,
     ) -> pd.DataFrame:
         """
         Findings that apply to a lesion, one row per (finding, damaged region).
@@ -972,7 +972,7 @@ class KnowledgeBase:
         damage: pd.DataFrame,
         min_overlap: float = 5.0,
         min_confidence: str | None = None,
-        min_region: float = 10.0,
+        min_region: float = 25.0,
     ) -> pd.DataFrame:
         """``location_findings`` aggregated per predicted target, in the shape
         of ``interpret_overlap`` (target, target_kind, score, n_findings,

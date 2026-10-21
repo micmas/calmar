@@ -4,14 +4,6 @@ Generated from `evidence_gaps.yaml` and the current knowledge base by
 `python atlas_mapping.py --write-table`. Counts are findings / distinct papers (all statuses).
 Suggested papers are `[seed]` entries in `citations.md` until extracted.
 
-## arcuate and long tracts
-
-**Kind:** atlas gap: no atlas label, findings unreachable  
-**Areas:** `left_arcuate_fasciculus` (21 / 10), `left_long_segment_arcuate_fasciculus` (2 / 1), `left_posterior_arcuate_fasciculus` (3 / 2), `left_frontal_aslant_tract` (1 / 1), `left_middle_longitudinal_fasciculus` (1 / 1), `left_optic_radiations` (1 / 1)  
-**Suggested papers:** — (atlas change)
-
-JHU has no arcuate fasciculus, frontal aslant tract, middle longitudinal fasciculus or optic radiation, so the arcuate is approximated by the temporal part of the SLF (a judgement call) and the other three cannot be reached at all. FSL's XTRACT tract atlas (FSL 6.0.7.22, data/atlases/XTRACT, xtract-tract-atlases-maxprob5-1mm; Warrington et al. 2020, NeuroImage 217:116923, doi:10.1016/j.neuroimage.2020.116923) labels all four, plus SLF 1-3 and the acoustic radiation. Adding it as a fourth atlas resolves this gap without new papers.
-
 ## extreme capsule ventral stream
 
 **Kind:** atlas gap: no atlas label, findings unreachable  
@@ -42,7 +34,7 @@ The inferior fronto-occipital fasciculus has 3 findings; the anterior thalamic r
 **Areas:** `supplementary_motor_area` (3 / 2), `left_frontal_aslant_tract` (1 / 1)  
 **Suggested papers:** @Li2017 [seed]
 
-3 findings on the supplementary motor area and 1 on the frontal aslant tract, which connects it to the inferior frontal gyrus and is linked to verbal fluency after stroke. Becomes reachable with XTRACT (arcuate_and_long_tracts).
+3 findings on the supplementary motor area and 1 on the frontal aslant tract (reachable since the XTRACT atlas was added), which connects it to the inferior frontal gyrus and is linked to verbal fluency after stroke.
 
 ## insula apraxia of speech
 

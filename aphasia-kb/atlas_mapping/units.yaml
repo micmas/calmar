@@ -327,3 +327,38 @@ units:
     labels: [Forceps major, Forceps minor]
     basis: Midline labels without a side in JHU, so the side is taken from the lesion voxels. JHU labels only the anterior and posterior callosal radiations (forceps minor, major), not the callosal body; a lesion in the body is not measured.
     review: true
+
+  # ── White-matter tracts (XTRACT) ──────────────────────────────────────────
+  # XTRACT HCP tract atlas, max-probability (5 % threshold), 1 mm (FSL 6.0.7.22;
+  # Warrington et al. 2020). Used for the tracts JHU does not label; JHU stays
+  # the atlas for SLF, ILF, IFOF and uncinate so their results do not change.
+  arcuate_fasciculus:
+    name: Arcuate fasciculus
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Arcuate Fasciculus L], right: [Arcuate Fasciculus R]}
+    basis: XTRACT label of the same tract (the whole arcuate; its segments are not separated).
+  slf_iii:
+    name: Superior longitudinal fasciculus III (ventral, fronto-parietal)
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Superior Longitudinal Fasciculus 3 L], right: [Superior Longitudinal Fasciculus 3 R]}
+    basis: XTRACT label of the same tract; SLF III links the inferior frontal gyrus with the supramarginal gyrus.
+  frontal_aslant_tract:
+    name: Frontal aslant tract
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Frontal Aslant Tract L], right: [Frontal Aslant Tract R]}
+    basis: XTRACT label of the same tract.
+  middle_longitudinal_fasciculus:
+    name: Middle longitudinal fasciculus
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Middle Longitudinal Fasciculus L], right: [Middle Longitudinal Fasciculus R]}
+    basis: XTRACT label of the same tract.
+  optic_radiation:
+    name: Optic radiation
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Optic Radiation L], right: [Optic Radiation R]}
+    basis: XTRACT label of the same tract.
