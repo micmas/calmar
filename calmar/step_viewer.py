@@ -52,10 +52,10 @@ MODEL_LABELS = {"whole_brain": "Whole brain", "association": "Association",
                 "projection": "Projection", "commissural": "Commissural"}
 HINTS = {"brain": "The brain mask should cover all brain tissue, including a lesion cavity, and no skull, scalp or neck.",
          "linda": "The lesion should follow the infarct; check for missed parts and spill into ventricles or CSF.",
-         "synthstroke": "Compare with LINDA by ticking its layer.",
-         "registration": "The T1w warped to the MNI152 template: its brain should fill the cyan template brain "
-                         "outline, with ventricles and cortex in the same places. Every template-space mask, "
-                         "disconnectome and atlas overlap relies on this registration.",
+         "synthstroke": "When LINDA ran, compare with it by ticking its layer.",
+         "registration": "The T1w warped to the MNI152 template. Tick MNI152 brain on and off: the warped brain "
+                         "should fill the template's brain, with ventricles and cortex in the same places. Every "
+                         "template-space mask, disconnectome and atlas overlap relies on this registration.",
          "manual": "The manual mask (registered to this T1w) is the reference for both automatic masks. "
                    "Tick the registered reference scan on and off: its anatomy should line up with the T1w; "
                    "if not, the manual mask is misplaced and the Dice scores are meaningless.",
@@ -114,7 +114,7 @@ def step_layers(stage, entry, study):
         # Template registration without LINDA: the warped T1 against MNI152.
         from . import templates
         background = Path(d["registration"]) / "Subject_in_MNI.nii.gz"
-        layers.append(_layer("MNI152 brain", "template", templates.BRAIN_MASK, "mask",
+        layers.append(_layer("MNI152 brain", "template", templates.BRAIN_MASK, "mask", False,
                              colormap="cyan", css=cc.CSS["cyan"]))
         lesion = study.masks(entry).get("synthstroke", {}).get("MNI")
         if cm.present(lesion):

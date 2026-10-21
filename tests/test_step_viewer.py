@@ -159,3 +159,17 @@ def test_manual_metrics_explain_a_low_dice():
                                 'linda_covers_manual': 0.765, 'linda_inside_manual': 0.452}))
     assert lines['Versus manual'] == ('LINDA covers 76% of the manual lesion and 45% of LINDA lies inside it '
                                       '(1.7× the manual volume: larger)')
+
+
+def test_new_background_reloads_overlays_it_would_otherwise_reuse(tmp_path):
+    """NiiVue keeps "loading" when a held overlay is put over a new background
+    (another participant over the same template mask): reload the overlays."""
+    from calmar import widgets
+    a, b, template = (save(tmp_path/f'{n}.nii.gz') for n in ('a', 'b', 'template'))
+    viewer = SimpleNamespace(volumes=[])
+    widgets.set_volumes(viewer, [{'path': str(a)}, {'path': str(template)}])
+    first_template = viewer.volumes[1]
+    widgets.set_volumes(viewer, [{'path': str(a)}, {'path': str(template), 'opacity': 0}])
+    assert viewer.volumes[1] is first_template                     # same background: reused
+    widgets.set_volumes(viewer, [{'path': str(b)}, {'path': str(template)}])
+    assert viewer.volumes[1] is not first_template                 # new background: reloaded

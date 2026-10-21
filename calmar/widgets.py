@@ -246,8 +246,9 @@ def set_volumes(viewer, specs, *, cache_size=12):
     cache = getattr(viewer, "_calmar_layer_cache", None)
     if cache is None:
         cache = viewer._calmar_layer_cache = OrderedDict()
-    models = []
-    for spec in vols(specs):
+    models, replaced = [], []
+    background = None
+    for index, spec in enumerate(vols(specs)):
         if "data" in spec:
             # In-memory sources are unusual; callers can cache them to disk.
             models.append(LazyVolume(**spec))
@@ -262,6 +263,15 @@ def set_volumes(viewer, specs, *, cache_size=12):
             identity.update(path=str(p.absolute()), mtime_ns=stat.st_mtime_ns, size=stat.st_size)
         key = json.dumps(identity, sort_keys=True, default=str)
         model = cache.get(key)
+        if index == 0:
+            background = model
+        elif background is None or background not in viewer.volumes[:1]:
+            # A new background (e.g. another participant): NiiVue does not
+            # reattach an overlay it already holds to a new background (the
+            # viewer stays at "loading"), so every overlay is loaded afresh.
+            if model is not None:
+                replaced.append(model)
+            model = None
         if model is None:
             model = LazyVolume(**spec)
             cache[key] = model
@@ -272,6 +282,9 @@ def set_volumes(viewer, specs, *, cache_size=12):
         cache.move_to_end(key)
         models.append(model)
     viewer.volumes = models
+    for model in replaced:
+        if model not in models:
+            model.close()
     for key in list(cache):
         if len(cache) <= cache_size:
             break
