@@ -1,17 +1,15 @@
 ---
 schema_version: 2.3
 id: lesion_volume__Goldenberg1994
-name: Total lesion volume as predictor of recovery and therapy gain (Goldenberg &
-  Spatt 1994)
+name: Total lesion volume as predictor of recovery and therapy gain (Goldenberg & Spatt 1994)
 aliases:
 - lesion size
 - CT-measured lesion size
 kind: predictor
 predictor_type: imaging_metric
-short_definition: Total left-hemisphere lesion size measured on CT scans (drawn to
-  standard anatomical templates) as a percentage of total left-hemisphere pixels.
-  Used as a continuous predictor of AAT profile level and of change scores across
-  spontaneous-recovery, therapy, and post-therapy phases.
+short_definition: Total left-hemisphere lesion size measured on CT scans (drawn to standard anatomical
+  templates) as a percentage of total left-hemisphere pixels. Used as a continuous predictor of AAT profile
+  level and of change scores across spontaneous-recovery, therapy, and post-therapy phases.
 units: '% of left-hemisphere template pixels'
 typical_range: approx. 1–18% in this n=18 chronic stroke aphasia cohort
 direction_of_severity: higher_is_worse
@@ -23,16 +21,13 @@ findings:
   target: severity_metric
   target_kind: predictor
   instrument: AAT mean profile level (Aachen Aphasia Test)
-  score_band: AAT profile level (T-score weighted by subtest reliability; higher =
-    less severe)
-  interpretation: Larger CT-measured left-hemisphere lesion size is associated with
-    lower initial AAT profile level (more severe aphasia) and with smaller improvement
-    during all three observation phases (spontaneous recovery, intensive therapy,
-    post-therapy follow-up).
-  claim: Larger total left-hemisphere lesion size on CT is associated with lower initial
-    aphasia severity and with smaller AAT-profile improvement across spontaneous recovery,
-    intensive language therapy, and the combined observation period in chronic post-stroke
-    aphasia.
+  score_band: AAT profile level (T-score weighted by subtest reliability; higher = less severe)
+  interpretation: Larger CT-measured left-hemisphere lesion size is associated with lower initial AAT
+    profile level (more severe aphasia) and with smaller improvement during all three observation phases
+    (spontaneous recovery, intensive therapy, post-therapy follow-up).
+  claim: Larger total left-hemisphere lesion size on CT is associated with lower initial aphasia severity
+    and with smaller AAT-profile improvement across spontaneous recovery, intensive language therapy,
+    and the combined observation period in chronic post-stroke aphasia.
   direction: likely
   relationship: correlational
   citation: '@Goldenberg1994'
@@ -41,31 +36,29 @@ findings:
   imaging: CT
   sample:
     n: 18
-    population: chronic post-stroke aphasia patients eligible for intensive language
-      therapy (4 women, 14 men; left-hemisphere stroke; ischaemic n=15, haemorrhagic
-      n=3)
-    time_post_onset: 10 patients entered at 2 months post-CVA, six at 3–4 months,
-      two at 6–7 months post-CVA
+    population: chronic post-stroke aphasia patients eligible for intensive language therapy (4 women,
+      14 men; left-hemisphere stroke; ischaemic n=15, haemorrhagic n=3)
+    time_post_onset: 10 patients entered at 2 months post-CVA, six at 3–4 months, two at 6–7 months post-CVA
     age_range: mean 61.8 years (range 34–79)
     handedness: all right-handed
     language: German (Aachen Aphasia Test administered)
-    recruitment: Neurologisches Krankenhaus Rosenhügel, Vienna; 20 patients initially
-      considered, 2 excluded for ceiling AAT-profile (>65)
-    inclusion_criteria: aphasia sufficiently severe to merit intensive therapy; communicative
-      behaviour not so severely affected as to make therapy impossible; sufficient
-      general health, endurance, and motivation
-    exclusion_criteria: AAT mean profile level above 65 at start of intensive therapy
-      (ceiling effect); contralateral lesion not counted (one patient had additional
-      right-hemisphere lesion neglected for size calculation)
+    recruitment: Neurologisches Krankenhaus Rosenhügel, Vienna; 20 patients initially considered, 2 excluded
+      for ceiling AAT-profile (>65)
+    inclusion_criteria: aphasia sufficiently severe to merit intensive therapy; communicative behaviour
+      not so severely affected as to make therapy impossible; sufficient general health, endurance, and
+      motivation
+    exclusion_criteria: AAT mean profile level above 65 at start of intensive therapy (ceiling effect);
+      contralateral lesion not counted (one patient had additional right-hemisphere lesion neglected for
+      size calculation)
+    phase: mixed
   statistics:
-    threshold: Pearson correlation, p<.05 (uncorrected; multiple univariate tests
-      as authors note)
+    threshold: Pearson correlation, p<.05 (uncorrected; multiple univariate tests as authors note)
     cluster_extent: null
-    effect_size: r = -0.47 (initial AAT-profile); r = -0.49 (spontaneous recovery);
-      r = -0.41 (therapy improvement); r = -0.75 (whole observation period)
+    effect_size: r = -0.47 (initial AAT-profile); r = -0.49 (spontaneous recovery); r = -0.41 (therapy
+      improvement); r = -0.75 (whole observation period)
     ci_95: not_reported
-    p_value: <.05 for initial AAT-profile, spontaneous recovery and therapy improvement;
-      <.001 for whole observation period
+    p_value: <.05 for initial AAT-profile, spontaneous recovery and therapy improvement; <.001 for whole
+      observation period
   confounders_controlled: []
   confounders_not_controlled:
   - age (separately reported as r<.2; not partialled in the lesion-size correlations)
@@ -76,17 +69,15 @@ findings:
   - multiple-comparisons correction (authors explicitly note none was applied)
   region_definition:
     kind: manual_ROI
-    description: Lesions hand-drawn on standard anatomical CT templates (Damasio &
-      Damasio 1989; Kretschmann & Weinrich 1991), using ventricular and surface markings
-      to align. Relative lesion size = number of redrawn-lesion pixels / total left-hemisphere
-      template pixels (expressed as percentage).
+    description: Lesions hand-drawn on standard anatomical CT templates (Damasio & Damasio 1989; Kretschmann
+      & Weinrich 1991), using ventricular and surface markings to align. Relative lesion size = number
+      of redrawn-lesion pixels / total left-hemisphere template pixels (expressed as percentage).
   imaging_details:
     field_strength: not_reported
     acquisition:
       sequence: CT (clinical scan, performed >=1 month after CVA)
-    preprocessing_pipeline: manual lesion tracing onto standard 2D anatomical templates
-      (Damasio & Damasio 1989; Kretschmann & Weinrich 1991); pixel counting on the
-      template
+    preprocessing_pipeline: manual lesion tracing onto standard 2D anatomical templates (Damasio & Damasio
+      1989; Kretschmann & Weinrich 1991); pixel counting on the template
     reference_space: other
     atlases_used: []
   replications:
@@ -95,69 +86,64 @@ findings:
   author_limitations:
   - Small (n=18) and heterogeneous sample (mixed aphasia types and severities).
   - Multiple univariate statistical tests without correction for multiple comparisons.
-  - Discussion is explicitly described by the authors as speculative — intended to
-    propose a hypothesis in need of confirmation.
-  - Two patients (J.K., E.K.) entered the study at 6–7 months post-CVA, later than
-    the rest, and showed very little recovery — temporal-onset confound.
+  - Discussion is explicitly described by the authors as speculative — intended to propose a hypothesis
+    in need of confirmation.
+  - Two patients (J.K., E.K.) entered the study at 6–7 months post-CVA, later than the rest, and showed
+    very little recovery — temporal-onset confound.
   - CT (not MRI) lesion delineation; templates 2D rather than volumetric.
   evidence_quality: cohort
   strength: moderate
   provenance:
     extracted_by: agent:claude-opus-4-7
     extracted_on: 2026-05-07
-    paper_section: Results, page 689 (lesion-size correlations); Methods – Computed
-      Tomography, page 686
+    paper_section: Results, page 689 (lesion-size correlations); Methods – Computed Tomography, page 686
     confidence: high
     flags:
-    - 'OCR scan: occasional character errors in the 1994 PDF (e.g., ''Selves'' for
-      ''Selnes'', ''Jess'' for ''less'', ''parents'' for ''patients'') — quotes below
-      are reproduced as the OCR rendered them; verify against original print if needed.'
+    - 'OCR scan: occasional character errors in the 1994 PDF (e.g., ''Selves'' for ''Selnes'', ''Jess''
+      for ''less'', ''parents'' for ''patients'') — quotes below are reproduced as the OCR rendered them;
+      verify against original print if needed.'
     - Multiple-comparisons correction not applied; authors flag this themselves.
-    - 'Forward-looking target_kind: severity_metric is the umbrella predictor entry;
-      instrument here is the AAT mean profile level (German clinical battery).'
+    - 'Forward-looking target_kind: severity_metric is the umbrella predictor entry; instrument here is
+      the AAT mean profile level (German clinical battery).'
   source_passages:
   - section: Abstract
-    page: 684
+    page: 1
     supports: claim
     quote: Size of lesion had a negative influence on recovery in all phases.
   - section: Results
-    page: 689
+    page: 4
     supports: statistics
-    quote: Lesion size had negative correlations to initial AAT-profile height (r
-      = —0.47, p < .05) as well as to the amount of improvement during spontaneous
-      recovery (r = —.49, p < .05), during therapy (r = —.41, p < .05) and across
-      the whole observation period which includes spontaneous recovery, therapy and
-      the post-therapeutic period (r = —.75, p < .001).
+    quote: Lesion size had negative correlations to initial AAT-profile height (r = —0.47, p < .05) as
+      well as to the amount of improvement during spontaneous recovery (r = —.49, p < .05), during therapy
+      (r = —.41, p < .05) and across the whole observation period which includes spontaneous recovery,
+      therapy and the post-therapeutic period (r = —.75, p < .001).
   - section: Methods – Patients
-    page: 687
+    page: 4
     supports: sample
-    quote: There remained 4 women and 14 men with a mean age of 61.8 (range 34 to
-      79). Ten Patients entered the study for 2 months post CVA, six 3 and 4 months,
-      and two 6 and 7 months post-CVA.
+    quote: There remained 4 women and 14 men with a mean age of 61.8 (range 34 to 79). Ten Patients entered
+      the study for 2 months post CVA, six 3 and 4 months, and two 6 and 7 months post-CVA.
   - section: Methods – Computed Tomography
-    page: 686
+    page: 3
     supports: method
-    quote: Lesions were drawn to standard size anatomical templates observing ventricular
-      and surface markings relative to the lesion (Damasio & Damasio, 1989; Kretschmann
-      & Weinrich, 1991). Relative lesion size was estimated by counting the number
-      of pixels covered by the redrawn lesion on the standard template.
+    quote: Lesions were drawn to standard size anatomical templates observing ventricular and surface
+      markings relative to the lesion (Damasio & Damasio, 1989; Kretschmann & Weinrich, 1991). Relative
+      lesion size was estimated by counting the number of pixels covered by the redrawn lesion on the
+      standard template.
   - section: Methods – Computed Tomography
-    page: 686
+    page: 3
     supports: imaging_details
-    quote: CT images were obtained from all patients. All scans had been performed
-      at least one month after CVA and showed clearly demarcated vascular lesions.
+    quote: CT images were obtained from all patients. All scans had been performed at least one month
+      after CVA and showed clearly demarcated vascular lesions.
   - section: Discussion
-    page: 694
+    page: 11
     supports: limitation
-    quote: the patient group was small and heterogeneous with respect to type and
-      severity of aphasia, and that the results were obtained by multiple univariate
-      statistical tests without correction for the multiplicity of comparisons while
-      the interpretation considers multivariate relationships.
+    quote: the patient group was small and heterogeneous with respect to type and severity of aphasia,
+      and that the results were obtained by multiple univariate statistical tests without correction for
+      the multiplicity of comparisons while the interpretation considers multivariate relationships.
   - section: Discussion
-    page: 694
+    page: 11
     supports: claim
-    quote: Our results confirm that size of lesion exerts a negative influence on
-      recovery of aphasia
+    quote: Our results confirm that size of lesion exerts a negative influence on recovery of aphasia
 source: curated
 last_reviewed: 2026-05-07
 notes: 'Goldenberg & Spatt 1994 (Brain Lang 47:684–698). Vienna cohort, n=18 chronic

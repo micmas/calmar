@@ -1,0 +1,115 @@
+draft_path: drafts/regions/left_angular_gyrus__Alyahya2020.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T05:55:42'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/regions/left_angular_gyrus__Alyahya2020.md:
+      finding[0] (id=f1): imaging_details.reference_space=''MNI'' invalid (required
+      for imaging method)'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 3/3 quotes (100%) — elided 2, exact 1
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+- run_id: 2
+  timestamp: '2026-10-22T06:19:02'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 3/3 quotes (100%) — elided 2, exact 1
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: imaging_details.reference_space not extracted by the model — set to not_reported'
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - 'f1: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft claims a causal relationship ('Damage to the left angular
+        gyrus is associated with...'), but the paper uses a VBCM (voxel-based correlational
+        methodology), which identifies statistical correlations, not causality. The
+        paper explicitly states it is a 'correlational methodology'. Additionally,
+        the draft lists the relationship as 'causal' while the text describes it as
+        a correlation.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The draft labels the relationship as 'causal', but the paper describes
+          the method as 'voxel-based correlational methodology (VBCM)' and the results
+          as 'correlations'. A correlation is not a causal claim.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ claims a causal relationship ('Damage to the left angular gyrus is associated\
+      \ with...'), but the paper uses a VBCM (voxel-based correlational methodology),\
+      \ which identifies statistical correlations, not causality. The paper explicitly\
+      \ states it is a 'correlational methodology'. Additionally, the draft lists\
+      \ the relationship as 'causal' while the text describes it as a correlation.\"\
+      ,\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n      \"passage_present\"\
+      : true,\n      \"passage_supports_field\": true,\n      \"relationship_faithful\"\
+      : false,\n      \"strength_fair\": true,\n      \"numbers_match\": true,\n \
+      \     \"limitations_captured\": true,\n      \"omissions\": \"\",\n      \"\
+      concern\": \"The draft labels the relationship as 'causal', but the paper describes "
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T06:19:02'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

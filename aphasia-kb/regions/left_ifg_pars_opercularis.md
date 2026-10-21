@@ -611,10 +611,260 @@ findings:
       depends on the semantic category tested. That is, certain semantic categories
       may engage frontal0strategic search processes if they are broader and require
       frequent switching between subcategories
+- id: f5
+  target: fluency
+  target_kind: impairment
+  claim: Damage to Broca's area is not especially important for speech fluency once
+    lesions to the insula have been accounted for.
+  direction: no_effect
+  relationship: causal
+  citation: '@Bates2003'
+  method: VLSM
+  design: cross-sectional
+  strength: moderate
+  evidence_quality: cohort
+  sample:
+    n: 101
+    population: left-hemisphere-damaged aphasic patients
+    time_post_onset: at least one year after stroke
+    age_range: not_reported
+    handedness: not_reported
+    language: native English speakers
+    phase: not_reported
+  statistics:
+    threshold: not_reported
+    effect_size: not_reported
+  confounders_controlled:
+  - anterior insula lesion state
+  confounders_not_controlled:
+  - lesion volume
+  region_definition:
+    kind: manual_ROI
+    description: Central voxel in Broca's area used as covariate in ANCOVA.
+  imaging_details:
+    reference_space: other
+    atlases_used: []
+  author_limitations:
+  - An area may emerge as relevant either because it has a direct causal role or because
+    of a diaschitic effect.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 450
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 450
+    quote: Broca's area is not especially important for fluency once lesions to the
+      insula have been accounted for
+    supports: claim
+  review:
+    reviewer: model:gemma4:26b
+    reviewed_on: '2026-10-22'
+    tier: A
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+- id: f6
+  target: phonological_production
+  target_kind: impairment
+  claim: Damage to the left inferior frontal gyrus is associated with impaired phonological
+    processing, although the relationship is weaker than for posterior perisylvian
+    regions.
+  direction: likely
+  relationship: causal
+  citation: '@Butler2014'
+  method: VBCM
+  design: cross-sectional
+  strength: weak
+  evidence_quality: cohort
+  sample:
+    n: 31
+    population: chronic stroke aphasia
+    time_post_onset: '>= 12 months'
+    age_range: not_reported
+    handedness: all right-handed
+    language: English first language
+    phase: chronic
+  statistics:
+    threshold: lower than P = 0.001 voxel-level
+    effect_size: not_reported
+  confounders_controlled:
+  - lesion volume
+  - other PCA factors
+  confounders_not_controlled: []
+  region_definition:
+    kind: data_driven_cluster
+    description: Cluster in the left inferior prefrontal region.
+  imaging_details:
+    field_strength: 3T
+    acquisition:
+      voxel_size_mm:
+      - 1
+      - 1
+      - 1
+      sequence: T1-weighted inversion recovery
+    preprocessing_pipeline: modified unified segmentation-normalization procedure
+      (Seghier et al. 2008) implemented in SPM8
+    reference_space: MNI152
+    atlases_used: []
+  author_limitations:
+  - Automated lesion identification may be affected by abnormal ventricle shape in
+    large lesions.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 8
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 8
+    quote: A second cluster in the left inferior prefrontal region was also identified
+      at a slightly lower statistical threshold (Fig. 5A).
+    supports: claim
+  - section: Materials and methods
+    page: 3
+    quote: Participants were included if they had chronic stroke aphasia... and were
+      at least 12 months post-stroke at time of scanning and assessment (n = 31).
+    supports: sample
+  - section: Materials and methods
+    page: 5
+    quote: It is therefore likely to be affected by the abnormal shape of the ventricles
+      in patients with large lesions, and hence is used with the caveat that periventricular
+      results are treated with caution (Geva et al., 2012).
+    supports: limitation
+  review:
+    reviewer: model:gemma4:26b
+    reviewed_on: '2026-10-22'
+    tier: A
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+- id: f7
+  target: brocas_aphasia
+  target_kind: impairment
+  claim: Damage to the left inferior frontal gyrus, including Broca's area, is associated
+    with Broca's aphasia.
+  direction: likely
+  relationship: causal
+  citation: '@Henseler2014'
+  method: VLSM
+  design: cross-sectional
+  strength: moderate
+  evidence_quality: cohort
+  sample:
+    n: 102
+    population: chronic left-hemisphere ischemic stroke
+    time_post_onset: '>= 12 months'
+    age_range: mean 52 (SD 12)
+    handedness: all right-handed
+    language: native German
+    phase: chronic
+  statistics:
+    threshold: FDR p < 0.05
+    effect_size: not_reported
+  confounders_controlled: []
+  confounders_not_controlled:
+  - lesion size
+  region_definition:
+    kind: data_driven_cluster
+    description: VLSM cluster associated with Broca's syndrome probability.
+  imaging_details:
+    field_strength: 3T
+    preprocessing_pipeline: SPM8 unified segmentation + cost function masking
+    reference_space: MNI152
+    atlases_used: []
+  author_limitations:
+  - Chronic aphasia may favour larger lesions, which may sharpen the distinction between
+    syndromes.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 5
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 5
+    quote: lesions correlating with the score for Broca's aphasia were located in
+      left inferior frontal gyrus (including Broca's area), the left insular cortex,
+      as well as the adjacent white matter and basal ganglia.
+    supports: claim
+  - section: Materials and methods
+    page: 3
+    quote: One hundred and two patients fulﬁlled these criteria. Mean age of these
+      participants was 52 years [standard deviation (SD) = 12 years] and mean time
+      post-stroke was 12.6 months
+    supports: sample
+  - section: Discussion
+    page: 9
+    quote: the fact that we investigated chronic aphasia may favour larger lesions
+      to contribute to the overall results and may sharpen the distinction between
+      the large Broca- vesus Wernicke-related lesion areas.
+    supports: limitation
+  review:
+    reviewer: model:gemma4:26b
+    reviewed_on: '2026-10-22'
+    tier: A
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+- id: f8
+  target: fluency
+  target_kind: impairment
+  claim: Damage to the left inferior frontal gyrus pars opercularis is a significant
+    predictor of speech fluency in chronic aphasia.
+  direction: likely
+  relationship: causal
+  citation: '@Yourganov2016'
+  method: MLPA
+  design: cross-sectional
+  strength: moderate
+  evidence_quality: cohort
+  sample:
+    n: 90
+    population: chronic left-hemisphere stroke aphasia
+    time_post_onset: mean 42.8 months
+    age_range: mean 58.8 years
+    handedness: not_reported
+    language: not_reported
+    phase: chronic
+  statistics:
+    threshold: p < 0.05 with Bonferroni's correction
+    effect_size: not_reported
+  confounders_controlled: []
+  confounders_not_controlled:
+  - lesion volume
+  region_definition:
+    kind: atlas
+    atlas: Faria et al. (2012)
+    description: Inferior frontal gyrus pars opercularis
+  imaging_details:
+    field_strength: 3T
+    reference_space: MNI152
+    atlases_used:
+    - Faria et al. (2012)
+  author_limitations:
+  - Feature selection by discarding low-correlation features might miss variables
+    that are predictive only in combination with others.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 5
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 5
+    quote: For lesion-based analysis, the most important regions for predicting fluency
+      scores were the precentral gyrus, opercular part of inferior frontal gyrus,
+      and the posterior part of the superior temporal gyrus (PSTG)
+    supports: claim
+  review:
+    reviewer: model:gemma4:26b
+    reviewed_on: '2026-10-22'
+    tier: A
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
 source: draft
 reviewer: auto-reviewer
 reviewed_on: '2026-05-06'
-last_reviewed: '2026-05-06'
+last_reviewed: '2026-10-22'
 ---
 # Left IFG Pars Opercularis — Fridriksson 2018 Anatomy (RLSM + CLSM)
 

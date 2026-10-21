@@ -1159,6 +1159,70 @@ findings:
     quote: '[...] of several key areas for language performance, they do not represent
       an exhaustive overview of regions that contribute to language functioning.'
     supports: limitation
+- id: f9
+  target: prognosis
+  target_kind: prognosis
+  claim: Lower initial severity of aphasia is associated with a higher degree of recovery.
+  direction: likely
+  relationship: correlational
+  citation: '@Laska2001'
+  method: behavioral_only
+  design: longitudinal
+  strength: moderate
+  evidence_quality: cohort
+  instrument: ANELT
+  score_band: all severities
+  interpretation: Lower initial ANELT score indicates more severe impairment.
+  sample:
+    n: 119
+    population: acute stroke patients with aphasia
+    time_post_onset: acute stage to 18 months
+    phase: longitudinal
+    age_range: not_reported
+    handedness: not_reported
+    language: Swedish
+  statistics:
+    threshold: P < 0.001
+    effect_size: not_reported
+  confounders_controlled: []
+  confounders_not_controlled:
+  - age
+  - lesion volume
+  region_definition:
+    kind: not_reported
+    description: behavioral predictor
+  author_limitations:
+  - The apparently lower recovery rate among subjects with mild aphasia is likely
+    to be due to a ceiling effect of the test instruments.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 418
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 6
+    quote: The initial severity of aphasia (ANELT acute) correlated in a univariate
+      analysis with the degree of recovery (P < 0.001), i.e. the lower the initial
+      degree of aphasia, the higher the degree of recovery.
+    supports: claim
+  - section: Assessment of aphasia
+    page: 3
+    quote: The ANELT understandability score indicates the severity of the communicative
+      disability, and was chosen as the measure of the degree of aphasia.
+    supports: method
+  - section: Discussion
+    page: 8
+    quote: The apparently lower recovery rate among subjects with mild aphasia is
+      likely to be due to a ceiling effect of the test instruments, i.e. an inability
+      to record improvement in these patients with mild aphasia.
+    supports: limitation
+  review:
+    reviewer: model:gemma4:26b
+    reviewed_on: '2026-10-22'
+    tier: A
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
 notes: "This is the umbrella entry for *any* finding about how aphasia severity predicts\
   \ an outcome. Different studies use different instruments (WAB-AQ, BDAE severity,\
   \ CAT, AAT, …); rather than fragmenting the literature into one predictor entry\
@@ -1177,7 +1241,7 @@ notes: "This is the umbrella entry for *any* finding about how aphasia severity 
   \ produced it. The interpreter matches findings by\n    `severity_metric`, then\
   \ optionally filters / weights by matching\n    `instrument` (preferring exact-instrument\
   \ matches)."
-last_reviewed: '2026-05-06'
+last_reviewed: '2026-10-22'
 ---
 # Aphasia severity metric (instrument-agnostic)
 

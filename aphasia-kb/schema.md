@@ -1,4 +1,4 @@
-# Schema v2.5
+# Schema v2.6
 
 Every entry is a single markdown file with **YAML frontmatter** followed by
 **prose**. The frontmatter is the contract that `aphasia_kb.py`,
@@ -42,9 +42,17 @@ documented change to *this file* and the loader together.
 >   written by `promote.py`, so an entry that accumulates findings from
 >   several reviews reports each one. `reviewer` values are
 >   `human:<name>` or `model:<ollama-tag>`. No other structural change.
+> - **v2.6** adds `sample.phase`, the recovery phase of a finding's
+>   sample as a controlled value (SRRR bands: hyperacute … chronic,
+>   plus mixed / longitudinal / not_reported). Until now the phase was
+>   only free text in `time_post_onset`, so nothing could separate an
+>   acute hypoperfusion map from a chronic VLSM. Required on new
+>   findings with a patient sample; for older entries the loader
+>   infers it from `time_post_onset` (`phase.py`) and marks it
+>   `phase_source: inferred`. `aphasia_kb_rag.py --phase` filters on it.
 >
-> New entries must declare `schema_version: 2.5`. The loader reads older
-> entries (v1, v2.0–v2.4) for backwards compatibility.
+> New entries must declare `schema_version: 2.6`. The loader reads older
+> entries (v1, v2.0–v2.5) for backwards compatibility.
 
 ## File-level fields (every entry)
 
@@ -195,7 +203,8 @@ doesn't say.
 |-----------------------------|-------|-------|
 | `sample.n`                  | R     | int. Use `not_reported` if absent. |
 | `sample.population`         | R     | E.g. `chronic left-hemisphere stroke`. |
-| `sample.time_post_onset`    | S     | E.g. `>=6 months`, `mean 38 months (SD 24)`. |
+| `sample.time_post_onset`    | S     | E.g. `>=6 months`, `mean 38 months (SD 24)`. The paper's own wording. |
+| `sample.phase`              | R (v2.6) | Recovery phase of the sample, controlled: `hyperacute` (0–24 h) · `acute` (1–7 d) · `early_subacute` (7 d–3 mo) · `late_subacute` (3–6 mo) · `chronic` (> 6 mo) · `mixed` · `longitudinal` (same patients at ≥ 2 phases) · `not_reported`. Bands follow the Stroke Recovery and Rehabilitation Roundtable (Bernhardt 2017). Entries written before v2.6 have no value; the loader infers one from `time_post_onset` (`phase.py`) and reports it as `phase_source: inferred`. The RAG filters on it (`--phase`). |
 | `sample.age_range`          | S     | E.g. `35-78 years`, `mean 58 (SD 12)`. |
 | `sample.handedness`         | S     | E.g. `all right-handed`, `mixed`. |
 | `sample.language`           | S     | E.g. `English monolingual`, `Spanish-English bilingual`. |
@@ -335,7 +344,9 @@ findings.
 > bucket types, changed required-ness) DO require a version bump.
 
 ```
-schema_version    = 2 | 2.1 | 2.2 | 2.3 | 2.4 (current)
+schema_version    = 2 | 2.1 | 2.2 | 2.3 | 2.4 | 2.5 | 2.6 (current)
+phase             = hyperacute | acute | early_subacute | late_subacute
+                  | chronic | mixed | longitudinal | not_reported   # v2.6
 status            = draft | in_review | approved | rejected | legacy_v1
 supports          = claim | method | sample | statistics | confounders
                   | region_definition | limitation | imaging_details

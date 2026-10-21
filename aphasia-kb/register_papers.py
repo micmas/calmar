@@ -133,9 +133,30 @@ def build_block(rec: dict, key: str, doi: str, pdf_name: str) -> str:
             f"add a note on why the paper is in the KB.\n")
 
 
+def _dois_of(text: str, filename: str, known: dict[str, str]) -> list[str]:
+    """Candidate DOIs, best first. A DOI broken over a line ends up in
+    the text twice, once truncated ("10.1136/jnnp-2012-") and once
+    whole; the truncated form is dropped when a longer candidate starts
+    with it. Otherwise the order on the page is kept (the article's own
+    DOI is usually printed first, cited ones later)."""
+    seen: list[str] = []
+    for d in (_norm_doi(x) for x in _DOI.findall(text)):
+        if re.search(r"/.*\d", d) and len(d.split("/", 1)[1]) >= 4 and d not in seen:
+            seen.append(d)
+    seen = [d for d in seen if not any(o != d and o.startswith(d) for o in seen)]
+    stem = _slug(Path(filename).stem)
+    for cd in known.values():
+        parts = cd.split("/")[1:]
+        if parts and _slug(parts[-1]) == stem and cd not in seen:
+            seen.insert(0, cd)
+    return seen
+
+
 def _doi_of(text: str, filename: str, known: dict[str, str]) -> str | None:
+    cands = _dois_of(text, filename, known)
+    return cands[0] if cands else None
+    # (kept for callers that want a single value; register() tries them all)
     seen = [_norm_doi(d) for d in _DOI.findall(text)]
-    # the article's own DOI is usually the first one printed; skip bare registrants
     for d in seen:
         if re.search(r"/.*\d", d) and len(d.split("/", 1)[1]) >= 4:
             return d
@@ -170,24 +191,29 @@ def register(papers_dir: Path, citations: Path, execute: bool) -> int:
         key, how = match_one(text, cites, filename=f.name)
         if key and how != "probable":
             continue                       # match_papers will rename it
-        doi = _doi_of(text, f.name, known)
-        if not doi:
+        cands = _dois_of(text, f.name, known)
+        if not cands:
             manual.append((f.name, "no DOI in the first pages or filename — "
                                    f"page 1: {_page1_hint(text)}"))
             continue
-        if doi in known.values():
+        if any(c in known.values() for c in cands):
             continue                       # key exists; match_papers handles it
         if offline:
-            manual.append((f.name, f"DOI {doi} — Crossref unreachable"))
+            manual.append((f.name, f"DOI {cands[0]} — Crossref unreachable"))
             continue
+        rec, doi = None, cands[0]
         try:
-            rec = lookup(doi)
+            for doi in cands[:3]:          # first resolvable candidate wins
+                rec = lookup(doi)
+                if rec is not None:
+                    break
         except Exception as e:  # noqa: BLE001
             offline = True
             manual.append((f.name, f"DOI {doi} — Crossref unreachable ({str(e)[:60]})"))
             continue
         if rec is None:
-            manual.append((f.name, f"DOI {doi} not found at Crossref — page 1: {_page1_hint(text)}"))
+            manual.append((f.name, f"DOI(s) {', '.join(cands[:3])} not found at Crossref — "
+                                   f"page 1: {_page1_hint(text)}"))
             continue
         _, first = _author_line(rec)
         title = " ".join(rec.get("title") or [""])

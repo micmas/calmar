@@ -1,0 +1,91 @@
+draft_path: drafts/regions/left_supramarginal_gyrus__Rapcsak2009.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T07:11:23'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/4 quotes (25%) — anchored 1, exact 1, near 2
+    - '3 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.sample (p.3): we were able to identify 31 participants for
+      the study (mean age = 60.07 years, …'
+    - '  - [near] f1.method (p.584): To determine if lesions involving specific perisylvian
+      cortical subdivisions had…'
+    - '  - [near] f1.limitation (p.588): we relied on a mix of clinical and research
+      scans which introduced some variabil…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft claims a causal relationship ('Damage to... is associated
+        with...') and labels the relationship as 'causal'. However, the paper explicitly
+        states that lesion-deficit correlations 'failed to identify a single cortical
+        area essential' and instead supports a 'distributed network model'. The authors
+        use the term 'associated' and discuss 'correlations', which are not causal.
+        Therefore, the relationship_faithful check fails.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The draft labels the relationship as 'causal', but the paper describes
+          'lesion-deficit correlations' and a 'distributed network model' where no
+          single area is identified as the cause. The paper's findings are correlational/associative,
+          not causal.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ claims a causal relationship ('Damage to... is associated with...') and labels\
+      \ the relationship as 'causal'. However, the paper explicitly states that lesion-deficit\
+      \ correlations 'failed to identify a single cortical area essential' and instead\
+      \ supports a 'distributed network model'. The authors use the term 'associated'\
+      \ and discuss 'correlations', which are not causal. Therefore, the relationship_faithful\
+      \ check fails.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n    \
+      \  \"passage_present\": true,\n      \"passage_supports_field\": true,\n   \
+      \   \"relationship_faithful\": false,\n      \"strength_fair\": true,\n    \
+      \  \"numbers_match\": true,\n      \"limitations_captured\": true,\n      \"\
+      omissions\": \"\",\n      \"concern\": \"The draft labels the relationshi"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T07:11:23'
+latest_verdict: checks_passed
+latest_mode: with_llm_review

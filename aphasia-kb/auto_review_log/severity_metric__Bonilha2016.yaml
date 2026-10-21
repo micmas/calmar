@@ -1,0 +1,71 @@
+draft_path: drafts/predictors/severity_metric__Bonilha2016.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T05:53:40'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Bonilha2016.md:
+      finding[0] (id=f1): region_definition.kind=None invalid'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Bonilha2016.md:
+      finding[0] (id=f1): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/1 quotes (100%) — exact 1
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+- run_id: 2
+  timestamp: '2026-10-22T06:12:47'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Bonilha2016.md:
+      finding[0] (id=f1): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/1 quotes (100%) — exact 1
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+last_run: '2026-10-22T06:12:47'
+latest_verdict: auto_reject
+latest_mode: deterministic_only
