@@ -771,9 +771,13 @@ doi:10.1006/brln.1994.1067
 
 ## Refused papers
 
-> These papers were considered for extraction but refused because they
-> do not contain a primary patient dataset. No findings will be written
-> from them. Recorded here for audit-trail completeness.
+> In 2026-05 papers without a primary patient dataset were refused.
+> Schema v2.4 added the `reviews/` bucket (`method: narrative_review`,
+> `relationship: synthesis`), which made that rule obsolete: reviews,
+> meta-analyses and opinion pieces are extracted as review entries.
+> The entries below were re-tagged on 2026-10-21 accordingly; the
+> original refusal notes are kept for the audit trail. `[refused]` now
+> means only "not extractable as it stands" (see Brady2022RELEASE).
 
 ## @NadeauCrosson1997  [re-extracted-as-review]
 Nadeau SE, Crosson B (1997).
@@ -827,15 +831,16 @@ doi:10.1177/0963721418787486
 > Annotation: papers/MirmanThye2018_annotated.pdf (11/11 quotes placed)
 > PDF: MirmanThye2018.pdf (renamed from mirman-thye-2018-uncovering-the-neuroanatomy-of-core-language-systems-using-lesion-symptom-mapping.pdf)
 
-## @Wallentin  [refused]
+## @Wallentin2018  [seed]
 Wallentin M.
 Sex differences in post-stroke aphasia rates are caused by age. A meta-analysis and database query.
-*PLOS ONE*.
+*PLoS One*. 2018;13(12):e0209571.
+doi:10.1371/journal.pone.0209571
 
-> Refused 2026-05-06. Meta-analysis and database query on sex
-> differences in post-stroke aphasia rates — no primary patient cohort;
-> aggregate statistical synthesis only.
-> PDF: Wallentin.pdf (renamed from file.pdf)
+> Refused 2026-05-06 under the primary-dataset rule (meta-analysis and
+> database query, no own cohort). Re-tagged 2026-10-21: it is the
+> evidence the `sex` and `age` predictor entries need, extractable as a
+> review. Key given its year (was `@Wallentin`); PDF renamed to match.
 
 ## @Brady2022RELEASE  [refused]
 Brady MC, Ali M, VandenBerg K, Williams LJ, Williams LR, Abo M, et al.
@@ -844,30 +849,34 @@ Precision rehabilitation for aphasia: REhabilitation and recovery of peopLE with
 Aphasia after StrokE; an individual participant data network meta-analysis (PROSPERO CRD42018110947).
 *International Journal of Stroke*. 2022.
 
-> Refused 2026-05-06. Systematic review and IPD network meta-analysis of 174
-> datasets (n=5928 IPD across 28 countries) — no primary patient dataset
-> collected by these authors; method is meta-analytic. Available in
-> `papers/Brady2022RELEASE.pdf` for reference.
+> Refused 2026-05-06 under the primary-dataset rule. Still refused on
+> 2026-10-21, for a different reason: `papers/Brady2022RELEASE.pdf` is
+> the 322-page NIHR HTA monograph (doi:10.3310/RTLH7522), far beyond
+> one extraction pass. The citable version is the journal article
+> (Int J Stroke 2022, a separate DOI); fetch that, register it, and
+> extract it as a review. The monograph stays for reference.
 
-## @Mohr2017  [refused]
+## @Mohr2017  [seed]
 Mohr B.
-Neuroplasticity and Functional Recovery after Intensive Language Therapy
-in Chronic Post Stroke Aphasia.
-*Frontiers in Human Neuroscience*. 2017.
+Neuroplasticity and functional recovery after intensive language therapy in chronic post stroke aphasia.
+*Front Hum Neurosci*. 2017;11:332.
+doi:10.3389/fnhum.2017.00332
 
-> Refused 2026-05-06. Opinion / perspective article — no primary patient data,
-> no original lesion-symptom or neuroimaging dataset; only narrative argument
-> and secondary citations. Available in `papers/Mohr2017.pdf` for reference.
+> Refused 2026-05-06 under the primary-dataset rule (opinion article).
+> Re-tagged 2026-10-21: a short position piece on intensive therapy
+> and plasticity; extractable as a review entry alongside
+> Breitenstein2017 and Bhogal2003.
 
-## @Shekari2022  [refused]
-Shekari E, Nozari N.
-A narrative review of the anatomy and function of the white matter tracts in
-language production and comprehension.
-*Frontiers in Human Neuroscience / Brain Sciences*. 2022.
+## @Shekari2022  [extracted-as-review]
+Shekari E, Seyfi M, Modarres Zadeh A, Batouli SA, Valinejad V, Goudarzi S, Joghataei MT.
+Mechanisms of brain activation following naming therapy in aphasia: a systematic review on task-based fMRI studies.
+*Appl Neuropsychol Adult*. 2022.
+doi:10.1080/23279095.2022.2074849
 
-> Refused 2026-05-06. Narrative systematic review of fMRI activation studies
-> in aphasia therapy — no primary patient cohort; secondary synthesis only.
-> Available in `papers/Shekari2022.pdf` for reference.
+> Refused 2026-05-06 under the primary-dataset rule, then extracted as a
+> review: `reviews/aphasia_therapy_neuroplasticity_fmri__Shekari2022.md`.
+> Tag and bibliographic details corrected 2026-10-21 (the block had
+> carried another paper's title and authors).
 
 ## @Simic2023  [re-extracted-as-review]
 Simic T, Rochon E, Greco E, Martino R.
@@ -1465,3 +1474,17 @@ doi:10.1162/nol.a.9
 > Added 2026-10-20. Lesion correlates of rhythm perception and
 > production in aphasia — the lesion side of the `rhythmic_hand_tapping`
 > / `melodic_intoning` ingredients.
+
+---
+
+## Registered automatically
+
+> Entries written by register_papers.py from the PDF's DOI. Each says when; none has been checked by a person until its note is replaced.
+
+## @Brady2022  [seed]
+The RELEASE Collaborators, Brady MC, Ali M, VandenBerg K, Williams LJ, Williams LR, Abo M, Becker F, Bowen A, Brandenburg C, Breitenstein C, Bruehl S, et al.
+Precision rehabilitation for aphasia by patient age, sex, aphasia severity, and time since stroke? A prespecified, systematic review-based, individual participant data, network, subgroup meta-analysis.
+*International Journal of Stroke*. 2022;17(10):1067-1077.
+doi:10.1177/17474930221097477
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: Brandenburg2050354-Published.pdf). Check the entry; add a note on why the paper is in the KB.

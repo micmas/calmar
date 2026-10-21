@@ -51,7 +51,7 @@ add an `EXTRACTED` line for every run.
 2026-05-06 | REFUSED | @Radanovic2017 | 1-s2.0-S0093934X16301717-main.pdf | reason: Comprehensive narrative review of aphasia in basal ganglia vascular lesions — no primary dataset; secondary synthesis of published case reports and studies.
 2026-05-06 | REFUSED | @NadeauCrosson1997 | 1-s2.0-S0093934X97917077-main.pdf | reason: 48-page critical review of subcortical aphasia literature — no primary patient cohort; purely secondary synthesis.
 2026-05-06 | REFUSED | @Crosson1999 | 1-s2.0-S0278262699910886-main.pdf | reason: Review of four previously-published thalamic lesion cases — secondary re-analysis of own published data; no new primary dataset.
-2026-05-06 | REFUSED | @Wallentin | file.pdf | reason: Meta-analysis and database query on sex differences in post-stroke aphasia rates — no primary patient cohort; aggregate statistical synthesis only.
+2026-05-06 | REFUSED | @Wallentin2018 | file.pdf | reason: Meta-analysis and database query on sex differences in post-stroke aphasia rates — no primary patient cohort; aggregate statistical synthesis only.
 2026-05-06 | FLAGGED | UNKNOWN | 1-s2.0-S0093934X84710637-main.pdf | reason: Scanned PDF — no extractable text; OCR required before extraction can proceed. Paper appears to be a 1984 Brain and Language article (15 pages). User action needed.
 2026-05-06 | FLAGGED | @Pflugshaupt2009 | awp141.pdf | reason: Pure alexia paper (visual field defects in pure alexia) — may be outside KB scope (aphasia vs. reading disorders). User decision needed on whether to include.
 2026-05-06 | EXTRACTED | @Harvey2022 | lesion_volume (predictor) | 1 draft (predictor-anchored; 2 findings) | f1: smaller lesion volume → greater long-term WAB-R AQ gain [R2=0.52 F(4,13)=3.51 p=.037]; f2: ALA participation satisfaction → better long-term outcome [combined model R2=0.68 p=.003] | confidence: high (f1) medium (f2) | annotation: 8/8 (100%) | agent: claude-sonnet-4-6
@@ -232,3 +232,11 @@ add an `EXTRACTED` line for every run.
 2026-10-21 | EXTRACTED | @Wilson2019 | language_mapping_methods | Review of adaptive fMRI paradigms for language mapping in aphasia.
 2026-10-21 | EXTRACTED | @WilsonHula2019 | multivariate_aphasia_approaches | narrative review of multivariate methods
 2026-10-21 | EXTRACTED | @Zumbansen2014 | melodic_intonation_therapy_review | narrative review of MIT mechanisms and definitions
+2026-10-21 | REKEYED | @Wallentin2018 | was extracted as @Wallentin (PDF had no citations.md entry)
+2026-10-21 | EXTRACTED | @Ivanova2016 | left_arcuate_fasciculus, left_inferior_frontal_occipital_fasciculus, left_inferior_longitudinal_fasciculus | DTI correlations between tract integrity and language scores
+2026-10-21 | EXTRACTED | @Rogalsky2018 | left_posterior_stg, left_ifg_pars_opercularis, left_anterior_temporal_lobe | VLSM study on 66 chronic LH patients; implicates posterior STG/parietal in agrammatism, not Broca's area.
+2026-10-21 | EXTRACTED | @Yourganov2016 | left_posterior_stg, left_ifg_pars_opercularis, lesion_volume | Multivariate SVR prediction of WAB scores from lesions and connectomes.
+2026-10-21 | EXTRACTED | @vanderMeulen2014 | melodic_intonation_therapy, time_post_onset | RCT on subacute severe nonfluent aphasia (n=27)
+2026-10-21 | EXTRACTED | @Brady2022 | age, severity_metric, time_post_onset, sex | IPD network meta-analysis of 959 participants across 25 RCTs.
+2026-10-21 | EXTRACTED | @Mohr2017 | neuroplasticity_intensive_therapy | narrative review of intensive therapy effects
+2026-10-21 | EXTRACTED | @Wallentin2018 | sex, age | Meta-analysis (n=48k) and database query (n=1.9M) on sex differences in aphasia rates.
