@@ -14,7 +14,7 @@ findings:
     claim: "Damage to the left extreme capsule (specifically >15% overlap) is a strong independent predictor of aphasia in acute stroke patients without cortical language area lesions."
     direction: likely
     relationship: causal
-    citation: "@MartinezOeckel2021"
+    citation: "@Oeckel2021"
     method: LSM
     design: cross-sectional
     strength: strong
