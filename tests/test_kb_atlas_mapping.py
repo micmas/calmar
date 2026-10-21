@@ -81,3 +81,15 @@ def test_findings_match_by_exact_region_name_and_thin_tracts_count_by_destroyed_
 def test_flagged_decisions_are_documented(rid):
     _, regions, unmapped = atlas_mapping.load()
     assert (rid in unmapped) or (regions[rid].get("review") and regions[rid]["basis"])
+
+
+def test_evidence_gaps_name_known_areas_and_papers():
+    gaps = atlas_mapping.load_gaps()
+    assert {"arcuate_and_long_tracts", "thalamus_basal_ganglia", "right_hemisphere"} <= set(gaps)
+    status = atlas_mapping.citation_status()
+    for gap in gaps.values():
+        for paper in gap.get("papers") or []:
+            assert status[paper] in ("seed", "extracted", "cited", "re-extracted-as-review"), paper
+    kb = KnowledgeBase(KB_ROOT, include=("approved", "in_review", "draft"))
+    text = atlas_mapping.gaps_markdown(kb.findings)
+    assert "@Han2013 [seed]" in text and "`left_extreme_capsule` (" in text

@@ -34,6 +34,8 @@ Example, sub-M2030 ses-1454, manual mask: name matching reached 4 findings; the 
 | `kb_regions.yaml` | **KB region names → units**, with side and basis; plus `unmapped`, the names no atlas can represent and why | yes, whenever a paper adds a region name |
 | `atlas_labels.json` | The labels each atlas actually has (as in the overlap tables), so a misspelt label is caught | only if an atlas changes |
 | `MAPPING.md` | The whole mapping as one table, generated from the YAML | no: `python atlas_mapping.py --write-table` |
+| `evidence_gaps.yaml` | Areas needing more evidence, with the papers to extract | yes |
+| `EVIDENCE_GAPS.md` | The gaps with current finding counts and paper status, generated | no: `python atlas_mapping.py --write-table` |
 | `../atlas_mapping.py` | Loads, checks and applies the mapping | code |
 
 Two levels keep it maintainable. The 90 region names in the KB (81 mapped, 9 not mappable) include many synonyms (`left_superior_temporal_gyrus_wernicke` / `…_wernickes`, `left_precentral_gyrus` / `left_pre_central_gyrus`, four spellings of the arcuate). They point to 49 anatomical units, so each atlas decision is made once.
@@ -77,6 +79,21 @@ Two levels keep it maintainable. The 90 region names in the KB (81 mapped, 9 not
 ## Not mappable (20 findings)
 
 Extreme capsule, frontal aslant tract, middle longitudinal fasciculus, optic radiations, white matter under the posterior middle temporal gyrus, three tract "bottlenecks" and a "perisylvian network". These are regions defined by their source papers (tract convergences, networks) or tracts the JHU atlas does not contain. Their findings cannot be matched from lesion location; reports count them as not mappable. The reasons are in `kb_regions.yaml` → `unmapped`.
+
+## Evidence gaps
+
+`evidence_gaps.yaml` lists the areas where reports cannot yet be trusted, and why:
+
+- **atlas gap:** the KB has findings but no atlas label reaches them;
+- **no evidence:** lesions hit the structure but no finding concerns it;
+- **thin:** 1–3 findings or 1–2 papers;
+- **contested:** the literature disagrees.
+
+Each gap names the papers that would close it. Those papers are `[seed]` entries in `../citations.md` (section "added 2026-10-21"), ready for `extract.py`. `EVIDENCE_GAPS.md` is generated with the current counts and each paper's extraction status, so it shrinks as papers are extracted.
+
+The biggest single fix is not a paper. FSL's **XTRACT** tract atlas (in FSL 6.0.7.22) labels the arcuate fasciculus, frontal aslant tract, middle longitudinal fasciculus and optic radiation. Adding it would replace the arcuate judgement call and make three unreachable tracts reachable.
+
+In reports, a damaged region whose findings come from two studies or fewer is marked "⚠ based on N studies".
 
 ## Adding a paper with a new region name
 

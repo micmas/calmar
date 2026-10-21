@@ -37,6 +37,19 @@ def load(directory: str = str(DIR)):
     return units, data["regions"], data.get("unmapped") or {}
 
 
+def load_gaps(directory: str = str(DIR)) -> dict:
+    """Areas needing more evidence (evidence_gaps.yaml)."""
+    path = Path(directory) / "evidence_gaps.yaml"
+    return (yaml.safe_load(path.read_text()) or {}).get("gaps", {}) if path.exists() else {}
+
+
+def citation_status(root: Path = DIR.parent) -> dict[str, str]:
+    """``@Key -> status tag`` from citations.md (extracted, cited, seed, ...)."""
+    import re
+    text = (Path(root) / "citations.md").read_text(encoding="utf-8")
+    return {f"@{k}": tag for k, tag in re.findall(r"^## @(\S+)\s+\[([^\]]+)\]", text, re.M)}
+
+
 def atlas_labels(directory: str = str(DIR)) -> dict[str, list[str]]:
     data = json.loads((Path(directory) / "atlas_labels.json").read_text())
     return {k: v for k, v in data.items() if not k.startswith("_")}
@@ -81,7 +94,55 @@ def problems(directory: str = str(DIR)) -> list[str]:
             out.append(f"region {rid}: missing basis")
     for rid in set(regions) & set(unmapped):
         out.append(f"region {rid}: both mapped and unmapped")
+    known_papers = citation_status()
+    for gid, gap in load_gaps(directory).items():
+        if gap.get("kind") not in ("atlas_gap", "no_evidence", "thin", "contested"):
+            out.append(f"gap {gid}: unknown kind {gap.get('kind')!r}")
+        for area in gap.get("areas") or []:
+            if area not in units and area not in regions and area not in unmapped:
+                out.append(f"gap {gid}: unknown area {area!r}")
+        for paper in gap.get("papers") or []:
+            if paper not in known_papers:
+                out.append(f"gap {gid}: {paper} is not in citations.md")
     return out
+
+
+def area_evidence(findings: pd.DataFrame, directory: str = str(DIR)) -> dict[str, tuple[int, int]]:
+    """``area -> (findings, papers)`` for every unit and KB region name: region
+    findings directly, unit findings through every region mapped to the unit."""
+    _, regions, _ = load(directory)
+    loc = findings[(findings["source_kind"] == "region")
+                   | ((findings["source_kind"] == "impairment") & (findings["target_kind"] == "region"))]
+    if loc.empty:
+        return {}
+    names = loc.apply(lambda r: r["source_id"] if r["source_kind"] == "region" else r["target"], axis=1)
+    cites: dict[str, list] = {}
+    for name, citation in zip(names, loc["citation"]):
+        cites.setdefault(name, []).append(citation)
+        for unit in (regions.get(name) or {}).get("units", []):
+            cites.setdefault(unit, []).append(citation)
+    return {k: (len(v), len({c for c in v if isinstance(c, str)})) for k, v in cites.items()}
+
+
+def gaps_markdown(findings: pd.DataFrame, directory: str = str(DIR)) -> str:
+    """EVIDENCE_GAPS.md: each gap with its areas' current evidence and the
+    suggested papers' extraction status."""
+    evidence = area_evidence(findings, directory)
+    status = citation_status()
+    kinds = {"atlas_gap": "atlas gap: no atlas label, findings unreachable",
+             "no_evidence": "no evidence: measured but no findings",
+             "thin": "thin evidence", "contested": "contested in the literature"}
+    lines = ["# Areas that need more evidence (generated)", "",
+             "Generated from `evidence_gaps.yaml` and the current knowledge base by",
+             "`python atlas_mapping.py --write-table`. Counts are findings / distinct papers (all statuses).",
+             "Suggested papers are `[seed]` entries in `citations.md` until extracted.", ""]
+    for gid, gap in load_gaps(directory).items():
+        areas = ", ".join(f"`{a}` ({evidence.get(a, (0, 0))[0]} / {evidence.get(a, (0, 0))[1]})"
+                          for a in gap.get("areas") or [])
+        papers = ", ".join(f"{p} [{status.get(p, 'missing')}]" for p in gap.get("papers") or []) or "— (atlas change)"
+        lines += [f"## {gid.replace('_', ' ')}", "", f"**Kind:** {kinds[gap['kind']]}  ", f"**Areas:** {areas}  ",
+                  f"**Suggested papers:** {papers}", "", " ".join(str(gap.get('need', '')).split()), ""]
+    return "\n".join(lines)
 
 
 def _side_rows(rows: pd.DataFrame, labels: list[str], side: str, from_voxels: bool):
@@ -192,12 +253,15 @@ def _cli():
     args = parser.parse_args()
     found = problems()
     print("\n".join(found) if found else "Mapping files are consistent.")
-    if args.write_table:
-        (DIR / "MAPPING.md").write_text(markdown_table())
-        print(f"Wrote {DIR / 'MAPPING.md'}")
-    if args.coverage:
+    kb = None
+    if args.write_table or args.coverage:
         from aphasia_kb import KnowledgeBase
         kb = KnowledgeBase(Path(__file__).parent, include=("approved", "in_review", "draft"))
+    if args.write_table:
+        (DIR / "MAPPING.md").write_text(markdown_table())
+        (DIR / "EVIDENCE_GAPS.md").write_text(gaps_markdown(kb.findings))
+        print(f"Wrote {DIR / 'MAPPING.md'} and {DIR / 'EVIDENCE_GAPS.md'}")
+    if args.coverage:
         c = coverage(kb.findings)
         print(f"{c['mapped']}/{c['findings']} location findings name a mapped region; "
               f"{sum(c['unmappable'].values())} name an unmappable one; missing from the mapping: {c['missing'] or 'none'}")
