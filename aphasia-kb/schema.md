@@ -194,7 +194,8 @@ doesn't say.
 | Field                       | R/S/O | Notes |
 |-----------------------------|-------|-------|
 | `sample.n`                  | R     | int. Use `not_reported` if absent. |
-| `sample.population`         | R     | E.g. `chronic left-hemisphere stroke`. |
+| `sample.population`         | R     | E.g. `chronic left-hemisphere stroke`. Name the recovery phase (acute / subacute / chronic) when the paper states it: reports derive each finding's phase from this text and `sample.time_post_onset` (`aphasia_rules.stages_in_population`). |
+| `phase` (on the finding, beside `sample`) | O | `acute` \| `subacute` \| `chronic`, or a list. The recovery phase the finding was studied in, when `sample.population` does not say it clearly; overrides the phase derived from the population. Reports mark findings from another phase than the participant's. |
 | `sample.time_post_onset`    | S     | E.g. `>=6 months`, `mean 38 months (SD 24)`. |
 | `sample.age_range`          | S     | E.g. `35-78 years`, `mean 58 (SD 12)`. |
 | `sample.handedness`         | S     | E.g. `all right-handed`, `mixed`. |
