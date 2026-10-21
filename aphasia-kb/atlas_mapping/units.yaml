@@ -295,13 +295,6 @@ units:
     atlas: JHU
     labels: {left: [Superior longitudinal fasciculus L], right: [Superior longitudinal fasciculus R]}
     basis: JHU's superior longitudinal fasciculus label (the fronto-parietal body of the SLF).
-  slf_temporal:
-    name: Superior longitudinal fasciculus, temporal part (arcuate fasciculus)
-    kind: tract
-    atlas: JHU
-    labels: {left: [Superior longitudinal fasciculus (temporal part) L], right: [Superior longitudinal fasciculus (temporal part) R]}
-    basis: JHU has no separate arcuate fasciculus label. Its "temporal part" of the SLF is the branch that arches around the Sylvian fissure into the temporal lobe, i.e. the arcuate fasciculus as delineated in JHU's tractography (Wakana et al. 2007).
-    review: true
   ilf:
     name: Inferior longitudinal fasciculus
     kind: tract
@@ -313,12 +306,6 @@ units:
     kind: tract
     atlas: JHU
     labels: {left: [Inferior fronto-occipital fasciculus L], right: [Inferior fronto-occipital fasciculus R]}
-    basis: JHU label of the same tract.
-  uncinate_fasciculus:
-    name: Uncinate fasciculus
-    kind: tract
-    atlas: JHU
-    labels: {left: [Uncinate fasciculus L], right: [Uncinate fasciculus R]}
     basis: JHU label of the same tract.
   forceps:
     name: Corpus callosum (forceps major and minor)
@@ -332,6 +319,12 @@ units:
   # XTRACT HCP tract atlas, max-probability (5 % threshold), 1 mm (FSL 6.0.7.22;
   # Warrington et al. 2020). Used for the tracts JHU does not label; JHU stays
   # the atlas for SLF, ILF, IFOF and uncinate so their results do not change.
+  uncinate_fasciculus:
+    name: Uncinate fasciculus
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Uncinate Fasciculus L], right: [Uncinate Fasciculus R]}
+    basis: "XTRACT label of the same tract. JHU lists an uncinate label, but its 50 %-threshold image has no voxels for it (nor for the cingulum or the temporal SLF), so it could never be damaged."
   arcuate_fasciculus:
     name: Arcuate fasciculus
     kind: tract

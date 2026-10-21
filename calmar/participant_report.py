@@ -14,7 +14,9 @@ How the numbers are computed
 ----------------------------
 * Damaged regions: rows of the display-atlas overlap table with
   ``lesion_in_roi_percent`` (= % of lesion voxels inside the ROI) at or above
-  ``ReportSettings.min_overlap_pct``; at most ``max_rois`` rows.
+  ``ReportSettings.min_overlap_pct``, or ``roi_coverage_percent`` (= % of ROI
+  voxels lesioned) at or above ``min_region_pct`` — the same rule the KB
+  interpretation uses; at most ``max_rois`` rows.
 * Lesion location (calmar.report_evidence.location_section): damage per KB
   region through the curated atlas mapping (aphasia-kb/atlas_mapping/; share of
   the lesion and share of the region destroyed, per hemisphere), the findings
@@ -82,6 +84,8 @@ class ReportSettings:
     evidence: str | None = None              # "approved", "in_review" (approved + in review) or "all" (+ drafts)
     min_overlap_pct: float = 5.0             # an ROI counts as damaged if it holds >= this % of the lesion
     min_region_pct: float = 25.0             # ... or if >= this % of the ROI is destroyed (small regions, thin tracts)
+    disconnectome: str = "bcb"               # map for tract disconnection: "bcb", "deepdisco" or "none"
+    min_disconnected_pct: float = 50.0       # a tract counts as disconnected if >= this % of it has p > 0.5
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
     threshold: float = 0.5                   # mask threshold for Dice between masks
@@ -269,13 +273,14 @@ def imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, re
 
 
 def damaged_regions(entry, source, settings, overlap_paths, reports_dir):
-    """Display-atlas rows with lesion_in_roi_percent >= min_overlap_pct."""
+    """Display-atlas rows holding >= min_overlap_pct of the lesion or with >= min_region_pct of the ROI lesioned."""
     csv = overlap_csv(settings.display_atlas, source, overlap_paths, reports_dir)
     if not csv.exists():
         return pd.DataFrame()
     rows = _participant_rows(pd.read_csv(csv), entry)
-    return (rows[rows["lesion_in_roi_percent"] >= settings.min_overlap_pct]
-            .sort_values("lesion_in_roi_percent", ascending=False).head(settings.max_rois))
+    damaged = ((rows["lesion_in_roi_percent"] >= settings.min_overlap_pct)
+               | (rows["roi_coverage_percent"] >= settings.min_region_pct))
+    return rows[damaged].sort_values("lesion_in_roi_percent", ascending=False).head(settings.max_rois)
 
 
 def participant_row(dataset_dir, subject):
@@ -549,13 +554,15 @@ def damaged_regions_html(df, display_atlas, atlas_dir):
     rows = [f"<tr><td style='padding:3px 8px'>{escape(r['region'])}</td>"
             f"<td style='padding:3px 8px'>{escape(r['lesion_hemisphere'])}</td>"
             f"<td style='text-align:right;padding:3px 8px'>{r['lesion_in_roi_percent']:.1f}%</td>"
+            f"<td style='text-align:right;padding:3px 8px'>{r['roi_coverage_percent']:.1f}%</td>"
             f"<td style='text-align:right;font-size:11px;color:#666;padding:3px 4px'>"
             f"{int(r.get('overlap_voxels', 0)):,} vox</td></tr>" for _, r in df.iterrows()]
     return ("<table style='border-collapse:collapse;font-size:13px'>"
             "<tr style='background:#2c3e50;color:white'>"
             f"<th style='text-align:left;padding:4px 8px'>{display_atlas} region</th>"
             "<th style='padding:4px 8px'>Lesion side</th>"
-            "<th style='padding:4px 8px'>% in ROI</th><th></th></tr>"
+            "<th style='padding:4px 8px'>% of lesion in ROI</th>"
+            "<th style='padding:4px 8px'>% of ROI lesioned</th><th></th></tr>"
             + "".join(rows) + "</table><p>"
             "Lesion side is measured from the actual mask overlap; bilateral entries show left/right counts.</p>")
 
@@ -689,7 +696,8 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     """
     from .atlas_overlap import prepare_report_overlap
     from .qc_decisions import report_qc_notice
-    from .report_evidence import location_coverage, location_section, measures_section
+    from .report_evidence import (MAP_LABELS, disconnection_section, disconnectome_map, location_coverage,
+                                  location_section, measures_section, tract_atlases)
     from .report_ui import ParticipantReport, report_sections
 
     messages = []
@@ -720,6 +728,18 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     damage, _ = lesion_damage(entry, source, settings, overlap_paths, reports_dir)
     location_rows = kb.location_findings(damage, min_overlap=settings.min_overlap_pct, min_region=settings.min_region_pct,
                                          min_confidence=("high" if settings.high_conf_only else None))
+    # Tracts disconnected by the lesion, from its BCBToolkit or DeepDisco map.
+    map_path = disconnectome_map(study, entry, source, settings.disconnectome)
+    disconnection, disconnection_rows, map_label = None, None, None
+    atlases = tract_atlases(namespace.get("ALL_ATLASES"))
+    if map_path is not None and atlases:
+        import atlas_mapping
+        disconnection = atlas_mapping.region_disconnection(atlas_mapping.tract_disconnection(map_path, atlases))
+        disconnection_rows = kb.location_findings(
+            disconnection, min_overlap=101.0, min_region=settings.min_disconnected_pct,
+            min_confidence=("high" if settings.high_conf_only else None))
+        map_label = MAP_LABELS[settings.disconnectome]
+        note(f"  Tract disconnection from {map_path.name}: {0 if disconnection_rows is None else len(disconnection_rows)} findings")
     damaged = damaged_regions(entry, source, settings, overlap_paths, reports_dir)
     note("  Overlap rows by atlas (matched to KB regions through aphasia-kb/atlas_mapping):")
     for atlas, n in per_atlas:
@@ -798,6 +818,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
 
       <h4 style="margin-top:18px">Lesion location: what the evidence says</h4>
       {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings)}
+
+      <h4 style="margin-top:18px">White-matter disconnection: what the evidence says</h4>
+      {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label)}
 
       <h4 style="margin-top:18px">This participant&rsquo;s measures: what the evidence says</h4>
       <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
