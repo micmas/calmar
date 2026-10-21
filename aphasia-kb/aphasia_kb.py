@@ -667,6 +667,7 @@ class KnowledgeBase:
                            )},
                         "sample_n": (f.get("sample") or {}).get("n"),
                         "population": (f.get("sample") or {}).get("population"),
+                        "time_post_onset": (f.get("sample") or {}).get("time_post_onset"),
                         # Recovery phase the finding was studied in: an explicit
                         # `phase:` (acute | subacute | chronic, or a list), else
                         # derived from sample.population by aphasia_rules.

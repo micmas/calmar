@@ -71,7 +71,8 @@ def finding_phases(row):
         return {explicit}
     if isinstance(explicit, (list, tuple, set)):
         return set(explicit)
-    return aphasia_rules.stages_in_population(row.get("population"))
+    text = " ".join(str(row.get(k) or "") for k in ("population", "time_post_onset"))
+    return aphasia_rules.stages_in_population(text)
 
 
 def _phase_tag(row, participant_phase):
