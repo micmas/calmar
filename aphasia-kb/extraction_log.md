@@ -240,3 +240,39 @@ add an `EXTRACTED` line for every run.
 2026-10-21 | EXTRACTED | @Brady2022 | age, severity_metric, time_post_onset, sex | IPD network meta-analysis of 959 participants across 25 RCTs.
 2026-10-21 | EXTRACTED | @Mohr2017 | neuroplasticity_intensive_therapy | narrative review of intensive therapy effects
 2026-10-21 | EXTRACTED | @Wallentin2018 | sex, age | Meta-analysis (n=48k) and database query (n=1.9M) on sex differences in aphasia rates.
+2026-10-21 | EXTRACTED | @Corbetta2015 | left_posterior_stg, lesion_volume | Ridge regression mapping of behavioral clusters to anatomy
+2026-10-21 | EXTRACTED | @Godecke2021 | intensive_aphasia_therapy | High-powered RCT showing no significant benefit of early intensive therapy over usual care at 12 weeks.
+2026-10-21 | EXTRACTED | @Hillis2001 | left_superior_temporal_gyrus_wernickes | Correlational link between BA22 hypoperfusion and semantic deficit severity (n=50).
+2026-10-21 | EXTRACTED | @Hillis2006 | left_middle_temporal_gyrus, left_ifg_pars_opercularis, left_superior_temporal_gyrus_wernicke | 3 region-anchored drafts
+2026-10-21 | EXTRACTED | @Johnson2019 | age, severity_metric | LME analysis of chronic aphasia progression
+2026-10-21 | EXTRACTED | @Laska2001 | age, severity_metric, lesion_volume | 3 predictor drafts
+2026-10-21 | EXTRACTED | @Lazar2008 | initial_aphasia_severity, lesion_volume | 2 predictor drafts
+2026-10-21 | EXTRACTED | @Nouwens2017 | cognitive_linguistic_treatment | RCT showing no effect of early intensive CLT on ANELT-A scores
+2026-10-21 | EXTRACTED | @Ochfeld2010 | left_ifg_pars_opercularis | 3 findings: acute association, chronic dissociation, longitudinal resolution
+2026-10-21 | EXTRACTED | @Pedersen1995 | initial_aphasia_severity, age | n=881 acute stroke; initial severity predicts outcome; age does not.
+2026-10-21 | EXTRACTED | @Ramsey2017 | left_arcuate_fasciculus, severity_metric, education | 3 drafts
+2026-10-21 | EXTRACTED | @Wilson2023 | severity_metric, left_posterior_stg | longitudinal cohort n=218, recovery trajectories by lesion group
+2026-10-21 | EXTRACTED | @Baldo2013 | left_middle_temporal_gyrus, left_superior_temporal_gyrus | VLSM analysis of BNT naming with and without covariates
+2026-10-21 | EXTRACTED | @Fritsch2022 | thalamic_aphasia | narrative review of phenotypes and mechanisms
+2026-10-21 | EXTRACTED | @Han2013 | left_inferior_fronto_occipital_fasciculus, left_anterior_thalamic_radiation, left_uncinate_fasciculus | 3 region-anchored drafts
+2026-10-21 | EXTRACTED | @Li2017 | left_anterior_thalamic_radiation, left_inferior_fronto_occipital_fasciculus, left_uncinate_fasciculus, left_arcuate_fasciculus_slf, left_frontal_aslant_tract | 5 region drafts, 6 findings
+2026-10-21 | EXTRACTED | @Oeckel2021 | left_extreme_capsule, left_arcuate_fasciculus | 2 region-anchored drafts
+2026-10-21 | EXTRACTED | @Sebastian2014 | left_thalamus, right_thalamus | 2 region-anchored drafts
+2026-10-21 | EXTRACTED | @Siegel2016 | severity_metric, left_hemisphere_intrahemispheric_connectivity | 2 drafts, confidence: high
+2026-10-21 | EXTRACTED | @Xing2016 | right_superior_temporal_gyrus, right_supramarginal_gyrus | VBM study on n=32 chronic aphasia patients showing RH temporoparietal GM volume predicts AQ and production.
+2026-10-22 | MODEL-APPROVED | @Rogalsky2018 | left_anterior_temporal_lobe | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Johnson2019 | age | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Laska2001 | lesion_volume | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Laska2001 | severity_metric | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Bates2003 | left_ifg_pars_opercularis | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Butler2014 | left_ifg_pars_opercularis | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_ifg_pars_opercularis | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Yourganov2016 | left_ifg_pars_opercularis | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_middle_temporal_gyrus | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Fridriksson2013 | left_precentral_gyrus | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_precentral_gyrus_insula | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_superior_temporal_gyrus | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Schwartz2009 | left_superior_temporal_gyrus_wernicke | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_superior_temporal_gyrus_wernickes | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_supramarginal_gyrus_premotor | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | REKEYED | @Oeckel2021 | was extracted as @MartinezOeckel2021 (PDF had no citations.md entry)

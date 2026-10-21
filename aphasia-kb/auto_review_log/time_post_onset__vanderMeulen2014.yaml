@@ -1,0 +1,75 @@
+draft_path: drafts/predictors/time_post_onset__vanderMeulen2014.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T05:55:02'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/time_post_onset__vanderMeulen2014.md:
+      predictor_type=''clinical'' requires assessment (non-empty list of test names)'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 3/4 quotes (75%) — anchored 1, exact 3
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.statistics (p.5): Time poststroke at the start of MIT predicted
+      outcome on untrained items, MIT ta…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+- run_id: 2
+  timestamp: '2026-10-22T06:17:49'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/time_post_onset__vanderMeulen2014.md:
+      predictor_type=''clinical'' requires assessment (non-empty list of test names)'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 3/4 quotes (75%) — anchored 1, exact 3
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.statistics (p.5): Time poststroke at the start of MIT predicted
+      outcome on untrained items, MIT ta…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+last_run: '2026-10-22T06:17:49'
+latest_verdict: auto_reject
+latest_mode: deterministic_only

@@ -1,0 +1,83 @@
+draft_path: drafts/predictors/lesion_volume__Hope2013.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T05:52:33'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Hope2013.md:
+      predictor entries require short_definition'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Hope2013.md:
+      finding[0] (id=f1): region_definition.kind=None invalid'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Hope2013.md:
+      finding[0] (id=f1): imaging_details.reference_space=None invalid (required for
+      imaging method)'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Hope2013.md:
+      finding[0] (id=f1): imaging_details.atlases_used must be present (use [] if
+      none)'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 2/3 quotes (67%) — absent 1, exact 2
+    - '1 quote(s) absent from the PDF — first 3:'
+    - '  - f1.claim (p.4): As expected, access to this kind of information [lesion
+      volume]... did improve t…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - PDF quote match not run or not passed
+  - 'f1: has provenance.flags'
+- run_id: 2
+  timestamp: '2026-10-22T06:09:31'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 2/3 quotes (67%) — absent 1, exact 2
+    - '1 quote(s) absent from the PDF — first 3:'
+    - '  - f1.claim (p.4): As expected, access to this kind of information [lesion
+      volume]... did improve t…'
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: imaging_details.reference_space not extracted by the model — set to not_reported'
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - PDF quote match not run or not passed
+  - 'f1: has provenance.flags'
+last_run: '2026-10-22T06:09:31'
+latest_verdict: auto_reject
+latest_mode: deterministic_only

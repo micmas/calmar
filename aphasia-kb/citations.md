@@ -1496,15 +1496,6 @@ Subcortical aphasia and neglect in acute stroke: the role of cortical hypoperfus
 > resolving with reperfusion. Region-level evidence for putamen, caudate,
 > thalamus; DOI not confirmed.
 
-## @Baldo2011  [seed]
-Baldo JV, Wilkins DP, Ogar J, Willock S, Dronkers NF.
-Role of the precentral gyrus of the insula in complex articulation.
-*Cortex*. 2011;47:800–807.
-
-> Gap insula_apraxia_of_speech. VLSM: superior precentral gyrus of the
-> insula and errors on complex multisyllabic articulation; extract with
-> @Hillis2004 (the opposing view). DOI not confirmed.
-
 ## @Baldo2013  [seed]
 Baldo JV, Arévalo A, Patterson JP, Dronkers NF.
 Grey and white matter correlates of picture naming: evidence from a voxel-based lesion analysis of the Boston Naming Test.
@@ -1590,3 +1581,108 @@ Precision rehabilitation for aphasia by patient age, sex, aphasia severity, and 
 doi:10.1177/17474930221097477
 
 > Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: Brandenburg2050354-Published.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Ochfeld2010  [seed]
+Ochfeld E, Newhart M, Molitoris J, Leigh R, Cloutman L, Davis C, Crinion J, Hillis AE.
+Ischemia in Broca Area Is Associated With Broca Aphasia More Reliably in Acute Than in Chronic Stroke.
+*Stroke*. 2010;41(2):325-330.
+doi:10.1161/strokeaha.109.570374
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: 00007670-201002000-00034.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Corbetta2015  [seed]
+Corbetta M, Ramsey L, Callejas A, Baldassarre A, Hacker CD, Siegel JS, Astafiev SV, Rengachary J, Zinn K, Lang CE, Connor LT, Fucetola R, et al.
+Common Behavioral Clusters and Subcortical Anatomy in Stroke.
+*Neuron*. 2015;85(5):927-941.
+doi:10.1016/j.neuron.2015.02.027
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: 1-s2.0-S0896627315001427-main.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Lazar2008  [seed]
+Lazar RM, Speizer AE, Festa JR, Krakauer JW, Marshall RS.
+Variability in language recovery after first-time stroke.
+*Journal of Neurology, Neurosurgery &amp; Psychiatry*. 2008;79(5):530-534.
+doi:10.1136/jnnp.2007.122457
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: 530.full.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Hillis2006  [seed]
+Hillis AE, Kleinman JT, Newhart M, Heidler-Gary J, Gottesman R, Barker PB, Aldrich E, Llinas R, Wityk R, Chaudhry P.
+Restoring Cerebral Blood Flow Reveals Neural Regions Critical for Naming.
+*J. Neurosci.*. 2006;26(31):8069-8073.
+doi:10.1523/jneurosci.2088-06.2006
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: 8069.full.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Hillis2001  [seed]
+Hillis AE, Wityk RJ, Tuffiash E, Beauchamp NJ, Jacobs MA, Barker PB, Selnes OA.
+Hypoperfusion of Wernicke's area predicts severity of semantic deficit in acute stroke.
+*Annals of Neurology*. 2001;50(5):561-566.
+doi:10.1002/ana.1265
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: Annals of Neurology - 2001 - Hillis - Hypoperfusion of Wernicke s area predicts severity of semantic deficit in acute.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Pedersen1995  [seed]
+Pedersen PM, Stig Jørgensen H, Nakayama H, Raaschou HO, Olsen TS.
+Aphasia in acute stroke: Incidence, determinants, and recovery.
+*Annals of Neurology*. 1995;38(4):659-666.
+doi:10.1002/ana.410380416
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: Annals of Neurology - October 1995 - Pedersen - Aphasia in acute stroke  Incidence  determinants  and recovery.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Laska2001  [seed]
+Laska AC, Hellblom A, Murray V, Kahan T, Von Arbin M.
+Aphasia in acute stroke and relation to outcome.
+*Journal of Internal Medicine*. 2001;249(5):413-422.
+doi:10.1046/j.1365-2796.2001.00812.x
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: Journal of Internal Medicine - 2001 - Laska - Aphasia in acute stroke and relation to outcome (1).pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Johnson2019  [seed]
+Johnson L, Basilakos A, Yourganov G, Cai B, Bonilha L, Rorden C, Fridriksson J.
+Progression of Aphasia Severity in the Chronic Stages of Stroke.
+*Am J Speech Lang Pathol*. 2019;28(2):639-649.
+doi:10.1044/2018_ajslp-18-0123
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: Progression_of_Aphasia_Severit.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Wilson2023  [seed]
+Wilson SM, Entrup JL, Schneck SM, Onuscheck CF, Levy DF, Rahman M, Willey E, Casilio M, Yen M, Brito AC, Kam W, Davis LT, et al.
+Recovery from aphasia in the first year after stroke.
+*Brain*. 2023;146(3):1021-1039.
+doi:10.1093/brain/awac129
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: awac129.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Godecke2021  [seed]
+Godecke E, Armstrong E, Rai T, Ciccone N, Rose ML, Middleton S, Whitworth A, Holland A, Ellery F, Hankey GJ, Cadilhac DA, Bernhardt J, et al.
+A randomized control trial of intensive aphasia therapy after acute stroke: The Very Early Rehabilitation for SpEech (VERSE) study.
+*International Journal of Stroke*. 2021;16(5):556-572.
+doi:10.1177/1747493020961926
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: godecke-et-al-2020-a-randomized-control-trial-of-intensive-aphasia-therapy-after-acute-stroke-the-very-early.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Nouwens2017  [seed]
+Nouwens F, de Lau LML, Visch-Brink EG, van de Sandt-Koenderman WME(, Lingsma HF, Goosen S, Blom DMJ, Koudstaal PJ, Dippel DWJ.
+Efficacy of early cognitive-linguistic treatment for aphasia due to stroke: A randomised controlled trial (Rotterdam Aphasia Therapy Study-3).
+*European Stroke Journal*. 2017;2(2):126-136.
+doi:10.1177/2396987317698327
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: nouwens-et-al-2017-efficacy-of-early-cognitive-linguistic-treatment-for-aphasia-due-to-stroke-a-randomised-controlled.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Ramsey2017  [seed]
+Ramsey LE, Siegel JS, Lang CE, Strube M, Shulman GL, Corbetta M.
+Behavioural clusters and predictors of performance during recovery from stroke.
+*Nat Hum Behav*. 2017;1(3).
+doi:10.1038/s41562-016-0038
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: s41562-016-0038.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Siegel2016  [seed]
+Siegel JS, Ramsey LE, Snyder AZ, Metcalf NV, Chacko RV, Weinberger K, Baldassarre A, Hacker CD, Shulman GL, Corbetta M.
+Disruptions of network connectivity predict impairment in multiple behavioral domains after stroke.
+*Proc. Natl. Acad. Sci. U.S.A.*. 2016;113(30).
+doi:10.1073/pnas.1521083113
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: 26470986.pdf). Check the entry; add a note on why the paper is in the KB.
+

@@ -41,6 +41,7 @@ sys.path.insert(0, str(ROOT))
 from annotate_paper import _find_quote_rects  # noqa: E402
 from aphasia_kb import parse_markdown  # noqa: E402
 from quote_check import PaperText, find_paper, grade_quote  # noqa: E402
+from phase import PHASE_VOCAB, finding_phase, infer_phase  # noqa: E402
 
 OUT_DIR = ROOT / "drafts" / "_review"
 DPI = 110
@@ -91,7 +92,7 @@ def crop_png(doc, pno: int, rects, colour=(0.95, 0.85, 0.35)) -> str:
 
 
 def build_sheet(draft: Path, papers_dir: Path, fix_pages: bool,
-                out_dir: Path = OUT_DIR) -> tuple[Path | None, dict]:
+                out_dir: Path = OUT_DIR, fill_phase: bool = False) -> tuple[Path | None, dict]:
     fm, body = parse_markdown(draft)
     if not fm:
         return None, {"error": "no frontmatter"}
@@ -104,15 +105,24 @@ def build_sheet(draft: Path, papers_dir: Path, fix_pages: bool,
     doc = _open(pdf)
     counts: dict[str, int] = {}
     changed = 0
+    changed_phase = 0
     parts: list[str] = []
 
     for f in findings:
         fid = f.get("id", "?")
+        ph, ph_src = finding_phase(f)
+        if fill_phase and ph_src != "stated" and isinstance(f.get("sample"), dict):
+            f["sample"]["phase"] = ph
+            changed_phase += 1
+        tpo = (f.get("sample") or {}).get("time_post_onset")
+        ph_txt = (f"phase {html.escape(ph)}" + (" (inferred)" if ph_src == "inferred" else "")
+                  + (f" — <i>{html.escape(str(tpo))}</i>" if tpo else ""))
         parts.append(f"<section class='finding'><h2>{html.escape(str(fid))} · "
                      f"{html.escape(str(f.get('target', '')))} "
                      f"<span class='meta'>{html.escape(str(f.get('relationship', '')))} · "
                      f"{html.escape(str(f.get('strength', '')))} · "
-                     f"confidence {html.escape(str((f.get('provenance') or {}).get('confidence', '')))}</span></h2>"
+                     f"confidence {html.escape(str((f.get('provenance') or {}).get('confidence', '')))}"
+                     f" · {ph_txt}</span></h2>"
                      f"<p class='claim'>{html.escape(str(f.get('claim', '')).strip())}</p>")
         stats = f.get("statistics") or f.get("stats")
         if stats:
@@ -149,7 +159,7 @@ def build_sheet(draft: Path, papers_dir: Path, fix_pages: bool,
         parts.append("</section>")
     doc.close()
 
-    if fix_pages and changed:
+    if (fix_pages and changed) or (fill_phase and changed_phase):
         fm_text = yaml.safe_dump(fm, sort_keys=False, allow_unicode=True, width=100)
         out = f"---\n{fm_text.rstrip()}\n---\n"
         if body.strip():
@@ -164,6 +174,7 @@ def build_sheet(draft: Path, papers_dir: Path, fix_pages: bool,
             f"{html.escape(cite)} · {html.escape(pdf.name)} · {len(findings)} finding(s) · "
             f"{total} passage(s): <b>{verified} verified</b> ({summary})"
             + (f" · <b>{changed} page number(s) corrected</b>" if changed else "")
+            + (f" · <b>{changed_phase} phase value(s) written</b>" if changed_phase else "")
             + "</p>")
     page = _HTML.replace("{{title}}", html.escape(fm.get("id", draft.stem))) \
                 .replace("{{body}}", head + "".join(parts))
@@ -171,7 +182,7 @@ def build_sheet(draft: Path, papers_dir: Path, fix_pages: bool,
     out_path = out_dir / f"{draft.stem}.html"
     out_path.write_text(page, encoding="utf-8")
     return out_path, {"passages": total, "verified": verified, "counts": counts,
-                      "fixed": changed}
+                      "fixed": changed, "phased": changed_phase}
 
 
 _HTML = """<!doctype html><html><head><meta charset="utf-8">
@@ -199,6 +210,8 @@ def _cli(argv=None) -> int:
     ap.add_argument("--out-dir", type=Path, default=OUT_DIR)
     ap.add_argument("--fix-pages", action="store_true",
                     help="rewrite source_passages[].page to the page the quote was found on")
+    ap.add_argument("--fill-phase", action="store_true",
+                    help="write sample.phase (v2.6) into drafts that lack it, inferred from time_post_onset")
     args = ap.parse_args(argv)
 
     drafts = list(args.draft or [])
@@ -210,14 +223,15 @@ def _cli(argv=None) -> int:
 
     rc = 0
     for d in drafts:
-        out, info = build_sheet(d, args.papers_dir, args.fix_pages, args.out_dir)
+        out, info = build_sheet(d, args.papers_dir, args.fix_pages, args.out_dir, args.fill_phase)
         if out is None:
             print(f"  ✗ {d.name}: {info['error']}")
             rc = 1
             continue
         shown = out.relative_to(ROOT) if out.is_relative_to(ROOT) else out
         print(f"  ✓ {shown}  {info['verified']}/{info['passages']} verified"
-              + (f", {info['fixed']} page(s) fixed" if info["fixed"] else ""))
+              + (f", {info['fixed']} page(s) fixed" if info["fixed"] else "")
+              + (f", {info['phased']} phase(s) written" if info["phased"] else ""))
     return rc
 
 

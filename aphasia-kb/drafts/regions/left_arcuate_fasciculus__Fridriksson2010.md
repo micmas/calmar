@@ -1,96 +1,118 @@
 ---
 schema_version: 2.3
 id: left_arcuate_fasciculus
-name: "Left Arcuate Fasciculus"
+name: Left Arcuate Fasciculus
 kind: tract
 status: draft
-created_by: "agent:ollama-extract-cli/gemma4:31b-it-q8_0"
+created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0
 created_on: 2026-10-20
 hemisphere: left
 findings:
-  - id: f1
-    target: speech_repetition
-    target_kind: impairment
-    claim: "Damage to the posterior portion of the left arcuate fasciculus is strongly associated with impaired speech repetition."
-    direction: likely
-    relationship: causal
-    citation: "@Fridriksson2010"
-    method: VLSM
-    design: cross-sectional
-    strength: moderate
-    evidence_quality: cohort
-    sample:
-      n: 39
-      population: "left hemisphere ischemic stroke"
-      time_post_onset: "within 3 d of hospital admission (some up to 20 d)"
-      age_range: "mean 63.5 years (range 34-85, SD 12)"
-      handedness: not_reported
-      language: "Icelandic"
-    statistics:
-      threshold: "1% false-discovery rate (FDR)"
-      effect_size: "Z = 2.8"
-      p_value: not_reported
-    confounders_controlled:
-      - "auditory comprehension"
-    confounders_not_controlled: []
-    region_definition:
-      kind: data_driven_cluster
-      description: "White matter underlying the left supramarginal gyrus, identified as the posterior portion of the left arcuate fasciculus."
-    imaging_details:
-      modalities:
-        - modality: T1
-          voxel_size_mm: [0.9, 0.9, 0.9]
-        - modality: DWI
-          voxel_size_mm: [1.2, 1.2, 6.5]
-      preprocessing_pipeline: "SPM5 unified segmentation and normalization algorithm"
-      reference_space: MNI152
-      atlases_used: []
-      coordinates_reported:
-        - region: "left arcuate fasciculus"
-          mni: [-31, -32, 32]
-    author_limitations:
-      - "The study sample included patients with various aphasia types and other deficits (e.g., apraxia of speech), not just pure conduction aphasia."
-    provenance:
-      extracted_by: "agent"
-      extracted_on: 2026-01-01
-      paper_section: "Results, page 3"
-      confidence: high
-      flags: ["target impairment 'speech_repetition' is forward-looking"]
-    source_passages:
-      - section: "Results"
-        page: 3
-        quote: "The VLBM analysis of the structural lesion data revealed that damage to white matter underlying the left supramarginal gyrus (Z = 2.8) is strongly related to impaired speech repetition."
-        supports: claim
-      - section: "Results"
-        page: 3
-        quote: "To emphasize that this lesion location occurred within the arcuate fasciculus the same MNI coordinates are highlighted in Figure 3"
-        supports: region_definition
-      - section: "Materials and Methods"
-        page: 2
-        quote: "Therefore, data from 39 patients were included in the final statistical analyses described below."
-        supports: sample
-      - section: "Materials and Methods"
-        page: 2
-        quote: "The mean patient age was 63.5 years (range 34-85, SD 12)."
-        supports: sample
-      - section: "Materials and Methods"
-        page: 2
-        quote: "All participants had incurred a single event ischemic stroke to the left hemisphere"
-        supports: sample
-      - section: "Materials and Methods"
-        page: 2
-        quote: "The resulting transforms were used to reslice both the T1 images and lesion maps to an isotropic 2 mm in standard stereotaxic space"
-        supports: imaging_details
-      - section: "Materials and Methods"
-        page: 2
-        quote: "The resulting statistical map from the VLBM analysis was corrected for multiple comparisons using a 1% false-discovery rate (FDR) threshold"
-        supports: statistics
-      - section: "Materials and Methods"
-        page: 2
-        quote: "computing whether speech repetition performance was correlated with injury to that voxel, using the level of auditory comprehension performance as a regressor."
-        supports: confounders
-      - section: "Discussion"
-        page: 4
-        quote: "the study sample included some patients who had difficulty repeating due to factors such as apraxia of speech, nonfluent aphasia, or auditory comprehension impairment rather than the primary repetition impairment seen in conduction aphasia."
-        supports: limitation
+- id: f1
+  target: speech_repetition
+  target_kind: impairment
+  claim: Damage to the posterior portion of the left arcuate fasciculus is strongly associated with impaired
+    speech repetition.
+  direction: likely
+  relationship: causal
+  citation: '@Fridriksson2010'
+  method: VLSM
+  design: cross-sectional
+  strength: moderate
+  evidence_quality: cohort
+  sample:
+    n: 39
+    population: left hemisphere ischemic stroke
+    time_post_onset: within 3 d of hospital admission (some up to 20 d)
+    age_range: mean 63.5 years (range 34-85, SD 12)
+    handedness: not_reported
+    language: Icelandic
+    phase: acute
+  statistics:
+    threshold: 1% false-discovery rate (FDR)
+    effect_size: Z = 2.8
+    p_value: not_reported
+  confounders_controlled:
+  - auditory comprehension
+  confounders_not_controlled: []
+  region_definition:
+    kind: data_driven_cluster
+    description: White matter underlying the left supramarginal gyrus, identified as the posterior portion
+      of the left arcuate fasciculus.
+  imaging_details:
+    modalities:
+    - modality: T1
+      voxel_size_mm:
+      - 0.9
+      - 0.9
+      - 0.9
+    - modality: DWI
+      voxel_size_mm:
+      - 1.2
+      - 1.2
+      - 6.5
+    preprocessing_pipeline: SPM5 unified segmentation and normalization algorithm
+    reference_space: MNI152
+    atlases_used: []
+    coordinates_reported:
+    - region: left arcuate fasciculus
+      mni:
+      - -31
+      - -32
+      - 32
+  author_limitations:
+  - The study sample included patients with various aphasia types and other deficits (e.g., apraxia of
+    speech), not just pure conduction aphasia.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 3
+    confidence: high
+    flags:
+    - target impairment 'speech_repetition' is forward-looking
+  source_passages:
+  - section: Results
+    page: 3
+    quote: The VLBM analysis of the structural lesion data revealed that damage to white matter underlying
+      the left supramarginal gyrus (Z = 2.8) is strongly related to impaired speech repetition.
+    supports: claim
+  - section: Results
+    page: 3
+    quote: To emphasize that this lesion location occurred within the arcuate fasciculus the same MNI
+      coordinates are highlighted in Figure 3
+    supports: region_definition
+  - section: Materials and Methods
+    page: 2
+    quote: Therefore, data from 39 patients were included in the final statistical analyses described
+      below.
+    supports: sample
+  - section: Materials and Methods
+    page: 2
+    quote: The mean patient age was 63.5 years (range 34-85, SD 12).
+    supports: sample
+  - section: Materials and Methods
+    page: 1
+    quote: All participants had incurred a single event ischemic stroke to the left hemisphere
+    supports: sample
+  - section: Materials and Methods
+    page: 2
+    quote: The resulting transforms were used to reslice both the T1 images and lesion maps to an isotropic
+      2 mm in standard stereotaxic space
+    supports: imaging_details
+  - section: Materials and Methods
+    page: 2
+    quote: The resulting statistical map from the VLBM analysis was corrected for multiple comparisons
+      using a 1% false-discovery rate (FDR) threshold
+    supports: statistics
+  - section: Materials and Methods
+    page: 2
+    quote: computing whether speech repetition performance was correlated with injury to that voxel, using
+      the level of auditory comprehension performance as a regressor.
+    supports: confounders
+  - section: Discussion
+    page: 4
+    quote: the study sample included some patients who had difficulty repeating due to factors such as
+      apraxia of speech, nonfluent aphasia, or auditory comprehension impairment rather than the primary
+      repetition impairment seen in conduction aphasia.
+    supports: limitation
 ---

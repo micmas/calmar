@@ -1,0 +1,48 @@
+draft_path: drafts/regions/left_ifg_pars_opercularis__Ochfeld2010.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T06:42:53'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 7/15 quotes (47%) — absent 4, anchored 4, elided 2, exact 5
+    - '4 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.326): The association between infarct and hypoperfusion
+      anywhere within Broca area and…'
+    - '  - [anchored] f1.sample (p.2): We included consecutive patients who were right-hand-dominant
+      with left hemisphe…'
+    - '  - [anchored] f2.claim (p.326): The association between infarct and hypoperfusion
+      anywhere within Broca area and…'
+    - '4 quote(s) absent from the PDF — first 3:'
+    - '  - f1.statistics (p.326): chi2=38.1; df1; P<=0.0001…'
+    - '  - f2.sample (p.2): ...or >= 6 months after stroke…'
+    - '  - f2.statistics (p.326): chi2=0.54; df1; P=0.46…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Ochfeld2010: sample.n disagrees: [20, 30, 50]'
+  review_tier: B
+  tier_reasons:
+  - PDF quote match not run or not passed
+  - 'f1: strength=''strong'''
+  - 'f3: strength=''strong'''
+last_run: '2026-10-22T06:42:53'
+latest_verdict: auto_reject
+latest_mode: deterministic_only

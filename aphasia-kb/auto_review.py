@@ -1482,9 +1482,20 @@ def review_many(drafts: list[Path], *,
     failed_to_promote: list[Path] = []
     per_draft: list[dict] = []
 
-    for d in drafts:
+    import datetime as _dt
+    import time as _time
+    t_batch = _time.monotonic()
+    drafts = list(drafts)
+    for i, d in enumerate(drafts, 1):
         if verbose:
-            print(f"\n→ {d.relative_to(ROOT)}")
+            el = _time.monotonic() - t_batch
+            eta = ""
+            if i > 1:
+                per = el / (i - 1)
+                left = per * (len(drafts) - i + 1)
+                eta = f" · {int(left // 60)}m left at this rate"
+            print(f"\n→ [{i}/{len(drafts)}]  {d.relative_to(ROOT)}"
+                  f"   ({_dt.datetime.now():%H:%M:%S}{eta})", flush=True)
         try:
             verdict, checks, llm = review_one(
                 d, llm_review=llm_review,

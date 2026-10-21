@@ -40,6 +40,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 from aphasia_kb import parse_markdown, reviewer_kind  # noqa: E402
+from phase import finding_phase  # noqa: E402
 
 BUCKETS = ("regions", "impairments", "therapies", "predictors",
            "reviews", "ingredients")
@@ -104,6 +105,8 @@ def collect(root: Path) -> dict:
     rel = collections.Counter()
     strength = collections.Counter()
     methods = collections.Counter()
+    phase = collections.Counter()
+    phase_stated = 0
     cited: dict[str, set] = collections.defaultdict(set)
     region_findings: dict[str, int] = {}
     legacy_candidates: list[Path] = []
@@ -123,6 +126,9 @@ def collect(root: Path) -> dict:
         for f in fs:
             rel[str(f.get("relationship"))] += 1
             strength[str(f.get("strength"))] += 1
+            ph, src = finding_phase(f)
+            phase[ph] += 1
+            phase_stated += src == "stated"
             m = f.get("method")
             for mm in (m if isinstance(m, list) else [m]):
                 methods[str(mm)] += 1
@@ -179,6 +185,8 @@ def collect(root: Path) -> dict:
         "review_total": dict(total_review),
         "relationship": dict(rel),
         "strength": dict(strength),
+        "phase": dict(phase.most_common()),
+        "phase_stated": phase_stated,
         "methods": dict(methods.most_common()),
         "atlas_mapping": {"reachable": reachable, "unreachable": unreachable},
         "papers": papers,
@@ -203,6 +211,10 @@ def print_summary(st: dict) -> None:
         print(f"  {len(st['_legacy_candidates'])} entries lack the "
               f"`review_tier: legacy` stamp — run --tag-legacy")
 
+    if st.get("phase"):
+        print("\n  Findings by recovery phase (v2.6; inferred from time_post_onset "
+              f"where not stated — {st.get('phase_stated', 0)} stated): "
+              + ", ".join(f"{k} {v}" for k, v in st["phase"].items()))
     print("\n  Findings by relationship: " +
           ", ".join(f"{k} {v}" for k, v in
                     sorted(st["relationship"].items(), key=lambda x: -x[1])))
