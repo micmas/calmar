@@ -11,14 +11,17 @@ problem, these tools repair the participant's outputs:
 3. **External edit** (:class:`ExternalEditPanel`): export the native T1 and
    lesion to ITK-SNAP, FSLeyes or MRIcroGL, edit by hand, import, re-warp.
 4. **Re-run queue** (:class:`RerunQueuePanel`): LINDA again with the best
-   existing HD-BET mask for participants marked for repair.
+   existing HD-BET mask for participants marked for repair; in the acute (DWI)
+   route, OpenADS again (:func:`rerun_openads`). Tiers 1-3 edit LINDA's lesion
+   and are T1-route only; for a poor OpenADS lesion, use the manual mask.
 5. **Summary and reset** (:func:`qc_table`, :func:`show_qc_summary`,
    :func:`reset_qc`).
 
 Where things are written
 ------------------------
 * Ratings, the repair flag and an ``edits`` audit log live in the QC sidecar
-  of LINDA's MNI lesion: ``<linda_dir>/Lesion_in_MNI.qc.json``. Edits of the
+  of ``Study.qc_anchor``: LINDA's MNI lesion ``<linda_dir>/Lesion_in_MNI.qc.json``
+  (T1 route) or ``<openads_dir>/OpenADS_in_MNI.qc.json`` (acute route). Edits of the
   native lesion are also logged in ``<linda_dir>/Prediction3_native.qc.json``.
 * The first edit copies LINDA's prediction to ``<linda_dir>/_linda_original/``
   (used as the starting point of later clean-ups and by *Revert*). If LINDA
@@ -473,6 +476,35 @@ def rerun_linda(entry, study, config, reviewer=None):
     return mask
 
 
+def rerun_openads(entry, study, config, reviewer=None):
+    """Acute (DWI) route: recompute OpenADS in Slurm for one participant.
+
+    The previous OpenADS folder is kept as ``<openads_dir>.previous.<id>``; its QC
+    sidecar (edit log, repair flag) is carried over, the stale stage ratings are
+    cleared and the repair flag removed. The manual mask's template-space copy
+    lived in that folder too, so the manual step runs again when one is configured.
+    Returns the names and statuses of the new outputs.
+    """
+    import copy
+    from .scheduled import submit_step
+    folder, anchor = Path(study.dirs(entry)["openads"]), Path(study.qc_anchor(entry))
+    moved_before = set(folder.parent.glob(folder.name + ".previous.*"))
+    rerun = copy.copy(study)
+    rerun.config = {**config, "OVERWRITE": True, "RUN_SEGMENTATION": True}
+    step = submit_step("openads", [entry], rerun)
+    outputs = [o for row in step.get("results", []) for o in row.get("outputs", []) if isinstance(o, dict)]
+    if not any(o.get("status") == "computed" and Path(o["path"]).resolve() == folder.resolve() for o in outputs):
+        raise RuntimeError(f"OpenADS was not recomputed for {entry_label(entry)}: {outputs}")
+    moved = sorted(set(folder.parent.glob(folder.name + ".previous.*")) - moved_before)
+    if moved:
+        _carry_qc_history(moved[-1] / anchor.name, anchor)
+    if study.manual_mask_template(entry):
+        submit_step("manual", [entry], study)
+    clear_stage_ratings(anchor)
+    clear_repair_flag(anchor, reason="openads_rerun", reviewer=reviewer, tool="rerun_openads")
+    return [f"{Path(o['path']).name} ({o.get('status')})" for o in outputs]
+
+
 # ── Notebook front ends ──────────────────────────────────────────────────────
 
 REPAIR_MODES = ("single", "step_marked", "batch_marked")
@@ -776,7 +808,8 @@ class ExternalEditPanel(w.VBox):
 
 
 class RerunQueuePanel(w.VBox):
-    """Participants marked for repair, each with a *Re-run LINDA* button.
+    """Participants marked for repair, each with a *Re-run LINDA* button
+    (*Re-run OpenADS* in the acute (DWI) route).
 
     Re-running is blocked for participants whose lesion was edited by hand
     since the last LINDA run (it would overwrite that work) unless
@@ -784,21 +817,24 @@ class RerunQueuePanel(w.VBox):
     """
 
     def __init__(self, entries, study, config, *, allow_overwriting_edits=False, reviewer=None):
+        from .study import modality
         self.study, self.config, self.reviewer = study, config, reviewer
+        self.acute = modality(config) == "dwi"
+        tool = "OpenADS" if self.acute else "LINDA"
         self.job_output = Output()
         rows = []
         for entry in entries:
-            record = q.QCRecord.load(study.lesion_mni(entry))
+            record = q.QCRecord.load(study.qc_anchor(entry))
             if not record.marked_for_rerun:
                 continue
-            edited = manual_edits_since_last_run(_history(entry, study))
+            edited = not self.acute and manual_edits_since_last_run(_history(entry, study))
             blocked = edited and not allow_overwriting_edits
             ratings = ", ".join(f"{s}={record.stages[s].get('rating')}" for s in q.STAGES
                                 if (record.stages.get(s) or {}).get("rating"))
             text = (f"<b>{escape(entry_label(entry))}</b> · {escape(ratings or 'no ratings')}"
                     + (" · <span style='color:#a00'>edited by hand since the last LINDA run — "
                        "re-run blocked</span>" if blocked else ""))
-            button = w.Button(description="Re-run LINDA", button_style="primary", disabled=blocked)
+            button = w.Button(description=f"Re-run {tool}", button_style="primary", disabled=blocked)
             button.on_click(lambda _, e=entry: self.rerun(e))
             rows.append(w.HBox([button, w.HTML(text)]))
         header = (f"<b>{len(rows)} participant(s) marked for repair.</b>" if rows
@@ -809,6 +845,11 @@ class RerunQueuePanel(w.VBox):
         with self.job_output:
             self.job_output.clear_output()
             try:
+                if self.acute:
+                    outputs = rerun_openads(entry, self.study, self.config, reviewer=self.reviewer)
+                    print(f"✓ OpenADS re-run for {entry_label(entry)}: {', '.join(outputs)}. "
+                          "Ratings were cleared; rerun the QC panel to rate the new outputs.")
+                    return
                 mask = rerun_linda(entry, self.study, self.config, reviewer=self.reviewer)
                 print(f"✓ LINDA re-run for {entry_label(entry)} with brain mask {mask}. "
                       "Ratings were cleared; rerun the QC panel to rate the new outputs.")
@@ -822,7 +863,7 @@ def qc_table(entries, study):
     """One row per participant: rating per stage, tags, repair flag, edit count."""
     rows = []
     for entry in entries:
-        anchor = study.lesion_mni(entry)
+        anchor = study.qc_anchor(entry)
         record = q.QCRecord.load(anchor)
         stages = set(study.qc_stages(entry))
         row = {"subject": entry["subject"], "session": entry.get("session") or ""}
@@ -903,7 +944,7 @@ def reset_qc(entries, study, *, subject=None, session=None, stage=None,
             continue
         if session and (entry.get("session") or "") != session:
             continue
-        record = q.QCRecord.load(study.lesion_mni(entry))
+        record = q.QCRecord.load(study.qc_anchor(entry))
         if not record.path.exists():
             continue
         affected.append(record.path)

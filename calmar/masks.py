@@ -81,4 +81,9 @@ def qc_stages(masks, *, brain_mask=None, mni_reference=None):
             stages.append(stage)
     if "MNI" in masks.get("manual", {}) and present(mni_reference):
         stages.append("expert_mni_warp")
+    # Acute (DWI) route: OpenADS's native lesion, then its warp to MNI152.
+    if "T1w" in masks.get("openads", {}):
+        stages.append("openads_lesion")
+    if "MNI" in masks.get("openads", {}) and present(mni_reference):
+        stages.append("openads_mni_warp")
     return stages

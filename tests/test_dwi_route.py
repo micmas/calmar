@@ -87,3 +87,78 @@ def test_right_hemisphere_lesions_are_explained():
     assert "right</b> hemisphere" in laterality_note(right)
     left = right.assign(side=["left", "right"])
     assert laterality_note(left) == ""
+
+
+def openads_outputs(tmp_path):
+    entry = {"subject": "sub-strokecase0001", "session": "ses-0001", "t1w": "x"}
+    study = Study(DWI, tmp_path, tmp_path)
+    d = study.dirs(entry)
+    touch(d["openads"] / "sub-strokecase0001_ses-0001_space-DWI_desc-lesion_mask.nii.gz")
+    touch(d["openads"] / "OpenADS_in_MNI.nii.gz")
+    touch(d["openads"] / "Subject_in_MNI.nii.gz")
+    return entry, study, d
+
+
+def test_acute_qc_rates_openads_and_saves_in_its_folder(tmp_path):
+    entry, study, d = openads_outputs(tmp_path)
+    touch(study.hdbet_dir(entry) / "x_brain_mask.nii.gz")      # an HD-BET mask must not add a skull-strip stage
+    assert study.qc_stages(entry) == ["openads_lesion", "openads_mni_warp"]
+    assert study.qc_anchor(entry) == d["openads"] / "OpenADS_in_MNI.nii.gz"
+    assert study.qc_dir(entry) == d["openads"]
+    t1 = Study({}, tmp_path, tmp_path)
+    assert t1.qc_anchor(entry) == t1.lesion_mni(entry) and t1.qc_dir(entry) == t1.linda_dir(entry)
+
+
+def test_acute_qc_ratings_reach_the_summary_and_the_report(tmp_path):
+    import calmar.qc as q
+    from calmar.participant_report import mask_qc_summary
+    from calmar.qc_repair import qc_table
+    entry, study, d = openads_outputs(tmp_path)
+    record = q.QCRecord.load(study.qc_anchor(entry))
+    record.set_stage("openads_lesion", rating=1)
+    record.set_stage("openads_mni_warp", rating=3, issue_tags=["template_misaligned"])
+    record.save()
+    row = qc_table([entry], study).iloc[0]
+    assert row["openads_lesion"] == 1 and row["openads_mni_warp"] == 3 and row["skull_strip"] == "n/a"
+    assert "openads_mni_warp:template_misaligned" in row["issue_tags"]
+    summary = mask_qc_summary(study.qc_anchor(entry), d["openads"] / "OpenADS_in_MNI.nii.gz", "openads")
+    assert [s for s, *_ in summary["ratings"]] == ["openads_lesion", "openads_mni_warp"] and summary["poor"]
+
+
+def test_acute_qc_volumes_show_the_dwi_and_the_warp(tmp_path):
+    from calmar.qc_panel import QCVolumes, QCDisplay
+    entry, study, d = openads_outputs(tmp_path)
+    entry = dict(entry, t1w=str(touch(tmp_path / "dwi.nii.gz")))
+    volumes = QCVolumes(study, QCDisplay(lesion_as_boundary=False))
+    native = volumes("openads_lesion", entry)
+    assert native[0]["path"] == entry["t1w"] and native[1]["name"] == "openads"
+    warp = volumes("openads_mni_warp", entry)
+    assert warp[0]["path"] == str(d["openads"] / "Subject_in_MNI.nii.gz")
+    assert [v["name"] for v in warp[1:]] == ["openads"]
+
+
+def test_openads_rerun_keeps_qc_history_and_clears_stale_ratings(tmp_path, monkeypatch):
+    import calmar.qc as q
+    import calmar.scheduled as scheduled
+    from calmar.qc_repair import rerun_openads
+    entry, study, d = openads_outputs(tmp_path)
+    record = q.QCRecord.load(study.qc_anchor(entry))
+    record.set_stage("openads_lesion", rating=3)
+    record.marked_for_rerun = True
+    record.log_edit("note", reviewer="me")
+    record.save()
+    calls = []
+
+    def fake_submit(stage, entries, rerun_study, **kw):
+        calls.append((stage, rerun_study.config.get("OVERWRITE")))
+        if stage == "openads":                                   # product() moves the old folder aside
+            d["openads"].rename(d["openads"].with_name(d["openads"].name + ".previous.abc"))
+            touch(d["openads"] / "OpenADS_in_MNI.nii.gz")
+        return {"results": [{"outputs": [{"path": str(d["openads"]), "status": "computed"}]}]}
+
+    monkeypatch.setattr(scheduled, "submit_step", fake_submit)
+    rerun_openads(entry, study, dict(DWI), reviewer="me")
+    assert calls == [("openads", True)]                         # no manual mask configured
+    after = q.QCRecord.load(study.qc_anchor(entry))
+    assert after.get_stage("openads_lesion")["rating"] is None and not after.marked_for_rerun
+    assert [e["operation"] for e in after.edits][:1] == ["note"]

@@ -258,6 +258,18 @@ class Study:
         """LINDA's lesion mask in template space."""
         return self.linda_dir(entry) / "Lesion_in_MNI.nii.gz"
 
+    def qc_anchor(self, entry):
+        """The mask whose ``*.qc.json`` sidecar holds every QC stage rating:
+        LINDA's MNI lesion in the T1 route (also when LINDA did not run), the
+        OpenADS MNI lesion in the acute (DWI) route."""
+        if modality(self.config) == "dwi":
+            return self.dirs(entry)["openads"] / "OpenADS_in_MNI.nii.gz"
+        return self.lesion_mni(entry)
+
+    def qc_dir(self, entry):
+        """Folder of the QC sidecar and the Do / Skip QC decision (``QC_decision.json``)."""
+        return self.qc_anchor(entry).parent
+
     def manual_mask_template(self, entry):
         template = self.config.get("MANUAL_MASK_PATH")
         if not template:
@@ -286,7 +298,9 @@ class Study:
     def qc_stages(self, entry):
         from . import qc as q
         brain = self.linda_dir(entry) / "BrainMask.nii.gz"
-        if not cm.present(brain):
+        if modality(self.config) == "dwi":
+            brain = None                # OpenADS's brain mask is not rated: its lesion is confined to it
+        elif not cm.present(brain):
             brain = q.find_best_hdbet_mask(self.hdbet_dir(entry))
         return cm.qc_stages(self.masks(entry), brain_mask=brain,
                             mni_reference=self.template_dir(entry) / "Subject_in_MNI.nii.gz")
@@ -304,4 +318,6 @@ class Study:
             "lesion_mni_for": self.lesion_mni, "mask_inventory_for": self.masks,
             "available_mni_sources": self.mni_sources, "_mask_path_for": self.mni_mask,
             "qc_available_stages": self.qc_stages, "mask_file_token": file_token,
+            "qc_dir_for": self.qc_dir,
+            "openads_path_for": lambda entry: self.dirs(entry)["openads"],
         }
