@@ -144,9 +144,22 @@ export default {
       } catch (error) { fail(error); }
     };
     model.on('msg:custom', receive);
-    const connectionTimer = setTimeout(() => {
-      if (app) el.textContent = 'Waiting for the notebook kernel to connect. Click the workflow button to retry.';
-    }, 8000);
+    // A widget message can be lost while the browser's kernel connection
+    // reconnects. Repeat 'ready' until the kernel answers; if it never does,
+    // this page has lost its widget connection and only a reload restores it.
+    let attempts = 0;
+    const retry = () => {
+      if (disposed) return;
+      if (++attempts === 4 && app) {
+        el.textContent = 'No answer from the notebook kernel yet. If the kernel is idle, this browser page ' +
+          'has lost its connection to it: reload the page (F5), rerun this cell, then click again.';
+      }
+      if (attempts < 20) {
+        if (app) model.send({event: 'ready'});
+        connectionTimer = setTimeout(retry, 2500);
+      }
+    };
+    let connectionTimer = setTimeout(retry, 2500);
     await connect();
     return () => {
       disposed = true;

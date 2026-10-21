@@ -217,6 +217,73 @@ def region_damage(units_df: pd.DataFrame, directory: str = str(DIR)) -> pd.DataF
     return pd.DataFrame(out)
 
 
+def tract_disconnection(map_path, atlases: dict, threshold: float = 0.5, directory: str = str(DIR)) -> pd.DataFrame:
+    """Disconnection of every tract unit, from a disconnectome map.
+
+    ``map_path``: BCBToolkit or DeepDisco map (probability, 0-1, that a voxel's
+    fibres pass through the lesion), on an MNI152 grid. ``atlases``:
+    ``{name: (image path, {value: label})}`` for the tract atlases (JHU,
+    XTRACT). Each atlas is resampled to the map's grid (nearest neighbour).
+    Per unit and side: ``disconnected_pct`` = share of the tract's voxels whose
+    probability exceeds ``threshold`` (0.5, BCBToolkit's usual cut-off), and
+    ``mean_probability``.
+    """
+    import nibabel as nib
+    import numpy as np
+    from nibabel.processing import resample_from_to
+    units, _, _ = load(directory)
+    target = nib.load(str(map_path))
+    prob = np.asanyarray(target.dataobj).astype(float)
+    x = nib.affines.apply_affine(target.affine, np.indices(prob.shape).reshape(3, -1).T)[:, 0].reshape(prob.shape)
+    images = {}
+    out = []
+    for uid, unit in units.items():
+        if unit["kind"] != "tract":
+            continue
+        atlas = unit["atlas"]
+        if atlas not in atlases:
+            out += [dict(unit=uid, side=s, atlas=atlas, measured=False, disconnected_pct=None, mean_probability=None)
+                    for s in SIDES]
+            continue
+        if atlas not in images:
+            path, labels = atlases[atlas]
+            data = np.asanyarray(resample_from_to(nib.load(str(path)), target, order=0).dataobj).astype(int)
+            images[atlas] = (data, {name: int(value) for value, name in labels.items()})
+        data, ids = images[atlas]
+        from_voxels = isinstance(unit["labels"], list)
+        for side in SIDES:
+            wanted = [ids[label] for label in unit_labels(unit, side) if label in ids]
+            voxels = np.isin(data, wanted)
+            if from_voxels:
+                voxels &= (x < -1e-5) if side == "left" else (x > 1e-5)
+            n = int(voxels.sum())
+            out.append(dict(unit=uid, side=side, atlas=atlas, measured=n > 0,
+                            disconnected_pct=100.0 * float((prob[voxels] > threshold).mean()) if n else None,
+                            mean_probability=float(prob[voxels].mean()) if n else None))
+    return pd.DataFrame(out)
+
+
+def region_disconnection(units_df: pd.DataFrame, directory: str = str(DIR)) -> pd.DataFrame:
+    """Disconnection per KB tract region: the most disconnected of its tract
+    units on its side, in the columns of ``region_damage`` (``region_pct`` =
+    share of the tract disconnected, ``lesion_pct`` 0), so the same finding
+    matching applies."""
+    units, regions, _ = load(directory)
+    by_key = {(r.unit, r.side): r for r in units_df.itertuples()}
+    out = []
+    for rid, region in regions.items():
+        sides = SIDES if region["side"] == "both" else (region["side"],)
+        parts = [by_key[(u, s)] for u in region["units"] for s in sides
+                 if units[u]["kind"] == "tract" and (u, s) in by_key and by_key[(u, s)].measured]
+        if not parts:
+            continue
+        best = max(parts, key=lambda p: p.disconnected_pct)
+        out.append(dict(region=rid, side=region["side"], measured=True, lesion_pct=0.0,
+                        region_pct=best.disconnected_pct, mean_probability=best.mean_probability,
+                        units_hit=[best.unit], review=bool(region.get("review"))))
+    return pd.DataFrame(out)
+
+
 def coverage(findings: pd.DataFrame, directory: str = str(DIR)) -> dict:
     """How much location evidence the mapping can reach.
 
