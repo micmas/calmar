@@ -57,6 +57,7 @@ QC_STAGES_FOR_SOURCE = {
     "linda": ("lesion",),
     "synthstroke": ("synthstroke_lesion",),
     "manual": ("manual_lesion", "expert_mni_warp"),
+    "openads": ("openads_lesion", "openads_mni_warp"),
 }
 
 TEMPLATE_CAVEAT = (
@@ -332,7 +333,7 @@ def lesion_volume_ml(mask_path):
 def mask_qc_summary(anchor_mask, mask_path, source):
     """QC rating(s) and edit count for the selected mask, from ``*.qc.json``.
 
-    ``anchor_mask`` is the participant's QC anchor (LINDA's Lesion_in_MNI),
+    ``anchor_mask`` is the participant's QC anchor (``Study.qc_anchor``),
     whose sidecar holds every stage rating; ``mask_path``'s own sidecar holds
     that mask's edit history. Returns {"ratings": [(stage, label, reviewer,
     date)], "edits": n, "poor": bool}.
@@ -712,7 +713,6 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
         raise ValueError(f"No existing MNI mask for {source!r}, {entry['subject']} "
                          f"{entry.get('session') or ''}. Choose an available mask in the report selector.")
     mask = Path(study.mni_mask(entry, source))
-    linda_dir = Path(study.linda_dir(entry))
     brain = Path(study.template_dir(entry)) / "Subject_in_MNI.nii.gz"
     # prepare_report_overlap reads the atlas list from INTERP_KB_ATLASES; give it ours.
     view = dict(namespace, INTERP_KB_ATLASES=list(settings.kb_atlases))
@@ -853,9 +853,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     except Exception as exc:          # the report is still useful without it
         method = None
         note(f"  mask method not described: {exc}")
-    qc = mask_qc_summary(study.lesion_mni(entry), mask, source)
+    qc = mask_qc_summary(study.qc_anchor(entry), mask, source)
     provenance = provenance_html(source, mask, qc, kb_scope=kb_scope, method=method, kb=kb_line)
-    qc_notice = report_qc_notice(linda_dir, entry)
+    qc_notice = report_qc_notice(Path(study.qc_dir(entry)), entry)
     overlay = _overlay_img(namespace, entry, mask, brain, source)
     path, page, _ = save_report(entry, source, reports_dir, title_card, qc_notice, provenance, overlay, body)
     note(f"  Report saved → {path}")

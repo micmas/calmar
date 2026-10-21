@@ -126,6 +126,7 @@ class MaskDiscoveryTests(unittest.TestCase):
             masks=self.inventory, qc_stages=self.stages, linda_dir=self.linda,
             synthstroke_dir=self.synth, hdbet_dir=lambda e: self.root / "hdbet",
             lesion_mni=lambda e: self.linda(e) / "Lesion_in_MNI.nii.gz",
+            qc_anchor=lambda e: self.linda(e) / "Lesion_in_MNI.nii.gz", qc_dir=self.linda, config={},
             mni_mask=lambda e, s: self.inventory(e).get(s, {}).get("MNI", self.root / "absent"))
         ns = dict(SUBJECTS=self.entries, study=study, cw=Widgets, StopExecution=StopExecution)
         with patch.object(q, "ensure_lesion_boundary", lambda p, **kw: p), \
