@@ -7,8 +7,11 @@ rebuild these paths independently. ``Study`` is now the single definition:
     study.dirs(entry)["linda"]        # derivatives/linda/sub-X/ses-Y/anat
     study.masks(entry)                # {"linda": {"T1w": path, "MNI": path}, ...}
 
-An *entry* is one T1w image to process: ``{"subject", "session", "t1w"}``.
-Nothing here runs a tool, downloads data or modifies an image.
+An *entry* is one image to process: ``{"subject", "session", "t1w"}``.
+``t1w`` is the native image every native-space output lies on: the T1w in the
+chronic (T1) route, the diffusion-weighted image in the acute (DWI) route
+(``CONFIG["MODALITY"] = "dwi"``), whose entries also carry ``dwi``, ``adc``
+and ``modality``. Nothing here runs a tool, downloads data or modifies an image.
 """
 from pathlib import Path
 import re
@@ -24,10 +27,24 @@ DERIVATIVE_KEYS = {
     "bcbtoolkit": "BCB_SUBDIR",
     "deepdisco": "DEEPDISCO_SUBDIR",
     "registration": "REGISTRATION_SUBDIR",
+    "openads": "OPENADS_SUBDIR",
 }
 
-# Automatic lesion segmentations the workflow can run (CONFIG["SEGMENTATION_METHODS"]).
-SEGMENTATION_METHODS = ("linda", "synthstroke")
+# Automatic lesion segmentations the workflow can run (CONFIG["SEGMENTATION_METHODS"]),
+# per imaging route (CONFIG["MODALITY"]): chronic T1w, or acute diffusion (DWI + ADC).
+ROUTE_METHODS = {"t1": ("linda", "synthstroke"), "dwi": ("openads",)}
+SEGMENTATION_METHODS = ROUTE_METHODS["t1"] + ROUTE_METHODS["dwi"]
+# Steps of the T1 route that the DWI route does not run, and the reverse.
+T1_ONLY_STAGES = ("brain", "linda", "synthstroke", "registration")
+DWI_ONLY_STAGES = ("openads",)
+
+
+def modality(config):
+    """"t1" (chronic route, default) or "dwi" (acute route: OpenADS on DWI + ADC)."""
+    value = config.get("MODALITY") or "t1"
+    if value not in ROUTE_METHODS:
+        raise ValueError(f"MODALITY must be one of {list(ROUTE_METHODS)}, not {value!r}")
+    return value
 
 # Generated filenames still use the historical "expert" token for manual masks
 # (ExpertMask_in_MNI.nii.gz, *_expert.csv), so existing derivatives stay valid.
@@ -44,22 +61,31 @@ def file_token(source):
 
 def segmentation_methods(config):
     """The automatic segmentations selected in CONFIG (default: both)."""
+    allowed = ROUTE_METHODS[modality(config)]
     methods = config.get("SEGMENTATION_METHODS")
-    methods = tuple(SEGMENTATION_METHODS if methods is None else methods)
-    unknown = [m for m in methods if m not in SEGMENTATION_METHODS]
+    methods = tuple(allowed if methods is None else methods)
+    if modality(config) == "dwi":
+        methods = allowed                       # the acute route has one segmentation
+    unknown = [m for m in methods if m not in allowed]
     if unknown or not methods:
-        raise ValueError(f"SEGMENTATION_METHODS must list one or more of {SEGMENTATION_METHODS}, not {list(methods)}")
+        raise ValueError(f"SEGMENTATION_METHODS must list one or more of {allowed}, not {list(methods)}")
     return methods
 
 
 def template_source(config):
     """Who registers each brain to the template: "linda" (its own registration,
-    reused for every mask) or, without LINDA, "ants" (the registration step)."""
+    reused for every mask), "ants" (the registration step, T1 route without
+    LINDA) or "openads" (OpenADS's DWI registration, acute route)."""
+    if modality(config) == "dwi":
+        return "openads"
     return "linda" if "linda" in segmentation_methods(config) else "ants"
 
 
 def stage_selected(stage, config):
-    """False for a step the selected methods do not need."""
+    """False for a step the selected methods (and imaging route) do not need."""
+    route = modality(config)
+    if (route == "dwi" and stage in T1_ONLY_STAGES) or (route == "t1" and stage in DWI_ONLY_STAGES):
+        return False
     if stage in SEGMENTATION_METHODS:
         return stage in segmentation_methods(config)
     if stage == "registration":
@@ -75,9 +101,12 @@ def mni_masks(dirs):
     run) live in its folder, so the two registrations never share a file.
     """
     own = dirs["template"] == dirs["linda"]
-    return {"linda": dirs["linda"] / "Lesion_in_MNI.nii.gz",
-            "manual": dirs["template"] / "ExpertMask_in_MNI.nii.gz",
-            "synthstroke": (dirs["synthstroke"] if own else dirs["template"]) / "SynthStroke_in_MNI.nii.gz"}
+    masks = {"linda": dirs["linda"] / "Lesion_in_MNI.nii.gz",
+             "manual": dirs["template"] / "ExpertMask_in_MNI.nii.gz",
+             "synthstroke": (dirs["synthstroke"] if own else dirs["template"]) / "SynthStroke_in_MNI.nii.gz"}
+    if "openads" in dirs:
+        masks["openads"] = dirs["openads"] / "OpenADS_in_MNI.nii.gz"
+    return masks
 
 
 def derivative_dirs(dataset, config, entry):
@@ -91,7 +120,7 @@ def derivative_dirs(dataset, config, entry):
     suffix = Path(entry["subject"]) / (entry.get("session") or "") / "anat"
     dirs = {tool: Path(dataset) / config.get(key, f"derivatives/{tool}") / suffix
             for tool, key in DERIVATIVE_KEYS.items()}
-    dirs["template"] = dirs["linda" if template_source(config) == "linda" else "registration"]
+    dirs["template"] = dirs[{"linda": "linda", "ants": "registration", "openads": "openads"}[template_source(config)]]
     return dirs
 
 
@@ -145,6 +174,32 @@ def discover_t1w(root, sub_filter=None, ses_filter=None, selection="first"):
     return found
 
 
+def discover_dwi(root, sub_filter=None, ses_filter=None):
+    """List diffusion images with their ADC under ``root`` as entries (acute route).
+
+    Looks for ``sub-*/[ses-*/]dwi/*_dwi.nii.gz`` with an ``*_adc.nii.gz``
+    beside it (the ISLES-2022 layout: trace DWI, b1000, and its ADC map);
+    ``derivatives`` is skipped. ``t1w`` is set to the DWI, the native image.
+    """
+    root = Path(root)
+    found = []
+    for dwi in sorted(root.rglob("*_dwi.nii.gz")):
+        parts = dwi.relative_to(root).parts
+        if any(part in ("derivatives", ".git", ".datalad") for part in parts):
+            continue
+        adc = dwi.with_name(dwi.name.replace("_dwi.nii.gz", "_adc.nii.gz"))
+        if not adc.exists() and not adc.is_symlink():
+            continue
+        sub = next((p for p in parts if p.startswith("sub-")), None)
+        ses = next((p for p in parts if p.startswith("ses-")), None)
+        if sub is None or not matches_filter(sub, sub_filter):
+            continue
+        if ses is not None and not matches_filter(ses, ses_filter):
+            continue
+        found.append({"subject": sub, "session": ses, "t1w": dwi, "dwi": dwi, "adc": adc, "modality": "dwi"})
+    return found
+
+
 def select_participants(config, dataset_dir):
     """Apply DATASET_SOURCE, filters and MAX_SUBJECTS/RANDOM_SAMPLE.
 
@@ -156,8 +211,11 @@ def select_participants(config, dataset_dir):
         sub, ses = SUB_RE.search(str(t1)), SES_RE.search(str(t1))
         return [{"subject": sub.group(1) if sub else "sub-single",
                  "session": ses.group(1) if ses else None, "t1w": t1}], ""
-    entries = discover_t1w(dataset_dir, config.get("SUBJECT_FILTER"),
-                           config.get("SESSION_FILTER"), config.get("T1W_SELECTION", "first"))
+    if modality(config) == "dwi":
+        entries = discover_dwi(dataset_dir, config.get("SUBJECT_FILTER"), config.get("SESSION_FILTER"))
+    else:
+        entries = discover_t1w(dataset_dir, config.get("SUBJECT_FILTER"),
+                               config.get("SESSION_FILTER"), config.get("T1W_SELECTION", "first"))
     n = config.get("MAX_SUBJECTS")
     if config.get("RANDOM_SAMPLE"):
         before = len({e["subject"] for e in entries})
@@ -209,7 +267,8 @@ class Study:
     def masks(self, entry):
         """Existing masks as ``{source: {space: path}}``; nothing is computed."""
         return cm.discover_masks(entry, self.linda_dir(entry), self.synthstroke_dir(entry),
-                                 template_dir=self.template_dir(entry), manual_path=self.manual_mask_template(entry),
+                                 template_dir=self.template_dir(entry), openads_dir=self.dirs(entry)["openads"],
+                                 manual_path=self.manual_mask_template(entry),
                                  manual_space=self.config.get("MANUAL_MASK_SPACE", "t1"))
 
     def mni_sources(self, entry):

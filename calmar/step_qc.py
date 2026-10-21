@@ -27,10 +27,10 @@ from . import masks as cm
 from .study import mni_masks
 
 # Outline colours follow the notebook's mask-origin colours.
-COLORS = {"linda": "red", "synthstroke": "lime", "manual": "dodgerblue",
+COLORS = {"linda": "red", "synthstroke": "lime", "manual": "dodgerblue", "openads": "#ffcb7f",
           "hdbet": "yellow", "hdbet_tissue": "orange", "template": "cyan", "bcbtoolkit": "magenta",
           "deepdisco": "cyan"}
-LABELS = {"linda": "LINDA", "synthstroke": "SynthStroke", "manual": "Manual",
+LABELS = {"linda": "LINDA", "synthstroke": "SynthStroke", "manual": "Manual", "openads": "OpenADS",
           "hdbet": "brain mask", "hdbet_tissue": "HD-BET part", "template": "MNI152 brain outline"}
 
 # Plausibility ranges that trigger a "look closer" flag.
@@ -295,11 +295,44 @@ def _registration(dirs, entry, t1):
     return rows, metrics, flags
 
 
+def _openads(dirs, entry, t1):
+    """Acute route: OpenADS lesion on the DWI and ADC, and in MNI152 (warped DWI
+    against the template brain outline). The T1-template correlation is not
+    computed: a DWI is not expected to correlate with a T1 template."""
+    stem = "_".join(x for x in (entry["subject"], entry.get("session")) if x)
+    native = dirs["openads"] / f"{stem}_space-DWI_desc-lesion_mask.nii.gz"
+    if not cm.present(native):
+        return None
+    anat = _load(t1)
+    lesion = _data(_load(native, anat))               # world coordinates: OpenADS reorients its grid
+    brain_path = dirs["openads"] / "DWI_brain_mask.nii.gz"
+    brain = _data(_load(brain_path, anat)) if cm.present(brain_path) else None
+    metrics, flags = _lesion_metrics("openads", lesion, anat, brain)
+    rows = [dict(bg=_data(anat), overlays=[(lesion, COLORS["openads"])], focus=lesion,
+                 label="DWI (b1000) · " + legend("openads"))]
+    if entry.get("adc") and cm.present(entry["adc"]):
+        rows.append(dict(bg=_data(_load(entry["adc"], anat, order=1)), overlays=[(lesion, COLORS["openads"])],
+                         focus=lesion, label="ADC · the acute lesion should be dark (restricted diffusion)"))
+    sub_mni, les_mni = dirs["openads"] / "Subject_in_MNI.nii.gz", dirs["openads"] / "OpenADS_in_MNI.nii.gz"
+    if cm.present(sub_mni):
+        _, tpl_mask = template_correlation(sub_mni)
+        mni = _load(sub_mni)
+        lm = _data(_load(les_mni, mni)) if cm.present(les_mni) else np.zeros(mni.shape)
+        metrics["openads_mni_volume_ml"] = round(float((lm > .5).sum() * voxel_ml(mni)), 2)
+        flags += warp_check("openads", metrics["openads_volume_ml"], metrics["openads_mni_volume_ml"])
+        rows.append(dict(bg=_data(mni), overlays=[(tpl_mask.astype(float), COLORS["template"]), (lm, COLORS["openads"])],
+                         focus=lm, label=f"DWI in MNI152 · {legend('template', 'openads')}"))
+    return rows, metrics, flags
+
+
 def _native_masks(dirs, entry, anat):
     """Native-space lesion masks that exist for this entry, on the T1 grid."""
     found = {}
     for source, path in [("linda", dirs["linda"] / "Prediction3_native.nii.gz"),
                          ("synthstroke", dirs["synthstroke"] / "prediction_lesion_mask.nii.gz"),
+                         ("openads", dirs.get("openads", Path("/nonexistent")) / (
+                             "_".join(x for x in (entry["subject"], entry.get("session")) if x)
+                             + "_space-DWI_desc-lesion_mask.nii.gz")),
                          ("manual", dirs["template"] / "_manual_mask_compare" / "ManualLesion_in_T1_sitk.nii.gz"),
                          ("manual", dirs["template"] / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz")]:
         if source not in found and cm.present(path):
@@ -358,7 +391,7 @@ def _manual(dirs, entry, t1, manual_info=None):
             flags.append(f"{outside:.0%} of the registered manual mask lies outside the head: "
                          "the reference-scan registration failed (see row 2)")
         manual = found["manual"] > .5
-        for other in ("linda", "synthstroke"):
+        for other in ("linda", "synthstroke", "openads"):
             if other in found:
                 metrics[f"dice_{other}_vs_manual"] = round(dice(found[other], found["manual"]), 3)
                 # Dice alone hides the direction of disagreement: report the
@@ -368,7 +401,7 @@ def _manual(dirs, entry, t1, manual_info=None):
                 metrics[f"{other}_volume_ml"] = round(float(auto.sum() * voxel_ml(anat)), 2)
                 metrics[f"{other}_covers_manual"] = round(float((auto & manual).sum() / max(manual.sum(), 1)), 3)
                 metrics[f"{other}_inside_manual"] = round(float((auto & manual).sum() / max(auto.sum(), 1)), 3)
-        keys = [k for k in ("manual", "linda", "synthstroke") if k in found]
+        keys = [k for k in ("manual", "linda", "synthstroke", "openads") if k in found]
         rows.append(dict(bg=_data(anat), overlays=[(found[k], COLORS[k]) for k in keys],
                          focus=found["manual"], label="Native T1w · " + legend(*keys)))
         ref = dirs["template"] / "_manual_mask_compare" / "T2_in_T1_sitk.nii.gz"
@@ -401,7 +434,7 @@ def _produced_maps(stage, outputs):
 
     DeepDisco: the whole-brain model when produced, else the first model.
     """
-    tokens = {"linda": "linda", "synthstroke": "synthstroke", "expert": "manual"}
+    tokens = {"linda": "linda", "synthstroke": "synthstroke", "openads": "openads", "expert": "manual"}
     found = {}
     for output in outputs or []:
         if output.get("status") not in USABLE or not output.get("path"):
@@ -426,7 +459,7 @@ def _disconnectome(stage, dirs, entry, t1, outputs=None):
     bg = _data(mni)
     lesions = mni_masks(dirs)
     rows, metrics = [], {}
-    for source in ("linda", "synthstroke", "manual"):
+    for source in ("linda", "synthstroke", "openads", "manual"):
         if source not in maps:
             continue
         path = maps[source]
@@ -459,7 +492,7 @@ def _disconnectome(stage, dirs, entry, t1, outputs=None):
 
 TITLES = {"brain": "HD-BET brain extraction", "linda": "LINDA lesion segmentation",
           "synthstroke": "SynthStroke lesion segmentation", "manual": "Manual mask alignment",
-          "registration": "Template registration (ANTs)",
+          "registration": "Template registration (ANTs)", "openads": "OpenADS acute lesion segmentation (DWI)",
           "bcb": "BCBToolkit disconnectome", "deepdisco": "DeepDisco disconnectome"}
 
 
@@ -476,6 +509,7 @@ def stage_evidence(stage, entry, dirs, reports_dir, *, manual_info=None, outputs
     """
     t1 = Path(entry["t1w"])
     makers = {"brain": _brain, "linda": _linda, "synthstroke": _synthstroke, "registration": _registration,
+              "openads": _openads,
               "manual": lambda d, e, t: _manual(d, e, t, manual_info),
               "bcb": lambda d, e, t: _disconnectome("bcb", d, e, t, outputs),
               "deepdisco": lambda d, e, t: _disconnectome("deepdisco", d, e, t, outputs)}

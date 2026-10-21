@@ -10,7 +10,6 @@ from html import escape
 
 import ipywidgets as w
 
-from .study import SEGMENTATION_METHODS
 
 METHOD_CHOICES = {"linda": "LINDA lesion segmentation (slow: 1.5-3.7 h per participant; "
                            "without it, ANTs registers each brain to the template)",
@@ -23,7 +22,15 @@ class MethodChoice:
 
     def __init__(self, config, on_change=None):
         self.config, self.on_change = config, on_change
-        chosen = config.get("SEGMENTATION_METHODS") or list(SEGMENTATION_METHODS)
+        from .study import modality
+        self.acute = modality(config) == "dwi"
+        if self.acute:
+            # The acute route has one segmentation; nothing to choose.
+            self.boxes, self.note = {}, w.HTML()
+            self.widget = w.HTML("<b>Lesion segmentation:</b> acute (DWI) route: OpenADS on the diffusion-weighted "
+                                 "image and ADC map (CONFIG[\"MODALITY\"] = \"dwi\").")
+            return
+        chosen = config.get("SEGMENTATION_METHODS") or list(METHOD_CHOICES)
         self.boxes = {m: w.Checkbox(value=m in chosen, description=label, indent=False,
                                     layout=w.Layout(width="auto"))
                       for m, label in METHOD_CHOICES.items()}
@@ -36,6 +43,8 @@ class MethodChoice:
 
     @property
     def methods(self):
+        if self.acute:
+            return ["openads"]
         return [m for m, box in self.boxes.items() if box.value]
 
     @property
@@ -55,6 +64,8 @@ class MethodChoice:
             self.on_change(self.valid)
 
     def summary(self):
+        if self.acute:
+            return "OpenADS"
         return ", ".join(escape(METHOD_CHOICES[m].split(" lesion")[0]) for m in self.methods)
 
     def disable(self):

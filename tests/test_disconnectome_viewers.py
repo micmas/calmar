@@ -96,7 +96,7 @@ class DisconnectomeTests(unittest.TestCase):
             self.write(self.folder(e, "linda") / "ExpertMask_in_MNI.nii.gz")
             self.write(self.folder(e, "synthstroke") / "SynthStroke_in_MNI.nii.gz")
             self.write(self.folder(e, "bcb") / "Disconnectome_linda.nii.gz")
-            for token in cd.SOURCE_TOKENS.values():
+            for token in ("linda", "synthstroke", "expert"):              # the T1-route sources
                 for model in cd.MODEL_NAMES:
                     self.write(self.folder(e, "dd") / f"DeepDisco_{token}_{model}.nii.gz")
 

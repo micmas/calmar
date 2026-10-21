@@ -6,7 +6,7 @@ from .masks import MASK_LABELS, present
 
 
 MODEL_NAMES = ("whole_brain", "association", "projection", "commissural")
-SOURCE_TOKENS = {"linda": "linda", "synthstroke": "synthstroke", "manual": "expert"}
+SOURCE_TOKENS = {"linda": "linda", "synthstroke": "synthstroke", "openads": "openads", "manual": "expert"}
 
 
 def discover(bcb_dir, deepdisco_dir):

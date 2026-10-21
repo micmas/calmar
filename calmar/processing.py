@@ -210,9 +210,33 @@ def ants_warp_product(registration, native, final, label, *, overwrite=False):
 def template_warp(config, p, native, final, label, *, overwrite=False):
     """Warp a native T1w-space mask to MNI152 with the participant's template
     registration: LINDA's when LINDA runs, else the registration step's."""
-    if template_source(config) == 'linda':
+    source = template_source(config)
+    if source == 'linda':
         return warp_product(p['linda'], native, final, label, overwrite=overwrite)
+    if source == 'openads':
+        return openads_warp_product(p['openads'], native, final, label, overwrite=overwrite)
     return ants_warp_product(p['registration'], native, final, label, overwrite=overwrite)
+
+
+OPENADS_MODULE = 'openadscpu/1.0.0'
+# OpenADS's DWI -> MNI152 transforms, copied into the openads folder.
+OPENADS_TRANSFORMS = ('openads_aff_individual2MNI152.mat', 'openads_syn_MNI1522MNI152.mat',
+                      'openads_warp_MNI1522MNI152.nii.gz')
+
+
+def openads_warp_product(openads_dir, native, final, label, *, interp='NearestNeighbor', overwrite=False):
+    """Warp an image on the DWI grid to FSL MNI152 with OpenADS's registration."""
+    aff, syn, warp = (openads_dir/name for name in OPENADS_TRANSFORMS)
+    script = Path(__file__).resolve().parents[1]/'src'/'analysis_44_apply_openads_registration.sh'
+    def build(tmp):
+        run(['bash', script, '--input', native, '--reference', templates.T1, '--affine', aff, '--syn', syn,
+             '--warp', warp, '--output', tmp, '--interp', interp], tmp.parent/f'{label}.log')
+    binary = interp == 'NearestNeighbor'
+    return product(final, [native, aff, syn, warp, script, templates.T1],
+                   {'module': 'ants/2.6.5', 'interpolation': interp, 'template': templates.NAME,
+                    'registration': 'openads'},
+                   build, lambda f: [f], label,
+                   validator=lambda f: validate_image(f, templates.T1, binary=binary), overwrite=overwrite)
 
 
 def paths(request, entry):
@@ -362,7 +386,8 @@ def step_acquisition(config, entry, p, request):
     t1 = Path(entry['t1w'])
     mask, ref, _ = manual_inputs(request, entry)
     outputs = []
-    for source in [t1] + ([mask] if mask else []) + ([ref] if ref else []):
+    adc = [Path(entry['adc'])] if entry.get('adc') else []          # acute (DWI) route
+    for source in [t1] + adc + ([mask] if mask else []) + ([ref] if ref else []):
         if not ensure_nifti_content(source, request['dataset']):
             raise RuntimeError(f'Acquisition failed: {source}')
         outputs.append({'path': str(source), 'image': validate_image(source)})
@@ -605,6 +630,64 @@ def step_registration(config, entry, p, request):
                               'synthstroke_mni', overwrite=overwrite)]
 
 
+def step_openads(config, entry, p, request):
+    """OpenADS (openadscpu/1.0.0) acute lesion segmentation on DWI + ADC, then MNI152.
+
+    Runs OpenADS in two passes (src/analysis_43_openads.sh explains the
+    skull-strip naming workaround), publishes its native lesion on the DWI
+    grid (with OpenADS's own RAS affine, which places it correctly in world
+    space), and its DWI -> MNI152 transforms. Its own MNI-space "stroke" image
+    is NOT the lesion (a renamed brain image), so the native lesion is warped
+    here with those transforms (one nearest-neighbour resampling), and the DWI
+    (linearly) as the template-space background.
+    """
+    dwi, adc = Path(entry['dwi']), Path(entry['adc'])
+    sub, ses = entry['subject'], entry.get('session')
+    stem = '_'.join(filter(None, [sub, ses]))
+    short = sub.removeprefix('sub-')
+    overwrite = config.get('OVERWRITE', False)
+    mask_name = f'{stem}_space-DWI_desc-lesion_mask.nii.gz'
+    def build(tmp):
+        tmp.mkdir()
+        staging = tmp.parent/'staging'/sub
+        staging.mkdir(parents=True)
+        (staging/f'{short}_DWI.nii.gz').symlink_to(dwi.resolve())
+        (staging/f'{short}_ADC.nii.gz').symlink_to(adc.resolve())
+        root = tmp/'ads'
+        command = ['ads', 'dwi', '--subject-path', staging, '--output-root', root]
+        run(command + ['--stages', 'prepdata,gen_mask,skull_strip'], tmp.parent/'processing.log')
+        pre = root/sub/'DWI'/'preprocess'
+        brain = np.asarray(nib.load(str(pre/f'{sub}_DWIbrain-mask.nii.gz')).dataobj) > 0
+        for kind in ('DWI', 'ADC'):
+            img = nib.load(str(pre/f'{sub}_{kind}.nii.gz'))
+            target = pre/f'{sub}_{kind}_brain.nii.gz'
+            target.unlink(missing_ok=True)
+            nib.save(nib.Nifti1Image((np.asarray(img.dataobj) * brain).astype(np.float32), img.affine), str(target))
+        record_step('regenerated the brain-extracted DWI and ADC as image x OpenADS brain mask (OpenADS 1.0.0 '
+                    'names every stripped image <sub>_stroke.nii.gz when the subject id contains "stroke")')
+        run(command + ['--stages', 'registration,inference,report'], tmp.parent/'inference.log')
+        seg = nib.load(str(root/sub/'DWI'/'segment'/f'{sub}_stroke-mask.nii.gz'))
+        data = np.asarray(seg.dataobj) > 0.5
+        if data.sum() > 0.5 * data.size:
+            raise RuntimeError(f'Implausible OpenADS lesion: {int(data.sum())} voxels')
+        nib.save(nib.Nifti1Image(data.astype(np.uint8), seg.affine), str(tmp/mask_name))
+        reg = root/sub/'DWI'/'registration'
+        for name, source in zip(OPENADS_TRANSFORMS, (f'{sub}_aff_space-individual2MNI152.mat',
+                                                    f'{sub}_syn_space-MNI1522MNI152.mat',
+                                                    f'{sub}_warp_space-MNI1522MNI152.nii.gz')):
+            shutil.copy2(reg/source, tmp/name)
+            validate_transform(tmp/name)
+        shutil.copy2(pre/f'{sub}_DWIbrain-mask.nii.gz', tmp/'DWI_brain_mask.nii.gz')
+    segmentation = product(p['openads'], [dwi, adc], {'module': OPENADS_MODULE, 'two_pass_brain_regeneration': True},
+                           build, lambda d: [d/mask_name, d/'DWI_brain_mask.nii.gz'], 'openads',
+                           validator=lambda f: validate_image(f, binary=True), overwrite=overwrite)
+    return [segmentation,
+            openads_warp_product(p['openads'], p['openads']/mask_name, p['openads']/'OpenADS_in_MNI.nii.gz',
+                                 'openads_mni', overwrite=overwrite),
+            openads_warp_product(p['openads'], dwi, p['openads']/'Subject_in_MNI.nii.gz', 'openads_subject_mni',
+                                 interp='Linear', overwrite=overwrite)]
+
+
 def step_manual(config, entry, p, request):
     """Bring the optional manual mask into T1 space, then warp it to MNI152.
 
@@ -779,13 +862,23 @@ def step_bcb(config, entry, p, request):
 
 
 STEPS = {'acquisition': step_acquisition, 'brain': step_brain, 'linda': step_linda,
-         'synthstroke': step_synthstroke, 'registration': step_registration, 'manual': step_manual,
-         'bcb': step_bcb, 'deepdisco': step_deepdisco}
+         'synthstroke': step_synthstroke, 'registration': step_registration, 'openads': step_openads,
+         'manual': step_manual, 'bcb': step_bcb, 'deepdisco': step_deepdisco}
 
 
 NOT_SELECTED = {'linda': 'LINDA is not in SEGMENTATION_METHODS',
                 'synthstroke': 'SynthStroke is not in SEGMENTATION_METHODS',
-                'registration': "not needed: LINDA's registration to the template is used"}
+                'registration': "not needed: LINDA's registration to the template is used",
+                'openads': 'OpenADS runs only in the acute (DWI) route, CONFIG["MODALITY"] = "dwi"',
+                'brain': 'not part of the acute (DWI) route'}
+
+
+def not_selected_reason(stage, config):
+    """Why a step is not run for this configuration."""
+    from .study import modality, T1_ONLY_STAGES
+    if modality(config) == 'dwi' and stage in T1_ONLY_STAGES:
+        return 'not part of the acute (DWI) route'
+    return NOT_SELECTED[stage]
 
 
 def skipped(entry, started, reason):
@@ -806,10 +899,10 @@ def process(stage, request):
         started = time.monotonic()
         if stage == 'brain' and not config.get('USE_HDBET_PREPROCESSING', True):
             results.append(skipped(entry, started, 'HD-BET preprocessing disabled')); continue
-        if stage in ('brain', 'linda', 'synthstroke', 'registration') and not config.get('RUN_SEGMENTATION', True):
+        if stage in ('brain', 'linda', 'synthstroke', 'registration', 'openads') and not config.get('RUN_SEGMENTATION', True):
             results.append(skipped(entry, started, 'RUN_SEGMENTATION=False')); continue
         if not stage_selected(stage, config):
-            results.append(skipped(entry, started, NOT_SELECTED[stage])); continue
+            results.append(skipped(entry, started, not_selected_reason(stage, config))); continue
         p = paths(request, entry)
         outputs = STEPS[stage](config, entry, p, request)
         result = {'subject': entry['subject'], 'session': entry.get('session'),
