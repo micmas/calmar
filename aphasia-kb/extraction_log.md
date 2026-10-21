@@ -256,7 +256,7 @@ add an `EXTRACTED` line for every run.
 2026-10-21 | EXTRACTED | @Fritsch2022 | thalamic_aphasia | narrative review of phenotypes and mechanisms
 2026-10-21 | EXTRACTED | @Han2013 | left_inferior_fronto_occipital_fasciculus, left_anterior_thalamic_radiation, left_uncinate_fasciculus | 3 region-anchored drafts
 2026-10-21 | EXTRACTED | @Li2017 | left_anterior_thalamic_radiation, left_inferior_fronto_occipital_fasciculus, left_uncinate_fasciculus, left_arcuate_fasciculus_slf, left_frontal_aslant_tract | 5 region drafts, 6 findings
-2026-10-21 | EXTRACTED | @MartinezOeckel2021 | left_extreme_capsule, left_arcuate_fasciculus | 2 region-anchored drafts
+2026-10-21 | EXTRACTED | @Oeckel2021 | left_extreme_capsule, left_arcuate_fasciculus | 2 region-anchored drafts
 2026-10-21 | EXTRACTED | @Sebastian2014 | left_thalamus, right_thalamus | 2 region-anchored drafts
 2026-10-21 | EXTRACTED | @Siegel2016 | severity_metric, left_hemisphere_intrahemispheric_connectivity | 2 drafts, confidence: high
 2026-10-21 | EXTRACTED | @Xing2016 | right_superior_temporal_gyrus, right_supramarginal_gyrus | VBM study on n=32 chronic aphasia patients showing RH temporoparietal GM volume predicts AQ and production.
@@ -275,3 +275,4 @@ add an `EXTRACTED` line for every run.
 2026-10-22 | MODEL-APPROVED | @Schwartz2009 | left_superior_temporal_gyrus_wernicke | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
 2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_superior_temporal_gyrus_wernickes | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
 2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_supramarginal_gyrus_premotor | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | REKEYED | @Oeckel2021 | was extracted as @MartinezOeckel2021 (PDF had no citations.md entry)

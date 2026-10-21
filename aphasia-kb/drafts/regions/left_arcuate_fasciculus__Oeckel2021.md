@@ -14,7 +14,7 @@ findings:
     claim: "Lesions of the left arcuate fasciculus (>15% overlap) were not significantly associated with the occurrence of aphasia in acute stroke patients without cortical language area lesions."
     direction: no_effect
     relationship: causal
-    citation: "@MartinezOeckel2021"
+    citation: "@Oeckel2021"
     method: LSM
     design: cross-sectional
     strength: moderate
