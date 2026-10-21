@@ -79,7 +79,8 @@ class ReportSettings:
     high_conf_only: bool = False             # only KB findings with confidence "high"
     include_drafts: bool = True              # older setting: True = evidence "all", False = "approved"
     evidence: str | None = None              # "approved", "in_review" (approved + in review) or "all" (+ drafts)
-    min_overlap_pct: float = 5.0             # min % of lesion in an ROI to count it
+    min_overlap_pct: float = 5.0             # an ROI counts as damaged if it holds >= this % of the lesion
+    min_region_pct: float = 10.0             # ... or if >= this % of the ROI is destroyed (thin tracts)
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
     threshold: float = 0.5                   # mask threshold for Dice between masks
@@ -226,39 +227,37 @@ def overlap_csv(atlas, source, overlap_paths, reports_dir):
     return Path(reports_dir) / f"lesion_atlas_overlap_{atlas}_{file_token(source)}.csv"
 
 
-def imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, reports_dir):
-    """KB predictions from lesion location, merged across ``settings.kb_atlases``.
-
-    Returns (DataFrame, [(atlas, rows)]); the DataFrame has target,
-    target_kind, score, n_findings, citations, source_atlases, direction.
-    """
-    per_atlas, chunks = [], []
+def lesion_damage(entry, source, settings, overlap_paths, reports_dir):
+    """Damage per knowledge-base region (aphasia-kb/atlas_mapping) from the
+    participant's rows of each atlas overlap table in ``settings.kb_atlases``.
+    Returns ``(region damage, {atlas: rows})``."""
+    import atlas_mapping
+    rows_by_atlas = {}
     for atlas in settings.kb_atlases:
         csv = overlap_csv(atlas, source, overlap_paths, reports_dir)
         if not csv.exists():
             continue
         rows = _participant_rows(pd.read_csv(csv), entry)
-        if rows.empty:
-            continue
-        found = kb.interpret_overlap(
-            rows, atlas=atlas, region_col="region", weight_col="lesion_in_roi_percent",
-            min_overlap=settings.min_overlap_pct,
-            min_confidence=("high" if settings.high_conf_only else None))
-        if found is None or found.empty:
-            per_atlas.append((atlas, 0))
-            continue
-        chunks.append(found.copy().assign(_atlas=atlas))
-        per_atlas.append((atlas, len(found)))
-    if not chunks:
+        if not rows.empty:
+            rows_by_atlas[atlas] = rows
+    units = atlas_mapping.unit_damage(rows_by_atlas)
+    return atlas_mapping.region_damage(units), rows_by_atlas
+
+
+def imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, reports_dir):
+    """KB predictions from lesion location, through the curated atlas mapping.
+
+    Returns (DataFrame, [(atlas, rows)]); the DataFrame has target,
+    target_kind, score, n_findings, citations, contributing_regions, direction.
+    """
+    damage, rows_by_atlas = lesion_damage(entry, source, settings, overlap_paths, reports_dir)
+    per_atlas = [(atlas, len(rows)) for atlas, rows in rows_by_atlas.items()]
+    found = kb.interpret_damage(damage, min_overlap=settings.min_overlap_pct, min_region=settings.min_region_pct,
+                                min_confidence=("high" if settings.high_conf_only else None))
+    if found is None or found.empty:
         return pd.DataFrame(), per_atlas
-    merged = (pd.concat(chunks, ignore_index=True)
-              .groupby(["target", "target_kind"], as_index=False)
-              .agg(score=("score", "sum"), n_findings=("n_findings", "sum"),
-                   citations=("citations", lambda s: sorted({c for lst in s for c in lst})),
-                   source_atlases=("_atlas", lambda s: sorted(set(s)))))
-    merged["direction"] = merged["score"].apply(rules.evidence_direction)
-    merged = merged.sort_values("score", key=lambda s: s.abs(), ascending=False).reset_index(drop=True)
-    return merged, per_atlas
+    found["direction"] = found["score"].apply(rules.evidence_direction)
+    return found, per_atlas
 
 
 def damaged_regions(entry, source, settings, overlap_paths, reports_dir):
@@ -709,9 +708,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     # 1. Lesion location -> KB predictions
     imaging, per_atlas = imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, reports_dir)
     damaged = damaged_regions(entry, source, settings, overlap_paths, reports_dir)
-    note("  KB findings by atlas:")
+    note("  Overlap rows by atlas (matched to KB regions through aphasia-kb/atlas_mapping):")
     for atlas, n in per_atlas:
-        note(f"    . {atlas:14s} {n:3d} (target,target_kind) rows")
+        note(f"    . {atlas:14s} {n:3d} regions overlapped")
 
     # 2. Clinical data -> KB predictor predictions, recovery stage
     row = participant_row(dataset_dir, entry["subject"])
