@@ -77,19 +77,23 @@ class ReportInterfaceTests(unittest.TestCase):
                           ns['INTERP_EVIDENCE']), ('manual','Atlas B',True,'approved'))
 
     def test_report_keeps_evidence_and_qc_notice_and_adds_decoding_once(self):
-        body = '<div><h4>Regions (Atlas A)</h4><table><tr><td>ROI</td></tr></table><h4>Outcomes</h4><p>Citation X</p><hr><div>Legend</div></div>'
+        body = '<main><h4>Regions (Atlas A)</h4><table><tr><td>ROI</td></tr></table><h4>Outcomes</h4><p>Citation X</p><hr><div class="legend"><h5>How to read the evidence</h5><p>Legend</p></div></main>'
         sections = report_sections(body)
         self.assertEqual([x[0] for x in sections], ['Regions (Atlas A)','Outcomes','Legend and evidence notes'])
         self.assertIn('Citation X', sections[1][1])
+        self.assertEqual(sum('How to read the evidence' in content for _, content in sections), 1)
+        self.assertTrue(sections[-1][1].rstrip().endswith('</div>'))
         with TemporaryDirectory() as temp:
             path = Path(temp)/'report.html'
-            full = '<html><body>QC was skipped by the user.' + body + '</body></html>'
+            full = '<html><head><style>.report-header{color:red}</style></head><body>QC was skipped by the user.' + body + '</body></html>'
             path.write_text(full)
             report = ParticipantReport('Participant report', 'QC was skipped by the user.', sections,
                 path, full, Path(temp)/'missing-brain.nii.gz', Path(temp)/'mask.nii.gz', SimpleNamespace(), decode=True)
             self.addCleanup(report.widget.close)
             self.addCleanup(report.navigation.close)
             self.assertIn('QC was skipped by the user.', report.widget.children[0].value)
+            self.assertIn('.report-header{color:red}', report.widget.children[0].value)
+            self.assertIn('class="calmar-report"', report.widget.children[0].value)
             report.add_decoding('<p>first result</p>')
             report.add_decoding('<p>second result</p>')
             saved = path.read_text()

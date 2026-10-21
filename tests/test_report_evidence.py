@@ -1,15 +1,19 @@
 """Report sections that show each finding with its direction."""
 import sys
+import re
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
+from bs4 import BeautifulSoup
 
 KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
 sys.path.insert(0, str(KB_ROOT))
 import aphasia_rules as rules  # noqa: E402
 from aphasia_kb import KnowledgeBase  # noqa: E402
 from calmar.participant_report import ReportSettings  # noqa: E402
-from calmar.report_evidence import location_coverage, location_section, measures_section, wab_band  # noqa: E402
+from calmar.report_evidence import (_claims, _evidence_context, location_coverage, location_section,
+                                    measures_section, wab_band)  # noqa: E402
 
 KB = KnowledgeBase(KB_ROOT, include=("approved", "in_review", "draft"))
 
@@ -23,8 +27,13 @@ def test_location_section_shows_regions_damage_and_merges_kb_synonyms():
     html = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings())
     assert "56% of the region destroyed" in html and "90% of the region destroyed" in html
     assert html.count("Also recorded in the knowledge base as") == 1          # two spellings, one row
-    assert "⚑" in html                                                       # arcuate: judgement call
+    assert "Atlas match includes a documented judgement call" in html
     assert ">association<" in html and "LIKELY" not in html
+    assert "finding-claim" in html and "Evidence strength" in html and "Extraction confidence" in html
+    assert "Source passages" in html and "Full citation for" in html
+    assert "Project-specific display heuristic" in html and "&#9733;" not in html
+    assert "All implicated regions:" in html and "display-signal-print" in html
+    assert rows["source_path"].str.len().gt(0).all()
 
 
 def test_measures_section_states_direction_and_flags_late_severity_scores():
@@ -33,7 +42,9 @@ def test_measures_section_states_direction_and_flags_late_severity_scores():
     assert "WAB-AQ 51.5 (moderate" in html and "measured 3839 days after the stroke" in html
     assert "Lower values go with worse language or recovery" in html
     assert "Higher values go with worse language or recovery" in html            # lesion volume
+    assert "distinct findings" in html
     assert "apply only loosely" in html
+    assert "of these findings" in html and "distinct findings" in html
     # Findings about predicting the measure itself are not "what it implies".
     assert "A ResNet-18 CNN" not in html
     assert "LIKELY" not in html
@@ -49,4 +60,86 @@ def test_regions_resting_on_few_studies_are_marked():
     damage = pd.DataFrame([dict(region="left_pallidum", side="left", lesion_pct=0.1, region_pct=40.0, review=False)])
     rows = KB.location_findings(damage, min_overlap=5, min_region=10)
     html = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings())
-    assert "⚠ based on 1 study" in html
+    assert "Limited citation base: 1 citation key" in html
+
+
+def test_location_summary_keeps_association_null_mixed_and_inverse_counts_separate():
+    damage = pd.DataFrame([
+        dict(region="left_arcuate_fasciculus", side="left", lesion_pct=10.0, region_pct=50.0, review=False),
+        dict(region="left_ifg_pars_opercularis", side="left", lesion_pct=8.0, region_pct=40.0, review=False),
+    ])
+    rows = pd.DataFrame([
+        dict(region="left_arcuate_fasciculus", side="left", lesion_pct=10.0, region_pct=50.0,
+             predicts="speech_repetition", predicts_kind="impairment", claim=f"Claim {i}", direction=direction,
+             citation=f"@Study{i}", method=None, strength=None, evidence_quality=None, confidence=None,
+             source_id="missing", finding_id=f"f{i}", contribution=contribution)
+        for i, (direction, contribution) in enumerate([
+            ("likely", 1.0), ("no_effect", 0.0), ("mixed", 0.0), ("unlikely", -0.5),
+            ("not_yet_classified", 0.0),
+        ])
+    ])
+    # An identical claim/citation attached to another damaged region is one
+    # distinct finding, but both implicated regions must remain visible.
+    rows = pd.concat([rows, rows.iloc[[0]].assign(region="left_ifg_pars_opercularis",
+                                                   lesion_pct=8.0, region_pct=40.0)], ignore_index=True)
+    html = location_section(KB, rules, rows, damage,
+                            {"findings": 4, "undamaged": 0, "unmappable": 0}, ReportSettings())
+    for label in ("Associations", "Inverse associations", "Null findings", "Mixed results"):
+        assert f"<dt>{label}</dt><dd>1</dd>" in html
+    assert "<dt>Other / unclassified</dt><dd>1</dd>" in html
+    assert "Across 5 distinct matched findings" in html
+    assert "Left arcuate fasciculus" in html and "Left IFG Pars Opercularis" in html
+    assert "Study method: Not reported" in html
+    assert "<dd>Not reported</dd>" in html
+    assert "findings may come from the same study or overlapping cohorts" in html
+
+
+def test_finding_disclosures_use_source_file_identity_and_handle_nan(tmp_path):
+    approved = dict(id="same_region", status="approved", _path=tmp_path / "approved.yaml", reviewer="Reviewer A",
+                    findings=[dict(id="f1", claim="Approved claim <exact>", citation="@Approved",
+                                   source_passages=[dict(quote="Approved passage")])])
+    draft = dict(id="same_region", status="draft", _path=tmp_path / "draft.yaml",
+                 findings=[dict(id="f1", claim="Draft claim", citation="@Draft",
+                                source_passages=[dict(quote="Draft passage")])])
+    flat = pd.DataFrame([
+        dict(source_id="same_region", source_path=str(approved["_path"]), id="f1", source_status="approved",
+             claim=approved["findings"][0]["claim"], citation="@Approved", direction="likely", method=pd.NA, design=pd.NA,
+             strength=pd.NA, confidence=pd.NA, reviewer=pd.NA, review_kind="human", review_tier=pd.NA),
+        dict(source_id="same_region", source_path=str(draft["_path"]), id="f1", source_status="draft",
+             claim="Draft claim", citation="@Draft", direction="likely", method="LSM", strength="moderate", confidence="high",
+             reviewer=pd.NA, review_kind="none", review_tier=pd.NA),
+    ])
+    kb = SimpleNamespace(root=tmp_path, regions=pd.DataFrame([approved, draft]), impairments=pd.DataFrame(),
+                         therapies=pd.DataFrame(), predictors=pd.DataFrame(), findings=flat)
+    rows = flat.rename(columns={"id": "finding_id"})
+    html = _claims(kb, rows, context=_evidence_context(kb))
+    articles = BeautifulSoup(html, "html.parser").select("article.finding")
+    assert len(articles) == 2
+    approved_text, draft_text = (article.get_text(" ", strip=True) for article in articles)
+    assert "Approved passage" in approved_text and "Draft passage" not in approved_text
+    assert "Entry status: approved" in approved_text and "Reviewer: Reviewer A" in approved_text
+    assert approved_text.count("Not reported") == 3 and not re.search(r"\bnan\b", approved_text, re.I)
+    assert "Draft passage" in draft_text and "Approved passage" not in draft_text
+    assert "Entry status: draft" in draft_text
+    assert "Approved claim &lt;exact&gt;" in html
+
+
+def test_measure_caution_count_uses_the_same_distinct_findings_as_details(tmp_path):
+    finding = dict(id="f1", target="language_recovery", target_kind="prognosis",
+                   claim="Early severity predicts recovery.", direction="likely", citation="@Study",
+                   method="behavioral", strength="moderate", confidence="high")
+    source_path = str(tmp_path / "severity.yaml")
+    flat = pd.DataFrame([{**finding, "source_id": "severity_metric", "source_kind": "predictor", "source_path": source_path,
+                          "source_status": "approved"},
+                         {**finding, "source_id": "severity_metric", "source_kind": "predictor", "source_path": source_path,
+                          "source_status": "approved"}])
+    predictor = dict(id="severity_metric", name="Aphasia severity", status="approved", _path=source_path,
+                     direction_of_severity="lower_is_worse", findings=[finding])
+    kb = SimpleNamespace(
+        root=tmp_path, regions=pd.DataFrame(), impairments=pd.DataFrame(), therapies=pd.DataFrame(),
+        predictors=pd.DataFrame([predictor]), findings=flat,
+        resolve_aliases=lambda keys: {key: key for key in keys}, label_for=lambda key: key.replace("_", " ").title(),
+    )
+    html = measures_section(kb, {"severity_metric": {"instrument": "WAB-AQ", "value": 50}}, days=365)
+    assert "1 distinct findings" in html and "Show 1 distinct finding" in html
+    assert "1 of these findings concern severity measured early" in html

@@ -31,7 +31,7 @@ How the numbers are computed
 * Provenance: mask QC rating from the participant's ``*.qc.json`` sidecar and
   how the mask was made (calmar.mask_method).
 
-The clinical rules (WAB type profile, recovery stage, evidence stars) live in
+The clinical rules (WAB type profile, recovery stage, display-signal bins) live in
 ``aphasia-kb/aphasia_rules.py`` and are shown by :func:`rules_html`.
 """
 from __future__ import annotations
@@ -396,14 +396,12 @@ def provenance_html(source, mask_path, qc, *, kb_scope, method=None, generated=N
                           for stage, lbl, who, when in qc["ratings"])
     else:
         rated = "not rated in the QC checkpoint"
-    warn = (" <b style='color:#c62828'>Rated poor — interpret this report with caution.</b>"
+    warn = (" <b class='provenance-warning'>Rated poor — interpret this report with caution.</b>"
             if qc["poor"] else "")
     edits = f" Edits recorded on this mask: {qc['edits']}." if qc["edits"] else ""
     generated = generated or datetime.now()
     return (
-        "<div class='calmar-provenance' role='note' style='border:1px solid #90a4ae;background:#eef3f6;"
-        "color:#1a1a1a;padding:10px 14px;margin:12px 0;font-family:sans-serif;font-size:12px;"
-        "break-inside:avoid'>"
+        "<div class='calmar-provenance' role='note'>"
         "<b>Research use only — not a diagnosis.</b> This report combines automated lesion "
         "segmentation with literature associations from the aphasia knowledge base. It does not "
         "diagnose aphasia, predict an individual's outcome or prescribe therapy; any clinical use "
@@ -419,7 +417,7 @@ def provenance_html(source, mask_path, qc, *, kb_scope, method=None, generated=N
 
 
 # ============================================================
-# HTML rendering of the KB results (unchanged presentation)
+# HTML rendering of the KB results
 # ============================================================
 
 def _badge(direction):
@@ -430,18 +428,16 @@ def _badge(direction):
 
 
 def _stars_html(rules, score):
-    stars, label = rules.evidence_strength(score)
-    symbols = "&#9733;" * stars if stars else "&#8212;"
-    return (f"<span title='raw score = {score:+.2f}'"
-            f" style='color:#f0a500;font-size:14px;letter-spacing:1px'>"
-            f"{symbols}</span> <small style='color:#666'>{label}</small>")
+    _, label = rules.evidence_strength(score)
+    return (f"<span class='display-signal' title='Project display heuristic; raw score = {score:+.2f}'>"
+            f"Display signal: {escape(label)}</span>")
 
 
 _TABLE_HEAD = ("<table style='border-collapse:collapse;font-size:13px;width:100%'>"
-               "<tr style='background:#2c3e50;color:white'>"
+               "<tr style='background:#52489c;color:white'>"
                "<th style='padding:4px 4px'></th>"
                "<th style='text-align:left;padding:4px 8px'>{what}</th>"
-               "<th style='padding:4px 8px;text-align:left'>Evidence strength</th>"
+               "<th style='padding:4px 8px;text-align:left'>Project display signal</th>"
                "<th style='padding:4px 4px'>N findings</th>"
                "<th style='text-align:left;padding:4px 4px'>Citations</th></tr>")
 
@@ -457,7 +453,7 @@ def interp_table(kb, rules, df, kind, top_n):
     for _, r in sub.iterrows():
         name = kb.label_for(r["target"])
         decomp = decompose_html(rules, r["target"]) if kind == "impairment" else ""
-        id_note = (f" <small style='color:#aaa;font-size:10px'>({r['target']})</small>"
+        id_note = (f" <small style='color:#5a5a66;font-size:10px'>({r['target']})</small>"
                    if name != r["target"] else "")
         rows.append(f"<tr><td style='padding:4px 2px'>{_badge(r['direction'])}</td>"
                     f"<td style='padding:4px 8px'><b>{name}</b>{id_note}{decomp}</td>"
@@ -474,7 +470,7 @@ def interp_table_all(kb, rules, df, top_n):
     rows = []
     for _, r in df.head(top_n).iterrows():
         name = kb.label_for(r["target"])
-        id_note = (f" <small style='color:#aaa;font-size:10px'>({r['target']})</small>"
+        id_note = (f" <small style='color:#5a5a66;font-size:10px'>({r['target']})</small>"
                    if name != r["target"] else "")
         kind = f"<small style='color:#888;font-size:10px'>[{r.get('target_kind', '')}]</small> "
         rows.append(f"<tr><td style='padding:4px 2px'>{_badge(r['direction'])}</td>"
@@ -485,19 +481,25 @@ def interp_table_all(kb, rules, df, top_n):
     return _TABLE_HEAD.format(what="Predicted outcome") + "".join(rows) + "</table>"
 
 
-_INGREDIENT_COLOURS = {"procedure": "#1a6b3a", "dose_parameter": "#7b3f00", "technology": "#1a3a6b"}
+_INGREDIENT_COLOURS = {"procedure": ("#4062bb", "#fff"),
+                       "dose_parameter": ("#f45b69", "#2b2b3a"),
+                       "technology": ("#1f7f7f", "#fff")}
 
 
 def _ingredient_badges(summary):
     if not summary:
-        return "<em style='color:#aaa'>—</em>"
+        return "<em style='color:#5a5a66'>—</em>"
     badges = []
     for item in summary:
         label, cat = (item.rsplit(" (", 1) if " (" in item and item.endswith(")") else (item, ""))
         cat = cat.rstrip(")")
+        background, ink = _INGREDIENT_COLOURS.get(cat, ("#bdbdbd", "#2b2b3a"))
+        if cat == "dose_parameter":
+            background = "rgba(244,91,105,.12)"
+        border = "#f45b69" if cat == "dose_parameter" else background
         badges.append(f"<span style='display:inline-block;margin:1px 2px;padding:1px 6px;"
-                      f"border-radius:3px;font-size:10px;color:white;"
-                      f"background:{_INGREDIENT_COLOURS.get(cat, '#555')}'>{label}</span>")
+                      f"border:1px solid {border};border-radius:3px;font-size:10px;color:{ink};"
+                      f"background:{background}'>{label}</span>")
     return " ".join(badges)
 
 
@@ -510,40 +512,44 @@ def therapy_table(kb, df, stage_id, stage_label, therapy_stages):
     for _, r in df.iterrows():
         beh = ", ".join(kb.label_for(i) for i in (r.get("behavioral_matched") or []))
         les = ", ".join(kb.label_for(i) for i in (r.get("lesion_matched") or []))
-        parts = ([f"<b>{beh}</b> <small style='color:#28a745'>(behavioural)</small>"] if beh else []) + \
-                ([f"{les} <small style='color:#888'>(lesion)</small>"] if les else [])
+        parts = ([f"<b>{beh}</b> <small style='color:#1f7f7f'>(behavioural)</small>"] if beh else []) + \
+                ([f"{les} <small style='color:#5a5a66'>(lesion)</small>"] if les else [])
         desc = str(r.get("short_description") or "")
         desc = (desc[:120] + "&#8230;") if len(desc) > 120 else desc
         evidence = therapy_stages.get(str(r.get("therapy_id") or r.get("id") or ""), set())
         warn = ""
         if stage_id and evidence and stage_id not in evidence:
-            warn = (f" <span title='Evidence for this therapy comes from {' / '.join(sorted(evidence))} "
-                    f"patients; current patient is {stage_label}.'"
-                    f" style='cursor:help;color:#e65100;font-size:13px'>&#9888;</span>")
+            warning = (f"Evidence for this therapy comes from {' / '.join(sorted(evidence))} patients; "
+                       f"current patient is {stage_label}.")
+            warn = (" <details class='stage-warning'><summary>&#9888; Stage mismatch</summary>"
+                    f"<span class='stage-warning-detail'>{escape(warning)}</span></details>"
+                    f"<span class='print-only stage-warning-print'>{escape(warning)}</span>")
         rows.append(
             "<tr>"
-            "<td style='padding:6px 8px;font-weight:bold;word-break:break-word;vertical-align:top;min-width:130px'>"
-            f"  {r['therapy_name']}{warn}</td>"
-            f"<td style='padding:6px 8px;font-size:12px;color:#444;vertical-align:top'>{'; '.join(parts) or '—'}</td>"
-            "<td style='padding:6px 8px;font-size:11px;vertical-align:top;overflow-wrap:break-word'>"
+            "<td data-label='Therapy' style='padding:6px 8px;font-weight:bold;word-break:break-word;vertical-align:top;min-width:130px'>"
+            f"<span class='cell-value'>{r['therapy_name']}{warn}</span></td>"
+            f"<td data-label='Addresses impairment(s)' style='padding:6px 8px;font-size:12px;color:#444;vertical-align:top'>{'; '.join(parts) or '—'}</td>"
+            "<td data-label='Active ingredients (RTSS)' style='padding:6px 8px;font-size:11px;vertical-align:top;overflow-wrap:break-word'>"
             f"{_ingredient_badges(r.get('rtss_summary') or [])}</td>"
-            f"<td style='padding:6px 8px;font-size:11px;color:#666;vertical-align:top'>{desc}</td>"
-            f"<td style='padding:6px 4px;font-size:11px;color:#777;vertical-align:top'>{', '.join(r.get('citations') or [])}</td>"
+            f"<td data-label='Brief description' style='padding:6px 8px;font-size:11px;color:#666;vertical-align:top'>{desc}</td>"
+            f"<td data-label='Citations' style='padding:6px 4px;font-size:11px;color:#777;vertical-align:top'>{', '.join(r.get('citations') or [])}</td>"
             "</tr>")
-    legend = ("<p style='font-size:10px;color:#777;margin:4px 0 0 0'>"
-              "<span style='background:#1a6b3a;color:white;padding:1px 5px;border-radius:3px'>procedure</span>&nbsp;"
-              "<span style='background:#7b3f00;color:white;padding:1px 5px;border-radius:3px'>dose parameter</span>&nbsp;"
-              "<span style='background:#1a3a6b;color:white;padding:1px 5px;border-radius:3px'>technology</span></p>")
-    return ("<table style='border-collapse:collapse;font-size:13px;width:100%;table-layout:fixed'>"
+    legend = ("<p style='font-size:10px;color:#5a5a66;margin:4px 0 0 0'>"
+              "<span style='background:#4062bb;color:white;padding:1px 5px;border-radius:3px'>procedure</span>&nbsp;"
+              "<span style='background:rgba(244,91,105,.12);color:#2b2b3a;border:1px solid #f45b69;"
+              "padding:1px 5px;border-radius:3px'>dose parameter</span>&nbsp;"
+              "<span style='background:#1f7f7f;color:white;padding:1px 5px;border-radius:3px'>technology</span></p>")
+    return ("<div class='table-scroll' role='region' aria-label='Therapy recommendations' tabindex='0'>"
+            "<table class='data-table therapy-table' style='table-layout:fixed'>"
             "<colgroup><col style='width:22%'><col style='width:24%'>"
             "<col style='width:18%'><col style='width:25%'><col style='width:11%'></colgroup>"
-            "<tr style='background:#2c3e50;color:white'>"
+            "<thead><tr>"
             "<th style='text-align:left;padding:4px 8px'>Therapy</th>"
             "<th style='text-align:left;padding:4px 8px'>Addresses impairment(s)</th>"
             "<th style='text-align:left;padding:4px 8px'>Active ingredients (RTSS)</th>"
             "<th style='text-align:left;padding:4px 8px'>Brief description</th>"
-            "<th style='text-align:left;padding:4px 4px'>Citations</th></tr>"
-            + "".join(rows) + "</table>" + legend)
+            "<th style='text-align:left;padding:4px 4px'>Citations</th></tr></thead><tbody>"
+            + "".join(rows) + "</tbody></table></div>" + legend)
 
 
 def damaged_regions_html(df, display_atlas, atlas_dir):
@@ -551,19 +557,19 @@ def damaged_regions_html(df, display_atlas, atlas_dir):
         return "<p style='color:#666'><em>No damaged regions above threshold.</em></p>"
     from .anatomy_labels import label_table
     df = label_table(df, display_atlas, atlas_dir)
-    rows = [f"<tr><td style='padding:3px 8px'>{escape(r['region'])}</td>"
-            f"<td style='padding:3px 8px'>{escape(r['lesion_hemisphere'])}</td>"
-            f"<td style='text-align:right;padding:3px 8px'>{r['lesion_in_roi_percent']:.1f}%</td>"
-            f"<td style='text-align:right;padding:3px 8px'>{r['roi_coverage_percent']:.1f}%</td>"
-            f"<td style='text-align:right;font-size:11px;color:#666;padding:3px 4px'>"
+    rows = [f"<tr><td data-label='{escape(display_atlas)} region' style='padding:3px 8px'>{escape(r['region'])}</td>"
+            f"<td data-label='Lesion side' style='padding:3px 8px'>{escape(r['lesion_hemisphere'])}</td>"
+            f"<td data-label='% of lesion in ROI' style='text-align:right;padding:3px 8px'>{r['lesion_in_roi_percent']:.1f}%</td>"
+            f"<td data-label='% of ROI lesioned' style='text-align:right;padding:3px 8px'>{r['roi_coverage_percent']:.1f}%</td>"
+            f"<td data-label='Overlap voxels' style='text-align:right;font-size:11px;color:#666;padding:3px 4px'>"
             f"{int(r.get('overlap_voxels', 0)):,} vox</td></tr>" for _, r in df.iterrows()]
-    return ("<table style='border-collapse:collapse;font-size:13px'>"
-            "<tr style='background:#2c3e50;color:white'>"
+    return ("<div class='table-scroll' role='region' aria-label='Damaged regions' tabindex='0'>"
+            "<table class='data-table damaged-table'><thead><tr>"
             f"<th style='text-align:left;padding:4px 8px'>{display_atlas} region</th>"
             "<th style='padding:4px 8px'>Lesion side</th>"
             "<th style='padding:4px 8px'>% of lesion in ROI</th>"
-            "<th style='padding:4px 8px'>% of ROI lesioned</th><th></th></tr>"
-            + "".join(rows) + "</table><p>"
+            "<th style='padding:4px 8px'>% of ROI lesioned</th><th></th></tr></thead><tbody>"
+            + "".join(rows) + "</tbody></table></div><p class='method-note'>"
             "Lesion side is measured from the actual mask overlap; bilateral entries show left/right counts.</p>")
 
 
@@ -582,38 +588,40 @@ def behaviour_html(rules, row, predictors, volume_ml):
                    f"<td style='padding:2px 8px'>{v or '&#8212;'}</td></tr>" for k, v in items)
     used = (f"<div style='font-size:11px;color:#888;margin-top:6px'>"
             f"Mapped to KB predictors: {', '.join(predictors.keys()) or '&#8212;'}</div>") if predictors else ""
-    return "<table style='border-collapse:collapse;font-size:13px'>" + rows + "</table>" + used
+    return "<table class='behaviour-table'>" + rows + "</table>" + used
 
 
-STAGE_COLOURS = {"acute": ("#d32f2f", "#ffebee"), "subacute": ("#e65100", "#fff3e0"),
-                 "chronic": ("#1565c0", "#e3f2fd"), None: ("#555555", "#f5f5f5")}
+STAGE_COLOURS = {"acute": ("#f45b69", "rgba(244,91,105,.10)"),
+                 "subacute": ("#52489c", "rgba(82,72,156,.10)"),
+                 "chronic": ("#4062bb", "rgba(64,98,187,.10)"),
+                 None: ("#d6d6d6", "#f7f7f7")}
 
 
 def stage_badge(stage_id, label):
-    fg, bg = STAGE_COLOURS.get(stage_id, STAGE_COLOURS[None])
-    return (f"<span style='background:{bg};color:{fg};border:1px solid {fg};"
+    border, bg = STAGE_COLOURS.get(stage_id, STAGE_COLOURS[None])
+    return (f"<span style='background:{bg};color:#2b2b3a;border:1px solid {border};"
             f"padding:1px 8px;border-radius:3px;font-size:11px;font-weight:bold'>{label}</span>")
 
 
 LEGEND_HTML = '''
-      <hr style="margin-top:18px">
-      <div style="font-size:11px;color:#666;line-height:1.6">
-        <b>Legend.</b><br>
-        <b>Evidence strength</b>: &#9733; weak &middot; &#9733;&#9733; moderate &middot;
-        &#9733;&#9733;&#9733; strong &middot; &#9733;&#9733;&#9733;&#9733; very strong.
-        Hover stars for raw score (bins are a project display heuristic, not an evidence grading).<br>
-        <b>Finding direction</b>: what the study found between the region or measure and the outcome:
-        association, inverse association, no association or mixed results. A finding reports an
-        association in a group of patients, not a prediction for this person.
-        &#9873; = a region matched to the atlas by a judgement call (<code>aphasia-kb/atlas_mapping/README.md</code>).<br>
+      <hr>
+      <div class="legend">
+        <h5>How to read the evidence</h5>
+        <p><b>Display signal</b> is CALMaR&rsquo;s project-specific ordering heuristic, not a formal evidence
+        grade or participant-level prediction. Its basis is explained beside the outcome summaries.</p>
+        <p><b>Relationship</b> is what a study reported between the region or measure and the outcome:
+        association, inverse association, no association or mixed results. <b>Evidence strength</b> is
+        the extractor&rsquo;s reading of the finding. <b>Extraction confidence</b> is confidence that the
+        paper was transcribed and interpreted correctly. These are distinct.</p>
+        <p>Finding counts are descriptive. They do not measure certainty, and findings do not necessarily
+        represent independent studies or independent cohorts. Group associations do not predict this participant&rsquo;s outcome.</p>
+        <p>An &ldquo;atlas match includes a documented judgement call&rdquo; note links a knowledge-base region to
+        atlas units using a curated decision recorded in <code>aphasia-kb/atlas_mapping/README.md</code>.</p>
         <b>WAB decomposition</b>: flu = fluency, comp = comprehension, rep = repetition.
-        <span style="color:#2e7d32">+</span> preserved,
-        <span style="color:#c62828">&#8722;</span> impaired (WAB type taxonomy).<br>
+        + preserved, &#8722; impaired (WAB type taxonomy).<br>
         <b>Stage badge</b>:
-        <span style="background:#ffebee;color:#d32f2f;border:1px solid #d32f2f;padding:0 5px;border-radius:3px;font-size:10px">Acute &lt;2 wk</span>
-        <span style="background:#fff3e0;color:#e65100;border:1px solid #e65100;padding:0 5px;border-radius:3px;font-size:10px">Subacute 2 wk–6 mo</span>
-        <span style="background:#e3f2fd;color:#1565c0;border:1px solid #1565c0;padding:0 5px;border-radius:3px;font-size:10px">Chronic &gt;6 mo</span> &nbsp;
-        &#9888; = therapy evidence from a different recovery stage (hover for detail).
+        Acute &lt;2 wk &middot; Subacute 2 wk–6 mo &middot; Chronic &gt;6 mo. A therapy-stage warning identifies
+        evidence from a different recovery stage; open it for detail.
         Rules and their sources: <code>aphasia-kb/aphasia_rules.py</code>.
       </div>'''
 
@@ -621,22 +629,183 @@ LEGEND_HTML = '''
 def standalone_html(title, body):
     """Wrap report markup in a printable standalone page."""
     return f'''<!DOCTYPE html>
-<html><head><meta charset="utf-8">
+<html class="calmar-report-page" lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <style>
-body{{font-family:Arial,sans-serif;max-width:960px;margin:40px auto;font-size:13px}}
-@media print{{
-  .no-print{{display:none}}
-  body{{margin:10px;font-size:11px}}
-  table{{page-break-inside:avoid}}
+.calmar-report{{
+  --calmar-grape:#52489c;--calmar-blue:#4062bb;--calmar-cyan:#59c3c3;
+  --calmar-platinum:#ebebeb;--calmar-pink:#f45b69;--calmar-ink:#2b2b3a;
+  --calmar-ink-2:#5a5a66;--calmar-cyan-ink:#1f7f7f;--calmar-panel:#f7f7f7;
+  --calmar-line:#ebebeb;--calmar-line-strong:#d6d6d6;
 }}
-</style></head><body>
+.calmar-report,.calmar-report *{{box-sizing:border-box}}
+html.calmar-report-page{{background:#f7f7f7}}
+.calmar-report{{font-family:Arial,Helvetica,sans-serif;background:#fff;color:var(--calmar-ink);
+  font-size:17px;line-height:1.55;overflow-wrap:anywhere}}
+body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
+.calmar-report h1,.calmar-report h2,.calmar-report h3,.calmar-report h4,.calmar-report h5,.calmar-report h6{{color:var(--calmar-grape);line-height:1.25}}
+.calmar-report p{{max-width:72ch}}
+.calmar-report code{{font-size:.86em}}
+.calmar-report a{{color:var(--calmar-blue)}}
+.calmar-report button{{font:inherit}}
+.report-header{{border:1px solid var(--calmar-line-strong);border-top:5px solid var(--calmar-grape);
+  border-radius:5px;padding:1.25rem 1.4rem;background:#fff;color:var(--calmar-ink)}}
+.report-header h1{{font-size:1.45rem;margin:0 0 .45rem}}
+.report-meta{{color:var(--calmar-ink-2);font-size:.88rem;line-height:1.6}}
+.calmar-provenance{{border:1px solid var(--calmar-line-strong);border-left:5px solid var(--calmar-grape);
+  background:rgba(82,72,156,.08);padding:1rem 1.25rem;margin:1rem 0;font-size:.9rem;break-inside:avoid}}
+.calmar-provenance ul{{margin:.55rem 0 0 1.2rem;padding:0}}
+.calmar-provenance li+li{{margin-top:.3rem}}
+.provenance-warning{{display:block;border-left:4px solid var(--calmar-pink);padding-left:.5rem;margin-top:.35rem}}
+.report-content{{border:1px solid var(--calmar-line-strong);border-radius:5px;padding:1.4rem;background:#fff}}
+.report-content>h4{{font-size:1.5rem;margin:3.25rem 0 .5rem;padding-top:1.4rem;border-top:1px solid var(--calmar-line)}}
+.report-content>h4:first-child{{margin-top:0;padding-top:0;border-top:0}}
+.section-intro{{font-size:1.02rem;margin:.2rem 0 .8rem;color:var(--calmar-ink);max-width:68ch}}
+.method-note{{font-size:.88rem;color:var(--calmar-ink-2);margin:.35rem 0 .9rem;max-width:76ch}}
+.outcome-cards{{margin:1.25rem 0 2.25rem}}
+.outcome-card{{padding:1.25rem 0 1.45rem;border-top:1px solid var(--calmar-line);break-inside:avoid}}
+.outcome-card:last-child{{border-bottom:1px solid var(--calmar-line)}}
+.outcome-card header{{display:flex;gap:1rem;align-items:flex-start;justify-content:space-between}}
+.outcome-card h5{{font-size:1.18rem;margin:.08rem 0 .35rem}}
+.outcome-kind{{margin:0;color:var(--calmar-ink-2);font-size:.76rem;text-transform:uppercase;letter-spacing:.05em}}
+.display-signal{{display:inline-block;border:1px solid var(--calmar-line-strong);border-radius:3px;padding:.15rem .45rem;
+  color:var(--calmar-ink-2);background:var(--calmar-panel);font-size:.77rem;white-space:nowrap}}
+.display-signal-note{{border-left:4px solid var(--calmar-blue);padding:.55rem .8rem;margin:1rem 0;background:rgba(64,98,187,.06)}}
+.display-signal-note summary,.source-list summary,.region-list summary,.citation-detail summary,.finding-more summary,
+.measure-findings summary{{color:var(--calmar-blue);font-weight:600;cursor:pointer}}
+.calmar-report summary:focus-visible,.calmar-report button:focus-visible,.calmar-report [tabindex]:focus-visible{{outline:3px solid var(--calmar-cyan-ink);outline-offset:3px}}
+.visually-hidden{{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}}
+.finding-counts,.finding-indicators{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin:.85rem 0}}
+.finding-counts div,.finding-indicators div{{border-left:3px solid var(--calmar-line-strong);padding:.15rem .55rem}}
+.finding-counts dt,.finding-indicators dt{{font-size:.73rem;text-transform:uppercase;letter-spacing:.035em;color:var(--calmar-ink-2)}}
+.finding-counts dd,.finding-indicators dd{{margin:0;font-weight:700}}
+.region-preview{{font-size:.9rem;color:var(--calmar-ink-2);margin:.75rem 0 .2rem}}
+.region-list,.source-list,.citation-detail{{font-size:.86rem;margin:.35rem 0}}
+.source-list>div{{margin:.4rem 0 .2rem .75rem}}
+.source-list .citation-detail{{margin:.25rem 0}}
+.citation-detail p{{margin:.35rem 0 .6rem;padding-left:.75rem;border-left:2px solid var(--calmar-line-strong)}}
+.subsection-heading{{margin:2rem 0 .75rem}}
+.subsection-heading h5{{font-size:1.25rem;margin:0 0 .25rem}}
+.subsection-heading p{{font-size:.9rem;color:var(--calmar-ink-2);margin:0}}
+.region-evidence{{border-top:1px solid var(--calmar-line)}}
+.region-evidence:last-of-type{{border-bottom:1px solid var(--calmar-line)}}
+.region-evidence>summary{{display:grid;grid-template-columns:minmax(15rem,1.2fr) minmax(16rem,1fr);gap:.3rem 1rem;
+  cursor:pointer;padding:.95rem .25rem;align-items:start}}
+.region-title{{font-weight:700;color:var(--calmar-grape)}}
+.region-title span{{font-weight:400;color:var(--calmar-ink-2)}}
+.region-facts{{font-size:.88rem;color:var(--calmar-ink-2)}}
+.region-notes{{grid-column:1/-1;display:flex;gap:.5rem;flex-wrap:wrap;font-size:.78rem}}
+.region-action{{grid-column:1/-1;color:var(--calmar-blue);font-size:.8rem;font-weight:600}}
+.region-action .when-open{{display:none}}
+.region-evidence[open] .region-action .when-closed{{display:none}}
+.region-evidence[open] .region-action .when-open{{display:inline}}
+.mapping-note,.thin-evidence{{border-left:3px solid var(--calmar-pink);padding-left:.45rem;color:var(--calmar-ink)}}
+.region-body{{padding:.25rem 0 1.25rem 1rem}}
+.region-alias{{font-size:.84rem;color:var(--calmar-ink-2);margin:.2rem 0 .8rem}}
+.outcome-findings{{margin:1rem 0 1.65rem}}
+.outcome-findings h6{{font-size:1.05rem;margin:0 0 .35rem}}
+.outcome-findings h6 span{{font-size:.78rem;font-weight:400;color:var(--calmar-ink-2)}}
+.finding{{padding:1rem 0;border-top:1px solid var(--calmar-line);break-inside:avoid-page}}
+.finding-claim{{font-size:1rem;margin:0 0 .35rem;max-width:68ch}}
+.finding-source,.finding-governance{{font-size:.82rem;color:var(--calmar-ink-2);margin:.25rem 0;max-width:76ch}}
+.citation-key{{font-weight:700;color:var(--calmar-blue)}}
+.finding-indicators{{grid-template-columns:repeat(3,minmax(0,1fr));max-width:48rem}}
+.finding-indicators dd{{font-size:.88rem;font-weight:600;text-transform:capitalize}}
+.finding-more{{margin:.5rem 0;font-size:.87rem}}
+.finding-more-body{{margin:.6rem 0;padding:.75rem 1rem;background:var(--calmar-panel);border-left:3px solid var(--calmar-line-strong)}}
+.detail-heading{{font-weight:700;color:var(--calmar-grape);margin:.8rem 0 .25rem}}
+.detail-list{{display:grid;grid-template-columns:minmax(8rem,max-content) 1fr;gap:.2rem .8rem;margin:.25rem 0}}
+.detail-list dt{{font-weight:700;color:var(--calmar-ink-2)}}
+.detail-list dd{{margin:0}}
+.calmar-report blockquote{{margin:.7rem 0;padding:.1rem 0 .1rem 1rem;border-left:3px solid var(--calmar-line-strong)}}
+.calmar-report blockquote p{{margin:.2rem 0}}
+.calmar-report blockquote footer{{font-size:.78rem;color:var(--calmar-ink-2)}}
+.measure-cards{{border-top:1px solid var(--calmar-line)}}
+.measure-card{{padding:1.2rem 0;border-bottom:1px solid var(--calmar-line);break-inside:avoid}}
+.measure-card header{{display:grid;grid-template-columns:minmax(12rem,.7fr) minmax(15rem,1.3fr);gap:1rem}}
+.measure-card h5,.measure-card header p{{margin:0}}
+.measure-card .secondary,.secondary{{color:var(--calmar-ink-2)}}
+.stage-warning{{display:inline-block;margin:.25rem 0;font-size:.75rem;font-weight:400}}
+.stage-warning summary{{color:var(--calmar-ink);font-weight:700;text-decoration:underline;text-decoration-color:var(--calmar-pink);
+  text-decoration-thickness:2px;cursor:pointer}}
+.stage-warning-detail{{display:block;max-width:32rem;padding:.35rem .5rem;border-left:3px solid var(--calmar-pink);
+  color:var(--calmar-ink-2);font-weight:400}}
+.table-scroll{{max-width:100%;overflow-x:auto;border:1px solid var(--calmar-line);border-radius:3px}}
+.data-table,.behaviour-table{{border-collapse:collapse;width:100%;font-size:.88rem}}
+.data-table th{{background:var(--calmar-grape);color:#fff}}
+.data-table th,.data-table td{{padding:.45rem .55rem;text-align:left;vertical-align:top;border-bottom:1px solid var(--calmar-line)}}
+.data-table td{{overflow-wrap:anywhere}}
+.data-table .cell-value{{min-width:0}}
+.behaviour-table{{width:auto}}
+.legend{{font-size:.86rem;color:var(--calmar-ink-2);line-height:1.55}}
+.legend h5{{font-size:1.25rem}}
+.legend p{{margin:.45rem 0}}
+.print-only{{display:none}}
+.calmar-report img{{max-width:100%;height:auto}}
+@media (max-width:700px){{
+  body.calmar-report{{margin:0;padding:1rem .75rem 3rem;font-size:16px}}
+  .report-header,.report-content{{padding:1rem}}
+  .report-content>h4{{font-size:1.32rem;margin-top:2.5rem}}
+  .outcome-card header,.measure-card header{{display:block}}
+  .display-signal{{white-space:normal;margin-top:.35rem}}
+  .finding-counts{{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .finding-indicators{{grid-template-columns:1fr}}
+  .region-evidence>summary{{grid-template-columns:1fr}}
+  .region-notes{{grid-column:1}}
+  .region-body{{padding-left:.35rem}}
+  .detail-list{{grid-template-columns:1fr}}
+  .detail-list dd{{margin:0 0 .35rem}}
+  .table-scroll{{overflow:visible;border:0}}
+  .data-table,.data-table tbody,.data-table tr,.data-table td{{display:block;width:100%}}
+  .data-table colgroup,.data-table thead{{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0}}
+  .data-table tr{{padding:.55rem 0;border-top:1px solid var(--calmar-line)}}
+  .data-table td{{display:grid;grid-template-columns:minmax(8rem,40%) minmax(0,1fr);gap:.65rem;text-align:left!important;
+    border:0;padding:.28rem .15rem!important;min-width:0!important}}
+  .data-table td::before{{content:attr(data-label);font-weight:700;color:var(--calmar-ink-2);font-size:.78rem}}
+}}
+@media print{{
+  @page{{margin:14mm}}
+  html.calmar-report-page,body.calmar-report{{background:#fff}}
+  body.calmar-report{{max-width:none;margin:0;padding:0;font-size:10pt;line-height:1.42}}
+  .no-print{{display:none!important}}
+  .report-header,.report-content,.calmar-provenance{{border-color:var(--calmar-line-strong);box-shadow:none}}
+  .report-content>h4{{font-size:15pt;margin-top:1.6rem;break-after:avoid-page}}
+  .outcome-card,.measure-card,.finding{{break-inside:avoid-page}}
+  .region-evidence{{break-inside:auto}}
+  .region-action{{display:none}}
+  .print-only{{display:block}}
+  .stage-warning{{display:none}}
+  .stage-warning-print{{font-size:8pt;border-left:2px solid var(--calmar-pink);padding-left:.35rem}}
+  .calmar-report details>summary{{break-after:avoid-page}}
+  .table-scroll{{overflow:visible}}
+  .calmar-report table{{break-inside:avoid-page}}
+  .finding-more-body{{background:#fff}}
+}}
+</style></head><body class="calmar-report">
 <div class="no-print" style="margin-bottom:16px">
-  <button onclick="window.print()" style="padding:6px 18px;background:#1565c0;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px">
+  <button onclick="window.print()" style="padding:8px 18px;background:#4062bb;color:white;border:none;border-radius:4px;cursor:pointer">
     &#128438; Save / Print PDF</button>
-  <span style="color:#888;font-size:11px;margin-left:10px">Use your browser's PDF option when printing</span>
+  <span style="color:#5a5a66;font-size:.82rem;margin-left:10px">Use your browser's PDF option when printing</span>
 </div>
 {body}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{{
+  const target=location.hash && document.getElementById(location.hash.slice(1));
+  if(target && target.tagName==='DETAILS') target.open=true;
+}});
+let calmarPrintState=[];
+window.addEventListener('beforeprint',()=>{{
+  calmarPrintState=[...document.querySelectorAll('details')].map(item=>item.open);
+  document.querySelectorAll('details.region-evidence, details.measure-findings').forEach(item=>{{item.open=true}});
+}});
+window.addEventListener('afterprint',()=>{{
+  document.querySelectorAll('details').forEach((item,index)=>{{item.open=calmarPrintState[index]}});
+  calmarPrintState=[];
+}});
+</script>
 </body></html>'''
 
 
@@ -789,53 +958,57 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
         days_text = "onset date unknown"
     label = MASK_LABELS.get(source, source)
     title_card = f'''
-    <div style="border:1px solid #ddd;border-radius:6px;padding:16px 16px 10px;
-                background:#fafafa;font-family:sans-serif;color:#1a1a1a">
-      <h3 style="margin-top:0;margin-bottom:4px">Clinical interpretation &mdash;
+    <header class="report-header">
+      <h1>Clinical interpretation &mdash;
         {entry['subject']} {entry.get('session') or ''}
         &nbsp; {stage_badge(stage_id, stage_label)}
-        <small style="font-weight:normal;color:#888;font-size:12px">&nbsp; {days_text}</small>
-      </h3>
-      <div style="font-size:11px;color:#888">
-        Lesion mask: <b style="color:#c62828">{label}</b> &middot; research use only, not a diagnosis
+        <small style="font-weight:normal;color:#5a5a66;font-size:.8rem">&nbsp; {days_text}</small>
+      </h1>
+      <div class="report-meta">
+        Lesion mask: <b>{label}</b> &middot; recovery stage: <b>{stage_label}</b> &middot;
+        research use only, not a diagnosis
         <br>
-        KB scope: {', '.join(settings.include)} &middot; {conf_note} &middot;
+        Selected evidence scope: <b>{', '.join(settings.include)}</b> &middot; {conf_note} &middot;
         atlas (lookup): {', '.join(settings.kb_atlases)} &middot;
         atlas (display): {settings.display_atlas}
       </div>
-    </div>
+    </header>
     '''
     body = f'''
-    <div style="border:1px solid #ddd;border-radius:6px;padding:16px;
-                background:#fafafa;font-family:sans-serif;color:#1a1a1a">
+    <main class="report-content">
 
-      <h4 style="margin-top:0">Damaged regions ({settings.display_atlas},
+      <h4>Damaged regions ({settings.display_atlas},
         &ge;{settings.min_overlap_pct}%)</h4>
+      <p class="section-intro">This table locates the lesion in the selected display atlas. It is an anatomical
+        overview; the evidence interpretation appears in the sections below.</p>
       {damaged_regions_html(damaged, settings.display_atlas, atlas_dir)}
 
-      <h4 style="margin-top:18px">Behavioural / clinical data</h4>
+      <h4>Behavioural / clinical data</h4>
+      <p class="section-intro">These participant measures provide context for the evidence lookup. Missing values
+        remain missing and are not inferred.</p>
       {behaviour_html(rules, row, predictors, volume)}
 
-      <h4 style="margin-top:18px">Lesion location: what the evidence says</h4>
+      <h4>Lesion location: what the evidence says</h4>
       {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings)}
 
-      <h4 style="margin-top:18px">White-matter disconnection: what the evidence says</h4>
+      <h4>White-matter disconnection: what the evidence says</h4>
       {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label)}
 
-      <h4 style="margin-top:18px">This participant&rsquo;s measures: what the evidence says</h4>
-      <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
+      <h4>This participant&rsquo;s measures: what the evidence says</h4>
+      <p class="section-intro">
         Findings about measures such as lesion volume or aphasia severity report associations
-        (e.g. larger lesions with more severe aphasia), not predictions for one person.
+        in study groups (for example, larger lesions with more severe aphasia), not predictions for one person.
       </p>
       {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None)}
 
-      <h4 style="margin-top:18px">Therapy recommendations ({n_therapy} matched)</h4>
-      <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
-        Therapies with evidence targeting the predicted impairments above.
+      <h4>Therapy recommendations ({n_therapy} matched)</h4>
+      <p class="section-intro">
+        These are therapies with evidence targeting impairments represented above. They are research associations,
+        not prescriptions; recovery-stage mismatches remain marked for clinical review.
       </p>
       {therapy_table(kb, therapies, stage_id, stage_label, therapy_stages)}
 {LEGEND_HTML}
-    </div>
+    </main>
     '''
 
     # 5. Provenance, QC notice, overlay; save
