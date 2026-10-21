@@ -48,9 +48,7 @@ def defaults():
     return eval(compile(ast.Expression(node.value), str(NOTEBOOK), "eval"), {"Path": Path})
 
 
-METHOD_CHOICES = {"linda": "LINDA lesion segmentation (slow: 1.5-3.7 h per participant; "
-                            "without it, ANTs registers each brain to the template)",
-                  "synthstroke": "SynthStroke lesion segmentation"}
+from .method_choice import METHOD_CHOICES
 
 
 def normalize_selection(values):
