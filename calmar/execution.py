@@ -92,7 +92,8 @@ def _saved_upstream_ids(shell, boundary_role=None):
 
 # Recovery commands a paused checkpoint accepts: the batch checkpoint can be
 # released towards batch processing or towards reporting (its two buttons).
-RECOVERY_COMMANDS = {"batch": ("batch", "report"), "skip-qc": ("skip-qc",)}
+# The report form's checkpoint is released by "generate", its Generate button.
+RECOVERY_COMMANDS = {"batch": ("batch", "report"), "skip-qc": ("skip-qc",), "generate": ("generate",)}
 
 
 def _recovery_action(lines):
@@ -105,6 +106,13 @@ def _recovery_action(lines):
         expected = ast.parse(f"get_ipython().run_line_magic('calmar_continue', {action!r})")
         if ast.dump(tree) == ast.dump(expected):
             return action
+    # "generate" may name the participant and mask: %calmar_continue generate sub-01 manual
+    body = tree.body[0].value if len(tree.body) == 1 and isinstance(tree.body[0], ast.Expr) else None
+    if isinstance(body, ast.Call) and len(body.args) == 2 and isinstance(body.args[1], ast.Constant) \
+            and isinstance(body.args[1].value, str) and body.args[1].value.split()[:1] == ["generate"]:
+        expected = ast.parse("get_ipython().run_line_magic('calmar_continue', 'generate')").body[0].value
+        if ast.dump(body.func) == ast.dump(expected.func) and ast.dump(body.args[0]) == ast.dump(expected.args[0]):
+            return "generate"
     return None
 
 
@@ -117,8 +125,8 @@ def enable_checkpoint_recovery(shell=None):
     if shell is None:
         raise RuntimeError("Checkpoint recovery requires an IPython kernel.")
 
-    def recover(action):
-        action = action.strip()
+    def recover(line):
+        action, *arguments = line.split() or [""]
         if action == "batch":
             checkpoint = getattr(shell, "_calmar_batch_checkpoint", None)
             if checkpoint is None or not checkpoint.paused:
@@ -140,6 +148,22 @@ def enable_checkpoint_recovery(shell=None):
                   "       INTERP_SUBJECT_IDX = [e['subject'] for e in SUBJECTS].index('sub-...')\n"
                   "       INTERP_MASK_SOURCE = 'manual'\n"
                   "     and then the report cell ('Generate the interpretation report ...').")
+        elif action == "generate":
+            # The code equivalent of the "Generate participant report" button.
+            panel = getattr(shell, "_calmar_report_inputs", None)
+            if panel is None or panel.gate is None or not panel.gate.paused:
+                raise RuntimeError("There is no report form waiting; run the report form cell first.")
+            if len(arguments) > 2:
+                raise ValueError("Use %calmar_continue generate [participant] [mask].")
+            if arguments:
+                panel.choose_participant(arguments[0])
+            if len(arguments) > 1:
+                panel.choose_mask(arguments[1])
+            if panel.approve() is False:
+                raise RuntimeError(panel.message.value)
+            print(f"Report inputs accepted: {panel.subject.label} · {panel.source.label} mask · "
+                  f"{panel.atlas.value} atlas · evidence: {panel.evidence.label}.\n"
+                  "Now run the report cell ('Generate the interpretation report ...') with Shift+Enter.")
         elif action == "skip-qc":
             checkpoint = getattr(shell, "_calmar_qc_checkpoint", None)
             if checkpoint is None or not checkpoint.paused:
@@ -149,7 +173,7 @@ def enable_checkpoint_recovery(shell=None):
             print("QC skipped by the user. The decision was saved for the final reports. "
                   "Select the next stage to run and use the notebook Run menu.")
         else:
-            raise ValueError("Use %calmar_continue batch, %calmar_continue report or %calmar_continue skip-qc.")
+            raise ValueError("Use %calmar_continue batch, report, generate or skip-qc.")
 
     register = getattr(shell, "register_magic_function", None)
     if callable(register):
@@ -157,7 +181,8 @@ def enable_checkpoint_recovery(shell=None):
     # Upgrade the guard on existing checkpoint instances without recreating any
     # widgets or changing decisions. Useful when the browser cannot send clicks.
     for name, action in (("_calmar_batch_checkpoint", "batch"),
-                         ("_calmar_qc_checkpoint", "skip-qc")):
+                         ("_calmar_qc_checkpoint", "skip-qc"),
+                         ("_calmar_report_checkpoint", "generate")):
         checkpoint = getattr(shell, name, None)
         if checkpoint is not None:
             checkpoint.recovery_action = action
@@ -171,7 +196,7 @@ def enable_checkpoint_recovery(shell=None):
 
 def recovery_instructions(action):
     return Markdown(
-        "**If the buttons remain at ‘Loading widget…’:** insert a temporary code cell "
+        "**If the buttons do not respond (‘Loading widget…’ or ‘Waiting…’):** insert a temporary code cell "
         "and run this command by itself:\n\n"
         f"```python\n%calmar_continue {action}\n```\n\n"
         + ("This releases the batch checkpoint. Then select the first batch code cell "
@@ -179,6 +204,11 @@ def recovery_instructions(action):
            "To go to reporting instead (the **Jump to reporting** button), run "
            "`%calmar_continue report` by itself, then run the report cells one by one."
            if action == "batch" else
+           "This does what **Generate participant report** does, with the form's current "
+           "choices. To choose without the form, add the participant and the mask, e.g. "
+           "`%calmar_continue generate sub-01 manual`. Then run the report cell below "
+           "(Shift+Enter)."
+           if action == "generate" else
            "This explicitly skips QC and saves ‘QC skipped by user’ for the reports. "
            "It does not start subsequent processing cells."))
 

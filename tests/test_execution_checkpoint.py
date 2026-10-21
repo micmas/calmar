@@ -127,6 +127,25 @@ class ExecutionCheckpointTests(unittest.TestCase):
         self.assertEqual(self.execute_cell("assert report_ran and not gate.paused and INTERP_SUBJECT_IDX == 2",
                                            "calmar-step-81")["status"], "ok")
 
+    def test_generate_command_releases_the_report_form_without_the_button(self):
+        setup = (f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
+                 "from calmar.report_ui import show_report_inputs\n"
+                 "SUBJECTS = [dict(subject='sub-01', session='ses-1'), dict(subject='sub-02', session='ses-1')]\n"
+                 "available_mni_sources = lambda e: ['synthstroke', 'manual'] if e['subject'] == 'sub-02' else ['synthstroke']\n"
+                 "report_ran = False")
+        self.assertEqual(self.reply(self.client.execute(setup))["status"], "ok")
+        self.assertEqual(self.execute_cell("form = show_report_inputs(globals())", "calmar-step-79")["status"], "ok")
+        self.assertEqual(self.execute_cell("report_ran = True", "calmar-step-81")["status"], "ok")
+        self.assertEqual(self.execute_cell("assert not report_ran and form.gate.paused", "calmar-step-79")["status"], "ok")
+        # A wrong participant or mask is refused and the form stays paused.
+        self.assertEqual(self.reply(self.client.execute("%calmar_continue generate sub-01 manual"))["status"], "error")
+        self.assertEqual(self.reply(self.client.execute("%calmar_continue generate sub-02 manual"))["status"], "ok")
+        self.assertEqual(self.execute_cell("report_ran = True", "calmar-step-81")["status"], "ok")
+        self.assertEqual(self.execute_cell(
+            "assert report_ran and not form.gate.paused\n"
+            "assert INTERP_SUBJECT_IDX == 1 and INTERP_MASK_SOURCE == 'manual'", "calmar-step-81")["status"], "ok")
+        self.assertEqual(self.reply(self.client.execute("form.close()"))["status"], "ok")
+
     def test_client_without_cell_metadata_can_rerun_viewer_before_batch(self):
         setup = (f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
                  "from calmar.execution import pause_before_batch\n"

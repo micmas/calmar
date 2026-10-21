@@ -11,7 +11,7 @@ from IPython import get_ipython
 from IPython.display import display
 
 from .atlas_ui import ordered_sources
-from .execution import ExecutionCheckpoint
+from .execution import ExecutionCheckpoint, enable_checkpoint_recovery, recovery_instructions
 from .masks import MASK_LABELS
 from .notebook_navigation import NotebookNavigation
 from . import colors
@@ -48,7 +48,10 @@ class ReportInputs:
         self.preview = None
         self.gate = ExecutionCheckpoint(shell, "Choose report inputs, then click Generate participant report.") if shell else None
         if shell:
+            self.gate.recovery_action = "generate"
             shell._calmar_report_checkpoint = self.gate
+            shell._calmar_report_inputs = self
+            enable_checkpoint_recovery(shell)
         index = namespace.get("INTERP_SUBJECT_IDX") or 0
         self.subject = w.Dropdown(
             options=[(f"{e['subject']} {e.get('session') or ''}".strip(), i) for i, e in enumerate(self.entries)],
@@ -158,6 +161,21 @@ class ReportInputs:
         show_layers(self.preview, self.preview_controls, brain, layers, helpers)
         self.compare_body.children = (self.preview_controls, self.preview)
 
+    def choose_participant(self, name):
+        """Select a participant by subject (or subject and session), for %calmar_continue generate."""
+        for label, index in self.subject.options:
+            if name in (label, label.split()[0]):
+                self.subject.value = index
+                return
+        raise ValueError(f"Unknown participant {name!r}; choose one of: "
+                         + ", ".join(label for label, _ in self.subject.options))
+
+    def choose_mask(self, source):
+        options = [value for _, value in self.source.options]
+        if source not in options:
+            raise ValueError(f"No {source!r} MNI mask for {self.subject.label}; available: {', '.join(options)}")
+        self.source.value = source
+
     def approve(self):
         if self.source.value not in self.ns["available_mni_sources"](self.entries[self.subject.value]):
             self.refresh()
@@ -172,6 +190,8 @@ class ReportInputs:
     def close(self):
         if self.gate:
             self.gate.close()
+            if getattr(self.gate.shell, "_calmar_report_inputs", None) is self:
+                self.gate.shell._calmar_report_inputs = None
         close_widget(self.navigation)
         close_widget(self.widget)
 
@@ -190,6 +210,7 @@ def show_report_inputs(namespace):
     namespace["_report_inputs"] = panel
     display(panel.widget)
     if panel.gate:
+        display(recovery_instructions("generate"))
         panel.gate._cancel_queued()
     return panel
 
