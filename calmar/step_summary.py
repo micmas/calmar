@@ -32,7 +32,7 @@ METRIC_LABELS = {
     "synthstroke_mni_volume_ml": "SynthStroke lesion in template (ml)", "manual_mni_volume_ml": "manual lesion in template (ml)",
     "mask_session": "mask session", "t1_session": "T1 session", "mask_space": "mask drawn on",
 }
-VIEWER_STAGES = ("brain", "linda", "synthstroke", "manual", "bcb", "deepdisco")
+VIEWER_STAGES = ("brain", "linda", "synthstroke", "registration", "manual", "bcb", "deepdisco")
 EMBED_LIMIT = 12  # participants whose figures are embedded; beyond that, paths only
 
 
@@ -193,7 +193,9 @@ def show_step(result, study=None, *, title=None, images=False):
     display(HTML(step_html(result, title=title, images=images)))
     if study is not None and result.get("stage") in VIEWER_STAGES:
         from .step_viewer import show_step_viewer
-        done = {(e["subject"], e.get("session")) for e in result.get("results", []) if e.get("outputs")}
+        # Participants with published outputs (not those whose step was skipped).
+        done = {(e["subject"], e.get("session")) for e in result.get("results", [])
+                if any(o.get("path") for o in e.get("outputs", []))}
         entries = [e for e in (result.get("request") or {}).get("entries", [])
                    if (e["subject"], e.get("session")) in done]
         return show_step_viewer(result["stage"], entries, study)

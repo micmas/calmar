@@ -61,7 +61,10 @@ class ReportInterfaceTests(unittest.TestCase):
         panel = ReportInputs(ns, shell)
         self.addCleanup(panel.close)
         self.assertEqual(panel.source.value, 'synthstroke')
+        self.assertEqual(panel.evidence.value, 'all')                      # default: drafts included
         panel.source.value, panel.atlas.value, panel.decode.value = 'manual', 'Atlas B', True
+        panel.evidence.value = 'approved'
+        self.assertIn('evidence: Approved entries only', panel.summary.value)
         self.assertTrue(panel.gate.paused)
         panel.navigation.request = Mock()
         panel.generate.click()
@@ -70,8 +73,8 @@ class ReportInterfaceTests(unittest.TestCase):
         self.assertTrue(panel.gate.paused)
         self.assertTrue(args[1]())
         self.assertFalse(panel.gate.paused)
-        self.assertEqual((ns['INTERP_MASK_SOURCE'], ns['INTERP_DISPLAY_ATLAS'], ns['INTERP_RUN_DECODING']),
-                         ('manual','Atlas B',True))
+        self.assertEqual((ns['INTERP_MASK_SOURCE'], ns['INTERP_DISPLAY_ATLAS'], ns['INTERP_RUN_DECODING'],
+                          ns['INTERP_EVIDENCE']), ('manual','Atlas B',True,'approved'))
 
     def test_report_keeps_evidence_and_qc_notice_and_adds_decoding_once(self):
         body = '<div><h4>Regions (Atlas A)</h4><table><tr><td>ROI</td></tr></table><h4>Outcomes</h4><p>Citation X</p><hr><div>Legend</div></div>'

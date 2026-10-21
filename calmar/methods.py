@@ -10,10 +10,44 @@ TOOLS = {
     "brain": "HD-BET (hdbet/1.0.0) + SynthStrip (synthstrip/7.4.1)",
     "linda": "LINDA (linda/0.5.1)",
     "synthstroke": "SynthStroke (synthstroke/0.0.0, synth-plus weights)",
-    "manual": "SimpleITK rigid registration + LINDA transforms (linda/0.5.1 ANTs)",
+    "manual": "SimpleITK rigid registration + the template registration",
+    "registration": "ANTs (ants/2.6.5) antsRegistrationSyN.sh",
     "bcb": "BCBToolkit disconnectome (bcbtoolkit/0.0.0, run_disco.sh)",
     "deepdisco": "DeepDisco (deepdisco/20251008)",
 }
+
+
+def _segmentation_rows(config):
+    """Lesion segmentations, template registration and manual mask, for the
+    selected SEGMENTATION_METHODS."""
+    from .study import segmentation_methods, template_source
+    c = config.get
+    methods = segmentation_methods(config)
+    rows = []
+    if "linda" in methods:
+        rows.append(("Lesion segmentation (LINDA)", TOOLS["linda"],
+                     f"brain_mask bypass={bool(c('USE_HDBET_PREPROCESSING', True))}, "
+                     f"seed={c('REGISTRATION_SEED', 1729)}, threads={c('LINDA_THREADS', 1)}",
+                     "Lesion in native T1w space plus nonlinear registration to LINDA's ch2 (Colin27) template."))
+    if "synthstroke" in methods:
+        rows.append(("Lesion segmentation (SynthStroke)", TOOLS["synthstroke"],
+                     f"TTA={c('SYNTHSTROKE_TTA', True)}, clip to brain mask dilated 2 voxels",
+                     "Independent deep-learning segmentation, warped to MNI152 with the template registration."))
+    if template_source(config) == "linda":
+        rows.append(("Template registration", "LINDA's (linda/0.5.1) + ANTs 2.6.5 SyN ch2 -> MNI152 (once)",
+                     "FSL MNI152NLin6Asym, 182×218×182, 1 mm",
+                     "Every mask: native -> Penn -> ch2 -> MNI152 in one resampling; the space of the atlases, "
+                     "BCBToolkit and DeepDisco."))
+    else:
+        rows.append(("Template registration", TOOLS["registration"],
+                     f"affine (Mattes MI, 1 thread) + SyN (CC, {c('REGISTRATION_THREADS', 4)} threads), "
+                     f"seed={c('REGISTRATION_SEED', 1729)}, SynthStroke lesion (dilated 2 voxels) excluded",
+                     "LINDA not run: the brain-extracted T1w is registered to the FSL MNI152NLin6Asym brain "
+                     "(182×218×182, 1 mm); every mask is warped native -> MNI152 in one resampling."))
+    rows.append(("Manual mask", TOOLS["manual"],
+                 f"space={c('MANUAL_MASK_SPACE', 't1')}, path={c('MANUAL_MASK_PATH') or 'publisher derivatives (auto)'}",
+                 "Reference scan rigidly registered to the T1w (Mattes MI); mask resampled nearest-neighbour."))
+    return rows
 
 
 def methods_table(config):
@@ -26,16 +60,7 @@ def methods_table(config):
           else "HD-BET alone; a skull-strip repair can add SynthStrip's CSF for a participant whose lesion cavity it left out; ")
          + "used by LINDA (replacing LINDA's own skull strip) and to clip SynthStroke."
          if c("USE_HDBET_PREPROCESSING", True) else "Disabled: LINDA uses its own skull strip."),
-        ("Lesion segmentation 1", TOOLS["linda"], f"brain_mask bypass={bool(c('USE_HDBET_PREPROCESSING', True))}, "
-         f"seed={c('REGISTRATION_SEED', 1729)}, threads={c('LINDA_THREADS', 1)}",
-         "Lesion in native T1w space plus nonlinear registration to LINDA's ch2 (Colin27) template."),
-        ("Lesion segmentation 2", TOOLS["synthstroke"], f"TTA={c('SYNTHSTROKE_TTA', True)}, clip to brain mask dilated 2 voxels",
-         "Independent deep-learning segmentation, warped to MNI152 with the same transforms."),
-        ("Manual mask", TOOLS["manual"],
-         f"space={c('MANUAL_MASK_SPACE', 't1')}, path={c('MANUAL_MASK_PATH') or 'publisher derivatives (auto)'}",
-         "Reference scan rigidly registered to the T1w (Mattes MI); mask resampled nearest-neighbour."),
-        ("Template space", "FSL MNI152NLin6Asym (ANTs 2.6.5 SyN ch2 -> MNI152, once)", "182×218×182, 1 mm",
-         "Every mask: native -> Penn -> ch2 -> MNI152 in one resampling; the space of the atlases, BCBToolkit and DeepDisco."),
+    ] + _segmentation_rows(config) + [
         ("Disconnectome 1", TOOLS["bcb"], f"masks={c('BCB_MASKS', 'all')}, input grid={c('BCB_INPUT_GRID', 'mni152')}",
          "Probability that each voxel's tracts pass through the lesion (10 healthy-control tractograms)."),
         ("Disconnectome 2", TOOLS["deepdisco"],
