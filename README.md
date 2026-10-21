@@ -284,6 +284,12 @@ LINDA registers each brain to its **ch2 (Colin27)** template (single-subject ana
 - **Same downstream steps:** manual masks, disconnectomes, atlas overlap and the report work as in the chronic route.
 - **Recovery phase:** reports tag each knowledge-base finding with the phase it was studied in, so an acute participant sees how much of the evidence comes from chronic-stroke studies.
 
+### Local data
+
+For a site's own scans and patients, set `DATASET_SOURCE = "local"` and `LOCAL_DATASET` to a folder (e.g. `data/local`, created if missing). Two cells under **Data** fill it:
+- **Import images:** NIfTI files are checked (3-D, readable) and copied into BIDS names (`sub-<id>/[ses-<id>/]anat/…_T1w.nii.gz`, optional `_FLAIR`; `dwi/…_dwi.nii.gz` + `_adc.nii.gz` for the acute route). A DICOM folder is converted by dcm2niix in Slurm (`src/analysis_45_dicom_to_nifti.sh`); each series is listed with a guessed role, the user confirms the roles, and only those series are imported. Existing images are not replaced unless asked.
+- **Participant information (WAB-R):** a form (one participant at a time) or a CSV/TSV/XLSX for a cohort (headers matched by name, dry run first) writes `participants.tsv` and `participants.json`, which the report reads: age at stroke, sex, days from stroke to the WAB-R, the five WAB-R AQ subtests (0–10), the AQ (computed from the subtests when blank) and the WAB-R type (the type the classification criteria give is suggested, saved only when chosen). Code: `calmar/local_import.py`, `calmar/participant_data.py`.
+
 ---
 
 ## Aphasia knowledge base

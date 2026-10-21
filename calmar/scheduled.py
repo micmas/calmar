@@ -17,6 +17,7 @@ SCRIPTS = {name: f'analysis_{number}_{name}.sh' for number,name in
             (29,'registration'),(43,'openads'),(26,'manual'),(27,'bcb'),(28,'deepdisco')]}
 SCRIPTS['qc_operation'] = 'analysis_30_qc_operation.sh'
 SCRIPTS['reporting'] = 'analysis_35_reporting.sh'
+SCRIPTS['dicom_import'] = 'analysis_45_dicom_to_nifti.sh'    # local data (calmar.local_import)
 
 
 def inspect_logs(folder):

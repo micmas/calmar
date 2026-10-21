@@ -579,8 +579,12 @@ def behaviour_html(rules, row, predictors, volume_ml):
         return "<p style='color:#888'><em>No participants.tsv entry.</em></p>"
     row = row or {}
     wab_type = row.get("wab_type")
+    subtests = [(label, row.get(key)) for key, label in (
+        ("wab_info_content", "information"), ("wab_fluency", "fluency"), ("wab_comprehension", "comprehension"),
+        ("wab_repetition", "repetition"), ("wab_naming", "naming")) if row.get(key) is not None]
     items = [("WAB-AQ", row.get("wab_aq")),
              ("WAB type", (str(wab_type) + decompose_html(rules, wab_type)) if wab_type else None),
+             *([("WAB-R subtests", " · ".join(f"{label} {value}" for label, value in subtests))] if subtests else []),
              ("Age at stroke", row.get("age_at_stroke")),
              ("Sex", row.get("sex")),
              ("Days to WAB", row.get("wab_days")),
