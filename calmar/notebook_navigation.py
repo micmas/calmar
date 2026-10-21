@@ -30,20 +30,32 @@ class NotebookNavigation(anywidget.AnyWidget):
         self.message.value = "Connecting notebook controls…"
         self.send(dict(action="connect"))
         try:
-            self._watchdog = asyncio.get_running_loop().call_later(12, self._connection_timeout)
+            loop = asyncio.get_running_loop()
         except RuntimeError:
-            pass
+            return True
+        # A message can be lost while the browser reconnects; ask again.
+        resend = [loop.call_later(t, self._resend_connect) for t in (3, 6, 9)]
+        self._watchdog = loop.call_later(12, self._connection_timeout)
+        self._resends = resend
         return True
+
+    def _resend_connect(self):
+        if self.pending_request is not None and not self.ready:
+            self.send(dict(action="connect"))
 
     def _cancel_watchdog(self):
         if getattr(self, '_watchdog', None) is not None:
             self._watchdog.cancel()
             self._watchdog = None
+        for handle in getattr(self, '_resends', ()):
+            handle.cancel()
+        self._resends = ()
 
     def _connection_timeout(self):
         self.pending = self.pending_request = None
         self.ready = False
-        self.message.value = "Notebook controls did not respond. Rerun this controls cell to reconnect, then click again."
+        self.message.value = ("Notebook controls did not respond: this browser page has lost its connection "
+                              "to the notebook kernel. Reload the page (F5), rerun this cell, then click again.")
         if self.on_error:
             self.on_error()
 
