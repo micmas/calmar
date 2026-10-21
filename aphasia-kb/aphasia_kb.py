@@ -671,6 +671,11 @@ class KnowledgeBase:
                         "source_id":   e.get("id"),
                         "source_kind": sub,
                         "source_status": e.get("status"),
+                        # Stable record identity for report disclosures. Entry and
+                        # finding IDs are only unique within a source file, so the
+                        # path is needed when approved, draft and legacy records are
+                        # loaded together.
+                        "source_path": str(e.get("_path") or ""),
                         **{k: v for k, v in f.items()
                            if k in (
                                "id", "target", "target_kind", "claim", "direction",
@@ -982,7 +987,7 @@ class KnowledgeBase:
         rows = rows.rename(columns={"id": "finding_id"})
         keep = ["region", "side", "lesion_pct", "region_pct", "predicts", "predicts_kind", "claim", "direction",
                 "citation", "method", "strength", "evidence_quality", "confidence", "source_id", "finding_id",
-                "population", "time_post_onset", "phase", "contribution"]
+                "population", "time_post_onset", "phase", "source_status", "source_path", "contribution"]
         return rows[[c for c in keep if c in rows.columns]].reset_index(drop=True)
 
     def interpret_damage(

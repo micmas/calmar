@@ -29,13 +29,14 @@ def file_link(path, label):
 
 
 def report_sections(body):
-    """Group the existing report markup without changing its evidence tables."""
+    """Group the report markup into notebook accordion sections."""
     sections = []
-    for title, content in re.findall(r"<h4[^>]*>(.*?)</h4>(.*?)(?=<h4|<hr|$)", body, re.S):
+    section_body = body.split("<hr", 1)[0]
+    for title, content in re.findall(r"<h4[^>]*>(.*?)</h4>(.*?)(?=<h4|$)", section_body, re.S):
         label = " ".join(unescape(re.sub(r"<[^>]+>", "", title)).split())
         sections.append((label, content))
     if "<hr" in body:
-        legend = body[body.index("<hr"):].rsplit("</div>", 1)[0]
+        legend = re.sub(r"</main>\s*$", "", body[body.index("<hr"):], flags=re.S)
         sections.append(("Legend and evidence notes", legend))
     return sections
 
@@ -220,6 +221,8 @@ class ParticipantReport:
         self.path, self.full_html = Path(path), full_html
         self.brain, self.lesion, self.helpers = Path(brain), Path(lesion), helpers
         self.source = source
+        style_match = re.search(r"<style>.*?</style>", full_html, re.S)
+        report_style = style_match.group(0).replace("@page{margin:14mm}", "") if style_match else ""
         self.brain_box = w.VBox([w.HTML("Open this tab to load the selected lesion on the MNI brain.")])
         self.decode_html = w.HTML("Neurosynth decoding is pending." if decode else "Neurosynth decoding was not requested.")
         self.decode_log = Output()
@@ -228,7 +231,7 @@ class ParticipantReport:
         # Evidence tables use explicit light colours in the saved report.
         # Retain that background when presenting each section in a dark notebook.
         accordion = w.Accordion(children=[w.HTML(
-            '<div style="background:#fafafa;color:#1a1a1a;padding:12px;overflow-x:auto">'
+            '<div class="calmar-report" style="background:#fff;color:#2b2b3a;padding:12px;overflow-x:auto">'
             + html + '</div>') for _, html in sections], selected_index=0)
         for i, (label, _) in enumerate(sections):
             accordion.set_title(i, label)
@@ -245,7 +248,7 @@ class ParticipantReport:
         self.navigation = NotebookNavigation(self.navigation_message)
         choose = w.Button(description="Choose another report", layout=w.Layout(width="220px"))
         choose.on_click(lambda _: self.navigation.request("report-selection", lambda: True, all_below=False))
-        self.widget = w.VBox([w.HTML(title + qc_notice),
+        self.widget = w.VBox([w.HTML(report_style + '<div class="calmar-report">' + title + qc_notice + '</div>'),
             w.HTML(file_link(path, "Open / download report HTML") + " · Use the saved report’s Print button for PDF."),
             self.tabs, choose, self.navigation_message, self.navigation])
 
