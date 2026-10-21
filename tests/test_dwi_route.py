@@ -78,3 +78,12 @@ def test_findings_carry_their_study_phase_and_the_report_flags_other_phases():
     text = phase_summary(rows, "acute")
     assert "1 were studied in the same phase, 2 in another phase" in text and "1 do not state it" in text
     assert "read it with caution" in text
+
+
+def test_right_hemisphere_lesions_are_explained():
+    from calmar.report_evidence import laterality_note
+    right = pd.DataFrame([dict(region="right_precentral_gyrus", side="right", lesion_pct=30.0),
+                          dict(region="left_precentral_gyrus", side="left", lesion_pct=0.0)])
+    assert "right</b> hemisphere" in laterality_note(right)
+    left = right.assign(side=["left", "right"])
+    assert laterality_note(left) == ""

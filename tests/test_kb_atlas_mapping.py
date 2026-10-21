@@ -72,7 +72,7 @@ def test_findings_match_by_exact_region_name_and_thin_tracts_count_by_destroyed_
     assert set(rows["region"]) <= {"left_precentral_gyrus", "left_superior_longitudinal_fasciculus"}
     assert "left_superior_longitudinal_fasciculus" in set(rows["region"])     # 1 % of lesion, 95 % destroyed
     assert "left_angular_gyrus" not in set(rows["region"])                    # below both thresholds
-    assert {"claim", "direction", "citation", "predicts"} <= set(rows.columns)
+    assert {"claim", "direction", "citation", "predicts", "population", "phase"} <= set(rows.columns)
     assert not kb.location_findings(damage, min_overlap=5, min_region=100)["region"].str.contains(
         "longitudinal").any()
 
