@@ -11,9 +11,10 @@ import pandas as pd
 from nilearn.image import resample_to_img
 
 SIDE_COLUMNS = ['left_overlap_voxels', 'right_overlap_voxels', 'midline_overlap_voxels']
+REGION_SIDE_COLUMNS = ['left_region_voxels', 'right_region_voxels']   # region size per hemisphere (MNI x)
 COLUMNS = ['subject', 'session', 'atlas', 'region', 'region_id',
            'lesion_in_roi_percent', 'roi_coverage_percent', 'overlap_voxels',
-           'total_region_voxels', 'total_lesion_voxels', *SIDE_COLUMNS]
+           'total_region_voxels', 'total_lesion_voxels', *SIDE_COLUMNS, *REGION_SIDE_COLUMNS]
 
 
 def calculate_overlap(lesion_path, atlas_img, atlas_data, atlas_labels, threshold=.5):
@@ -28,6 +29,12 @@ def calculate_overlap(lesion_path, atlas_img, atlas_data, atlas_labels, threshol
     result = {}
     ids, sizes = np.unique(atlas_data, return_counts=True)
     sizes = dict(zip(ids.astype(int), sizes))
+    # Region size per hemisphere, for labels that cover both (e.g. HarvardOxford):
+    # the damaged share of the left precentral gyrus needs the left part's size.
+    grid_x = nib.affines.apply_affine(atlas_img.affine, np.indices(np.shape(atlas_data)).reshape(3, -1).T)[:, 0]
+    labels_flat = np.asarray(atlas_data).astype(int).ravel()
+    left_sizes = dict(zip(*np.unique(labels_flat[grid_x < -1e-5], return_counts=True)))
+    right_sizes = dict(zip(*np.unique(labels_flat[grid_x > 1e-5], return_counts=True)))
     for region_id in np.unique(values):
         if region_id == 0:
             continue
@@ -46,7 +53,9 @@ def calculate_overlap(lesion_path, atlas_img, atlas_data, atlas_labels, threshol
             roi_coverage_percent=100. * n / sizes[region_id],
             left_overlap_voxels=int(np.count_nonzero(hit & (x < -1e-5))),
             right_overlap_voxels=int(np.count_nonzero(hit & (x > 1e-5))),
-            midline_overlap_voxels=int(np.count_nonzero(hit & (np.abs(x) <= 1e-5))))
+            midline_overlap_voxels=int(np.count_nonzero(hit & (np.abs(x) <= 1e-5))),
+            left_region_voxels=int(left_sizes.get(region_id, 0)),
+            right_region_voxels=int(right_sizes.get(region_id, 0)))
     return result, total
 
 
@@ -78,7 +87,7 @@ def cached_overlap(csv, entries, mask_path, atlas_name, atlas_img, atlas_data,
             stat = path.stat()
             identity = [str(path.resolve()), stat.st_mtime_ns, stat.st_size, float(threshold), atlas_digest]
             previous = state.get(key, {})
-            if not overwrite and set(SIDE_COLUMNS).issubset(df.columns) and previous.get('identity') == identity:
+            if not overwrite and set(SIDE_COLUMNS + REGION_SIDE_COLUMNS).issubset(df.columns) and previous.get('identity') == identity:
                 timing['status'] = 'Cached'
                 statuses[key] = previous
                 continue

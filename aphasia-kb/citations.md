@@ -1398,7 +1398,7 @@ doi:10.1038/nn1050
 ## @Baldo2011  [seed]
 Baldo JV, Wilkins DP, Ogar J, Willock S, Dronkers NF.
 Role of the precentral gyrus of the insula in complex articulatory movements.
-*Cortex*. 2011;47(7):800–807.
+*Cortex*. 2011;47:800–807.
 doi:10.1016/j.cortex.2010.07.001
 
 > A. VLSM (n=33) replicating Dronkers 1996 with a quantitative method;
@@ -1474,6 +1474,108 @@ doi:10.1162/nol.a.9
 > Added 2026-10-20. Lesion correlates of rhythm perception and
 > production in aphasia — the lesion side of the `rhythmic_hand_tapping`
 > / `melodic_intoning` ingredients.
+
+---
+
+## Seed references (added 2026-10-21): atlas-mapping evidence gaps
+
+> Suggested for extraction to fill the gaps listed in
+> `atlas_mapping/evidence_gaps.yaml` (see `atlas_mapping/EVIDENCE_GAPS.md`).
+> Bibliographic details were checked against publisher or PubMed Central
+> records on 2026-10-21; a missing DOI was not confirmed and should be
+> looked up before download. Already-seeded papers for the same gaps:
+> @Kummerer2013 (extreme capsule), @Hillis2004 (insula vs IFG).
+
+## @Hillis2002  [seed]
+Hillis AE, Wityk RJ, Barker PB, Beauchamp NJ, Gailloud P, Murphy K, Cooper O, Metter EJ.
+Subcortical aphasia and neglect in acute stroke: the role of cortical hypoperfusion.
+*Brain*. 2002;125(5):1094–1104.
+
+> Gap thalamus_basal_ganglia. Acute DWI/PWI (n=115): aphasia after
+> subcortical infarcts largely explained by cortical hypoperfusion and
+> resolving with reperfusion. Region-level evidence for putamen, caudate,
+> thalamus; DOI not confirmed.
+
+## @Baldo2011  [seed]
+Baldo JV, Wilkins DP, Ogar J, Willock S, Dronkers NF.
+Role of the precentral gyrus of the insula in complex articulation.
+*Cortex*. 2011;47:800–807.
+
+> Gap insula_apraxia_of_speech. VLSM: superior precentral gyrus of the
+> insula and errors on complex multisyllabic articulation; extract with
+> @Hillis2004 (the opposing view). DOI not confirmed.
+
+## @Baldo2013  [seed]
+Baldo JV, Arévalo A, Patterson JP, Dronkers NF.
+Grey and white matter correlates of picture naming: evidence from a voxel-based lesion analysis of the Boston Naming Test.
+*Cortex*. 2013;49(3):658–667.
+doi:10.1016/j.cortex.2012.03.001
+
+> Gap basal_temporal_naming. VLSM of BNT naming in a large chronic LH
+> cohort: anterior-to-posterior MTG/STG, underlying white matter and
+> inferior parietal cortex (PMC3613759).
+
+## @Han2013  [seed]
+Han Z, Ma Y, Gong G, He Y, Caramazza A, Bi Y.
+White matter structural connectivity underlying semantic processing: evidence from brain damaged patients.
+*Brain*. 2013;136(10):2952–2965.
+doi:10.1093/brain/awt205
+
+> Gap anterior_thalamic_radiation_ifof_semantics. n=76: lesion load and FA
+> of left IFOF, anterior thalamic radiation and uncinate fasciculus
+> correlate with semantic impairment across three tasks.
+
+## @Sebastian2014  [seed]
+Sebastian R, Schein MG, Davis C, Gomez Y, Newhart M, Oishi K, Hillis AE.
+Aphasia or neglect after thalamic stroke: the various ways they may be related to cortical hypoperfusion.
+*Front Neurol*. 2014;5:231.
+doi:10.3389/fneur.2014.00231
+
+> Gap thalamus_basal_ganglia. Acute thalamic infarcts: aphasia after left
+> thalamic lesions mostly without cortical hypoperfusion (unlike other
+> subcortical infarcts).
+
+## @Xing2016  [seed]
+Xing S, et al.; senior author Turkeltaub PE.
+Right hemisphere grey matter structure and language outcomes in chronic left hemisphere stroke.
+*Brain*. 2016;139(1):227–241.
+doi:10.1093/brain/awv323
+
+> Gap right_hemisphere. n=32 chronic LH stroke (WAB-R): right
+> temporoparietal grey matter volume relates to speech, naming and
+> repetition beyond lesion burden. Full author list to be copied from
+> the article.
+
+## @Li2017  [seed]
+Li M, Zhang Y, Song L, Huang R, Ding J, Fang Y, Xu Y, Han Z.
+Structural connectivity subserving verbal fluency revealed by lesion-behavior mapping in stroke patients.
+*Neuropsychologia*. 2017;101:85–96.
+doi:10.1016/j.neuropsychologia.2017.05.008
+
+> Gaps frontal_aslant_sma_fluency and anterior_thalamic_radiation_ifof_semantics.
+> n=51: integrity of left anterior thalamic radiation, IFOF, uncinate, SLF
+> and frontal aslant tract relates to semantic and phonological fluency,
+> beyond lesion volume.
+
+## @Oeckel2021  [seed]
+Martinez Oeckel A, Rijntjes M, Glauche V, Kümmerer D, Kaller CP, Egger K, Weiller C.
+The extreme capsule and aphasia: proof-of-concept of a new way relating structure to neurological symptoms.
+*Brain Commun*. 2021;3:fcab040.
+doi:10.1093/braincomms/fcab040
+
+> Gap extreme_capsule_ventral_stream. n=123 acute LH stroke without
+> cortical language-area lesions: >15 % extreme-capsule damage strongly
+> predicts aphasia (OR 16.4); arcuate damage does not.
+
+## @Fritsch2022  [seed]
+Fritsch M, Rangus I, Nolte CH.
+Thalamic aphasia: a review.
+*Curr Neurol Neurosci Rep*. 2022;22(12):855–865.
+doi:10.1007/s11910-022-01242-2
+
+> Gap thalamus_basal_ganglia. Review: mostly mild lexical-semantic
+> deficits whose profile varies with the thalamic nuclei involved.
+> Extract as a review.
 
 ---
 
