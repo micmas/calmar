@@ -11,7 +11,7 @@ from IPython import get_ipython
 from IPython.display import display
 
 from .atlas_ui import ordered_sources
-from .execution import ExecutionCheckpoint
+from .execution import ExecutionCheckpoint, enable_checkpoint_recovery, recovery_instructions
 from .masks import MASK_LABELS
 from .notebook_navigation import NotebookNavigation
 from . import colors
@@ -48,7 +48,10 @@ class ReportInputs:
         self.preview = None
         self.gate = ExecutionCheckpoint(shell, "Choose report inputs, then click Generate participant report.") if shell else None
         if shell:
+            self.gate.recovery_action = "generate"
             shell._calmar_report_checkpoint = self.gate
+            shell._calmar_report_inputs = self
+            enable_checkpoint_recovery(shell)
         index = namespace.get("INTERP_SUBJECT_IDX") or 0
         self.subject = w.Dropdown(
             options=[(f"{e['subject']} {e.get('session') or ''}".strip(), i) for i, e in enumerate(self.entries)],
@@ -60,10 +63,15 @@ class ReportInputs:
         preferred = namespace.get("INTERP_DISPLAY_ATLAS", "HarvardOxford")
         self.atlas = w.Dropdown(options=atlases, value=preferred if preferred in atlases else atlases[0],
             description="Display atlas:", style={"description_width": "initial"}, layout=w.Layout(width="330px"))
+        from .participant_report import EVIDENCE_LABELS
+        evidence = namespace.get("INTERP_EVIDENCE") or "all"
+        self.evidence = w.Dropdown(description="Evidence:", options=[(v, k) for k, v in EVIDENCE_LABELS.items()],
+            value=evidence if evidence in EVIDENCE_LABELS else "all",
+            style={"description_width": "initial"}, layout=w.Layout(width="330px"))
         self.decode = w.Checkbox(value=namespace.get("INTERP_RUN_DECODING", False),
             description="Include Neurosynth decoding (optional; takes longer)", indent=False,
             layout=w.Layout(width="auto"))
-        self.summary, self.message = w.HTML(), w.HTML()
+        self.summary, self.message, self.agreement = w.HTML(), w.HTML(), w.HTML()
         self.generate = w.Button(description="Generate participant report", button_style="success",
             icon="play", layout=w.Layout(width="270px", min_height="36px"))
         self.navigation = NotebookNavigation(
@@ -76,12 +84,13 @@ class ReportInputs:
         self.source.observe(self.apply, names="value")
         self.atlas.observe(self.apply, names="value")
         self.decode.observe(self.apply, names="value")
+        self.evidence.observe(self.apply, names="value")
         self.compare.observe(self.show_comparison, names="selected_index")
         self.generate.on_click(lambda _: self.navigation.request("report-start", self.approve))
         self.widget = w.VBox([w.HTML("<h3>Choose the participant report</h3>"
             "<p>Choose a participant, lesion mask and display atlas below. "
             "Generate creates the report and its downloadable HTML file.</p>"),
-            self.subject, self.source, self.atlas, self.decode, self.summary,
+            self.subject, self.source, self.atlas, self.evidence, self.decode, self.summary, self.agreement,
             self.compare, self.generate, self.message, self.navigation])
         self.refresh()
 
@@ -93,19 +102,32 @@ class ReportInputs:
         self.source.value = previous if previous in sources else next(iter(sources), None)
         self.source.disabled = not sources
         self.busy = False
+        self.show_agreement()
         self.apply()
+
+    def show_agreement(self):
+        """Agreement of the automatic masks with the manual mask, when there is one."""
+        from .mask_method import manual_agreement_html
+        inventory = self.ns["mask_inventory_for"](self.entries[self.subject.value]) if "mask_inventory_for" in self.ns else {}
+        masks = {s: spaces["MNI"] for s, spaces in inventory.items() if "MNI" in spaces}
+        try:
+            self.agreement.value = manual_agreement_html(masks)
+        except Exception as exc:
+            self.agreement.value = f"<span style='font-size:12px'>Agreement with the manual mask not computed: {escape(str(exc))}</span>"
 
     def apply(self, *_):
         if self.busy:
             return
         self.ns.update(INTERP_SUBJECT_IDX=self.subject.value, INTERP_MASK_SOURCE=self.source.value,
-                       INTERP_DISPLAY_ATLAS=self.atlas.value, INTERP_RUN_DECODING=self.decode.value)
+                       INTERP_DISPLAY_ATLAS=self.atlas.value, INTERP_RUN_DECODING=self.decode.value,
+                       INTERP_EVIDENCE=self.evidence.value)
         self.generate.disabled = self.source.value is None
         if self.source.value is None:
             self.summary.value = "<b>No available MNI lesion mask for this participant.</b> Complete its warp before generating a report."
         else:
             self.summary.value = (f"<b>Report selection:</b> {escape(self.subject.label)} · "
-                f"{escape(self.source.label)} mask · {escape(self.atlas.value)} atlas. "
+                f"{escape(self.source.label)} mask · {escape(self.atlas.value)} atlas · "
+                f"evidence: {escape(self.evidence.label)}. "
                 "Click Generate participant report when ready.")
         if self.compare.selected_index is not None:
             self.show_comparison()
@@ -118,7 +140,7 @@ class ReportInputs:
             self.preview = helpers.fresh_viewer("report_mask_comparison", height=330)
         entry = self.entries[self.subject.value]
         inventory = self.ns["mask_inventory_for"](entry)
-        brain = self.ns["deriv_path_for"](entry) / "Subject_in_MNI.nii.gz"
+        brain = self.ns.get("template_path_for", self.ns["deriv_path_for"])(entry) / "Subject_in_MNI.nii.gz"
         if not brain.exists():
             self.preview.load_volumes([])
             self.compare_body.children = (w.HTML("The MNI brain image is unavailable; complete the warp first."),)
@@ -139,6 +161,21 @@ class ReportInputs:
         show_layers(self.preview, self.preview_controls, brain, layers, helpers)
         self.compare_body.children = (self.preview_controls, self.preview)
 
+    def choose_participant(self, name):
+        """Select a participant by subject (or subject and session), for %calmar_continue generate."""
+        for label, index in self.subject.options:
+            if name in (label, label.split()[0]):
+                self.subject.value = index
+                return
+        raise ValueError(f"Unknown participant {name!r}; choose one of: "
+                         + ", ".join(label for label, _ in self.subject.options))
+
+    def choose_mask(self, source):
+        options = [value for _, value in self.source.options]
+        if source not in options:
+            raise ValueError(f"No {source!r} MNI mask for {self.subject.label}; available: {', '.join(options)}")
+        self.source.value = source
+
     def approve(self):
         if self.source.value not in self.ns["available_mni_sources"](self.entries[self.subject.value]):
             self.refresh()
@@ -153,6 +190,8 @@ class ReportInputs:
     def close(self):
         if self.gate:
             self.gate.close()
+            if getattr(self.gate.shell, "_calmar_report_inputs", None) is self:
+                self.gate.shell._calmar_report_inputs = None
         close_widget(self.navigation)
         close_widget(self.widget)
 
@@ -171,6 +210,7 @@ def show_report_inputs(namespace):
     namespace["_report_inputs"] = panel
     display(panel.widget)
     if panel.gate:
+        display(recovery_instructions("generate"))
         panel.gate._cancel_queued()
     return panel
 

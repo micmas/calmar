@@ -9,7 +9,10 @@ from calmar.guided import source_cell
 def test_timing_labels_use_titles_and_current_cell_numbers():
     key = step_key('# CALMAR_CELL_ID: calmar-step-25\nprint(1)')
     assert key == 'calmar-step-25'
-    assert step_title(key) == 'LINDA lesion segmentation — single subject (cell 25)'
+    import json
+    cells = json.loads((Path(__file__).resolve().parents[1]/'lesion-interpretation-pipeline.ipynb').read_text())['cells']
+    position = next(i for i, c in enumerate(cells, 1) if c['id'] == 'calmar-step-25')   # moves as cells are added
+    assert step_title(key) == f'LINDA lesion segmentation — single subject (cell {position})'
     assert step_title('CALMAR_CELL_ID: calmar-step-25') == step_title(key)
     source = ''.join(source_cell(25)['source'])
     assert 'CALMAR_CELL_ID:' not in source

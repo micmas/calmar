@@ -1,0 +1,85 @@
+# Resolved: "arcuate_and_long_tracts" (atlas gap: JHU had no arcuate, frontal
+# aslant, middle longitudinal fasciculus or optic radiation) was closed on
+# 2026-10-21 by adding the XTRACT tract atlas (units.yaml).
+#
+# Areas where the knowledge base needs more evidence (or the atlases need a
+# better label) before reports about them can be trusted.
+#
+# Kinds:
+#   atlas_gap      the KB has findings, but no atlas used here represents the
+#                  structure, so a lesion can never reach them (fix: an atlas)
+#   no_evidence    the atlases measure the structure and lesions often hit it,
+#                  but no KB finding concerns it (fix: papers)
+#   thin           1-3 findings or 1-2 papers (fix: papers)
+#   contested      the mapping or the finding is disputed in the literature
+#                  (fix: papers on both sides)
+# `areas` lists unit ids (units.yaml) and/or KB region ids (kb_regions.yaml);
+# `papers` lists citations.md keys to extract (new ones are added there as
+# [seed] entries in the 2026-10-21 section). `python atlas_mapping.py
+# --write-table` writes EVIDENCE_GAPS.md with the current finding counts.
+gaps:
+
+  extreme_capsule_ventral_stream:
+    kind: atlas_gap
+    areas: [left_extreme_capsule]
+    need: >-
+      7 findings, but neither JHU nor XTRACT labels the extreme capsule. Oeckel et al. 2021 and Kümmerer
+      et al. 2013 measured it with tractography-derived templates from healthy subjects; extracting them
+      documents the ventral-stream evidence, and their templates (if shared) would make the region
+      reachable.
+    papers: ["@Kummerer2013", "@Oeckel2021"]
+
+  thalamus_basal_ganglia:
+    kind: no_evidence
+    areas: [putamen, pallidum]
+    need: >-
+      Lesions often reach the thalamus, caudate, putamen and pallidum (AAL measures all four), but the KB
+      has no finding on the thalamus or caudate and 4 findings from one paper on putamen and pallidum
+      (Radanovic & Mansur 2017 was extracted as a narrative review, without region-level findings). The
+      subcortical-aphasia literature also shows that much of it reflects cortical hypoperfusion, which the
+      report should be able to say.
+    papers: ["@Hillis2002", "@Sebastian2014", "@Fritsch2022"]
+
+  anterior_thalamic_radiation_ifof_semantics:
+    kind: thin
+    areas: [ifof, left_inferior_fronto_occipital_fasciculus]
+    need: >-
+      The inferior fronto-occipital fasciculus has 3 findings; the anterior thalamic radiation (measured by
+      JHU) none. Both were linked to semantic deficits and verbal fluency in stroke cohorts that measured
+      tract damage directly.
+    papers: ["@Han2013", "@Li2017"]
+
+  frontal_aslant_sma_fluency:
+    kind: thin
+    areas: [supplementary_motor_area, left_frontal_aslant_tract]
+    need: >-
+      3 findings on the supplementary motor area and 1 on the frontal aslant tract (reachable since the XTRACT
+      atlas was added), which connects it to the inferior frontal gyrus and is linked to verbal fluency after
+      stroke.
+    papers: ["@Li2017"]
+
+  insula_apraxia_of_speech:
+    kind: contested
+    areas: [left_precentral_gyrus_insula, insula, frontal_operculum]
+    need: >-
+      The insula's role in apraxia of speech rests mainly on Dronkers 1996 (precentral gyrus of the insula)
+      and is disputed: Hillis et al. 2004 placed it in the posterior inferior frontal gyrus instead. The
+      frontal operculum has no finding at all. Both sides should be in the KB.
+    papers: ["@Baldo2011", "@Hillis2004"]
+
+  basal_temporal_naming:
+    kind: thin
+    areas: [itg, fusiform_gyrus, itg_temporooccipital, temporooccipital_fusiform]
+    need: >-
+      3 findings on the inferior temporal gyrus and 5 on the fusiform gyrus, regions often damaged by
+      posterior cerebral artery strokes and relevant to naming and reading.
+    papers: ["@Baldo2013"]
+
+  right_hemisphere:
+    kind: thin
+    areas: [right_ifg_pars_triangularis, right_ifg_pars_opercularis, right_middle_temporal_gyrus,
+            right_precentral_gyrus, right_posterior_perisylvian_cortex]
+    need: >-
+      Every right-hemisphere region has 1-3 findings. Right-hemisphere structure and its role in recovery
+      matter for interpreting a left-hemisphere lesion (and for right-hemisphere or bilateral lesions).
+    papers: ["@Xing2016"]

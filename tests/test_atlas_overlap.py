@@ -30,6 +30,7 @@ def test_laterality_uses_world_coordinates_and_preserves_total(tmp_path):
     r = stats['Unsided ROI']
     assert total == sum(r[c] for c in SIDE_COLUMNS) == 4
     assert (r['left_overlap_voxels'], r['right_overlap_voxels'], r['midline_overlap_voxels']) == (2, 1, 1)
+    assert r['left_region_voxels'] + r['right_region_voxels'] <= r['total_region_voxels']   # midline excluded
 
 
 def test_cache_migrates_legacy_and_records_zero_missing_and_sessions(tmp_path):

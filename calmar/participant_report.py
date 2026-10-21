@@ -14,19 +14,22 @@ How the numbers are computed
 ----------------------------
 * Damaged regions: rows of the display-atlas overlap table with
   ``lesion_in_roi_percent`` (= % of lesion voxels inside the ROI) at or above
-  ``ReportSettings.min_overlap_pct``; at most ``max_rois`` rows.
-* Predicted impairments: :meth:`KnowledgeBase.interpret_overlap` per KB atlas,
-  weighting each region by ``lesion_in_roi_percent``; scores of the same
-  target from different atlases are summed. Direction and star rating follow
-  ``aphasia_rules.evidence_direction`` / ``evidence_strength``.
-* Outcome predictions: :meth:`KnowledgeBase.interpret_predictors` on WAB-AQ,
-  age at stroke, days to WAB, sex (``participants.tsv``) and lesion volume
-  (mL; voxels > 0 in the selected MNI mask × voxel volume).
-* Therapies: :meth:`KnowledgeBase.interpret_therapies` from the predicted
-  impairments, gated by impairments implied by the WAB type.
-* Provenance: mask QC rating from the participant's ``*.qc.json`` sidecar;
-  Dice between every pair of available MNI masks (> ``threshold``), resampled
-  to a common grid when needed.
+  ``ReportSettings.min_overlap_pct``, or ``roi_coverage_percent`` (= % of ROI
+  voxels lesioned) at or above ``min_region_pct`` — the same rule the KB
+  interpretation uses; at most ``max_rois`` rows.
+* Lesion location (calmar.report_evidence.location_section): damage per KB
+  region through the curated atlas mapping (aphasia-kb/atlas_mapping/; share of
+  the lesion and share of the region destroyed, per hemisphere), the findings
+  about each damaged region with their direction, and the impairments they
+  point to (:meth:`KnowledgeBase.location_findings` / ``interpret_damage``).
+* Measures (calmar.report_evidence.measures_section): WAB-AQ, age at stroke,
+  days to WAB, sex (``participants.tsv``) and lesion volume (mL; voxels > 0 in
+  the selected MNI mask x voxel volume), each with the direction the evidence
+  gives and its findings.
+* Therapies: :meth:`KnowledgeBase.interpret_therapies` from the impairments
+  the lesion location points to, gated by impairments implied by the WAB type.
+* Provenance: mask QC rating from the participant's ``*.qc.json`` sidecar and
+  how the mask was made (calmar.mask_method).
 
 The clinical rules (WAB type profile, recovery stage, evidence stars) live in
 ``aphasia-kb/aphasia_rules.py`` and are shown by :func:`rules_html`.
@@ -47,7 +50,7 @@ from . import colors as cc
 from .masks import MASK_LABELS
 
 #: Atlases the KB lookup uses by default.
-DEFAULT_KB_ATLASES = ("AAL", "HarvardOxford", "Destrieux", "Schaefer400", "JHU")
+DEFAULT_KB_ATLASES = ("AAL", "HarvardOxford", "Destrieux", "Schaefer400", "JHU", "XTRACT")
 
 #: QC stages (calmar.qc) whose rating describes each mask source.
 QC_STAGES_FOR_SOURCE = {
@@ -57,10 +60,18 @@ QC_STAGES_FOR_SOURCE = {
 }
 
 TEMPLATE_CAVEAT = (
-    "Lesion masks are on the FSL MNI152 template (MNI152NLin6Asym): LINDA's ch2 (Colin27) "
-    "registration continued ch2 -> MNI152 in one resampling. Atlases are resampled to the lesion by "
-    "world coordinates. Overlaps still depend on how well this individual brain was registered to "
-    "MNI152, which matters most for small or thin regions.")
+    "Lesion masks are on the FSL MNI152 template (MNI152NLin6Asym, 1 mm); the registration used for this "
+    "mask is named above. Atlases are resampled to the lesion by world coordinates. Overlaps still depend "
+    "on how well this individual brain was registered to MNI152, which matters most for small or thin regions.")
+
+
+# KB entry statuses a report may draw on, by evidence level (report form "Evidence").
+EVIDENCE_LEVELS = {"approved": ("approved",),
+                   "in_review": ("approved", "in_review"),
+                   "all": ("approved", "in_review", "draft")}
+EVIDENCE_LABELS = {"approved": "Approved entries only",
+                   "in_review": "Approved + in review",
+                   "all": "All, including unreviewed drafts"}
 
 
 @dataclass
@@ -69,15 +80,22 @@ class ReportSettings:
     kb_atlases: tuple = DEFAULT_KB_ATLASES   # atlases used to query the KB
     display_atlas: str = "HarvardOxford"     # atlas for the damaged-regions table
     high_conf_only: bool = False             # only KB findings with confidence "high"
-    include_drafts: bool = True              # also use draft / in-review KB entries
-    min_overlap_pct: float = 5.0             # min % of lesion in an ROI to count it
+    include_drafts: bool = True              # older setting: True = evidence "all", False = "approved"
+    evidence: str | None = None              # "approved", "in_review" (approved + in review) or "all" (+ drafts)
+    min_overlap_pct: float = 5.0             # an ROI counts as damaged if it holds >= this % of the lesion
+    min_region_pct: float = 25.0             # ... or if >= this % of the ROI is destroyed (small regions, thin tracts)
+    disconnectome: str = "bcb"               # map for tract disconnection: "bcb", "deepdisco" or "none"
+    min_disconnected_pct: float = 50.0       # a tract counts as disconnected if >= this % of it has p > 0.5
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
     threshold: float = 0.5                   # mask threshold for Dice between masks
 
     @property
     def include(self):
-        return ("approved", "in_review", "draft") if self.include_drafts else ("approved",)
+        level = self.evidence or ("all" if self.include_drafts else "approved")
+        if level not in EVIDENCE_LEVELS:
+            raise ValueError(f"evidence must be one of {list(EVIDENCE_LEVELS)}, not {level!r}")
+        return EVIDENCE_LEVELS[level]
 
 
 @dataclass
@@ -214,49 +232,55 @@ def overlap_csv(atlas, source, overlap_paths, reports_dir):
     return Path(reports_dir) / f"lesion_atlas_overlap_{atlas}_{file_token(source)}.csv"
 
 
-def imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, reports_dir):
-    """KB predictions from lesion location, merged across ``settings.kb_atlases``.
+def _days(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
-    Returns (DataFrame, [(atlas, rows)]); the DataFrame has target,
-    target_kind, score, n_findings, citations, source_atlases, direction.
-    """
-    per_atlas, chunks = [], []
+
+def lesion_damage(entry, source, settings, overlap_paths, reports_dir):
+    """Damage per knowledge-base region (aphasia-kb/atlas_mapping) from the
+    participant's rows of each atlas overlap table in ``settings.kb_atlases``.
+    Returns ``(region damage, {atlas: rows})``."""
+    import atlas_mapping
+    rows_by_atlas = {}
     for atlas in settings.kb_atlases:
         csv = overlap_csv(atlas, source, overlap_paths, reports_dir)
         if not csv.exists():
             continue
         rows = _participant_rows(pd.read_csv(csv), entry)
-        if rows.empty:
-            continue
-        found = kb.interpret_overlap(
-            rows, atlas=atlas, region_col="region", weight_col="lesion_in_roi_percent",
-            min_overlap=settings.min_overlap_pct,
-            min_confidence=("high" if settings.high_conf_only else None))
-        if found is None or found.empty:
-            per_atlas.append((atlas, 0))
-            continue
-        chunks.append(found.copy().assign(_atlas=atlas))
-        per_atlas.append((atlas, len(found)))
-    if not chunks:
+        if not rows.empty:
+            rows_by_atlas[atlas] = rows
+    units = atlas_mapping.unit_damage(rows_by_atlas)
+    return atlas_mapping.region_damage(units), rows_by_atlas
+
+
+def imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, reports_dir):
+    """KB predictions from lesion location, through the curated atlas mapping.
+
+    Returns (DataFrame, [(atlas, rows)]); the DataFrame has target,
+    target_kind, score, n_findings, citations, contributing_regions, direction.
+    """
+    damage, rows_by_atlas = lesion_damage(entry, source, settings, overlap_paths, reports_dir)
+    per_atlas = [(atlas, len(rows)) for atlas, rows in rows_by_atlas.items()]
+    found = kb.interpret_damage(damage, min_overlap=settings.min_overlap_pct, min_region=settings.min_region_pct,
+                                min_confidence=("high" if settings.high_conf_only else None))
+    if found is None or found.empty:
         return pd.DataFrame(), per_atlas
-    merged = (pd.concat(chunks, ignore_index=True)
-              .groupby(["target", "target_kind"], as_index=False)
-              .agg(score=("score", "sum"), n_findings=("n_findings", "sum"),
-                   citations=("citations", lambda s: sorted({c for lst in s for c in lst})),
-                   source_atlases=("_atlas", lambda s: sorted(set(s)))))
-    merged["direction"] = merged["score"].apply(rules.evidence_direction)
-    merged = merged.sort_values("score", key=lambda s: s.abs(), ascending=False).reset_index(drop=True)
-    return merged, per_atlas
+    found["direction"] = found["score"].apply(rules.evidence_direction)
+    return found, per_atlas
 
 
 def damaged_regions(entry, source, settings, overlap_paths, reports_dir):
-    """Display-atlas rows with lesion_in_roi_percent >= min_overlap_pct."""
+    """Display-atlas rows holding >= min_overlap_pct of the lesion or with >= min_region_pct of the ROI lesioned."""
     csv = overlap_csv(settings.display_atlas, source, overlap_paths, reports_dir)
     if not csv.exists():
         return pd.DataFrame()
     rows = _participant_rows(pd.read_csv(csv), entry)
-    return (rows[rows["lesion_in_roi_percent"] >= settings.min_overlap_pct]
-            .sort_values("lesion_in_roi_percent", ascending=False).head(settings.max_rois))
+    damaged = ((rows["lesion_in_roi_percent"] >= settings.min_overlap_pct)
+               | (rows["roi_coverage_percent"] >= settings.min_region_pct))
+    return rows[damaged].sort_values("lesion_in_roi_percent", ascending=False).head(settings.max_rois)
 
 
 def participant_row(dataset_dir, subject):
@@ -360,8 +384,11 @@ def mask_agreement(masks, threshold=0.5):
     return volumes, pairs
 
 
-def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scope, generated=None, kb=None):
-    """Research-use caveat, mask source and QC, method agreement, template caveat."""
+def provenance_html(source, mask_path, qc, *, kb_scope, method=None, generated=None, kb=None):
+    """Research-use caveat, the lesion mask (QC and how it was made), template caveat,
+    knowledge base. ``method``: HTML list of the steps that made the mask
+    (calmar.mask_method). Agreement with the manual mask is shown in the report
+    form before generating, not in the report."""
     label = MASK_LABELS.get(source, source)
     if qc["ratings"]:
         rated = "; ".join(f"{escape(stage)}: <b>{escape(lbl)}</b>"
@@ -372,16 +399,6 @@ def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scop
     warn = (" <b style='color:#c62828'>Rated poor — interpret this report with caution.</b>"
             if qc["poor"] else "")
     edits = f" Edits recorded on this mask: {qc['edits']}." if qc["edits"] else ""
-    if pairs:
-        rows = "".join(
-            f"<tr><td style='padding:1px 8px'>{escape(MASK_LABELS.get(a, a))} vs {escape(MASK_LABELS.get(b, b))}</td>"
-            f"<td style='padding:1px 8px;text-align:right'>{d:.2f}</td></tr>" for a, b, d in pairs)
-        vols = ", ".join(f"{escape(MASK_LABELS.get(s, s))} {v:.1f} mL" for s, v in volumes.items())
-        agreement = (f"Dice between available MNI masks (voxels &gt; {threshold:g}); "
-                     "1 = identical; lower values mean the methods disagree on lesion extent:"
-                     f"<table style='font-size:12px;margin:2px 0'>{rows}</table>Volumes: {vols}.")
-    else:
-        agreement = "Only one MNI mask is available, so agreement between methods was not computed."
     generated = generated or datetime.now()
     return (
         "<div class='calmar-provenance' role='note' style='border:1px solid #90a4ae;background:#eef3f6;"
@@ -394,7 +411,7 @@ def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scop
         "<ul style='margin:6px 0 0 18px;padding:0'>"
         f"<li><b>Lesion mask:</b> {escape(label)} (MNI) <code>{escape(Path(mask_path).name)}</code>. "
         f"QC: {rated}.{edits}{warn}</li>"
-        f"<li><b>Method agreement:</b> {agreement}</li>"
+        + (f"<li><b>How this lesion mask was made:</b>{method}</li>" if method else "") +
         f"<li><b>Template space:</b> {escape(TEMPLATE_CAVEAT)}</li>"
         + (f"<li><b>Knowledge base:</b> {escape(kb)}</li>" if kb else "") +
         f"<li><b>Generated:</b> {generated:%Y-%m-%d %H:%M} · KB scope: {escape(kb_scope)}</li>"
@@ -537,13 +554,15 @@ def damaged_regions_html(df, display_atlas, atlas_dir):
     rows = [f"<tr><td style='padding:3px 8px'>{escape(r['region'])}</td>"
             f"<td style='padding:3px 8px'>{escape(r['lesion_hemisphere'])}</td>"
             f"<td style='text-align:right;padding:3px 8px'>{r['lesion_in_roi_percent']:.1f}%</td>"
+            f"<td style='text-align:right;padding:3px 8px'>{r['roi_coverage_percent']:.1f}%</td>"
             f"<td style='text-align:right;font-size:11px;color:#666;padding:3px 4px'>"
             f"{int(r.get('overlap_voxels', 0)):,} vox</td></tr>" for _, r in df.iterrows()]
     return ("<table style='border-collapse:collapse;font-size:13px'>"
             "<tr style='background:#2c3e50;color:white'>"
             f"<th style='text-align:left;padding:4px 8px'>{display_atlas} region</th>"
             "<th style='padding:4px 8px'>Lesion side</th>"
-            "<th style='padding:4px 8px'>% in ROI</th><th></th></tr>"
+            "<th style='padding:4px 8px'>% of lesion in ROI</th>"
+            "<th style='padding:4px 8px'>% of ROI lesioned</th><th></th></tr>"
             + "".join(rows) + "</table><p>"
             "Lesion side is measured from the actual mask overlap; bilateral entries show left/right counts.</p>")
 
@@ -583,9 +602,10 @@ LEGEND_HTML = '''
         <b>Evidence strength</b>: &#9733; weak &middot; &#9733;&#9733; moderate &middot;
         &#9733;&#9733;&#9733; strong &middot; &#9733;&#9733;&#9733;&#9733; very strong.
         Hover stars for raw score (bins are a project display heuristic, not an evidence grading).<br>
-        <b>Direction badge</b>: <span style="color:#28a745">LIKELY</span> /
-        <span style="color:#dc3545">UNLIKELY</span> /
-        <span style="color:#6c757d">AMBIGUOUS</span>.<br>
+        <b>Finding direction</b>: what the study found between the region or measure and the outcome:
+        association, inverse association, no association or mixed results. A finding reports an
+        association in a group of patients, not a prediction for this person.
+        &#9873; = a region matched to the atlas by a judgement call (<code>aphasia-kb/atlas_mapping/README.md</code>).<br>
         <b>WAB decomposition</b>: flu = fluency, comp = comprehension, rep = repetition.
         <span style="color:#2e7d32">+</span> preserved,
         <span style="color:#c62828">&#8722;</span> impaired (WAB type taxonomy).<br>
@@ -676,6 +696,8 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     """
     from .atlas_overlap import prepare_report_overlap
     from .qc_decisions import report_qc_notice
+    from .report_evidence import (MAP_LABELS, disconnection_section, disconnectome_map, location_coverage,
+                                  location_section, measures_section, tract_atlases)
     from .report_ui import ParticipantReport, report_sections
 
     messages = []
@@ -691,7 +713,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
                          f"{entry.get('session') or ''}. Choose an available mask in the report selector.")
     mask = Path(study.mni_mask(entry, source))
     linda_dir = Path(study.linda_dir(entry))
-    brain = linda_dir / "Subject_in_MNI.nii.gz"
+    brain = Path(study.template_dir(entry)) / "Subject_in_MNI.nii.gz"
     # prepare_report_overlap reads the atlas list from INTERP_KB_ATLASES; give it ours.
     view = dict(namespace, INTERP_KB_ATLASES=list(settings.kb_atlases))
     prepare_report_overlap(view, entry, source)
@@ -703,10 +725,25 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
 
     # 1. Lesion location -> KB predictions
     imaging, per_atlas = imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, reports_dir)
+    damage, _ = lesion_damage(entry, source, settings, overlap_paths, reports_dir)
+    location_rows = kb.location_findings(damage, min_overlap=settings.min_overlap_pct, min_region=settings.min_region_pct,
+                                         min_confidence=("high" if settings.high_conf_only else None))
+    # Tracts disconnected by the lesion, from its BCBToolkit or DeepDisco map.
+    map_path = disconnectome_map(study, entry, source, settings.disconnectome)
+    disconnection, disconnection_rows, map_label = None, None, None
+    atlases = tract_atlases(namespace.get("ALL_ATLASES"))
+    if map_path is not None and atlases:
+        import atlas_mapping
+        disconnection = atlas_mapping.region_disconnection(atlas_mapping.tract_disconnection(map_path, atlases))
+        disconnection_rows = kb.location_findings(
+            disconnection, min_overlap=101.0, min_region=settings.min_disconnected_pct,
+            min_confidence=("high" if settings.high_conf_only else None))
+        map_label = MAP_LABELS[settings.disconnectome]
+        note(f"  Tract disconnection from {map_path.name}: {0 if disconnection_rows is None else len(disconnection_rows)} findings")
     damaged = damaged_regions(entry, source, settings, overlap_paths, reports_dir)
-    note("  KB findings by atlas:")
+    note("  Overlap rows by atlas (matched to KB regions through aphasia-kb/atlas_mapping):")
     for atlas, n in per_atlas:
-        note(f"    . {atlas:14s} {n:3d} (target,target_kind) rows")
+        note(f"    . {atlas:14s} {n:3d} regions overlapped")
 
     # 2. Clinical data -> KB predictor predictions, recovery stage
     row = participant_row(dataset_dir, entry["subject"])
@@ -779,21 +816,18 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       <h4 style="margin-top:18px">Behavioural / clinical data</h4>
       {behaviour_html(rules, row, predictors, volume)}
 
-      <h4 style="margin-top:18px">Predictor-driven outcome predictions
-        ({n_pred} total findings)</h4>
-      <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
-        Based on WAB-AQ, age, lesion volume, and other clinical scalars.
-        Findings are weighted by the severity of the patient&rsquo;s values.
-      </p>
-      {interp_table_all(kb, rules, predicted, settings.top_n)}
+      <h4 style="margin-top:18px">Lesion location: what the evidence says</h4>
+      {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings)}
 
-      <h4 style="margin-top:18px">Predicted impairments from lesion location
-        ({n_imaging} total findings)</h4>
+      <h4 style="margin-top:18px">White-matter disconnection: what the evidence says</h4>
+      {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label)}
+
+      <h4 style="margin-top:18px">This participant&rsquo;s measures: what the evidence says</h4>
       <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
-        Based on which brain regions are damaged and what language functions
-        those regions support (lesion-symptom mapping studies).
+        Findings about measures such as lesion volume or aphasia severity report associations
+        (e.g. larger lesions with more severe aphasia), not predictions for one person.
       </p>
-      {interp_table(kb, rules, imaging, 'impairment', settings.top_n)}
+      {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None)}
 
       <h4 style="margin-top:18px">Therapy recommendations ({n_therapy} matched)</h4>
       <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
@@ -805,15 +839,14 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     '''
 
     # 5. Provenance, QC notice, overlay; save
-    masks = {s: study.mni_mask(entry, s) for s in study.mni_sources(entry)}
+    from .mask_method import mask_method_html
     try:
-        volumes, pairs = mask_agreement(masks, settings.threshold)
-    except Exception as exc:
-        volumes, pairs = {}, []
-        note(f"  mask agreement not computed: {exc}")
+        method = mask_method_html(study, entry, source)
+    except Exception as exc:          # the report is still useful without it
+        method = None
+        note(f"  mask method not described: {exc}")
     qc = mask_qc_summary(study.lesion_mni(entry), mask, source)
-    provenance = provenance_html(source, mask, qc, volumes, pairs,
-                                 threshold=settings.threshold, kb_scope=kb_scope, kb=kb_line)
+    provenance = provenance_html(source, mask, qc, kb_scope=kb_scope, method=method, kb=kb_line)
     qc_notice = report_qc_notice(linda_dir, entry)
     overlay = _overlay_img(namespace, entry, mask, brain, source)
     path, page, _ = save_report(entry, source, reports_dir, title_card, qc_notice, provenance, overlay, body)

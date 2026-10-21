@@ -87,8 +87,8 @@ class AlignmentDisplayTests(unittest.TestCase):
         ns = {"Path": Path}
         exec(compile(ast.Module(body=[assignment], type_ignores=[]), "config", "exec"), ns)
         config = ns["CONFIG"]
-        self.assertCountEqual(config["SUBJECT_FILTER"], ["sub-M2103", "sub-M2205", "sub-M2002"])
-        self.assertCountEqual(config["SESSION_FILTER"], ["ses-222", "ses-429", "ses-1440"])
+        self.assertCountEqual(config["SUBJECT_FILTER"], ["sub-M2234", "sub-M2173", "sub-M2030"])
+        self.assertCountEqual(config["SESSION_FILTER"], ["ses-715", "ses-590", "ses-1454"])
         self.assertEqual(config["MAX_SUBJECTS"], 3)
         self.assertEqual(config["BCB_MASKS"], "all")
         self.assertEqual(config["DEEPDISCO_MASK_SOURCE"], "all")

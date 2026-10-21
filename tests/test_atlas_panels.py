@@ -69,6 +69,7 @@ class AtlasPanelTests(unittest.TestCase):
                        cw=SimpleNamespace(fresh_viewer=fresh, vols=lambda s: s, set_volumes=cw.set_volumes, Output=cw.Output))
         # Cells use study.linda_dir / study.masks; follow later namespace overrides.
         self.ns["study"] = SimpleNamespace(linda_dir=lambda e: self.ns["deriv_path_for"](e),
+                                           template_dir=lambda e: self.ns["deriv_path_for"](e),
                                            masks=lambda e: self.ns["mask_inventory_for"](e))
         self.addCleanup(lambda: plt.close("all"))
 
