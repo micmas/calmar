@@ -80,6 +80,7 @@ def test_report_cell_saves_report_with_provenance_and_rules(fixture):
     assert "Rated poor" in html
     assert "LINDA vs SynthStroke" in html and "0.75" in html   # 2*48/(64+64)
     assert "Colin27" in html and "MNI152" in html
+    assert "<b>Knowledge base:</b> version " in html and "papers ·" in html and "extracted findings" in html
     # Damaged regions use the min-overlap threshold (5 %): the 1 % ROI is not shown.
     assert "pars opercularis" in html and "Tiny ROI" not in html
     # WAB type spelt as in ds004884 is decomposed; 400 days -> chronic.
@@ -115,3 +116,19 @@ def test_kb_root_without_entries_is_an_error(tmp_path):
     pr._kb_modules(KB_ROOT)  # modules come from the real KB; the entries root is empty
     with pytest.raises(FileNotFoundError):
         pr.load_kb(tmp_path, pr.ReportSettings())
+
+
+def test_kb_version_counts_what_the_report_used(tmp_path):
+    import pandas as pd
+    from types import SimpleNamespace
+    kb = SimpleNamespace(include=("approved",), regions=[1, 2], impairments=[1], therapies=[], predictors=[1],
+                         findings=pd.DataFrame({"citation": ["@A", "@A", "@B", None],
+                                                "review_kind": ["human", "legacy", "legacy", "human"]}))
+    version = pr.kb_version(tmp_path, kb)                    # not a git checkout
+    assert (version["commit"], version["papers"], version["findings"], version["findings_reviewed"]) == (None, 2, 4, 2)
+    assert pr.kb_version_text(version) == (
+        "version unknown (not under git version control) · 2 papers · 4 extracted findings "
+        "(2 approved by a named reviewer) in 4 entries (2 regions, 1 impairments, 0 therapies, 1 predictors) · "
+        "statuses used: approved")
+    version = pr.kb_version(KB_ROOT, kb)                      # the repository's KB is in git
+    assert version["commit"] and version["date"]
