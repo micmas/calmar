@@ -14,7 +14,9 @@ How the numbers are computed
 ----------------------------
 * Damaged regions: rows of the display-atlas overlap table with
   ``lesion_in_roi_percent`` (= % of lesion voxels inside the ROI) at or above
-  ``ReportSettings.min_overlap_pct``; at most ``max_rois`` rows.
+  ``ReportSettings.min_overlap_pct``, or ``roi_coverage_percent`` (= % of ROI
+  voxels lesioned) at or above ``min_region_pct`` — the same rule the KB
+  interpretation uses; at most ``max_rois`` rows.
 * Lesion location (calmar.report_evidence.location_section): damage per KB
   region through the curated atlas mapping (aphasia-kb/atlas_mapping/; share of
   the lesion and share of the region destroyed, per hemisphere), the findings
@@ -271,13 +273,14 @@ def imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, re
 
 
 def damaged_regions(entry, source, settings, overlap_paths, reports_dir):
-    """Display-atlas rows with lesion_in_roi_percent >= min_overlap_pct."""
+    """Display-atlas rows holding >= min_overlap_pct of the lesion or with >= min_region_pct of the ROI lesioned."""
     csv = overlap_csv(settings.display_atlas, source, overlap_paths, reports_dir)
     if not csv.exists():
         return pd.DataFrame()
     rows = _participant_rows(pd.read_csv(csv), entry)
-    return (rows[rows["lesion_in_roi_percent"] >= settings.min_overlap_pct]
-            .sort_values("lesion_in_roi_percent", ascending=False).head(settings.max_rois))
+    damaged = ((rows["lesion_in_roi_percent"] >= settings.min_overlap_pct)
+               | (rows["roi_coverage_percent"] >= settings.min_region_pct))
+    return rows[damaged].sort_values("lesion_in_roi_percent", ascending=False).head(settings.max_rois)
 
 
 def participant_row(dataset_dir, subject):
@@ -551,13 +554,15 @@ def damaged_regions_html(df, display_atlas, atlas_dir):
     rows = [f"<tr><td style='padding:3px 8px'>{escape(r['region'])}</td>"
             f"<td style='padding:3px 8px'>{escape(r['lesion_hemisphere'])}</td>"
             f"<td style='text-align:right;padding:3px 8px'>{r['lesion_in_roi_percent']:.1f}%</td>"
+            f"<td style='text-align:right;padding:3px 8px'>{r['roi_coverage_percent']:.1f}%</td>"
             f"<td style='text-align:right;font-size:11px;color:#666;padding:3px 4px'>"
             f"{int(r.get('overlap_voxels', 0)):,} vox</td></tr>" for _, r in df.iterrows()]
     return ("<table style='border-collapse:collapse;font-size:13px'>"
             "<tr style='background:#2c3e50;color:white'>"
             f"<th style='text-align:left;padding:4px 8px'>{display_atlas} region</th>"
             "<th style='padding:4px 8px'>Lesion side</th>"
-            "<th style='padding:4px 8px'>% in ROI</th><th></th></tr>"
+            "<th style='padding:4px 8px'>% of lesion in ROI</th>"
+            "<th style='padding:4px 8px'>% of ROI lesioned</th><th></th></tr>"
             + "".join(rows) + "</table><p>"
             "Lesion side is measured from the actual mask overlap; bilateral entries show left/right counts.</p>")
 
