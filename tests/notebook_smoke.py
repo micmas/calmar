@@ -66,7 +66,7 @@ def main():
         steps([4, 5, 7, 8, 10, 12, 13, 15, 17, 19])
         execute('TEST_SUBJECT_IDX = next(i for i,e in enumerate(SUBJECTS) if e["subject"] == "sub-M2077")\n'
                 'CONFIG["TEST_SUBJECT_IDX"] = TEST_SUBJECT_IDX\n', 'select-existing-participant')
-        steps([23, 25, 27, "calmar-manual", 32, 34, 35])
+        steps([23, 25, 27, "calmar-registration", "calmar-manual", 32, 34, 35])
         steps([42, 44, 46, 48, 63, 65, 69, 74, 75, 77])
         execute('INTERP_SUBJECT_IDX = TEST_SUBJECT_IDX\nINTERP_MASK_SOURCE = "synthstroke"\n'
                 'INTERP_RUN_DECODING = True\n', 'select-report')

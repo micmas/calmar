@@ -23,7 +23,7 @@ from nibabel.processing import resample_from_to
 from . import qc as q
 from .acquisition import ensure_nifti_content
 from .process_output import COMMANDS, TOOLS, record as record_step
-from .study import derivative_dirs, file_token
+from .study import derivative_dirs, file_token, mni_masks, segmentation_methods, stage_selected, template_source
 from . import templates
 from .brainmask import save_like
 
@@ -179,6 +179,40 @@ def warp_product(linda, native, final, label, *, overwrite=False):
                                    'template': templates.NAME},
                    build, lambda f:[f], label,
                    validator=lambda p:validate_image(p,reference,binary=True),overwrite=overwrite)
+
+
+ANTS_MODULE = 'ants/2.6.5'
+# antsRegistrationSyN.sh output prefix of the registration step (LINDA not run).
+REGISTRATION_PREFIX = 'T1w_to_MNI152_'
+
+
+def registration_files(registration):
+    """The registration step's transforms: native T1w -> MNI152."""
+    return (registration/f'{REGISTRATION_PREFIX}1Warp.nii.gz',
+            registration/f'{REGISTRATION_PREFIX}0GenericAffine.mat')
+
+
+def ants_warp_product(registration, native, final, label, *, overwrite=False):
+    """Like ``warp_product``, with the registration step's ANTs transforms."""
+    reference = registration/'Subject_in_MNI.nii.gz'
+    warp, affine = registration_files(registration)
+    script = Path(__file__).resolve().parents[1]/'src'/'analysis_42_apply_template_registration.sh'
+    def build(tmp):
+        run(['bash', script, '--input', native, '--reference', reference, '--warp', warp,
+             '--affine', affine, '--output', tmp, '--interp', 'NearestNeighbor'], tmp.parent/f'{label}.log')
+    return product(final, [native, reference, warp, affine, script],
+                   {'module': ANTS_MODULE, 'interpolation': 'NearestNeighbor', 'template': templates.NAME,
+                    'registration': 'ants'},
+                   build, lambda f: [f], label,
+                   validator=lambda f: validate_image(f, reference, binary=True), overwrite=overwrite)
+
+
+def template_warp(config, p, native, final, label, *, overwrite=False):
+    """Warp a native T1w-space mask to MNI152 with the participant's template
+    registration: LINDA's when LINDA runs, else the registration step's."""
+    if template_source(config) == 'linda':
+        return warp_product(p['linda'], native, final, label, overwrite=overwrite)
+    return ants_warp_product(p['registration'], native, final, label, overwrite=overwrite)
 
 
 def paths(request, entry):
@@ -479,11 +513,96 @@ def step_synthstroke(config, entry, p, request):
                     f'(calmar.qc.mask_prediction_to_brain): {cleaned and cleaned.get("removed", 0)} voxels removed')
         validate_image(tmp/'prediction_lesion_mask.nii.gz', t1, binary=True)
     overwrite = config.get('OVERWRITE', False)
-    return [product(p['synthstroke'], [t1, weights, brain], {'module': 'synthstroke/0.0.0', 'tta': tta, 'brain_dilation': 2},
-                    build, lambda d: [d/'prediction_lesion_mask.nii.gz'], 'synthstroke',
-                    validator=lambda f: validate_image(f, t1, binary=True), overwrite=overwrite),
-            warp_product(p['linda'], p['synthstroke']/'prediction_lesion_mask.nii.gz',
-                         p['synthstroke']/'SynthStroke_in_MNI.nii.gz', 'synthstroke_mni', overwrite=overwrite)]
+    outputs = [product(p['synthstroke'], [t1, weights, brain], {'module': 'synthstroke/0.0.0', 'tta': tta, 'brain_dilation': 2},
+                       build, lambda d: [d/'prediction_lesion_mask.nii.gz'], 'synthstroke',
+                       validator=lambda f: validate_image(f, t1, binary=True), overwrite=overwrite)]
+    if template_source(config) == 'linda':
+        # Without LINDA, the registration step (which needs this mask) warps it.
+        outputs.append(warp_product(p['linda'], p['synthstroke']/'prediction_lesion_mask.nii.gz',
+                                    p['synthstroke']/'SynthStroke_in_MNI.nii.gz', 'synthstroke_mni', overwrite=overwrite))
+    return outputs
+
+
+def registration_threads(config):
+    """CONFIG["REGISTRATION_THREADS"]: CPU threads of the registration step's SyN
+    stage. Its result does not depend on the count (ANTs' reproducible route)."""
+    threads = int(config.get('REGISTRATION_THREADS', 4))
+    if not 1 <= threads <= 16:
+        raise ValueError(f'REGISTRATION_THREADS must be between 1 and 16, not {threads}')
+    return threads
+
+
+def check_initial_collapsed(initial, final):
+    """The SyN stage's affine must equal the initial affine it started from;
+    otherwise the transforms in the folder would not be the full native -> MNI152 pair."""
+    import SimpleITK as sitk
+    a, b = (np.array(sitk.ReadTransform(str(f)).GetParameters()) for f in (initial, final))
+    if a.shape != b.shape or not np.allclose(a, b, atol=1e-6):
+        raise RuntimeError(f'SyN output affine {final} differs from its initial affine {initial}')
+
+
+def step_registration(config, entry, p, request):
+    """Template registration when LINDA is not run (LINDA's own is used otherwise).
+
+    The brain-extracted T1w (step_brain's mask) is registered to the FSL MNI152
+    brain with ANTs (ants/2.6.5). The SynthStroke lesion, dilated by 2 voxels, is
+    left out of the moving image's cost-function mask so it does not pull the
+    warp (cost-function masking, Brett et al. 2001). ANTs' reproducible route:
+    an affine stage with one thread and a fixed seed (Mattes MI is not
+    deterministic multithreaded), then SyN (cross-correlation) from it with
+    REGISTRATION_THREADS. Outputs: the transforms, ``Subject_in_MNI`` (whole-head
+    T1w, linear) and ``SynthStroke_in_MNI`` (nearest neighbour).
+    """
+    from scipy.ndimage import binary_dilation
+    t1 = Path(entry['t1w'])
+    brain = q.find_best_hdbet_mask(p['hdbet'])
+    lesion = p['synthstroke']/'prediction_lesion_mask.nii.gz'
+    if not brain:
+        raise FileNotFoundError('Brain mask missing (run the brain step first)')
+    if not lesion.is_file():
+        raise FileNotFoundError('SynthStroke lesion missing (run the SynthStroke step first): '
+                                'it is excluded from the registration')
+    templates.require()
+    seed = int(config.get('REGISTRATION_SEED', 1729))
+    threads = registration_threads(config)
+    warp_name, affine_name = (f.name for f in registration_files(Path()))
+    def build(tmp):
+        tmp.mkdir()
+        img = nib.load(str(t1))
+        mask = np.asarray(nib.load(str(brain)).dataobj) > 0
+        lesion_data = np.asarray(resample_from_to(nib.load(str(lesion)), img, order=0).dataobj) > 0
+        save_like(np.where(mask, np.asarray(img.dataobj), 0), img, tmp/'T1w_brain.nii.gz', dtype=np.float32)
+        excluded = binary_dilation(lesion_data, iterations=2)
+        save_like(mask & ~excluded, img, tmp/'cost_function_mask.nii.gz')
+        record_step(f'moving cost-function mask = brain mask ({brain.name}) minus the SynthStroke lesion '
+                    f'dilated 2 voxels: {int((mask & excluded).sum())} brain voxels excluded')
+        fixed, masks = templates.T1_BRAIN, f'{templates.BRAIN_MASK},{tmp/"cost_function_mask.nii.gz"}'
+        log = tmp.parent/'processing.log'
+        run(['antsRegistrationSyN.sh', '-d', 3, '-t', 'a', '-n', 1, '-e', seed, '-f', fixed,
+             '-m', tmp/'T1w_brain.nii.gz', '-x', masks, '-o', tmp.parent/'affine_'], log)
+        run(['antsRegistrationSyN.sh', '-d', 3, '-t', 'so', '-n', threads, '-e', seed, '-f', fixed,
+             '-m', tmp/'T1w_brain.nii.gz', '-x', masks, '-i', tmp.parent/'affine_0GenericAffine.mat',
+             '-o', tmp.parent/REGISTRATION_PREFIX], tmp.parent/'syn.log')
+        # The SyN run starts from the affine (-i); with ANTs' default collapsing
+        # (-z 1) its 0GenericAffine already contains it (checked in build).
+        check_initial_collapsed(tmp.parent/'affine_0GenericAffine.mat',
+                                tmp.parent/f'{REGISTRATION_PREFIX}0GenericAffine.mat')
+        for name in (warp_name, affine_name, f'{REGISTRATION_PREFIX}1InverseWarp.nii.gz'):
+            shutil.copy2(tmp.parent/name, tmp/name)
+        run(['antsApplyTransforms', '-d', 3, '-i', t1, '-r', templates.T1, '-t', tmp/warp_name, '-t', tmp/affine_name,
+             '-n', 'Linear', '-o', tmp/'Subject_in_MNI.nii.gz'], tmp.parent/'subject.log')
+        validate_image(tmp/'Subject_in_MNI.nii.gz', templates.T1)
+        for name in (warp_name, affine_name):
+            validate_transform(tmp/name)
+    overwrite = config.get('OVERWRITE', False)
+    registration = product(p['registration'], [t1, brain, lesion, templates.T1_BRAIN, templates.BRAIN_MASK, templates.T1],
+                           {'module': ANTS_MODULE, 'template': templates.NAME, 'random_seed': seed,
+                            'stages': 'affine (MI, 1 thread) + SyN (CC)', 'cost_function_mask': 'brain minus SynthStroke lesion dilated 2'},
+                           build, lambda d: [d/'Subject_in_MNI.nii.gz', d/'cost_function_mask.nii.gz'],
+                           'registration', overwrite=overwrite)
+    return [registration,
+            ants_warp_product(p['registration'], lesion, mni_masks(p)['synthstroke'],
+                              'synthstroke_mni', overwrite=overwrite)]
 
 
 def step_manual(config, entry, p, request):
@@ -498,7 +617,7 @@ def step_manual(config, entry, p, request):
     if mask is None:
         return [{'status': 'skipped', 'reason': 'No optional manual mask available'}]
     overwrite = config.get('OVERWRITE', False)
-    final_mni = p['linda']/'ExpertMask_in_MNI.nii.gz'
+    final_mni = p['template']/'ExpertMask_in_MNI.nii.gz'
     seed = config.get('REGISTRATION_SEED', 1729)
     name = 'ManualLesion_in_T1_sitk.nii.gz' if space == 'other' else 'ManualLesion_in_T1.nii.gz'
     def build(tmp):
@@ -515,25 +634,27 @@ def step_manual(config, entry, p, request):
         validate_image(tmp/name, t1)
     if space == 'mni':
         outputs = [product(final_mni, [mask], {'space': 'mni'}, lambda tmp: shutil.copy2(mask, tmp), lambda f: [f], 'manual',
-                           validator=lambda f: validate_image(f, p['linda']/'Subject_in_MNI.nii.gz', binary=True),
+                           validator=lambda f: validate_image(f, p['template']/'Subject_in_MNI.nii.gz', binary=True),
                            overwrite=overwrite)]
     else:
-        cmp = p['linda']/'_manual_mask_compare'
+        cmp = p['template']/'_manual_mask_compare'
         outputs = [product(cmp, [t1, mask]+([ref] if ref else []), {'space': space, 'registration': 'rigid-MattesMI', 'sampling_seed': seed},
                            build, lambda d: [d/name], 'manual_native',
                            validator=lambda f: validate_image(f, t1, binary=True), overwrite=overwrite),
-                   warp_product(p['linda'], cmp/name, final_mni, 'manual_mni', overwrite=overwrite)]
-    validate_image(final_mni, p['linda']/'Subject_in_MNI.nii.gz')
+                   template_warp(config, p, cmp/name, final_mni, 'manual_mni', overwrite=overwrite)]
+    validate_image(final_mni, p['template']/'Subject_in_MNI.nii.gz')
     return outputs
 
 
 def lesion_sources(config, key, p):
     """Template-space masks selected for a disconnectome step."""
-    masks = {'linda': p['linda']/'Lesion_in_MNI.nii.gz',
-             'manual': p['linda']/'ExpertMask_in_MNI.nii.gz',
-             'synthstroke': p['synthstroke']/'SynthStroke_in_MNI.nii.gz'}
+    masks = mni_masks(p)
     selected = config.get(key, 'all')
     sources = list(masks) if selected == 'all' else (['linda', 'manual'] if selected == 'both' else [selected])
+    # Segmentations that were not selected are not expected ("all"/"both").
+    run = segmentation_methods(config)
+    if selected in ('all', 'both'):
+        sources = [s for s in sources if s == 'manual' or s in run]
     return selected, [(s, masks[s]) for s in sources]
 
 
@@ -658,8 +779,13 @@ def step_bcb(config, entry, p, request):
 
 
 STEPS = {'acquisition': step_acquisition, 'brain': step_brain, 'linda': step_linda,
-         'synthstroke': step_synthstroke, 'manual': step_manual, 'bcb': step_bcb,
-         'deepdisco': step_deepdisco}
+         'synthstroke': step_synthstroke, 'registration': step_registration, 'manual': step_manual,
+         'bcb': step_bcb, 'deepdisco': step_deepdisco}
+
+
+NOT_SELECTED = {'linda': 'LINDA is not in SEGMENTATION_METHODS',
+                'synthstroke': 'SynthStroke is not in SEGMENTATION_METHODS',
+                'registration': "not needed: LINDA's registration to the template is used"}
 
 
 def skipped(entry, started, reason):
@@ -680,8 +806,10 @@ def process(stage, request):
         started = time.monotonic()
         if stage == 'brain' and not config.get('USE_HDBET_PREPROCESSING', True):
             results.append(skipped(entry, started, 'HD-BET preprocessing disabled')); continue
-        if stage in ('brain', 'linda', 'synthstroke') and not config.get('RUN_SEGMENTATION', True):
+        if stage in ('brain', 'linda', 'synthstroke', 'registration') and not config.get('RUN_SEGMENTATION', True):
             results.append(skipped(entry, started, 'RUN_SEGMENTATION=False')); continue
+        if not stage_selected(stage, config):
+            results.append(skipped(entry, started, NOT_SELECTED[stage])); continue
         p = paths(request, entry)
         outputs = STEPS[stage](config, entry, p, request)
         result = {'subject': entry['subject'], 'session': entry.get('session'),
@@ -703,7 +831,7 @@ def process(stage, request):
 def main():
     from .scheduled import QC_VERSION
     parser = argparse.ArgumentParser()
-    parser.add_argument('stage',choices=['acquisition','brain','linda','synthstroke','manual','bcb','deepdisco'])
+    parser.add_argument('stage',choices=list(STEPS))
     parser.add_argument('request',type=Path)
     parser.add_argument('output',type=Path)
     args = parser.parse_args()

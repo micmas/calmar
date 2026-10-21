@@ -37,7 +37,7 @@ def source_cell(number, cells=None):
 
 
 # Cells of the optional single-subject test (their titles are hidden when skipped).
-TEST_CELLS = {"calmar-step-23", "calmar-step-25", "calmar-step-27", "calmar-manual",
+TEST_CELLS = {"calmar-step-23", "calmar-step-25", "calmar-step-27", "calmar-registration", "calmar-manual",
               "calmar-step-32", "calmar-step-34", "calmar-step-35", "calmar-step-39"}
 
 
@@ -48,12 +48,20 @@ def defaults():
     return eval(compile(ast.Expression(node.value), str(NOTEBOOK), "eval"), {"Path": Path})
 
 
+from .method_choice import METHOD_CHOICES
+
+
 def normalize_selection(values):
     """Interpret form filters without constraining the manual-mask session."""
     values = dict(values)
     for key in ("SUBJECT_FILTER", "SESSION_FILTER"):
         values[key] = [v.strip() for v in values[key].split(",") if v.strip()] or None
     values["MAX_SUBJECTS"] = values["MAX_SUBJECTS"] or None
+    # One checkbox per automatic segmentation -> CONFIG["SEGMENTATION_METHODS"].
+    if any(f"_method_{m}" in values for m in METHOD_CHOICES):
+        values["SEGMENTATION_METHODS"] = [m for m in METHOD_CHOICES if values.pop(f"_method_{m}", False)]
+        if not values["SEGMENTATION_METHODS"]:
+            raise ValueError("Choose at least one lesion segmentation (LINDA or SynthStroke).")
     if values["DATASET_SOURCE"] == "single":
         values.update(SUBJECT_FILTER=None, SESSION_FILTER=None,
                       MAX_SUBJECTS=1, RANDOM_SAMPLE=False, TEST_SUBJECT_IDX=0)
@@ -165,6 +173,10 @@ def show_inputs(namespace):
     fields["HDBET_MODE"] = w.Dropdown(options=["fast", "accurate"], value=cfg["HDBET_MODE"],
                                      description="Initial HD-BET:", style=style)
     check("SYNTHSTROKE_TTA", "SynthStroke test-time augmentation")
+    selected = cfg.get("SEGMENTATION_METHODS") or list(METHOD_CHOICES)
+    for method, label in METHOD_CHOICES.items():
+        fields[f"_method_{method}"] = w.Checkbox(value=method in selected, description=label, indent=False,
+                                                 layout=w.Layout(width="700px"))
     # Give each section its own layout: the text inputs share a width layout,
     # so hiding an individual text input's layout would hide all text inputs.
     openneuro_inputs = w.VBox([fields["OPENNEURO_ID"], fields["OPENNEURO_TAG"]])
@@ -250,5 +262,7 @@ def show_inputs(namespace):
                     openneuro_inputs, local_inputs, single_input, cohort_inputs, sampling_note,
                     fields["RUN_TEST"], fields["OVERWRITE"],
                     fields["MANUAL_MASK_PATH"], fields["MANUAL_MASK_SPACE"], fields["MANUAL_MASK_REF"],
+                    w.HTML("<b>Lesion segmentation</b> (at least one):"),
+                    *[fields[f"_method_{m}"] for m in METHOD_CHOICES],
                     fields["HDBET_MODE"], fields["SYNTHSTROKE_TTA"], start, message, nav]))
     gate._cancel_queued()

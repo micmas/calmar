@@ -1,0 +1,357 @@
+# Anatomical units: the level at which a lesion's damage is measured.
+#
+# Each unit is defined by named labels of ONE atlas (README.md, "Rules"):
+#   HarvardOxford  cortical gyri; its labels cover both hemispheres, so the side
+#                  is taken from the lesion voxels' MNI x coordinate (x < 0 left).
+#   AAL            used where HarvardOxford has no label (subcortical nuclei,
+#                  pars orbitalis, temporal-pole subdivisions, Rolandic
+#                  operculum, medial superior frontal gyrus); labels carry _L / _R.
+#   JHU            white-matter tracts (JHU-ICBM tracts, maxprob thr50); labels
+#                  carry L / R.
+# Fields:
+#   name     readable name, used in reports
+#   kind     cortex | subcortical | tract
+#   atlas    the atlas whose labels define the unit
+#   labels   HarvardOxford: list of labels (side from voxels)
+#            AAL / JHU: {left: [...], right: [...]}
+#   basis    why these labels: the atlas's own definition, or the reasoning
+#   review   true = a judgement call (approved 2026-10-21; README.md, "Review")
+units:
+
+  # ── Frontal ───────────────────────────────────────────────────────────────
+  ifg_pars_opercularis:
+    name: Inferior frontal gyrus, pars opercularis (BA 44)
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Inferior Frontal Gyrus, pars opercularis"]
+    basis: HarvardOxford label of the same structure.
+  ifg_pars_triangularis:
+    name: Inferior frontal gyrus, pars triangularis (BA 45)
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Inferior Frontal Gyrus, pars triangularis"]
+    basis: HarvardOxford label of the same structure.
+  ifg_pars_orbitalis:
+    name: Inferior frontal gyrus, pars orbitalis (BA 47)
+    kind: cortex
+    atlas: AAL
+    labels: {left: [Frontal_Inf_Orb_L], right: [Frontal_Inf_Orb_R]}
+    basis: HarvardOxford has no pars orbitalis (only the whole Frontal Orbital Cortex); AAL's inferior frontal orbital part is the pars orbitalis.
+  frontal_operculum:
+    name: Frontal operculum
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Frontal Opercular Cortex"]
+    basis: HarvardOxford label of the same structure.
+  middle_frontal_gyrus:
+    name: Middle frontal gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Middle Frontal Gyrus"]
+    basis: HarvardOxford label of the same structure.
+  superior_frontal_gyrus:
+    name: Superior frontal gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Superior Frontal Gyrus"]
+    basis: HarvardOxford label of the same structure.
+  superior_frontal_gyrus_medial:
+    name: Superior frontal gyrus, medial part
+    kind: cortex
+    atlas: AAL
+    labels: {left: [Frontal_Sup_Medial_L], right: [Frontal_Sup_Medial_R]}
+    basis: AAL separates the medial superior frontal gyrus; HarvardOxford does not.
+  frontal_medial_cortex:
+    name: Frontal medial cortex
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Frontal Medial Cortex"]
+    basis: HarvardOxford label of the same structure.
+  frontal_pole:
+    name: Frontal pole
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Frontal Pole"]
+    basis: HarvardOxford label of the same structure.
+  supplementary_motor_area:
+    name: Supplementary motor area
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Juxtapositional Lobule Cortex (formerly Supplementary Motor Cortex)"]
+    basis: HarvardOxford's juxtapositional lobule is its supplementary motor cortex.
+  paracingulate_gyrus:
+    name: Paracingulate gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Paracingulate Gyrus"]
+    basis: HarvardOxford label of the same structure.
+  precentral_gyrus:
+    name: Precentral gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Precentral Gyrus"]
+    basis: HarvardOxford label of the same structure.
+  central_operculum:
+    name: Central (Rolandic) operculum
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Central Opercular Cortex"]
+    basis: HarvardOxford's central opercular cortex is the Rolandic operculum.
+
+  # ── Insula and opercula ───────────────────────────────────────────────────
+  insula:
+    name: Insula
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Insular Cortex"]
+    basis: HarvardOxford label of the same structure.
+  parietal_operculum:
+    name: Parietal operculum
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Parietal Opercular Cortex"]
+    basis: HarvardOxford label of the same structure.
+
+  # ── Temporal ──────────────────────────────────────────────────────────────
+  temporal_pole:
+    name: Temporal pole
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Temporal Pole"]
+    basis: HarvardOxford label of the same structure.
+  temporal_pole_superior:
+    name: Temporal pole, superior temporal part
+    kind: cortex
+    atlas: AAL
+    labels: {left: [Temporal_Pole_Sup_L], right: [Temporal_Pole_Sup_R]}
+    basis: AAL divides the temporal pole into superior and middle temporal parts; HarvardOxford does not.
+  temporal_pole_middle:
+    name: Temporal pole, middle temporal part
+    kind: cortex
+    atlas: AAL
+    labels: {left: [Temporal_Pole_Mid_L], right: [Temporal_Pole_Mid_R]}
+    basis: AAL divides the temporal pole into superior and middle temporal parts; HarvardOxford does not.
+  stg_anterior:
+    name: Superior temporal gyrus, anterior
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Superior Temporal Gyrus, anterior division"]
+    basis: HarvardOxford label of the same structure.
+  stg_posterior:
+    name: Superior temporal gyrus, posterior
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Superior Temporal Gyrus, posterior division"]
+    basis: HarvardOxford label of the same structure.
+  planum_polare:
+    name: Planum polare
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Planum Polare"]
+    basis: HarvardOxford label of the same structure.
+  heschls_gyrus:
+    name: Heschl's gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Heschl's Gyrus (includes H1 and H2)"]
+    basis: HarvardOxford label of the same structure.
+  planum_temporale:
+    name: Planum temporale
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Planum Temporale"]
+    basis: HarvardOxford label of the same structure.
+  mtg_anterior:
+    name: Middle temporal gyrus, anterior
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Middle Temporal Gyrus, anterior division"]
+    basis: HarvardOxford label of the same structure.
+  mtg_posterior:
+    name: Middle temporal gyrus, posterior
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Middle Temporal Gyrus, posterior division"]
+    basis: HarvardOxford label of the same structure.
+  mtg_temporooccipital:
+    name: Middle temporal gyrus, temporo-occipital part
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Middle Temporal Gyrus, temporooccipital part"]
+    basis: HarvardOxford label of the same structure.
+  itg:
+    name: Inferior temporal gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Inferior Temporal Gyrus, anterior division", "Inferior Temporal Gyrus, posterior division",
+             "Inferior Temporal Gyrus, temporooccipital part"]
+    basis: The three HarvardOxford inferior temporal gyrus divisions together.
+  itg_temporooccipital:
+    name: Inferior temporal gyrus, temporo-occipital part
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Inferior Temporal Gyrus, temporooccipital part"]
+    basis: HarvardOxford label of the same structure.
+  fusiform_gyrus:
+    name: Fusiform gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Temporal Fusiform Cortex, anterior division", "Temporal Fusiform Cortex, posterior division",
+             "Temporal Occipital Fusiform Cortex"]
+    basis: HarvardOxford's temporal and temporo-occipital fusiform cortex together (its separate Occipital Fusiform Gyrus is excluded).
+  temporal_fusiform_anterior:
+    name: Temporal fusiform cortex, anterior
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Temporal Fusiform Cortex, anterior division"]
+    basis: HarvardOxford label of the same structure.
+  temporooccipital_fusiform:
+    name: Temporo-occipital fusiform cortex
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Temporal Occipital Fusiform Cortex"]
+    basis: HarvardOxford label of the same structure.
+  hippocampus:
+    name: Hippocampus
+    kind: subcortical
+    atlas: AAL
+    labels: {left: [Hippocampus_L], right: [Hippocampus_R]}
+    basis: Not in the cortical HarvardOxford atlas; AAL label of the same structure.
+
+  # ── Parietal and occipital ────────────────────────────────────────────────
+  postcentral_gyrus:
+    name: Postcentral gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Postcentral Gyrus"]
+    basis: HarvardOxford label of the same structure.
+  smg_anterior:
+    name: Supramarginal gyrus, anterior
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Supramarginal Gyrus, anterior division"]
+    basis: HarvardOxford label of the same structure.
+  smg_posterior:
+    name: Supramarginal gyrus, posterior
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Supramarginal Gyrus, posterior division"]
+    basis: HarvardOxford label of the same structure.
+  angular_gyrus:
+    name: Angular gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Angular Gyrus"]
+    basis: HarvardOxford label of the same structure.
+  superior_parietal_lobule:
+    name: Superior parietal lobule
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Superior Parietal Lobule"]
+    basis: HarvardOxford label of the same structure.
+  precuneus:
+    name: Precuneus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Precuneous Cortex"]
+    basis: HarvardOxford label of the same structure.
+  posterior_cingulate:
+    name: Posterior cingulate gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Cingulate Gyrus, posterior division"]
+    basis: HarvardOxford label of the same structure.
+  lateral_occipital_superior:
+    name: Lateral occipital cortex, superior
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Lateral Occipital Cortex, superior division"]
+    basis: HarvardOxford label of the same structure.
+  lingual_gyrus:
+    name: Lingual gyrus
+    kind: cortex
+    atlas: HarvardOxford
+    labels: ["Lingual Gyrus"]
+    basis: HarvardOxford label of the same structure.
+
+  # ── Subcortical nuclei ────────────────────────────────────────────────────
+  putamen:
+    name: Putamen
+    kind: subcortical
+    atlas: AAL
+    labels: {left: [Putamen_L], right: [Putamen_R]}
+    basis: Not in the cortical HarvardOxford atlas; AAL label of the same structure.
+  pallidum:
+    name: Globus pallidus
+    kind: subcortical
+    atlas: AAL
+    labels: {left: [Pallidum_L], right: [Pallidum_R]}
+    basis: Not in the cortical HarvardOxford atlas; AAL label of the same structure.
+
+  # ── White-matter tracts (JHU) ─────────────────────────────────────────────
+  slf:
+    name: Superior longitudinal fasciculus (fronto-parietal part)
+    kind: tract
+    atlas: JHU
+    labels: {left: [Superior longitudinal fasciculus L], right: [Superior longitudinal fasciculus R]}
+    basis: JHU's superior longitudinal fasciculus label (the fronto-parietal body of the SLF).
+  ilf:
+    name: Inferior longitudinal fasciculus
+    kind: tract
+    atlas: JHU
+    labels: {left: [Inferior longitudinal fasciculus L], right: [Inferior longitudinal fasciculus R]}
+    basis: JHU label of the same tract.
+  ifof:
+    name: Inferior fronto-occipital fasciculus
+    kind: tract
+    atlas: JHU
+    labels: {left: [Inferior fronto-occipital fasciculus L], right: [Inferior fronto-occipital fasciculus R]}
+    basis: JHU label of the same tract.
+  forceps:
+    name: Corpus callosum (forceps major and minor)
+    kind: tract
+    atlas: JHU
+    labels: [Forceps major, Forceps minor]
+    basis: Midline labels without a side in JHU, so the side is taken from the lesion voxels. JHU labels only the anterior and posterior callosal radiations (forceps minor, major), not the callosal body; a lesion in the body is not measured.
+    review: true
+
+  # ── White-matter tracts (XTRACT) ──────────────────────────────────────────
+  # XTRACT HCP tract atlas, max-probability (5 % threshold), 1 mm (FSL 6.0.7.22;
+  # Warrington et al. 2020). Used for the tracts JHU does not label; JHU stays
+  # the atlas for SLF, ILF, IFOF and uncinate so their results do not change.
+  uncinate_fasciculus:
+    name: Uncinate fasciculus
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Uncinate Fasciculus L], right: [Uncinate Fasciculus R]}
+    basis: "XTRACT label of the same tract. JHU lists an uncinate label, but its 50 %-threshold image has no voxels for it (nor for the cingulum or the temporal SLF), so it could never be damaged."
+  arcuate_fasciculus:
+    name: Arcuate fasciculus
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Arcuate Fasciculus L], right: [Arcuate Fasciculus R]}
+    basis: XTRACT label of the same tract (the whole arcuate; its segments are not separated).
+  slf_iii:
+    name: Superior longitudinal fasciculus III (ventral, fronto-parietal)
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Superior Longitudinal Fasciculus 3 L], right: [Superior Longitudinal Fasciculus 3 R]}
+    basis: XTRACT label of the same tract; SLF III links the inferior frontal gyrus with the supramarginal gyrus.
+  frontal_aslant_tract:
+    name: Frontal aslant tract
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Frontal Aslant Tract L], right: [Frontal Aslant Tract R]}
+    basis: XTRACT label of the same tract.
+  middle_longitudinal_fasciculus:
+    name: Middle longitudinal fasciculus
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Middle Longitudinal Fasciculus L], right: [Middle Longitudinal Fasciculus R]}
+    basis: XTRACT label of the same tract.
+  optic_radiation:
+    name: Optic radiation
+    kind: tract
+    atlas: XTRACT
+    labels: {left: [Optic Radiation L], right: [Optic Radiation R]}
+    basis: XTRACT label of the same tract.
