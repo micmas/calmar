@@ -144,3 +144,32 @@ def test_evidence_levels_choose_the_kb_statuses():
     assert pr.ReportSettings(include_drafts=False).include == ("approved",)       # older setting still works
     with pytest.raises(ValueError):
         pr.ReportSettings(evidence="everything").include
+
+
+def test_standalone_report_is_responsive_accessible_and_prints_disclosures():
+    html = pr.standalone_html("Fixture", "<details><summary>Evidence</summary><p>Claim</p></details>")
+    assert '<meta name="viewport"' in html
+    assert "font-size:17px" in html and "line-height:1.55" in html
+    assert "--calmar-grape:#52489c" in html and "--calmar-blue:#4062bb" in html
+    assert "summary:focus-visible" in html
+    assert "details.region-evidence, details.measure-findings" in html
+    assert ".print-only{display:none}" in html and ".print-only{display:block}" in html
+    assert "@media (max-width:700px)" in html and "overflow-wrap:anywhere" in html
+    assert "if(target && target.tagName==='DETAILS') target.open=true" in html
+    assert "window.addEventListener('beforeprint'" in html and "item.open=true" in html
+    assert "window.addEventListener('afterprint'" in html and "item.open=calmarPrintState[index]" in html
+    style = html.split("<style>", 1)[1].split("</style>", 1)[0]
+    assert "\nbody{" not in style and "\nhtml{" not in style and "\nh1," not in style
+    assert '<body class="calmar-report">' in html
+
+
+def test_therapy_stage_mismatch_is_keyboard_and_print_readable():
+    kb = SimpleNamespace(label_for=lambda value: value.replace("_", " "))
+    therapies = pd.DataFrame([dict(
+        therapy_id="fixture", therapy_name="Fixture therapy", behavioral_matched=["naming"], lesion_matched=[],
+        short_description="Fixture description", rtss_summary=[], citations=["@Fixture"],
+    )])
+    html = pr.therapy_table(kb, therapies, "chronic", "Chronic (>6 mo)", {"fixture": {"acute"}})
+    assert "<details class='stage-warning'><summary>&#9888; Stage mismatch</summary>" in html
+    assert "current patient is Chronic (&gt;6 mo)" in html
+    assert "print-only stage-warning-print" in html
