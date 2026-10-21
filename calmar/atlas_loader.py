@@ -31,6 +31,13 @@ def fetch_atlases(names, cache, output):
                 root = Path(os.environ['FSLDIR'])/'data/atlases'
                 labels = {int(el.get('index'))+1: el.text.strip() for el in ET.parse(root/'JHU-tracts.xml').findall('.//label')}
                 atlas = SimpleNamespace(maps=str(root/'JHU/JHU-ICBM-tracts-maxprob-thr50-2mm.nii.gz'), labels=labels)
+            elif name == 'XTRACT':
+                # XTRACT HCP tract atlas (Warrington et al. 2020): arcuate, frontal aslant,
+                # middle longitudinal fasciculus, optic radiation, SLF 1-3, ... (FSL 6.0.7).
+                # Max-probability image on the 1 mm MNI152 grid; value = label index + 1.
+                root = Path(os.environ['FSLDIR'])/'data/atlases'
+                labels = {int(el.get('index'))+1: el.text.strip() for el in ET.parse(root/'XTRACT.xml').findall('.//label')}
+                atlas = SimpleNamespace(maps=str(root/'XTRACT/xtract-tract-atlases-maxprob5-1mm.nii.gz'), labels=labels)
             elif name == 'AAL' and (cache/'aal_mirror/AAL.nii.gz').is_file():
                 from .anatomy_labels import aal_labels
                 atlas = SimpleNamespace(maps=str(cache/'aal_mirror/AAL.nii.gz'), labels=aal_labels(str(cache)))

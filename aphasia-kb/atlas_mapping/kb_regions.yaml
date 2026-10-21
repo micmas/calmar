@@ -1,0 +1,406 @@
+# Knowledge-base region names -> anatomical units (units.yaml).
+#
+# Every region name used by a finding (an entry in regions/, or a region named
+# as the target of an impairment finding) must appear here, either mapped or
+# listed under `unmapped` with the reason; tests/test_kb_atlas_mapping.py checks
+# this, so a new paper with a new region name cannot be silently ignored.
+# Fields:
+#   units    one or more unit ids; the region counts as damaged when ANY of its
+#            units holds at least the report's minimum share of the lesion
+#            (README.md, "Rules")
+#   side     left | right | both (both = either hemisphere)
+#   basis    why: the entry's definition, aliases or source paper
+#   review   true = a judgement call rather than a same-name match
+#
+# Review: every judgement call (review: true) in this file and in units.yaml
+# was approved by Michèle Masson-Trottier on 2026-10-21 (README.md, "Review").
+regions:
+
+  # ── Inferior frontal gyrus ────────────────────────────────────────────────
+  left_ifg_pars_opercularis:
+    units: [ifg_pars_opercularis]
+    side: left
+    basis: Same structure (BA 44).
+  ho-cort_44:
+    units: [ifg_pars_opercularis]
+    side: left
+    basis: Legacy entry for HarvardOxford cortical label 44 region (IFG pars opercularis, BA 44); the entry is the left one.
+  right_ifg_pars_opercularis:
+    units: [ifg_pars_opercularis]
+    side: right
+    basis: Same structure, right hemisphere.
+  left_ifg_pars_triangularis:
+    units: [ifg_pars_triangularis]
+    side: left
+    basis: Same structure (BA 45).
+  right_ifg_pars_triangularis:
+    units: [ifg_pars_triangularis]
+    side: right
+    basis: Same structure, right hemisphere.
+  right_pars_triangularis_ba45:
+    units: [ifg_pars_triangularis]
+    side: right
+    basis: Same structure (right BA 45).
+  left_ifg_pars_orbitalis:
+    units: [ifg_pars_orbitalis]
+    side: left
+    basis: Same structure (BA 47).
+
+  # ── Other frontal ─────────────────────────────────────────────────────────
+  left_middle_frontal_gyrus:
+    units: [middle_frontal_gyrus]
+    side: left
+    basis: Same structure.
+  bilateral_middle_frontal_gyrus_recovery:
+    units: [middle_frontal_gyrus]
+    side: both
+    basis: The entry concerns the middle frontal gyrus of both hemispheres. Its aliases also list right temporo-occipital MTG and right supramarginal gyrus, which are not mapped here.
+    review: true
+  left_superior_frontal_gyrus:
+    units: [superior_frontal_gyrus]
+    side: left
+    basis: Same structure.
+  left_dorsolateral_prefrontal_cortex:
+    units: [middle_frontal_gyrus]
+    side: left
+    basis: The dorsolateral prefrontal cortex (BA 9/46) lies mainly on the middle frontal gyrus; the atlases have no DLPFC label.
+    review: true
+  right_dlpfc:
+    units: [middle_frontal_gyrus]
+    side: right
+    basis: As left_dorsolateral_prefrontal_cortex, right hemisphere.
+    review: true
+  left_dorsomedial_prefrontal_cortex:
+    units: [superior_frontal_gyrus_medial]
+    side: left
+    basis: The dorsomedial prefrontal cortex is the medial superior frontal gyrus (AAL Frontal_Sup_Medial).
+    review: true
+  right_medial_frontal_cortex:
+    units: [frontal_medial_cortex, superior_frontal_gyrus_medial]
+    side: right
+    basis: Medial frontal cortex = HarvardOxford frontal medial cortex plus the medial superior frontal gyrus.
+    review: true
+  right_lateral_frontal_cortex:
+    units: [ifg_pars_opercularis, ifg_pars_triangularis, middle_frontal_gyrus]
+    side: right
+    basis: Lateral frontal cortex taken as the inferior and middle frontal gyri.
+    review: true
+  left_supplementary_motor_area:
+    units: [supplementary_motor_area]
+    side: left
+    basis: Same structure.
+  left_paracingulate_gyrus:
+    units: [paracingulate_gyrus]
+    side: left
+    basis: Same structure.
+  left_premotor_cortex:
+    units: [precentral_gyrus, supplementary_motor_area]
+    side: left
+    basis: Premotor cortex (BA 6) has no atlas label; it spans the anterior precentral gyrus laterally and the supplementary motor area medially.
+    review: true
+  left_precentral_gyrus:
+    units: [precentral_gyrus]
+    side: left
+    basis: Same structure.
+  left_pre_central_gyrus:
+    units: [precentral_gyrus]
+    side: left
+    basis: Spelling variant of left_precentral_gyrus.
+  right_precentral_gyrus:
+    units: [precentral_gyrus]
+    side: right
+    basis: Same structure, right hemisphere.
+  left_rolandic_operculum:
+    units: [central_operculum]
+    side: left
+    basis: The Rolandic operculum is HarvardOxford's central opercular cortex.
+  left_central_opercular_cortex:
+    units: [central_operculum]
+    side: left
+    basis: Same structure.
+
+  # ── Insula ────────────────────────────────────────────────────────────────
+  left_insula:
+    units: [insula]
+    side: left
+    basis: Same structure.
+  left_precentral_gyrus_insula:
+    units: [insula]
+    side: left
+    basis: The "precentral gyrus of the insula" (Dronkers 1996, apraxia of speech) is the superior precentral gyrus OF THE INSULA, not the motor precentral gyrus; the atlases do not subdivide the insula, so the whole insula is used.
+    review: true
+
+  # ── Temporal ──────────────────────────────────────────────────────────────
+  left_superior_temporal_gyrus:
+    units: [stg_anterior, stg_posterior]
+    side: left
+    basis: Whole superior temporal gyrus (aliases name both anterior and posterior parts).
+  left_posterior_stg:
+    units: [stg_posterior]
+    side: left
+    basis: Same structure.
+  left_posterior_superior_temporal_gyrus:
+    units: [stg_posterior]
+    side: left
+    basis: Same structure (long form of left_posterior_stg).
+  right_anterior_superior_temporal_gyrus:
+    units: [stg_anterior]
+    side: right
+    basis: Same structure, right hemisphere.
+  left_superior_temporal_gyrus_wernicke:
+    units: [stg_posterior, planum_temporale]
+    side: left
+    basis: "Wernicke's area as the entry defines it (aliases: posterior STG, planum temporale)."
+  left_superior_temporal_gyrus_wernickes:
+    units: [stg_posterior, planum_temporale]
+    side: left
+    basis: Variant of left_superior_temporal_gyrus_wernicke (mid-posterior STG).
+  left_superior_temporal_gyrus__Leff2009:
+    units: [stg_posterior, planum_temporale]
+    side: left
+    basis: Leff et al. 2009 region (aliases posterior STG, posterior superior temporal sulcus, planum temporale); the sulcus has no atlas label.
+    review: true
+  left_superior_temporal_sulcus:
+    units: [stg_posterior, mtg_posterior]
+    side: left
+    basis: The superior temporal sulcus has no atlas label; it lies between the superior and middle temporal gyri, whose posterior divisions are used.
+    review: true
+  left_heschls_gyrus:
+    units: [heschls_gyrus]
+    side: left
+    basis: Same structure.
+  left_planum_temporale:
+    units: [planum_temporale]
+    side: left
+    basis: Same structure.
+  left_posterior_planum_temporale_spt:
+    units: [planum_temporale]
+    side: left
+    basis: Area Spt lies in the posterior planum temporale, which the atlases do not subdivide.
+    review: true
+  left_middle_temporal_gyrus:
+    units: [mtg_anterior, mtg_posterior, mtg_temporooccipital]
+    side: left
+    basis: Whole middle temporal gyrus.
+  left_anterior_middle_temporal_gyrus:
+    units: [mtg_anterior]
+    side: left
+    basis: Same structure.
+  left_posterior_middle_temporal_gyrus:
+    units: [mtg_posterior]
+    side: left
+    basis: Same structure (the temporo-occipital part is not included).
+  right_middle_temporal_gyrus:
+    units: [mtg_anterior, mtg_posterior, mtg_temporooccipital]
+    side: right
+    basis: Whole middle temporal gyrus, right hemisphere.
+  right_anterior_middle_temporal_gyrus:
+    units: [mtg_anterior]
+    side: right
+    basis: Same structure, right hemisphere.
+  left_inferior_temporal_gyrus:
+    units: [itg]
+    side: left
+    basis: Same structure.
+  left_temporal_pole:
+    units: [temporal_pole]
+    side: left
+    basis: Same structure.
+  left_temporal_pole_stg:
+    units: [temporal_pole_superior]
+    side: left
+    basis: Superior temporal part of the temporal pole (AAL Temporal_Pole_Sup).
+  left_temporal_pole_mtg:
+    units: [temporal_pole_middle]
+    side: left
+    basis: Middle temporal part of the temporal pole (AAL Temporal_Pole_Mid).
+  left_anterior_temporal_lobe:
+    units: [temporal_pole, stg_anterior, mtg_anterior]
+    side: left
+    basis: Anterior temporal lobe as the entry defines it (aliases ATL, temporal pole) = temporal pole with the anterior superior and middle temporal gyri.
+    review: true
+  left_anterior_temporal_lobe__Robson2014:
+    units: [temporal_pole, stg_anterior, mtg_anterior, temporal_fusiform_anterior]
+    side: left
+    basis: Robson et al. 2014 region; its aliases add the anterior fusiform gyrus to the anterior temporal lobe.
+    review: true
+  left_fusiform_gyrus:
+    units: [fusiform_gyrus]
+    side: left
+    basis: Same structure.
+  left_temporal_fusiform_cortex_anterior:
+    units: [temporal_fusiform_anterior]
+    side: left
+    basis: Same structure.
+  left_occipito_temporal_sulcus:
+    units: [itg_temporooccipital, temporooccipital_fusiform]
+    side: left
+    basis: The occipito-temporal sulcus has no atlas label; it separates the inferior temporal and fusiform gyri, whose temporo-occipital parts are used.
+    review: true
+  left_temporobasal__Goldenberg1994:
+    units: [itg, fusiform_gyrus]
+    side: left
+    basis: Basal temporal cortex (Goldenberg 1994) = inferior temporal and fusiform gyri.
+    review: true
+  left_temporal_lobe:
+    units: [temporal_pole, stg_anterior, stg_posterior, planum_polare, heschls_gyrus, planum_temporale,
+            mtg_anterior, mtg_posterior, mtg_temporooccipital, itg, fusiform_gyrus]
+    side: left
+    basis: All lateral and basal temporal units.
+  left_hippocampus:
+    units: [hippocampus]
+    side: left
+    basis: Same structure.
+
+  # ── Parietal, occipital, cingulate ────────────────────────────────────────
+  left_supramarginal_gyrus:
+    units: [smg_anterior, smg_posterior]
+    side: left
+    basis: Whole supramarginal gyrus.
+  left_anterior_supramarginal_gyrus:
+    units: [smg_anterior]
+    side: left
+    basis: Same structure.
+  left_posterior_supramarginal_gyrus:
+    units: [smg_posterior]
+    side: left
+    basis: Same structure.
+  left_supramarginal_gyrus_premotor:
+    units: [smg_anterior, smg_posterior, postcentral_gyrus]
+    side: left
+    basis: The entry groups the supramarginal gyrus with the inferior postcentral gyrus (aliases).
+    review: true
+  left_angular_gyrus:
+    units: [angular_gyrus]
+    side: left
+    basis: Same structure (BA 39).
+  left_temporoparietal_junction:
+    units: [stg_posterior, smg_posterior, angular_gyrus]
+    side: left
+    basis: The temporoparietal junction has no atlas label; taken as the posterior superior temporal, posterior supramarginal and angular gyri.
+    review: true
+  left_parietal_association_cortex:
+    units: [smg_anterior, smg_posterior, angular_gyrus, superior_parietal_lobule]
+    side: left
+    basis: Parietal association cortex = inferior parietal lobule (supramarginal, angular) and superior parietal lobule.
+    review: true
+  left_parietal_operculum_cortex:
+    units: [parietal_operculum]
+    side: left
+    basis: Same structure.
+  left_postcentral_gyrus:
+    units: [postcentral_gyrus]
+    side: left
+    basis: Same structure.
+  left_precuneus:
+    units: [precuneus]
+    side: left
+    basis: Same structure.
+  left_posterior_cingulate_gyrus:
+    units: [posterior_cingulate]
+    side: left
+    basis: Same structure.
+  left_superior_lateral_occipital_cortex:
+    units: [lateral_occipital_superior]
+    side: left
+    basis: Same structure.
+  right_lingual_gyrus:
+    units: [lingual_gyrus]
+    side: right
+    basis: Same structure, right hemisphere.
+  right_posterior_perisylvian_cortex:
+    units: [stg_posterior, planum_temporale, smg_anterior, smg_posterior]
+    side: right
+    basis: Posterior perisylvian cortex taken as the posterior superior temporal gyrus, planum temporale and supramarginal gyrus.
+    review: true
+
+  # ── Subcortical ───────────────────────────────────────────────────────────
+  left_putamen:
+    units: [putamen]
+    side: left
+    basis: Same structure.
+  left_pallidum:
+    units: [pallidum]
+    side: left
+    basis: Same structure.
+
+  # ── White-matter tracts ───────────────────────────────────────────────────
+  left_arcuate_fasciculus:
+    units: [arcuate_fasciculus]
+    side: left
+    basis: XTRACT arcuate fasciculus.
+  left_long_segment_arcuate_fasciculus:
+    units: [arcuate_fasciculus]
+    side: left
+    basis: The long (direct fronto-temporal) segment is part of XTRACT's arcuate, which does not separate the segments.
+    review: true
+  left_anterior_arcuate_fasciculus:
+    units: [slf_iii]
+    side: left
+    basis: "The anterior segment (Catani et al. 2005) links the inferior frontal and inferior parietal cortex: in XTRACT, SLF III."
+    review: true
+  left_posterior_arcuate_fasciculus:
+    units: [arcuate_fasciculus]
+    side: left
+    basis: The posterior (temporo-parietal) segment has no XTRACT label; XTRACT's arcuate is the closest tract.
+    review: true
+  left_arcuate_fasciculus_slf:
+    units: [arcuate_fasciculus, slf]
+    side: left
+    basis: The entry combines the arcuate and the SLF ("dorsal language pathway"), so XTRACT's arcuate and JHU's SLF.
+  left_superior_longitudinal_fasciculus:
+    units: [slf]
+    side: left
+    basis: Same tract.
+  right_arcuate_fasciculus:
+    units: [arcuate_fasciculus]
+    side: right
+    basis: XTRACT arcuate fasciculus, right hemisphere.
+  left_inferior_longitudinal_fasciculus:
+    units: [ilf]
+    side: left
+    basis: Same tract.
+  left_inferior_fronto_occipital_fasciculus:
+    units: [ifof]
+    side: left
+    basis: Same tract.
+  left_inferior_frontal_occipital_fasciculus:
+    units: [ifof]
+    side: left
+    basis: Spelling variant of the inferior fronto-occipital fasciculus.
+  left_uncinate_fasciculus:
+    units: [uncinate_fasciculus]
+    side: left
+    basis: Same tract.
+  corpus_callosum:
+    units: [forceps]
+    side: both
+    basis: Only the callosal forceps are labelled in JHU (units.yaml, forceps).
+    review: true
+
+  left_frontal_aslant_tract:
+    units: [frontal_aslant_tract]
+    side: left
+    basis: XTRACT frontal aslant tract.
+  left_middle_longitudinal_fasciculus:
+    units: [middle_longitudinal_fasciculus]
+    side: left
+    basis: XTRACT middle longitudinal fasciculus.
+  left_optic_radiations:
+    units: [optic_radiation]
+    side: left
+    basis: XTRACT optic radiation.
+
+# Region names that no atlas label can represent. Their findings cannot be
+# matched from lesion location; the report counts them as "not mappable".
+unmapped:
+  left_extreme_capsule: >-
+    No atlas used here (JHU, XTRACT) labels the extreme capsule. It carries the inferior fronto-occipital and uncinate
+    fasciculi, but those tracts are not the extreme-capsule fibre system itself, so it is not approximated.
+  left_posterior_middle_temporal_white_matter: White matter under the posterior middle temporal gyrus; no tract label.
+  left_frontal_white_matter_bottleneck: >-
+    A "bottleneck" is a region defined in its source paper by the convergence of several tracts, not an atlas
+    structure.
+  left_anterior_prefrontal_bottleneck: As left_frontal_white_matter_bottleneck.
+  left_posterior_temporal_bottleneck: As left_frontal_white_matter_bottleneck.
+  left_perisylvian_network: A network, not a single anatomical structure.
