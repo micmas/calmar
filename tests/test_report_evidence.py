@@ -43,3 +43,10 @@ def test_measures_section_states_direction_and_flags_late_severity_scores():
 def test_wab_bands():
     assert [wab_band(x) for x in (10, 40, 51.5, 80, 95)] == ["very severe", "severe", "moderate", "mild",
                                                             "within normal limits"]
+
+
+def test_regions_resting_on_few_studies_are_marked():
+    damage = pd.DataFrame([dict(region="left_pallidum", side="left", lesion_pct=0.1, region_pct=40.0, review=False)])
+    rows = KB.location_findings(damage, min_overlap=5, min_region=10)
+    html = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings())
+    assert "⚠ based on 1 study" in html

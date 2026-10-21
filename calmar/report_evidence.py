@@ -29,6 +29,9 @@ DIRECTION_COLOUR = {"association": "#1a3a6b", "inverse association": "#7b3f00",
 # Kertesz's WAB-AQ severity bands (a common convention; < 93.8 = aphasia).
 WAB_BANDS = ((25, "very severe"), (50, "severe"), (75, "moderate"), (93.7, "mild"), (100, "within normal limits"))
 EARLY = r"(?i)\b(?:initial|acute|admission|baseline|early|first (?:week|month)|subacute|onset)\b"
+# A damaged region whose findings come from this many studies or fewer is marked
+# as resting on thin evidence (see aphasia-kb/atlas_mapping/EVIDENCE_GAPS.md).
+THIN_STUDIES = 2
 ABBREVIATIONS = {"ifg", "stg", "mtg", "itg", "smg", "slf", "ilf", "ifof", "dlpfc", "sma", "ba"}
 
 
@@ -135,15 +138,20 @@ def location_section(kb, rules, rows, damage, coverage, settings):
         first = g.iloc[0]
         flag = (" <span title='Mapped to the atlas by a judgement call (aphasia-kb/atlas_mapping/README.md)'"
                 " style='color:#856404'>⚑</span>") if review.reindex(g["region"].unique()).fillna(False).any() else ""
+        studies = g["citation"].dropna().nunique()
+        thin = (f" <span title='Few studies: this area is listed in aphasia-kb/atlas_mapping/EVIDENCE_GAPS.md "
+                f"or needs more evidence' style='color:#856404;font-size:11px'>⚠ based on {studies} "
+                f"stud{'y' if studies == 1 else 'ies'}</span>") if studies <= THIN_STUDIES else ""
         synonyms = names[key][1:]
         also = (f"<div style='font-size:11px;color:#888;margin-left:16px'>Also recorded in the knowledge base as: "
                 f"{escape(', '.join(synonyms))}</div>") if synonyms else ""
         blocks.append(f"<details style='margin:4px 0'><summary style='cursor:pointer;font-size:12.5px'>"
-                      f"<b>{escape(first['region_name'])}</b> ({escape(first['side'])}){flag} · "
+                      f"<b>{escape(first['region_name'])}</b> ({escape(first['side'])}){flag}{thin} · "
                       f"{escape(_damage_text(first))} · {len(g)} finding{'s' if len(g) != 1 else ''}</summary>"
                       f"{also}{_claims(g, show_target=True)}</details>")
     html += ("<p style='font-size:12px;color:#555;margin:10px 0 2px 0'><b>Evidence by damaged region</b> "
-             "(click a region to see each finding):</p>" + "".join(blocks))
+             "(click a region to see each finding; ⚠ marks regions whose evidence comes from "
+             f"{THIN_STUDIES} studies or fewer):</p>" + "".join(blocks))
     return html
 
 
