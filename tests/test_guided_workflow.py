@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class GuidedWorkflowTests(unittest.TestCase):
     def test_every_disabled_test_cell_only_prints_continuation(self):
-        for number in (20,23,25,27,"calmar-registration","calmar-manual",32,34,35,39):
+        for number in (20,23,25,27,"calmar-registration","calmar-openads","calmar-manual",32,34,35,39):
             with self.subTest(cell=number):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):

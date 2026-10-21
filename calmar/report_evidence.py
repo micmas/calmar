@@ -65,6 +65,56 @@ def _present(value):
     return True
 
 
+#: KB ``sample.phase`` (schema v2.6, SRRR bands) → the report's recovery stages (aphasia_rules).
+SAMPLE_PHASE_STAGES = {"hyperacute": "acute", "acute": "acute", "early_subacute": "subacute",
+                       "late_subacute": "subacute", "chronic": "chronic"}
+
+
+def finding_phases(row):
+    """Recovery stages (acute / subacute / chronic) a finding was studied in.
+
+    From the KB's ``phase`` (``sample.phase``, stated or inferred from
+    ``time_post_onset`` by aphasia-kb/phase.py). When that is ``mixed``,
+    ``longitudinal`` or ``not_reported``, the stages named in the sample
+    population text are used (aphasia_rules); empty = unknown.
+    """
+    import aphasia_rules
+    stage = SAMPLE_PHASE_STAGES.get(row.get("phase"))
+    if stage:
+        return {stage}
+    text = " ".join(str(row.get(k) or "") for k in ("population", "time_post_onset"))
+    return aphasia_rules.stages_in_population(text)
+
+
+def _phase_indicator(row, participant_phase):
+    """The finding's study phase as an indicator; ⚠ when it differs from the participant's."""
+    phases = finding_phases(row)
+    if not phases:
+        return "<div><dt>Study phase</dt><dd>Not stated</dd></div>"
+    text = "/".join(sorted(phases))
+    if participant_phase and participant_phase not in phases:
+        return (f"<div><dt>Study phase</dt><dd title='Studied in {escape(text)} stroke; this participant is "
+                f"{escape(participant_phase)}'>{escape(text.capitalize())} ⚠</dd></div>")
+    return f"<div><dt>Study phase</dt><dd>{escape(text.capitalize())}</dd></div>"
+
+
+def phase_summary(rows, participant_phase):
+    """One sentence: the phase mix of the findings shown, against the participant's."""
+    if rows is None or rows.empty or not participant_phase:
+        return ""
+    phases = rows.apply(finding_phases, axis=1)
+    same = sum(participant_phase in p for p in phases)
+    other = sum(bool(p) and participant_phase not in p for p in phases)
+    unknown = sum(not p for p in phases)
+    note = (f"<p class='phase-summary'>This participant is in the <b>{escape(participant_phase)}</b> "
+            f"phase. Of these {len(rows)} findings, {same} were studied in the same phase, {other} in another phase "
+            f"(marked ⚠) and {unknown} do not state it.")
+    if other > same:
+        note += (" Most of this evidence comes from another recovery phase; lesion–symptom associations can differ "
+                 "between phases (e.g. hypoperfusion and diaschisis after an acute stroke), so read it with caution.")
+    return note + "</p>"
+
+
 def _first(*values, default=None):
     """First present value, including fallbacks after pandas missing scalars."""
     return next((value for value in values if _present(value)), default)
@@ -207,7 +257,7 @@ def _finding_more(raw, flat):
             "</summary><div class='finding-more-body'>" + "".join(sections) + "</div></details>")
 
 
-def _finding_article(row, context):
+def _finding_article(row, context, phase=None):
     finding_id = _first(row.get("finding_id"), row.get("id"))
     key = (str(_first(row.get("source_path"), default="")), finding_id)
     raw, flat = context["raw"].get(key, {}), context["flat"].get(key, {})
@@ -233,6 +283,7 @@ def _finding_article(row, context):
         f"<div><dt>Relationship</dt><dd>{escape(direction)}</dd></div>"
         f"<div><dt>Evidence strength</dt><dd>{escape(str(strength))}</dd></div>"
         f"<div><dt>Extraction confidence</dt><dd>{escape(str(confidence))}</dd></div>"
+        + _phase_indicator(row, phase) +
         "</dl>"
         + (f"<p class='finding-governance'>{escape(governance)}</p>" if governance else "")
         + _citation_details(citation, context)
@@ -246,19 +297,19 @@ def _distinct_findings(rows, target_column=None):
     return rows.drop_duplicates(subset=subset) if subset else rows
 
 
-def _claims(kb, rows, *, target_column=None, dedupe_target=True, context=None):
+def _claims(kb, rows, *, target_column=None, dedupe_target=True, context=None, phase=None):
     """Distinct findings, optionally grouped by their outcome."""
     rows = _distinct_findings(rows, target_column if dedupe_target else None)
     context = context or _evidence_context(kb)
     if not target_column or target_column not in rows:
-        return "<div class='findings-list'>" + "".join(_finding_article(r, context) for _, r in rows.iterrows()) + "</div>"
+        return "<div class='findings-list'>" + "".join(_finding_article(r, context, phase) for _, r in rows.iterrows()) + "</div>"
     groups = []
     for _, group in rows.groupby(target_column, sort=False):
         name = group["target_name"].iloc[0] if "target_name" in group else _name(kb, group[target_column].iloc[0])
         groups.append("<section class='outcome-findings'>"
                       f"<h6>{escape(str(name))} <span>{len(group)} finding{'s' if len(group) != 1 else ''}</span></h6>"
                       "<div class='findings-list'>" +
-                      "".join(_finding_article(r, context) for _, r in group.iterrows()) +
+                      "".join(_finding_article(r, context, phase) for _, r in group.iterrows()) +
                       "</div></section>")
     return "".join(groups)
 
@@ -275,7 +326,7 @@ def _html_id(prefix, value):
     return f"{prefix}-{token}" if token else prefix
 
 
-def location_section(kb, rules, rows, damage, coverage, settings):
+def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
     """HTML for the lesion-location evidence.
 
     ``rows``: ``KnowledgeBase.location_findings``; ``damage``:
@@ -292,6 +343,7 @@ def location_section(kb, rules, rows, damage, coverage, settings):
              f"findings, <b>{len(rows)}</b> concern regions this lesion damages, {coverage['undamaged']} concern "
              f"regions it does not damage, and {coverage['unmappable']} concern regions no atlas can represent "
              f"(e.g. the extreme capsule).</p>")
+    intro += laterality_note(damage)
     if rows is None or rows.empty:
         return intro + "<p style='color:#666'><em>No knowledge-base findings concern the damaged regions.</em></p>"
     rows = rows.assign(target_name=rows["predicts"].map(lambda t: _name(kb, t)),
@@ -397,11 +449,26 @@ def location_section(kb, rules, rows, damage, coverage, settings):
             f"<span class='region-notes'>{notes}</span>"
             "<span class='region-action'><span class='when-closed'>Show findings</span>"
             "<span class='when-open'>Hide findings</span></span></summary>"
-            f"<div class='region-body'>{also}{_claims(kb, g, target_column='predicts', context=context)}</div></details>")
+            f"<div class='region-body'>{also}{_claims(kb, g, target_column='predicts', context=context, phase=phase)}</div></details>")
+    html += phase_summary(rows, phase)
     html += ("<div class='subsection-heading'><h5>Evidence by damaged region</h5>"
              "<p>Open a region to inspect distinct findings, grouped by outcome. A limited citation base means "
              f"{THIN_STUDIES} citation keys or fewer; it is not a certainty rating.</p></div>" + "".join(blocks))
     return html
+
+def laterality_note(damage):
+    """A note when the lesion lies mainly in the right hemisphere: the knowledge
+    base is almost entirely about left-hemisphere language regions."""
+    if damage is None or damage.empty or "side" not in damage:
+        return ""
+    by_side = damage[damage["side"].isin(["left", "right"])].groupby("side")["lesion_pct"].max()
+    left, right = by_side.get("left", 0.0), by_side.get("right", 0.0)
+    if right > 0 and right > 2 * left:
+        return ("<p class='laterality-note'>⚠ This lesion lies mainly in the "
+                "<b>right</b> hemisphere. The knowledge base is almost entirely about left-hemisphere language "
+                "regions, so few or no findings apply; an absence of findings here does not mean an absence of "
+                "deficits.</p>")
+    return ""
 
 
 def location_coverage(kb, rows, damage):
@@ -443,7 +510,7 @@ def _value_text(pid, value, days):
     return escape(str(value))
 
 
-def measures_section(kb, predictors, days=None, min_confidence=None):
+def measures_section(kb, predictors, days=None, min_confidence=None, phase=None):
     """HTML: one row per measure of the participant that the KB has findings about."""
     f = kb.findings
     f = f[f["source_kind"] == "predictor"]
@@ -486,7 +553,7 @@ def measures_section(kb, predictors, days=None, min_confidence=None):
             f"<span class='secondary'>({len(shown)} distinct findings: {escape(counts)})</span></p>"
             f"<details class='measure-findings'><summary>Show {len(shown)} distinct finding"
             f"{'s' if len(shown) != 1 else ''}</summary>"
-            f"{_claims(kb, g, target_column='target', dedupe_target=False, context=context)}</details>{caution}</article>")
+            f"{_claims(kb, g, target_column='target', dedupe_target=False, context=context, phase=phase)}</details>{caution}</article>")
     if not rows:
         return "<p style='color:#666'><em>No knowledge-base findings concern this participant's measures.</em></p>"
     return "<div class='measure-cards'>" + "".join(rows) + "</div>"
@@ -515,7 +582,7 @@ def tract_atlases(all_atlases):
             if name in ("JHU", "XTRACT")}
 
 
-def disconnection_section(kb, rows, disconnection, damage, settings, map_label):
+def disconnection_section(kb, rows, disconnection, damage, settings, map_label, phase=None):
     """HTML: tracts disconnected by the lesion (from a disconnectome map), with their findings.
 
     ``rows``: ``KnowledgeBase.location_findings`` on ``disconnection``
@@ -563,5 +630,5 @@ def disconnection_section(kb, rows, disconnection, damage, settings, map_label):
             f"<span class='region-notes'>{thin}</span>"
             "<span class='region-action'><span class='when-closed'>Show findings</span>"
             "<span class='when-open'>Hide findings</span></span></summary>"
-            f"<div class='region-body'>{also}{_claims(kb, g, target_column='predicts', context=context)}</div></details>")
-    return intro + "".join(blocks)
+            f"<div class='region-body'>{also}{_claims(kb, g, target_column='predicts', context=context, phase=phase)}</div></details>")
+    return intro + phase_summary(rows, phase) + "".join(blocks)

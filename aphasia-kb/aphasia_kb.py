@@ -683,6 +683,8 @@ class KnowledgeBase:
                                "strength",
                            )},
                         "sample_n": (f.get("sample") or {}).get("n"),
+                        "population": (f.get("sample") or {}).get("population"),
+                        "time_post_onset": (f.get("sample") or {}).get("time_post_onset"),
                         # v2.6: recovery phase — stated `sample.phase`, else
                         # inferred from the free-text time_post_onset (phase.py)
                         "phase": finding_phase(f)[0],
@@ -985,7 +987,7 @@ class KnowledgeBase:
         rows = rows.rename(columns={"id": "finding_id"})
         keep = ["region", "side", "lesion_pct", "region_pct", "predicts", "predicts_kind", "claim", "direction",
                 "citation", "method", "strength", "evidence_quality", "confidence", "source_id", "finding_id",
-                "source_status", "source_path", "contribution"]
+                "population", "time_post_onset", "phase", "source_status", "source_path", "contribution"]
         return rows[[c for c in keep if c in rows.columns]].reset_index(drop=True)
 
     def interpret_damage(

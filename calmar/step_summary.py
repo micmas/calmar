@@ -32,7 +32,7 @@ METRIC_LABELS = {
     "synthstroke_mni_volume_ml": "SynthStroke lesion in template (ml)", "manual_mni_volume_ml": "manual lesion in template (ml)",
     "mask_session": "mask session", "t1_session": "T1 session", "mask_space": "mask drawn on",
 }
-VIEWER_STAGES = ("brain", "linda", "synthstroke", "registration", "manual", "bcb", "deepdisco")
+VIEWER_STAGES = ("brain", "linda", "synthstroke", "registration", "openads", "manual", "bcb", "deepdisco")
 EMBED_LIMIT = 12  # participants whose figures are embedded; beyond that, paths only
 
 
@@ -49,7 +49,7 @@ def _status(entry):
     return text, reasons
 
 
-SOURCES = {"linda": "LINDA", "synthstroke": "SynthStroke", "manual": "Manual"}
+SOURCES = {"linda": "LINDA", "synthstroke": "SynthStroke", "openads": "OpenADS", "manual": "Manual"}
 
 
 def _pct(value):
@@ -72,7 +72,7 @@ def _metric_lines(metrics):
         lines.append(("Registration", f"T1 vs MNI152 template r = {take('template_correlation'):.2f}"))
     if "mask_space" in m:
         space, mask_ses, t1_ses = take("mask_space"), take("mask_session"), take("t1_session")
-        where = {"t1": "drawn on this T1", "mni": "drawn in template space",
+        where = {"t1": "drawn on this scan (no registration needed)", "mni": "drawn in template space",
                  "other": "drawn on another scan, rigidly registered to this T1"}.get(space, f"space: {space}")
         if mask_ses and t1_ses and mask_ses != t1_ses:
             where += f" (mask from {mask_ses}, T1 from {t1_ses})"

@@ -12,6 +12,7 @@ TOOLS = {
     "synthstroke": "SynthStroke (synthstroke/0.0.0, synth-plus weights)",
     "manual": "SimpleITK rigid registration + the template registration",
     "registration": "ANTs (ants/2.6.5) antsRegistrationSyN.sh",
+    "openads": "OpenADS (openadscpu/1.0.0)",
     "bcb": "BCBToolkit disconnectome (bcbtoolkit/0.0.0, run_disco.sh)",
     "deepdisco": "DeepDisco (deepdisco/20251008)",
 }
@@ -33,7 +34,16 @@ def _segmentation_rows(config):
         rows.append(("Lesion segmentation (SynthStroke)", TOOLS["synthstroke"],
                      f"TTA={c('SYNTHSTROKE_TTA', True)}, clip to brain mask dilated 2 voxels",
                      "Independent deep-learning segmentation, warped to MNI152 with the template registration."))
-    if template_source(config) == "linda":
+    if "openads" in methods:
+        rows.append(("Lesion segmentation (OpenADS)", TOOLS["openads"],
+                     "DWI (b1000) + ADC; two passes with regenerated brain-extracted images",
+                     "Acute (DWI) route: deep-learning segmentation of the acute ischaemic lesion."))
+    if template_source(config) == "openads":
+        rows.append(("Template registration", "OpenADS's (openadscpu/1.0.0) DWI registration + ants/2.6.5",
+                     "affine + SyN against OpenADS's JHU ADC template; one nearest-neighbour resampling",
+                     "The native lesion is warped to FSL MNI152NLin6Asym (182×218×182, 1 mm) with OpenADS's "
+                     "transforms; the T1 steps (brain extraction, LINDA, SynthStroke) are not run."))
+    elif template_source(config) == "linda":
         rows.append(("Template registration", "LINDA's (linda/0.5.1) + ANTs 2.6.5 SyN ch2 -> MNI152 (once)",
                      "FSL MNI152NLin6Asym, 182×218×182, 1 mm",
                      "Every mask: native -> Penn -> ch2 -> MNI152 in one resampling; the space of the atlases, "
@@ -52,7 +62,8 @@ def _segmentation_rows(config):
 
 def methods_table(config):
     c = config.get
-    rows = [
+    from .study import modality
+    rows = ([] if modality(config) == "dwi" else [
         ("Brain extraction", TOOLS["brain"] if c("BRAIN_MASK", "hdbet") == "hdbet+synthstrip" else "HD-BET (hdbet/1.0.0)",
          f"mask={c('BRAIN_MASK', 'hdbet')}, HD-BET mode={c('HDBET_MODE', 'fast')}, device={c('HDBET_DEVICE') or 'cpu'}",
          ("Union of HD-BET (brain tissue) and SynthStrip (brain + CSF), so CSF-filled lesion cavities stay inside; "
@@ -60,7 +71,7 @@ def methods_table(config):
           else "HD-BET alone; a skull-strip repair can add SynthStrip's CSF for a participant whose lesion cavity it left out; ")
          + "used by LINDA (replacing LINDA's own skull strip) and to clip SynthStroke."
          if c("USE_HDBET_PREPROCESSING", True) else "Disabled: LINDA uses its own skull strip."),
-    ] + _segmentation_rows(config) + [
+    ]) + _segmentation_rows(config) + [
         ("Disconnectome 1", TOOLS["bcb"], f"masks={c('BCB_MASKS', 'all')}, input grid={c('BCB_INPUT_GRID', 'mni152')}",
          "Probability that each voxel's tracts pass through the lesion (10 healthy-control tractograms)."),
         ("Disconnectome 2", TOOLS["deepdisco"],

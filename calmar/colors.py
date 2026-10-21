@@ -4,13 +4,14 @@ from html import escape
 
 DEFAULT_MASK_COLORS = {
     "linda": "red", "manual": "blue", "synthstroke": "green",
-    "hdbet": "yellow", "bcbtoolkit": "magenta", "deepdisco": "cyan",
+    "hdbet": "yellow", "bcbtoolkit": "magenta", "deepdisco": "cyan", "openads": "copper",
 }
-LABELS = {"linda": "LINDA", "manual": "Manual", "synthstroke": "SynthStroke",
+LABELS = {"linda": "LINDA", "manual": "Manual", "synthstroke": "SynthStroke", "openads": "OpenADS",
           "hdbet": "HD-BET", "bcbtoolkit": "BCBToolkit", "deepdisco": "DeepDisco"}
 # Match NiiVue's primary-colour maps exactly (CSS 'green' is darker).
 CSS = {"red": "#ff0000", "green": "#00ff00", "blue": "#0000ff",
-       "yellow": "#ffff00", "cyan": "#00ffff", "magenta": "#ff00ff"}
+       "yellow": "#ffff00", "cyan": "#00ffff", "magenta": "#ff00ff",
+       "copper": "#ffcb7f"}   # NiiVue "copper" at full intensity (a binary mask's colour)
 _colors = globals().get("_colors", dict(DEFAULT_MASK_COLORS))
 
 

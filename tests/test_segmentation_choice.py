@@ -45,7 +45,8 @@ def test_template_folder_and_masks_follow_the_registration(tmp_path):
     assert d['template'] == d['registration'] == tmp_path/'derivatives/registration/sub-1/ses-1/anat'
     assert mni_masks(d) == {'linda': d['linda']/'Lesion_in_MNI.nii.gz',
                             'manual': d['registration']/'ExpertMask_in_MNI.nii.gz',
-                            'synthstroke': d['registration']/'SynthStroke_in_MNI.nii.gz'}
+                            'synthstroke': d['registration']/'SynthStroke_in_MNI.nii.gz',
+                            'openads': d['openads']/'OpenADS_in_MNI.nii.gz'}
 
 
 def test_discovery_never_mixes_the_two_registrations(tmp_path):

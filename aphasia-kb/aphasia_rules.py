@@ -129,19 +129,20 @@ def decompose_aphasia(name) -> tuple[str, str, str] | None:
 
 #: (stage id, label, first day included, first day excluded).
 #:
-#: Source: NOT sourced in the original notebook. The chronic boundary (180
-#: days, ~6 months) matches the Stroke Recovery and Rehabilitation Roundtable
-#: consensus (Bernhardt et al., 2017, Int J Stroke 12:444–450: chronic > 6
-#: months). The 14-day acute/subacute boundary has no cited source; that
-#: consensus places it at 7 days (acute 1–7 d, early subacute 7 d–3 mo, late
-#: subacute 3–6 mo). It is kept unchanged to preserve existing reports; review
-#: before relying on the acute/subacute distinction.
+#: Source: Stroke Recovery and Rehabilitation Roundtable consensus (Bernhardt
+#: et al., 2017, Int J Stroke 12:444–450): acute 1–7 d, early subacute 7 d–3 mo,
+#: late subacute 3–6 mo, chronic > 6 months; the two subacute bands are merged
+#: here. The same bands give each KB finding's ``sample.phase``
+#: (aphasia-kb/phase.py), so a participant's stage and the evidence's phase are
+#: compared on one scale. (Until 2026-10-22 the acute/subacute cut was an
+#: unsourced 14 days.) Day 7 is subacute here; phase.py counts a sample whose
+#: time post onset is exactly 7 days as acute.
 #:
 #: Days are the participant's ``wab_days`` (stroke onset → WAB assessment), so
 #: the stage describes the assessment, not the scan, unless both coincide.
 RECOVERY_STAGES = (
-    ("acute",    "Acute (<2 wk)",        0,   14),
-    ("subacute", "Subacute (2 wk–6 mo)", 14,  180),
+    ("acute",    "Acute (<7 d)",         0,   7),
+    ("subacute", "Subacute (7 d–6 mo)",  7,   180),
     ("chronic",  "Chronic (>6 mo)",      180, None),
 )
 
@@ -149,7 +150,7 @@ RECOVERY_STAGES = (
 def classify_stage(days) -> tuple[str | None, str]:
     """(stage id, label) for days post-onset; (None, "unknown") when missing.
 
-    Boundaries follow ``RECOVERY_STAGES``: day 14 is subacute, day 180 chronic.
+    Boundaries follow ``RECOVERY_STAGES``: day 7 is subacute, day 180 chronic.
     Negative or non-numeric values are treated as unknown.
     """
     try:
@@ -262,6 +263,6 @@ def rules_tables():
     strength = pd.DataFrame(bounds, columns=["Stars", "Evidence strength", "KB score range"])
     return {
         "WAB type profile (Kertesz WAB/WAB-R taxonomy; + preserved, - impaired)": wab,
-        "Recovery stage (14 d boundary unsourced; 180 d matches Bernhardt et al. 2017)": stages,
+        "Recovery stage (Bernhardt et al. 2017 bands: 7 d, 6 mo)": stages,
         "Evidence strength stars (project display heuristic)": strength,
     }

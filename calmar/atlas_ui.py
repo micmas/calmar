@@ -7,7 +7,7 @@ from html import escape
 from .masks import MASK_LABELS
 from .anatomy_labels import label_table
 
-SOURCE_ORDER = ("synthstroke", "manual", "linda")
+SOURCE_ORDER = ("synthstroke", "openads", "manual", "linda")
 
 
 def ordered_sources(sources):

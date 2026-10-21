@@ -54,7 +54,9 @@ def step_title(key):
              'calmar-acquire': 'Fetch image content (datalad get)',
              'calmar-manual': 'Manual mask registration — single subject',
              'calmar-registration': 'Template registration (ANTs) — single subject',
-             'calmar-batch-registration': 'Template registration (ANTs) — all participants'}
+             'calmar-batch-registration': 'Template registration (ANTs) — all participants',
+             'calmar-openads': 'OpenADS acute lesion segmentation — single subject',
+             'calmar-batch-openads': 'OpenADS acute lesion segmentation — all participants'}
     if not match and key not in named:
         return key
     title = TITLES.get(int(match[1]), 'Notebook step') if match else named[key]

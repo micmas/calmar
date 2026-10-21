@@ -14,7 +14,7 @@ from .job_progress import JobProgress
 
 SCRIPTS = {name: f'analysis_{number}_{name}.sh' for number,name in
            [(22,'acquisition'),(23,'brain'),(24,'linda'),(25,'synthstroke'),
-            (29,'registration'),(26,'manual'),(27,'bcb'),(28,'deepdisco')]}
+            (29,'registration'),(43,'openads'),(26,'manual'),(27,'bcb'),(28,'deepdisco')]}
 SCRIPTS['qc_operation'] = 'analysis_30_qc_operation.sh'
 SCRIPTS['reporting'] = 'analysis_35_reporting.sh'
 
@@ -64,7 +64,8 @@ def scheduled_operation(function):
     return wrapper
 
 
-PROCESSING_STAGES = ('acquisition', 'brain', 'linda', 'synthstroke', 'registration', 'manual', 'bcb', 'deepdisco')
+PROCESSING_STAGES = ('acquisition', 'brain', 'linda', 'synthstroke', 'registration', 'openads', 'manual', 'bcb',
+                     'deepdisco')
 # Bump when saved QC evidence changes, so older receipts without it are refreshed.
 QC_VERSION = 6
 
@@ -172,8 +173,8 @@ def submit_step(stage, entries, study, *, timings=None, timeout=43200):
 
 def _not_selected(stage, request):
     """A step the selected segmentation methods do not need: no job is submitted."""
-    from .processing import NOT_SELECTED
-    reason = NOT_SELECTED[stage]
+    from .processing import not_selected_reason
+    reason = not_selected_reason(stage, request['config'])
     print(f'{stage}: skipped, {reason}.', flush=True)
     return StepResult({'stage': stage, 'request': request, 'qc_version': QC_VERSION, 'elapsed': 0,
                        'results': [{'subject': e['subject'], 'session': e.get('session'), 'seconds': 0,
