@@ -57,6 +57,7 @@ QC_STAGES_FOR_SOURCE = {
     "linda": ("lesion",),
     "synthstroke": ("synthstroke_lesion",),
     "manual": ("manual_lesion", "expert_mni_warp"),
+    "openads": ("openads_lesion", "openads_mni_warp"),
 }
 
 TEMPLATE_CAVEAT = (
@@ -332,7 +333,7 @@ def lesion_volume_ml(mask_path):
 def mask_qc_summary(anchor_mask, mask_path, source):
     """QC rating(s) and edit count for the selected mask, from ``*.qc.json``.
 
-    ``anchor_mask`` is the participant's QC anchor (LINDA's Lesion_in_MNI),
+    ``anchor_mask`` is the participant's QC anchor (``Study.qc_anchor``),
     whose sidecar holds every stage rating; ``mask_path``'s own sidecar holds
     that mask's edit history. Returns {"ratings": [(stage, label, reviewer,
     date)], "edits": n, "poor": bool}.
@@ -620,7 +621,7 @@ LEGEND_HTML = '''
         <b>WAB decomposition</b>: flu = fluency, comp = comprehension, rep = repetition.
         + preserved, &#8722; impaired (WAB type taxonomy).<br>
         <b>Stage badge</b>:
-        Acute &lt;2 wk &middot; Subacute 2 wk–6 mo &middot; Chronic &gt;6 mo. A therapy-stage warning identifies
+        Acute &lt;7 d &middot; Subacute 7 d–6 mo &middot; Chronic &gt;6 mo. A therapy-stage warning identifies
         evidence from a different recovery stage; open it for detail.
         Rules and their sources: <code>aphasia-kb/aphasia_rules.py</code>.
       </div>'''
@@ -701,7 +702,7 @@ body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
 .region-action .when-open{{display:none}}
 .region-evidence[open] .region-action .when-closed{{display:none}}
 .region-evidence[open] .region-action .when-open{{display:inline}}
-.mapping-note,.thin-evidence{{border-left:3px solid var(--calmar-pink);padding-left:.45rem;color:var(--calmar-ink)}}
+.mapping-note,.thin-evidence,.phase-summary,.laterality-note{{border-left:3px solid var(--calmar-pink);padding-left:.45rem;color:var(--calmar-ink)}}
 .region-body{{padding:.25rem 0 1.25rem 1rem}}
 .region-alias{{font-size:.84rem;color:var(--calmar-ink-2);margin:.2rem 0 .8rem}}
 .outcome-findings{{margin:1rem 0 1.65rem}}
@@ -881,7 +882,6 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
         raise ValueError(f"No existing MNI mask for {source!r}, {entry['subject']} "
                          f"{entry.get('session') or ''}. Choose an available mask in the report selector.")
     mask = Path(study.mni_mask(entry, source))
-    linda_dir = Path(study.linda_dir(entry))
     brain = Path(study.template_dir(entry)) / "Subject_in_MNI.nii.gz"
     # prepare_report_overlap reads the atlas list from INTERP_KB_ATLASES; give it ours.
     view = dict(namespace, INTERP_KB_ATLASES=list(settings.kb_atlases))
@@ -918,6 +918,14 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     row = participant_row(dataset_dir, entry["subject"])
     predictors = row_to_predictors(row)
     stage_id, stage_label = rules.classify_stage((row or {}).get("wab_days"))
+    # STROKE_PHASE overrides; without onset data the acute (DWI) route is acute.
+    from .study import modality
+    configured = (getattr(study, "config", None) or {}).get("STROKE_PHASE")
+    if configured in ("acute", "subacute", "chronic"):
+        stage_id = configured
+        stage_label = {s: label for s, label, *_ in rules.RECOVERY_STAGES}[configured]
+    elif stage_id is None and modality(getattr(study, "config", None) or {}) == "dwi":
+        stage_id, stage_label = "acute", {s: label for s, label, *_ in rules.RECOVERY_STAGES}["acute"]
     try:
         therapy_stages = rules.therapy_evidence_stages(kb_root)
     except Exception:
@@ -989,17 +997,17 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       {behaviour_html(rules, row, predictors, volume)}
 
       <h4>Lesion location: what the evidence says</h4>
-      {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings)}
+      {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings, phase=stage_id)}
 
       <h4>White-matter disconnection: what the evidence says</h4>
-      {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label)}
+      {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id)}
 
       <h4>This participant&rsquo;s measures: what the evidence says</h4>
       <p class="section-intro">
         Findings about measures such as lesion volume or aphasia severity report associations
         in study groups (for example, larger lesions with more severe aphasia), not predictions for one person.
       </p>
-      {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None)}
+      {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None, phase=stage_id)}
 
       <h4>Therapy recommendations ({n_therapy} matched)</h4>
       <p class="section-intro">
@@ -1018,9 +1026,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     except Exception as exc:          # the report is still useful without it
         method = None
         note(f"  mask method not described: {exc}")
-    qc = mask_qc_summary(study.lesion_mni(entry), mask, source)
+    qc = mask_qc_summary(study.qc_anchor(entry), mask, source)
     provenance = provenance_html(source, mask, qc, kb_scope=kb_scope, method=method, kb=kb_line)
-    qc_notice = report_qc_notice(linda_dir, entry)
+    qc_notice = report_qc_notice(Path(study.qc_dir(entry)), entry)
     overlay = _overlay_img(namespace, entry, mask, brain, source)
     path, page, _ = save_report(entry, source, reports_dir, title_card, qc_notice, provenance, overlay, body)
     note(f"  Report saved → {path}")

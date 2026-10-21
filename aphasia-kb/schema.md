@@ -204,7 +204,7 @@ doesn't say.
 | `sample.n`                  | R     | int. Use `not_reported` if absent. |
 | `sample.population`         | R     | E.g. `chronic left-hemisphere stroke`. |
 | `sample.time_post_onset`    | S     | E.g. `>=6 months`, `mean 38 months (SD 24)`. The paper's own wording. |
-| `sample.phase`              | R (v2.6) | Recovery phase of the sample, controlled: `hyperacute` (0–24 h) · `acute` (1–7 d) · `early_subacute` (7 d–3 mo) · `late_subacute` (3–6 mo) · `chronic` (> 6 mo) · `mixed` · `longitudinal` (same patients at ≥ 2 phases) · `not_reported`. Bands follow the Stroke Recovery and Rehabilitation Roundtable (Bernhardt 2017). Entries written before v2.6 have no value; the loader infers one from `time_post_onset` (`phase.py`) and reports it as `phase_source: inferred`. The RAG filters on it (`--phase`). |
+| `sample.phase`              | R (v2.6) | Recovery phase of the sample, controlled: `hyperacute` (0–24 h) · `acute` (1–7 d) · `early_subacute` (7 d–3 mo) · `late_subacute` (3–6 mo) · `chronic` (> 6 mo) · `mixed` · `longitudinal` (same patients at ≥ 2 phases) · `not_reported`. Bands follow the Stroke Recovery and Rehabilitation Roundtable (Bernhardt 2017). Entries written before v2.6 have no value; the loader infers one from `time_post_onset` (`phase.py`) and reports it as `phase_source: inferred`. The RAG filters on it (`--phase`); participant reports mark findings from another phase than the participant's (`calmar.report_evidence.finding_phases`). |
 | `sample.age_range`          | S     | E.g. `35-78 years`, `mean 58 (SD 12)`. |
 | `sample.handedness`         | S     | E.g. `all right-handed`, `mixed`. |
 | `sample.language`           | S     | E.g. `English monolingual`, `Spanish-English bilingual`. |

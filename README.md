@@ -246,6 +246,7 @@ Dataset (BIDS)
     ├─ Lesion segmentation (SynthStroke, optional)  ├─ warped to MNI space (LINDA's registration,
     ├─ (no LINDA: ANTs template registration)        │  or the ANTs registration step)
     └─ Expert/manual mask                          ─┘
+    (acute route, MODALITY = "dwi": OpenADS on DWI + ADC, warped with its own registration)
             │
             ├─ QC dashboard (interactive, stage-aware)
             │
@@ -277,6 +278,11 @@ Every processing step follows the same pattern: a markdown cell (what, why, inpu
 LINDA registers each brain to its **ch2 (Colin27)** template (single-subject anatomy in MNI coordinates). The atlases, BCBToolkit tractograms and DeepDisco are defined on **FSL MNI152** (MNI152NLin6Asym), so ch2 is registered to MNI152 once (`src/analysis_38_template_ch2_to_mni152.sh`, ANTs SyN; transforms in `atlases/templates/ch2_to_MNI152NLin6Asym/`) and every mask is warped native → Penn → ch2 → MNI152 in one resampling. `*_in_MNI.nii.gz` are on MNI152 (182×218×182); LINDA's original ch2 outputs are kept as `*_in_ch2.nii.gz`.
 
 `SEGMENTATION_METHODS` (default `["linda", "synthstroke"]`) chooses the automatic segmentations; at least one is required. LINDA takes 1.5-3.7 h per participant, almost all of it its registration to the template. Without LINDA, the **registration step** (`src/analysis_29_registration.sh`, ANTs 2.6.5) registers the brain-extracted T1w directly to the MNI152 brain, with the SynthStroke lesion (dilated 2 voxels) excluded from the cost function: an affine stage (Mattes MI, one thread, seeded), then SyN (cross-correlation, `REGISTRATION_THREADS`), ANTs' documented route to a reproducible result. It took 9 min with 4 threads for sub-M2051 ses-284 (template correlation 0.66, vs 0.63 for LINDA's registration; SynthStroke's template-space mask Dice 0.80 between the two registrations). Its outputs, and the manual mask's products and template-space SynthStroke mask made with it, are in `derivatives/registration/`, so masks warped by the two registrations never share a file.
+
+**Acute route (`MODALITY = "dwi"`).** For acute stroke imaged with diffusion MRI (e.g. ISLES-2022: `sub-*/ses-*/dwi/*_dwi.nii.gz` with `*_adc.nii.gz`), OpenADS (`openadscpu/1.0.0`, `src/analysis_43_openads.sh`) segments the lesion on the DWI and its ADC map. The T1 steps (brain extraction, LINDA, SynthStroke, registration) are skipped.
+- **Template space:** OpenADS also registers the DWI to MNI152 (affine + SyN against its JHU ADC template). Its own template-space "stroke" image is not the lesion, so the native lesion is warped with those transforms (`src/analysis_44_apply_openads_registration.sh`). On 10 ISLES-2022 cases the side was preserved in all, and OpenADS agreed with the expert masks at Dice 0.75–0.91 in template space for most lesions; small lesions are often missed.
+- **Same downstream steps:** manual masks, disconnectomes, atlas overlap and the report work as in the chronic route.
+- **Recovery phase:** reports tag each knowledge-base finding with the phase it was studied in, so an acute participant sees how much of the evidence comes from chronic-stroke studies.
 
 ---
 

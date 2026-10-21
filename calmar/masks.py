@@ -8,7 +8,7 @@ registration quality. Discovery never downloads or modifies image data.
 from pathlib import Path
 
 
-MASK_LABELS = {"linda": "LINDA", "synthstroke": "SynthStroke", "manual": "Manual"}
+MASK_LABELS = {"linda": "LINDA", "synthstroke": "SynthStroke", "openads": "OpenADS", "manual": "Manual"}
 
 
 def present(path):
@@ -23,10 +23,10 @@ def present(path):
 
 
 def discover_masks(entry, linda_dir, synthstroke_dir, *, template_dir=None, manual_path=None,
-                   manual_space="t1"):
+                   manual_space="t1", openads_dir=None):
     """Return {source: {space: path}} for locally present, known lesion outputs.
 
-Spaces are ``T1w`` and ``MNI``. A configured manual mask in another space is
+Spaces are ``T1w`` (the native image: the T1w, or the DWI in the acute route) and ``MNI``. A configured manual mask in another space is
 not treated as T1w: its registered output must exist before it is offered.
 Directories are already scoped to a single subject/session by the caller.
 ``template_dir`` holds the template registration when LINDA did not run
@@ -54,6 +54,10 @@ masks warped by LINDA's registration.
             "MNI": [template / "ExpertMask_in_MNI.nii.gz"],
         },
     }
+    if openads_dir is not None:
+        oa = Path(openads_dir)
+        candidates["openads"] = {"T1w": [oa / f"{stem}_space-DWI_desc-lesion_mask.nii.gz"],
+                                 "MNI": [oa / "OpenADS_in_MNI.nii.gz"]}
     if manual_path is not None and manual_space in ("t1", "mni"):
         space = "T1w" if manual_space == "t1" else "MNI"
         candidates["manual"][space].insert(0, Path(manual_path))
@@ -77,4 +81,9 @@ def qc_stages(masks, *, brain_mask=None, mni_reference=None):
             stages.append(stage)
     if "MNI" in masks.get("manual", {}) and present(mni_reference):
         stages.append("expert_mni_warp")
+    # Acute (DWI) route: OpenADS's native lesion, then its warp to MNI152.
+    if "T1w" in masks.get("openads", {}):
+        stages.append("openads_lesion")
+    if "MNI" in masks.get("openads", {}) and present(mni_reference):
+        stages.append("openads_mni_warp")
     return stages

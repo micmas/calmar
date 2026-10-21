@@ -18,7 +18,9 @@ def processing_status(entry, namespace):
     present = lambda p: p.is_file() and p.stat().st_size > 0
     from calmar.study import segmentation_methods
     wanted = {'linda': linda/'Lesion_in_MNI.nii.gz', 'synthstroke': synth/'SynthStroke_in_MNI.nii.gz'}
-    if all(present(wanted[m]) for m in segmentation_methods(namespace.get('CONFIG', {}))):
+    if 'openads_path_for' in namespace:          # acute (DWI) route
+        wanted['openads'] = Path(namespace['openads_path_for'](entry))/'OpenADS_in_MNI.nii.gz'
+    if all(m in wanted and present(wanted[m]) for m in segmentation_methods(namespace.get('CONFIG', {}))):
         return 'Segmentations available'
     if any(present(p) for folder in (linda, synth, brain) for p in folder.glob('*.nii.gz')):
         return 'Partly processed'

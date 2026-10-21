@@ -143,3 +143,19 @@ def test_measure_caution_count_uses_the_same_distinct_findings_as_details(tmp_pa
     html = measures_section(kb, {"severity_metric": {"instrument": "WAB-AQ", "value": 50}}, days=365)
     assert "1 distinct findings" in html and "Show 1 distinct finding" in html
     assert "1 of these findings concern severity measured early" in html
+
+
+def test_each_finding_shows_its_study_phase_and_sections_summarise_it():
+    damage = pd.DataFrame([dict(region="left_arcuate_fasciculus", side="left", lesion_pct=1.0, region_pct=90.0,
+                                review=False)])
+    rows = KB.location_findings(damage, min_overlap=5, min_region=10)
+    html = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings(),
+                            phase="acute")
+    soup = BeautifulSoup(html, "html.parser")
+    phases = [dt.find_next_sibling("dd").get_text() for dt in soup.select(".finding-indicators dt")
+              if dt.get_text() == "Study phase"]
+    assert len(phases) == len(soup.select("article.finding")) > 0
+    assert any("⚠" in p for p in phases)                         # chronic evidence for an acute participant
+    assert soup.select_one(".phase-summary") and "This participant is in the <b>acute</b>" in html
+    plain = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings())
+    assert "phase-summary" not in plain and "⚠</dd>" not in plain

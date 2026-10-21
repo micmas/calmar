@@ -5,10 +5,11 @@ QC checkpoint (``calmar.execution.pause_for_qc``), chooses the participants
 with something to review, builds the image layers for each stage
 (``QCVolumes``) and shows a ``QCPanel``.
 
-Ratings are saved per participant in ``<linda_dir>/Lesion_in_MNI.qc.json``
-(``calmar.qc.QCRecord``), also when LINDA produced no mask. The reviewer's
-Do / Skip / Use existing QC choice is saved in ``<linda_dir>/QC_decision.json``
-(``calmar.qc_decisions``).
+Ratings are saved per participant in the sidecar of ``Study.qc_anchor``
+(``calmar.qc.QCRecord``): ``<linda_dir>/Lesion_in_MNI.qc.json`` in the T1 route,
+also when LINDA produced no mask, and ``<openads_dir>/OpenADS_in_MNI.qc.json`` in
+the acute (DWI) route. The reviewer's Do / Skip / Use existing QC choice is saved
+beside it in ``QC_decision.json`` (``Study.qc_dir``, ``calmar.qc_decisions``).
 """
 
 from copy import deepcopy
@@ -32,7 +33,8 @@ from .widget_lifecycle import close_widget
 
 class QCPanel(w.VBox):
     def __init__(self, entries, stages_for, anchor_for, volumes_for, viewer,
-                 checkpoint, *, encode_volumes=lambda volumes: volumes):
+                 checkpoint, *, encode_volumes=lambda volumes: volumes, skull_strip_repair=True,
+                 legend=("hdbet", "linda", "manual", "synthstroke")):
         self.entries = tuple(dict(e) for e in entries)
         self.stages_for = stages_for
         self.anchor_for = anchor_for
@@ -87,7 +89,9 @@ class QCPanel(w.VBox):
             [self.use_existing, self.redo, checkpoint.skip_qc] if has_existing
             else [checkpoint.do_qc, checkpoint.skip_qc],
                                 layout=w.Layout(flex_flow="row wrap"))
-        next_steps = w.HBox([self.repair_button, self.continue_button],
+        # The skull-strip repair (HD-BET + LINDA) belongs to the T1 route only.
+        next_steps = w.HBox([self.repair_button, self.continue_button] if skull_strip_repair
+                            else [self.continue_button],
                            layout=w.Layout(flex_flow="row wrap", margin="12px 0 0 0"))
         super().__init__([
             checkpoint.message, self.existing_summary, choice_buttons, self.subject,
@@ -98,7 +102,7 @@ class QCPanel(w.VBox):
             self.layers, viewer,
             self.issues, self.notes, self.reviewer, self.repair,
             w.HBox([self.save, self.save_next]),
-            w.HTML(colors.legend(["hdbet", "linda", "manual", "synthstroke"])),
+            w.HTML(colors.legend(list(legend))),
             next_steps, self.message, self.navigation_message, self.navigation])
         self.subject.observe(self._load_subject, names="value")
         self.stage.observe(self._load_stage, names="value")
@@ -268,6 +272,12 @@ class QCPanel(w.VBox):
             self.notes.value = data.get("notes", "")
             self.help.value = "<b>" + escape(q.STAGE_LABELS[stage]) + "</b><br>" + "<br>".join(
                 f"{r}: {escape(text).replace('**', '')}" for r, text in rubric.items())
+            if stage == "openads_lesion":
+                self.help.value += ("<br><b>Acute lesion: bright on the DWI.</b> Compare with the ADC map "
+                    "(dark = restricted diffusion) in the OpenADS step viewer or its QC figure; very small lesions are often missed.")
+            if stage == "openads_mni_warp":
+                self.help.value += ("<br><b>Rate the registration to MNI152, not the segmentation.</b> "
+                    "The warped lesion should keep its native hemisphere, lobe and shape.")
             if stage == "expert_mni_warp":
                 self.help.value += ("<br><b>Rate registration to MNI, not the manual delineation.</b> "
                     "Compare anatomy and native placement; agreement with a predicted lesion alone does not validate registration.")
@@ -287,7 +297,7 @@ class QCPanel(w.VBox):
             described = []
             for i, spec in overlays:
                 key = f"{stage}:{spec['name']}"
-                optional = spec["name"] == "manual" and stage in ("lesion", "synthstroke_lesion")
+                optional = spec["name"] == "manual" and stage in ("lesion", "synthstroke_lesion", "openads_lesion")
                 shown = roles.get(key, not optional)
                 described.append((key, overlay_label(stage, spec["name"]), spec, shown))
                 volumes[i] = {**spec, "opacity": spec["opacity"] if shown else 0.}
@@ -413,7 +423,7 @@ def overlay_label(stage, origin):
 
 # Which mask origin (and colour) each lesion-style stage shows.
 LESION_STAGE_SOURCES = {"lesion": "linda", "synthstroke_lesion": "synthstroke",
-                        "manual_lesion": "manual"}
+                        "manual_lesion": "manual", "openads_lesion": "openads"}
 
 
 @dataclass
@@ -453,7 +463,10 @@ class QCVolumes:
     * ``lesion`` / ``synthstroke_lesion`` / ``manual_lesion``: native T1 (N4 if
       available) with that mask, optionally plus the manual mask for reference.
     * ``expert_mni_warp``: ``Subject_in_MNI`` with the warped manual mask, LINDA's
-      MNI lesion and optionally SynthStroke's, to judge the registration.
+      (or OpenADS's) MNI lesion and optionally SynthStroke's, to judge the registration.
+    * ``openads_lesion`` (acute route): the DWI with OpenADS's lesion (on its own
+      reoriented grid; the viewer places it by world coordinates).
+    * ``openads_mni_warp``: OpenADS's warped DWI with its MNI lesion (and the manual one).
     """
 
     def __init__(self, study, settings=None):
@@ -465,6 +478,8 @@ class QCVolumes:
             return self.skull_strip(entry)
         if stage == "expert_mni_warp":
             return self.mni_warp(entry, show_synth)
+        if stage == "openads_mni_warp":
+            return self.openads_mni_warp(entry)
         return self.lesion(stage, entry, show_manual)
 
     def _overlay(self, path, source, opacity):
@@ -473,7 +488,9 @@ class QCVolumes:
                 "cal_min": 0.5, "cal_max": 1.0, "opacity": opacity}
 
     def _native_mask(self, entry, source):
+        stem = "_".join(x for x in (entry["subject"], entry.get("session")) if x)
         defaults = {"linda": self.study.linda_dir(entry) / "Prediction3_native.nii.gz",
+                    "openads": self.study.dirs(entry)["openads"] / f"{stem}_space-DWI_desc-lesion_mask.nii.gz",
                     "synthstroke": self.study.synthstroke_dir(entry) / "prediction_lesion_mask.nii.gz",
                     "manual": self.study.template_dir(entry) / "_manual_mask_compare" / "ManualLesion_in_T1.nii.gz"}
         return Path(self.study.masks(entry).get(source, {}).get("T1w", defaults[source]))
@@ -514,10 +531,21 @@ class QCVolumes:
     def mni_warp(self, entry, show_synth=True):
         subject = self.study.template_dir(entry) / "Subject_in_MNI.nii.gz"
         volumes = [{"path": str(subject)}] if subject.exists() else []
-        layers = [("linda", 0.50), ("manual", self.settings.manual_overlay_opacity)]
+        layers = [("linda", 0.50), ("openads", 0.50), ("manual", self.settings.manual_overlay_opacity)]
         if show_synth:
             layers.append(("synthstroke", 0.40))
         for source, opacity in layers:
+            path = Path(self.study.mni_mask(entry, source))
+            if cm.present(path):
+                volumes.append(self._overlay(path, source, opacity))
+        return volumes
+
+    def openads_mni_warp(self, entry):
+        openads = self.study.dirs(entry)["openads"]
+        subject = openads / "Subject_in_MNI.nii.gz"
+        volumes = [{"path": str(subject)}] if subject.exists() else []
+        for source, opacity in (("openads", self.settings.lesion_opacity),
+                                ("manual", self.settings.manual_overlay_opacity)):
             path = Path(self.study.mni_mask(entry, source))
             if cm.present(path):
                 volumes.append(self._overlay(path, source, opacity))
@@ -540,9 +568,12 @@ def open_qc_review(entries, study, settings=None, *, viewer, encode_volumes=lamb
             _ACTIVE_PANEL.deactivate()
         except Exception:
             pass  # its widgets were already closed
-    checkpoint = execution.pause_for_qc(entries, study.linda_dir, display_controls=False)
+    from .study import modality
+    acute = modality(study.config) == "dwi"
+    checkpoint = execution.pause_for_qc(entries, study.qc_dir, display_controls=False)
     pool = [e for e in entries if study.qc_stages(e)]
-    _ACTIVE_PANEL = QCPanel(pool, study.qc_stages, study.lesion_mni, QCVolumes(study, settings),
-                            viewer, checkpoint, encode_volumes=encode_volumes)
+    _ACTIVE_PANEL = QCPanel(pool, study.qc_stages, study.qc_anchor, QCVolumes(study, settings),
+                            viewer, checkpoint, encode_volumes=encode_volumes, skull_strip_repair=not acute,
+                            legend=("openads", "manual") if acute else ("hdbet", "linda", "manual", "synthstroke"))
     display(_ACTIVE_PANEL)
     return _ACTIVE_PANEL

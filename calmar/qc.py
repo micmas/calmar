@@ -193,7 +193,8 @@ QC_SCHEMA_VERSION = 2          # bumped: per-stage ratings + HD-BET hooks
 # lesion-stage observation anyway. So the workflow is two stages:
 # skull strip + lesion. Re-add "registration" here if you want it back.
 # ============================================================
-STAGES = ("skull_strip", "lesion", "synthstroke_lesion", "manual_lesion", "expert_mni_warp")
+STAGES = ("skull_strip", "lesion", "synthstroke_lesion", "manual_lesion", "expert_mni_warp",
+          "openads_lesion", "openads_mni_warp")
 
 STAGE_LABELS = {
     "skull_strip":        "Skull strip / brain extraction",
@@ -201,7 +202,11 @@ STAGE_LABELS = {
     "synthstroke_lesion": "SynthStroke lesion mask",
     "manual_lesion":     "Manual lesion mask (native T1w)",
     "expert_mni_warp":    "Manual mask → MNI warp",
+    # Acute (DWI) route, CONFIG["MODALITY"] = "dwi"
+    "openads_lesion":     "OpenADS lesion mask (native DWI)",
+    "openads_mni_warp":   "OpenADS lesion → MNI warp",
 }
+
 
 # Rubric for the MNI-warp QC stage. Distinct from the lesion-mask rubric:
 # here the question is "is the warped MNI mask trustworthy for cohort-level
@@ -217,6 +222,28 @@ MANUAL_WARP_RATING_DEFINITIONS = {
         "hemisphere, cerebellum/brainstem when the lesion is cortical, "
         "or empty after warp). **Do NOT use this subject's "
         "ExpertMask_in_MNI for MNI-space analyses without manual fixing.**"),
+}
+
+# Acute (DWI) route: the OpenADS lesion on the diffusion image. Same 1/2/3 scale
+# as the T1 lesion stages, worded for DWI (bright) / ADC (dark) appearance.
+OPENADS_RATING_DEFINITIONS = {
+    1: ("Mask covers the acute lesion: tissue that is bright on the DWI and dark on the ADC map, "
+        "borders within ~2-3 voxels, no false-positive clusters. Usable as-is."),
+    2: ("Core lesion found, with some boundary inaccuracy or 1-2 small false-positive clusters "
+        "(e.g. a DWI artefact at the skull base). Usable with a documented caveat."),
+    3: ("Substantial issues: part of the lesion or a separate lesion missed, large false positives "
+        "(artefact, T2 shine-through that is not dark on ADC), or the wrong hemisphere. "
+        "**Use the manual mask for this participant, or re-run OpenADS if its inputs changed.**"),
+}
+
+OPENADS_WARP_RATING_DEFINITIONS = {
+    1: ("The warped lesion keeps its native anatomical location in MNI152: same hemisphere, "
+        "lobe and tissue, similar shape and volume; the warped DWI lines up with the template outline."),
+    2: ("Same hemisphere and broad location, with a minor displacement or distortion "
+        "that needs a documented caveat."),
+    3: ("Wrong territory (contralateral hemisphere, posterior fossa for a cortical lesion), "
+        "empty after warp, or the warped DWI clearly misaligned. **Do NOT use this participant's "
+        "OpenADS_in_MNI for atlas or disconnection analyses without fixing the registration.**"),
 }
 
 STAGE_RATING_DEFINITIONS = {
@@ -235,6 +262,8 @@ STAGE_RATING_DEFINITIONS = {
     "synthstroke_lesion": RATING_DEFINITIONS,
     "manual_lesion":     RATING_DEFINITIONS,
     "expert_mni_warp":    MANUAL_WARP_RATING_DEFINITIONS,
+    "openads_lesion":     OPENADS_RATING_DEFINITIONS,
+    "openads_mni_warp":   OPENADS_WARP_RATING_DEFINITIONS,
 }
 
 # Tags specific to MNI-warp failure modes. Failure modes seen so far:
@@ -334,6 +363,40 @@ SKULL_STRIP_TAG_DEFINITIONS = {
     ),
 }
 
+# Tags for the OpenADS lesion: the generic coverage/boundary tags plus DWI failure modes.
+OPENADS_TAG_DEFINITIONS = {
+    **{k: ISSUE_TAG_DEFINITIONS[k] for k in ("lesion_missed_partly", "false_positive_cluster",
+                                             "boundary_too_tight", "boundary_too_loose",
+                                             "multiple_lesions_one_missed", "wrong_hemisphere")},
+    "small_lesion_missed": (
+        "Coverage",
+        "A small (often punctate or lacunar) DWI-bright lesion is not in the mask.",
+        "Use multiple_lesions_one_missed when a larger separate lesion is missed.",
+    ),
+    "dwi_artefact": (
+        "Tissue confusion",
+        "Susceptibility or distortion artefact (skull base, frontal sinus, temporal poles) is flagged as lesion.",
+        "Check the ADC map: a true acute lesion is dark there, an artefact usually is not.",
+    ),
+    "not_restricted_on_adc": (
+        "Tissue confusion",
+        "Masked tissue is bright on the DWI but not dark on the ADC map (T2 shine-through, older lesion).",
+        "Use dwi_artefact for distortion near air-tissue boundaries.",
+    ),
+    "other": ISSUE_TAG_DEFINITIONS["other"],
+}
+
+OPENADS_WARP_TAG_DEFINITIONS = {
+    **{k: MANUAL_WARP_TAG_DEFINITIONS[k] for k in ("wrong_hemisphere", "in_cerebellum_brainstem",
+                                                   "shrunken_or_distorted", "missing_after_warp")},
+    "template_misaligned": (
+        "Registration",
+        "The warped DWI does not line up with the template brain outline (shifted, rotated or scaled).",
+        "Rate 3 when the misalignment moves the lesion into another region.",
+    ),
+    "other": MANUAL_WARP_TAG_DEFINITIONS["other"],
+}
+
 # Public dict: stage → (tag_dict, rating_dict)
 STAGE_VOCAB = {
     "skull_strip":        (SKULL_STRIP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["skull_strip"]),
@@ -341,6 +404,8 @@ STAGE_VOCAB = {
     "synthstroke_lesion": (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["synthstroke_lesion"]),
     "manual_lesion":     (ISSUE_TAG_DEFINITIONS,          STAGE_RATING_DEFINITIONS["lesion"]),
     "expert_mni_warp":    (MANUAL_WARP_TAG_DEFINITIONS,    STAGE_RATING_DEFINITIONS["expert_mni_warp"]),
+    "openads_lesion":     (OPENADS_TAG_DEFINITIONS,        OPENADS_RATING_DEFINITIONS),
+    "openads_mni_warp":   (OPENADS_WARP_TAG_DEFINITIONS,   OPENADS_WARP_RATING_DEFINITIONS),
 }
 
 
