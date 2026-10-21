@@ -1,0 +1,100 @@
+---
+schema_version: 2.3
+id: left_middle_temporal_gyrus
+name: "Left Middle Temporal Gyrus"
+kind: classical
+status: draft
+created_by: "agent:ollama-extract-cli/gemma4:31b-it-q8_0"
+created_on: 2026-10-20
+hemisphere: left
+findings:
+  - id: f1
+    target: semantics
+    target_kind: impairment
+    claim: "Damage to the left middle temporal gyrus is the most reliable predictor of impaired auditory comprehension."
+    direction: likely
+    relationship: causal
+    citation: "@Bates2003"
+    method: VLSM
+    design: cross-sectional
+    strength: strong
+    evidence_quality: cohort
+    sample:
+      n: 101
+      population: "left-hemisphere-damaged aphasic patients"
+      time_post_onset: "at least one year after stroke"
+      age_range: not_reported
+      handedness: not_reported
+      language: "native English speakers"
+    statistics:
+      threshold: "P = 0.05 (controlling the expected proportion of false positives)"
+      effect_size: not_reported
+    confounders_controlled: []
+    confounders_not_controlled: ["lesion volume"]
+    region_definition:
+      kind: data_driven_cluster
+      description: "Voxel-based lesion-symptom mapping peak for auditory comprehension."
+    imaging_details:
+      reference_space: other
+      atlases_used: []
+      preprocessing_pipeline: "Lesions reconstructed onto templates by a board-certified neurologist."
+    author_limitations:
+      - "An area may emerge as relevant either because it has a direct causal role or because of a diaschitic effect."
+    provenance:
+      extracted_by: "agent"
+      extracted_on: 2026-01-01
+      paper_section: "Results, page 449"
+      confidence: high
+      flags: ["target mapped to semantics as proxy for auditory comprehension"]
+    source_passages:
+      - section: "Results"
+        page: 449
+        quote: "Auditory comprehension was most affected by lesions in the middle temporal gyrus (MTG)"
+        supports: claim
+      - section: "Figure 1 caption"
+        page: 449
+        quote: "Only voxels that were significant at P = 0.05 (controlling the expected proportion of false positives) are shown."
+        supports: statistics
+  - id: f2
+    target: semantics
+    target_kind: impairment
+    claim: "The middle temporal gyrus is a significant factor in auditory comprehension independently of Wernicke's area."
+    direction: likely
+    relationship: causal
+    citation: "@Bates2003"
+    method: VLSM
+    design: cross-sectional
+    strength: strong
+    evidence_quality: cohort
+    sample:
+      n: 101
+      population: "left-hemisphere-damaged aphasic patients"
+      time_post_onset: "at least one year after stroke"
+      age_range: not_reported
+      handedness: not_reported
+      language: "native English speakers"
+    statistics:
+      threshold: not_reported
+      effect_size: not_reported
+    confounders_controlled: ["Wernicke's area lesion state"]
+    confounders_not_controlled: ["lesion volume"]
+    region_definition:
+      kind: manual_ROI
+      description: "Central voxel in the MTG used as covariate in ANCOVA."
+    imaging_details:
+      reference_space: other
+      atlases_used: []
+    author_limitations:
+      - "An area may emerge as relevant either because it has a direct causal role or because of a diaschitic effect."
+    provenance:
+      extracted_by: "agent"
+      extracted_on: 2026-01-01
+      paper_section: "Results, page 450"
+      confidence: high
+      flags: []
+    source_passages:
+      - section: "Results"
+        page: 450
+        quote: "The MTG remained a significant factor in auditory comprehension after Wernicke's area was factored out"
+        supports: claim
+---

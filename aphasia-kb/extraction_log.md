@@ -165,15 +165,70 @@ add an `EXTRACTED` line for every run.
 2026-05-07 | AUTO-APPROVED | @Crosson1999 | thalamic_language_mechanisms__Crosson1999 | reviewer: michele
 2026-05-07 | AUTO-APPROVED | @Simic2023 | treatment_neuroplasticity_aphasia__Simic2023 | reviewer: michele
 2026-10-16 | LEGACY-TAGGED | — | 33 entries | review_tier: legacy stamped per GOVERNANCE.md §5
-2026-01-01 | EXTRACTED | @Basilakos2019 | leukoaraiosis, lesion_volume, severity_metric | 3 predictor drafts; confidence: high
-2026-01-01 | EXTRACTED | @Boyle2004 | semantic_feature_analysis | 1 therapy draft, 4 findings
-2026-01-01 | EXTRACTED | @Breier2008 | left_arcuate_fasciculus, left_superior_longitudinal_fasciculus, left_uncinate_fasciculus | 3 drafts, confidence: high
-2026-01-01 | EXTRACTED | @Buchsbaum2011 | left_posterior_planum_temporale_spt | Lesion overlap and aggregate fMRI link area Spt to conduction aphasia.
-2026-01-01 | EXTRACTED | @DeWitt2012 | left_superior_temporal_gyrus, left_superior_temporal_sulcus | 2 drafts, 3 findings, confidence: high
-2026-01-01 | EXTRACTED | @Fridriksson2010 | left_arcuate_fasciculus, left_supramarginal_gyrus, left_temporoparietal_junction, left_ifg_pars_opercularis | 4 findings
-2026-01-01 | EXTRACTED | @Geschwind1965 | left_angular_gyrus, left_superior_temporal_gyrus_wernicke, corpus_callosum, disconnexion_syndromes | Theoretical synthesis of disconnexion syndromes.
-2026-01-01 | EXTRACTED | @Hope2017 | right_middle_temporal_gyrus, right_precentral_gyrus, anomic_aphasia, lesion_volume, age, time_post_onset | 6 drafts, confidence: high
-2026-01-01 | EXTRACTED | @Hosomi2009 | left_arcuate_fasciculus | AF fiber asymmetry predicts aphasia at discharge
-2026-01-01 | EXTRACTED | @Pflugshaupt2009 | left_fusiform_gyrus, left_occipito_temporal_sulcus, left_inferior_temporal_gyrus, pure_alexia | 4 drafts, confidence: high
-2026-01-01 | EXTRACTED | @Schwartz2009 | left_anterior_temporal_lobe, left_middle_temporal_gyrus, left_ifg_pars_triangularis, left_superior_temporal_gyrus_wernicke | VLSM study on semantic naming errors (n=64).
-2026-01-01 | EXTRACTED | @Schwartz2012 | left_precentral_gyrus, left_supramarginal_gyrus, left_arcuate_fasciculus, left_posterior_stg | VLSM of phonological errors in naming
+2026-10-19 | EXTRACTED | @Basilakos2019 | leukoaraiosis, lesion_volume, severity_metric | 3 predictor drafts; confidence: high
+2026-10-19 | EXTRACTED | @Boyle2004 | semantic_feature_analysis | 1 therapy draft, 4 findings
+2026-10-19 | EXTRACTED | @Breier2008 | left_arcuate_fasciculus, left_superior_longitudinal_fasciculus, left_uncinate_fasciculus | 3 drafts, confidence: high
+2026-10-20 | EXTRACTED | @Buchsbaum2011 | left_posterior_planum_temporale_spt | Lesion overlap and aggregate fMRI link area Spt to conduction aphasia.
+2026-10-20 | EXTRACTED | @DeWitt2012 | left_superior_temporal_gyrus, left_superior_temporal_sulcus | 2 drafts, 3 findings, confidence: high
+2026-10-20 | EXTRACTED | @Fridriksson2010 | left_arcuate_fasciculus, left_supramarginal_gyrus, left_temporoparietal_junction, left_ifg_pars_opercularis | 4 findings
+2026-10-20 | EXTRACTED | @Geschwind1965 | left_angular_gyrus, left_superior_temporal_gyrus_wernicke, corpus_callosum, disconnexion_syndromes | Theoretical synthesis of disconnexion syndromes.
+2026-10-20 | EXTRACTED | @Hope2017 | right_middle_temporal_gyrus, right_precentral_gyrus, anomic_aphasia, lesion_volume, age, time_post_onset | 6 drafts, confidence: high
+2026-10-20 | EXTRACTED | @Hosomi2009 | left_arcuate_fasciculus | AF fiber asymmetry predicts aphasia at discharge
+2026-10-20 | EXTRACTED | @Pflugshaupt2009 | left_fusiform_gyrus, left_occipito_temporal_sulcus, left_inferior_temporal_gyrus, pure_alexia | 4 drafts, confidence: high
+2026-10-20 | EXTRACTED | @Schwartz2009 | left_anterior_temporal_lobe, left_middle_temporal_gyrus, left_ifg_pars_triangularis, left_superior_temporal_gyrus_wernicke | VLSM study on semantic naming errors (n=64).
+2026-10-20 | EXTRACTED | @Schwartz2012 | left_precentral_gyrus, left_supramarginal_gyrus, left_arcuate_fasciculus, left_posterior_stg | VLSM of phonological errors in naming
+2026-10-20 | EXTRACTED | @Rapcsak2009 | left_ifg_pars_opercularis, left_precentral_gyrus, left_superior_temporal_gyrus, left_supramarginal_gyrus, left_insula, severity_metric | Distributed perisylvian network associated with phonological dyslexia/dysgraphia; anterior regions correlate with reading lexicality effect; PC score predicts written language performance.
+2026-10-20 | EXTRACTED | @Baldo2011 | left_precentral_gyrus_insula | VLSM study on complex articulation (n=33)
+2026-10-20 | EXTRACTED | @Karnath2018 | lesion_volume, initial_aphasia_severity | synthesis of predictor consensus
+2026-10-20 | EXTRACTED | @Fridriksson2010Anomia | left_middle_temporal_gyrus, left_ifg_pars_opercularis, left_precentral_gyrus, bilateral_middle_frontal_gyrus_recovery, left_supramarginal_gyrus_premotor | 5 findings across 5 region drafts
+2026-10-20 | EXTRACTED | @Alyahya2020 | 8 drafts | confidence: high | details: VBCM mapping of 7 PCA components to LH lesions
+2026-10-20 | EXTRACTED | @Bates2003 | left_precentral_gyrus_insula, left_arcuate_fasciculus_slf, left_middle_temporal_gyrus, left_ifg_pars_opercularis, left_dorsolateral_prefrontal_cortex, left_parietal_association_cortex | VLSM analysis of fluency and comprehension in n=101 patients.
+2026-10-20 | EXTRACTED | @Benghanem2019 | severity_metric, lesion_volume, left_temporoparietal_junction | 3 drafts, confidence: high
+2026-10-20 | EXTRACTED | @Benjamin2014 | right_lateral_frontal_cortex, right_medial_frontal_cortex, right_posterior_perisylvian_cortex, intention_treatment | 4 drafts, confidence: high
+2026-10-20 | EXTRACTED | @Bhogal2003 | therapy_intensity | Meta-analysis of 10 studies linking therapy intensity to PICA and Token Test improvement.
+2026-10-20 | EXTRACTED | @Billot2022 | severity_metric, rs_fmri_connectivity, structural_integrity | 3 drafts, 4 findings, confidence: high
+2026-10-20 | EXTRACTED | @Binder2009 | left_angular_gyrus, left_middle_temporal_gyrus, left_ifg_pars_orbitalis, left_dorsomedial_prefrontal_cortex, left_posterior_cingulate_gyrus, left_fusiform_gyrus, left_superior_temporal_sulcus | 7 drafts, recruitment findings from ALE meta-analysis
+2026-10-20 | EXTRACTED | @Bonilha2016 | left_temporal_lobe, global_network_small_worldness, severity_metric, lesion_volume | 4 drafts
+2026-10-20 | EXTRACTED | @Breitenstein2017 | intensive_speech_and_language_therapy, stroke_severity_sss | 4 findings, RCT, n=156
+2026-10-20 | EXTRACTED | @Brookshire2014 | alexia, severity_metric, education | 4 findings
+2026-10-20 | EXTRACTED | @Butler2014 | left_posterior_stg, left_arcuate_fasciculus, left_ifg_pars_opercularis, left_anterior_temporal_lobe, left_extreme_capsule, executive_functions | VBCM analysis of PCA factors
+2026-10-20 | EXTRACTED | @Catani2008 | left_arcuate_fasciculus, left_uncinate_fasciculus, left_inferior_longitudinal_fasciculus, left_inferior_fronto_occipital_fasciculus | 4 drafts, confidence: high
+2026-10-20 | EXTRACTED | @Dick2012 | left_arcuate_fasciculus, left_extreme_capsule, left_uncinate_fasciculus, left_middle_longitudinal_fasciculus, left_inferior_fronto_occipital_fasciculus | 5 region-anchored drafts using method: narrative_review
+2026-10-21 | EXTRACTED | @Dronkers2004 | left_middle_temporal_gyrus, left_superior_temporal_gyrus, left_angular_gyrus, left_middle_frontal_gyrus, left_ifg_pars_triangularis, left_ifg_pars_opercularis, left_superior_temporal_gyrus_wernicke | VLSM mapping of sentence comprehension (n=64)
+2026-10-21 | EXTRACTED | @Efstratiadou2018 | typicality_semantic_feature_analysis_review | 5 findings from systematic review
+2026-10-21 | EXTRACTED | @Forkel2014 | right_arcuate_fasciculus, lesion_volume, age | 3 drafts, confidence: high
+2026-10-21 | EXTRACTED | @Fridriksson2013 | left_anterior_arcuate_fasciculus, left_uncinate_fasciculus, left_inferior_longitudinal_fasciculus, left_precentral_gyrus | VBCM analysis of 64 chronic LH stroke patients
+2026-10-21 | EXTRACTED | @Fridriksson2018JAMA | tdcs_aphasia_treatment, severity_metric | RCT on A-tDCS for naming; baseline AQ as predictor.
+2026-10-21 | EXTRACTED | @GajardoVidal2021 | left_anterior_arcuate_fasciculus, left_ifg_pars_opercularis, left_ifg_pars_triangularis | aAF is the sole predictor of long-term speech production; BA44/45 have no unique effect.
+2026-10-21 | EXTRACTED | @Griffis2017 | left_posterior_temporal_bottleneck, left_anterior_prefrontal_bottleneck, left_posterior_middle_temporal_white_matter | 3 drafts, 8 findings
+2026-10-21 | EXTRACTED | @Halai2017 | left_superior_temporal_gyrus, left_anterior_temporal_lobe, left_precentral_gyrus, left_frontal_aslant_tract | VBCM analysis of 31 chronic aphasia patients
+2026-10-20 | EXTRACTED | @Hartwigsen2019 | language_recovery_dynamics | narrative review synthesis of recovery phases and network reorganization
+2026-10-21 | EXTRACTED | @Henseler2014 | left_ifg_pars_opercularis, left_superior_temporal_gyrus_wernickes, left_precentral_gyrus_insula, left_supramarginal_gyrus_premotor, left_superior_temporal_gyrus, left_middle_temporal_gyrus, left_anterior_temporal_lobe, left_angular_gyrus | 8 findings extracted via VLSM
+2026-10-21 | EXTRACTED | @Hillis2004 | left_precentral_gyrus_insula, left_ifg_pars_opercularis, left_postcentral_gyrus | 3 drafts, confidence: high
+2026-10-21 | EXTRACTED | @Hope2013 | lesion_volume, time_post_onset, left_superior_temporal_gyrus_wernicke, left_ifg_pars_opercularis, left_arcuate_fasciculus, severity_metric | GPR model predicting speech production recovery
+2026-10-20 | REKEYED | @Rapcsak2009 | was extracted as @1-s2.0-S0010945208001330-main (PDF had no citations.md entry)
+2026-10-20 | REKEYED | @Karnath2018 | was extracted as @1-s2.0-S1053811917308558-main (PDF had no citations.md entry)
+2026-10-20 | REKEYED | @Fridriksson2010Anomia | was extracted as @11558.full (PDF had no citations.md entry)
+2026-10-20 | REKEYED | @Bates2003 | was extracted as @Bates-et-al-Nature-Neuroscience-2003 (PDF had no citations.md entry)
+2026-10-21 | EXTRACTED | @Efstratiadou2018 | typicality_semantic_feature_analysis | systematic review of SFA efficacy (n=55)
+2026-10-21 | EXTRACTED | @Hartwigsen2019 | neuroplasticity_language_network, severity_metric | Narrative review of neuroimaging in aphasia recovery
+2026-10-21 | EXTRACTED | @Hickok2007 | dual_stream_speech_processing | synthesis of dual-stream framework
+2026-10-21 | EXTRACTED | @Hope2018 | imaging_metric_structural_disconnection | No unique prognostic value for connectivity over lesion load
+2026-10-21 | EXTRACTED | @Kasdan2025 | left_posterior_stg, rhythm_production | VLSM and behavioral correlations linking rhythm tapping to left temporoparietal damage and language production.
+2026-10-21 | EXTRACTED | @Kristinsson2021 | lesion_volume, severity_metric | Multimodal SVR prediction of WAB scores
+2026-10-21 | EXTRACTED | @Kummerer2013 | left_arcuate_fasciculus_slf, left_extreme_capsule | VLSM of acute stroke patients (n=100) showing dorsal-ventral dissociation.
+2026-10-21 | EXTRACTED | @Laver2025 | virtual_reality_rehabilitation | 5 findings extracted from systematic review
+2026-10-21 | EXTRACTED | @Leonard2008 | phonological_component_analysis, severity_metric | 2 drafts
+2026-10-21 | EXTRACTED | @Matchin2020 | left_ifg_pars_triangularis, left_posterior_stg | double dissociation of agrammatism/paragrammatism
+2026-10-21 | EXTRACTED | @Meinzer2010 | left_hippocampus | hippocampal volume and FA predict naming therapy response
+2026-10-21 | EXTRACTED | @Mitchell2017 | dysarthria_interventions | Systematic review of 5 RCTs on dysarthria interventions; found immediate but not persisting effects on impairment.
+2026-10-21 | EXTRACTED | @Plowman2012 | aphasia_prognosis_predictors__Plowman2012 | Narrative review of patient and stroke-related prognostic factors.
+2026-10-21 | EXTRACTED | @Saur2006 | right_ifg_pars_triangularis, left_ifg_pars_triangularis | 2 region-anchored drafts
+2026-10-21 | EXTRACTED | @Stockert2020 | left_ifg_pars_triangularis, right_dlpfc | longitudinal fMRI study on lesion-specific reorganization
+2026-10-21 | EXTRACTED | @Thiel2013 | tms_right_ifg, left_superior_temporal_gyrus | 2 drafts, confidence: high
+2026-10-21 | EXTRACTED | @Thompson2003 | treatment_of_underlying_forms | CATE hypothesis: complex-to-simple generalization
+2026-10-21 | EXTRACTED | @Thye2018 | lesion_volume, left_heschls_gyrus | 2 drafts
+2026-10-21 | EXTRACTED | @Turkeltaub2011 | right_ifg_pars_opercularis, right_ifg_pars_triangularis | ALE meta-analysis of 105 patients; dissociated RH POp (homologous/compensatory) from RH PTr (non-homologous/dysfunctional).
+2026-10-21 | EXTRACTED | @Wilson2019 | language_mapping_methods | Review of adaptive fMRI paradigms for language mapping in aphasia.
+2026-10-21 | EXTRACTED | @WilsonHula2019 | multivariate_aphasia_approaches | narrative review of multivariate methods
+2026-10-21 | EXTRACTED | @Zumbansen2014 | melodic_intonation_therapy_review | narrative review of MIT mechanisms and definitions
