@@ -10,29 +10,29 @@ export async function getLabApplication(manager) {
   throw Error('The ipylab extension did not provide notebook navigation.');
 }
 
-// Undo the scrolling that running cells causes: hold the notebook's scroll
-// position for about a second (JupyterLab scrolls asynchronously), unless the
-// reader scrolls themselves. The active cell goes back to the first cell run.
-export function keepScroll(notebook) {
+// Show the first cell a button runs. JupyterLab scrolls to the LAST cell it
+// runs ('run all below' = the end of the notebook), asynchronously; instead
+// scroll to the first one and hold it there for about a second, unless
+// the reader scrolls themselves. That cell also becomes the active cell.
+export function showCell(notebook, index) {
+  notebook.activeCellIndex = index;
   const scroller = notebook.outerNode ?? notebook.node;
-  const top = scroller?.scrollTop;
-  return index => {
-    notebook.activeCellIndex = index;
-    if (top === undefined) return;
-    let frames = 60;
-    const stop = () => { frames = 0; };
-    const events = ['wheel', 'touchstart', 'keydown', 'mousedown'];
-    events.forEach(e => scroller.addEventListener(e, stop, {once: true, passive: true}));
-    const hold = () => {
-      if (frames-- <= 0) {
-        events.forEach(e => scroller.removeEventListener(e, stop));
-        return;
-      }
-      if (scroller.scrollTop !== top) scroller.scrollTop = top;
-      requestAnimationFrame(hold);
-    };
-    hold();
+  if (!scroller || typeof notebook.scrollToItem !== 'function') return;
+  let top = null, frames = 90;
+  const stop = () => { frames = 0; };
+  const events = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+  events.forEach(e => scroller.addEventListener(e, stop, {once: true, passive: true}));
+  Promise.resolve(notebook.scrollToItem(index, 'start')).catch(() => {})
+    .then(() => { top = scroller.scrollTop; });
+  const hold = () => {
+    if (frames-- <= 0) {
+      events.forEach(e => scroller.removeEventListener(e, stop));
+      return;
+    }
+    if (top !== null && scroller.scrollTop !== top) scroller.scrollTop = top;
+    requestAnimationFrame(hold);
   };
+  hold();
 }
 
 export default {
@@ -134,14 +134,11 @@ export default {
           const index = Array.from(panel.content.model.cells).findIndex(c => c.id === cellId);
           if (index < 0) throw Error('The continuation cell was removed.');
           app.shell.activateById(panel.id);
-          // JupyterLab scrolls to the last cell it runs ('run all below' = the end
-          // of the notebook); keep the reader where they clicked instead.
-          const keep = keepScroll(panel.content);
           panel.content.deselectAll();
           panel.content.activeCellIndex = index;
           panel.content.mode = 'command';
           const running = app.commands.execute(allBelow ? 'notebook:run-all-below' : 'notebook:run-cell');
-          keep(index);
+          showCell(panel.content, index);
           await running;
         }
       } catch (error) { fail(error); }

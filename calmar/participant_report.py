@@ -118,6 +118,56 @@ def load_kb(kb_root, settings):
     return kb
 
 
+# Files whose content the report's interpretation depends on.
+KB_CONTENT = ("regions", "impairments", "therapies", "predictors", "reviews", "ingredients",
+              "citations.md", "aphasia_kb.py", "aphasia_rules.py")
+
+
+def kb_version(kb_root, kb):
+    """What the report's interpretation drew on: the KB version (the last git
+    commit that changed its entries or rules, and whether they have changed
+    since) and how much it holds in the statuses loaded for this report."""
+    import subprocess
+    root = Path(kb_root)
+    def git(*args):
+        try:
+            done = subprocess.run(["git", "-C", str(root), *args, "--", *KB_CONTENT],
+                                  capture_output=True, text=True, timeout=20)
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        return done.stdout.strip() if done.returncode == 0 else None
+    commit = git("log", "-1", "--format=%h %cs")
+    changed = git("status", "--porcelain")
+    findings = kb.findings
+    reviewed = (findings["review_kind"] == "human").sum() if "review_kind" in findings else 0
+    return {
+        "commit": commit.split()[0] if commit else None,
+        "date": commit.split()[1] if commit else None,
+        "uncommitted": bool(changed),
+        "papers": int(findings["citation"].dropna().nunique()) if "citation" in findings else 0,
+        "findings": len(findings),
+        "findings_reviewed": int(reviewed),
+        "entries": {b: len(getattr(kb, b)) for b in ("regions", "impairments", "therapies", "predictors")},
+        "statuses": list(kb.include),
+    }
+
+
+def kb_version_text(version):
+    """One line for the report, e.g. "version 059bcd5 (2026-10-19) · 36 papers · ..."."""
+    if version["commit"]:
+        text = f"version {version['commit']} ({version['date']})"
+        if version["uncommitted"]:
+            text += " with uncommitted changes"
+    else:
+        text = "version unknown (not under git version control)"
+    entries = version["entries"]
+    return (f"{text} · {version['papers']} papers · {version['findings']} extracted findings "
+            f"({version['findings_reviewed']} approved by a named reviewer) in "
+            f"{sum(entries.values())} entries ({entries['regions']} regions, {entries['impairments']} impairments, "
+            f"{entries['therapies']} therapies, {entries['predictors']} predictors) · "
+            f"statuses used: {', '.join(version['statuses'])}")
+
+
 def rules_html(kb_root):
     """The fixed clinical/display rules as small HTML tables (for the notebook)."""
     _, rules = _kb_modules(kb_root)
@@ -310,7 +360,7 @@ def mask_agreement(masks, threshold=0.5):
     return volumes, pairs
 
 
-def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scope, generated=None):
+def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scope, generated=None, kb=None):
     """Research-use caveat, mask source and QC, method agreement, template caveat."""
     label = MASK_LABELS.get(source, source)
     if qc["ratings"]:
@@ -346,6 +396,7 @@ def provenance_html(source, mask_path, qc, volumes, pairs, *, threshold, kb_scop
         f"QC: {rated}.{edits}{warn}</li>"
         f"<li><b>Method agreement:</b> {agreement}</li>"
         f"<li><b>Template space:</b> {escape(TEMPLATE_CAVEAT)}</li>"
+        + (f"<li><b>Knowledge base:</b> {escape(kb)}</li>" if kb else "") +
         f"<li><b>Generated:</b> {generated:%Y-%m-%d %H:%M} · KB scope: {escape(kb_scope)}</li>"
         "</ul></div>")
 
@@ -632,6 +683,8 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     _, rules = _kb_modules(kb_root)
     kb = load_kb(kb_root, settings)
     note(kb.summary())
+    kb_line = kb_version_text(kb_version(kb_root, kb))
+    note(f"Knowledge base {kb_line}")
 
     if source not in study.mni_sources(entry):
         raise ValueError(f"No existing MNI mask for {source!r}, {entry['subject']} "
@@ -760,7 +813,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
         note(f"  mask agreement not computed: {exc}")
     qc = mask_qc_summary(study.lesion_mni(entry), mask, source)
     provenance = provenance_html(source, mask, qc, volumes, pairs,
-                                 threshold=settings.threshold, kb_scope=kb_scope)
+                                 threshold=settings.threshold, kb_scope=kb_scope, kb=kb_line)
     qc_notice = report_qc_notice(linda_dir, entry)
     overlay = _overlay_img(namespace, entry, mask, brain, source)
     path, page, _ = save_report(entry, source, reports_dir, title_card, qc_notice, provenance, overlay, body)

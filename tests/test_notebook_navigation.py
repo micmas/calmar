@@ -24,7 +24,8 @@ cells.changed = {connect: callback => changed = callback, disconnect: callback =
 globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 const scroller = {scrollTop: 120, addEventListener(){}, removeEventListener(){}};
 const panel = {id:'own-notebook', node:{contains: node => node === el},
-    content:{model:{cells}, deselectAll(){}, activeCellIndex:0, outerNode:scroller}};
+    content:{model:{cells}, deselectAll(){}, activeCellIndex:0, outerNode:scroller,
+             scrollToItem: async index => { scroller.scrollTop = 100 * index; }}};
 const app = {shell:{widgets: () => [panel], activateById: id => calls.push(id)},
              commands:{execute: async command => {
                calls.push(command);
@@ -57,7 +58,7 @@ assert.deepEqual(calls, []);
 await handlers['msg:custom']({action:'execute',view_id:approvedView});
 await new Promise(resolve => setTimeout(resolve, 50));
 assert.equal(panel.content.activeCellIndex,1);
-assert.equal(scroller.scrollTop, 120);                 // the reader stays where they clicked
+assert.equal(scroller.scrollTop, 100);                 // the first cell run is shown, not the end
 assert.deepEqual(calls,['own-notebook','notebook:run-cell']);
 dispose();
 assert.equal(changed, null);
