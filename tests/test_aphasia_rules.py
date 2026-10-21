@@ -49,7 +49,7 @@ def test_non_wab_values_are_not_decomposed(text):
 
 
 @pytest.mark.parametrize("days,stage", [
-    (0, "acute"), (13.9, "acute"), (14, "subacute"), (179, "subacute"),
+    (0, "acute"), (6.9, "acute"), (7, "subacute"), (13.9, "subacute"), (179, "subacute"),
     (180, "chronic"), (8798, "chronic"), ("42", "subacute"),
     (None, None), ("n/a", None), (float("nan"), None), (-1, None),
 ])
