@@ -15,18 +15,19 @@ How the numbers are computed
 * Damaged regions: rows of the display-atlas overlap table with
   ``lesion_in_roi_percent`` (= % of lesion voxels inside the ROI) at or above
   ``ReportSettings.min_overlap_pct``; at most ``max_rois`` rows.
-* Predicted impairments: :meth:`KnowledgeBase.interpret_overlap` per KB atlas,
-  weighting each region by ``lesion_in_roi_percent``; scores of the same
-  target from different atlases are summed. Direction and star rating follow
-  ``aphasia_rules.evidence_direction`` / ``evidence_strength``.
-* Outcome predictions: :meth:`KnowledgeBase.interpret_predictors` on WAB-AQ,
-  age at stroke, days to WAB, sex (``participants.tsv``) and lesion volume
-  (mL; voxels > 0 in the selected MNI mask × voxel volume).
-* Therapies: :meth:`KnowledgeBase.interpret_therapies` from the predicted
-  impairments, gated by impairments implied by the WAB type.
-* Provenance: mask QC rating from the participant's ``*.qc.json`` sidecar;
-  Dice between every pair of available MNI masks (> ``threshold``), resampled
-  to a common grid when needed.
+* Lesion location (calmar.report_evidence.location_section): damage per KB
+  region through the curated atlas mapping (aphasia-kb/atlas_mapping/; share of
+  the lesion and share of the region destroyed, per hemisphere), the findings
+  about each damaged region with their direction, and the impairments they
+  point to (:meth:`KnowledgeBase.location_findings` / ``interpret_damage``).
+* Measures (calmar.report_evidence.measures_section): WAB-AQ, age at stroke,
+  days to WAB, sex (``participants.tsv``) and lesion volume (mL; voxels > 0 in
+  the selected MNI mask x voxel volume), each with the direction the evidence
+  gives and its findings.
+* Therapies: :meth:`KnowledgeBase.interpret_therapies` from the impairments
+  the lesion location points to, gated by impairments implied by the WAB type.
+* Provenance: mask QC rating from the participant's ``*.qc.json`` sidecar and
+  how the mask was made (calmar.mask_method).
 
 The clinical rules (WAB type profile, recovery stage, evidence stars) live in
 ``aphasia-kb/aphasia_rules.py`` and are shown by :func:`rules_html`.
@@ -225,6 +226,13 @@ def overlap_csv(atlas, source, overlap_paths, reports_dir):
     if key in (overlap_paths or {}):
         return Path(overlap_paths[key])
     return Path(reports_dir) / f"lesion_atlas_overlap_{atlas}_{file_token(source)}.csv"
+
+
+def _days(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def lesion_damage(entry, source, settings, overlap_paths, reports_dir):
@@ -587,9 +595,10 @@ LEGEND_HTML = '''
         <b>Evidence strength</b>: &#9733; weak &middot; &#9733;&#9733; moderate &middot;
         &#9733;&#9733;&#9733; strong &middot; &#9733;&#9733;&#9733;&#9733; very strong.
         Hover stars for raw score (bins are a project display heuristic, not an evidence grading).<br>
-        <b>Direction badge</b>: <span style="color:#28a745">LIKELY</span> /
-        <span style="color:#dc3545">UNLIKELY</span> /
-        <span style="color:#6c757d">AMBIGUOUS</span>.<br>
+        <b>Finding direction</b>: what the study found between the region or measure and the outcome:
+        association, inverse association, no association or mixed results. A finding reports an
+        association in a group of patients, not a prediction for this person.
+        &#9873; = a region matched to the atlas by a judgement call (<code>aphasia-kb/atlas_mapping/README.md</code>).<br>
         <b>WAB decomposition</b>: flu = fluency, comp = comprehension, rep = repetition.
         <span style="color:#2e7d32">+</span> preserved,
         <span style="color:#c62828">&#8722;</span> impaired (WAB type taxonomy).<br>
@@ -680,6 +689,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     """
     from .atlas_overlap import prepare_report_overlap
     from .qc_decisions import report_qc_notice
+    from .report_evidence import location_coverage, location_section, measures_section
     from .report_ui import ParticipantReport, report_sections
 
     messages = []
@@ -707,6 +717,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
 
     # 1. Lesion location -> KB predictions
     imaging, per_atlas = imaging_interpretation(kb, rules, entry, source, settings, overlap_paths, reports_dir)
+    damage, _ = lesion_damage(entry, source, settings, overlap_paths, reports_dir)
+    location_rows = kb.location_findings(damage, min_overlap=settings.min_overlap_pct, min_region=settings.min_region_pct,
+                                         min_confidence=("high" if settings.high_conf_only else None))
     damaged = damaged_regions(entry, source, settings, overlap_paths, reports_dir)
     note("  Overlap rows by atlas (matched to KB regions through aphasia-kb/atlas_mapping):")
     for atlas, n in per_atlas:
@@ -783,21 +796,15 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       <h4 style="margin-top:18px">Behavioural / clinical data</h4>
       {behaviour_html(rules, row, predictors, volume)}
 
-      <h4 style="margin-top:18px">Predictor-driven outcome predictions
-        ({n_pred} total findings)</h4>
-      <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
-        Based on WAB-AQ, age, lesion volume, and other clinical scalars.
-        Findings are weighted by the severity of the patient&rsquo;s values.
-      </p>
-      {interp_table_all(kb, rules, predicted, settings.top_n)}
+      <h4 style="margin-top:18px">Lesion location: what the evidence says</h4>
+      {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings)}
 
-      <h4 style="margin-top:18px">Predicted impairments from lesion location
-        ({n_imaging} total findings)</h4>
+      <h4 style="margin-top:18px">This participant&rsquo;s measures: what the evidence says</h4>
       <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
-        Based on which brain regions are damaged and what language functions
-        those regions support (lesion-symptom mapping studies).
+        Findings about measures such as lesion volume or aphasia severity report associations
+        (e.g. larger lesions with more severe aphasia), not predictions for one person.
       </p>
-      {interp_table(kb, rules, imaging, 'impairment', settings.top_n)}
+      {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None)}
 
       <h4 style="margin-top:18px">Therapy recommendations ({n_therapy} matched)</h4>
       <p style="font-size:12px;color:#555;margin:4px 0 8px 0">
