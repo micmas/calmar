@@ -256,8 +256,12 @@ class BatchCheckpoint(ExecutionCheckpoint):
         self.reporting = widgets.Button(description="Jump to reporting",
                                        layout=widgets.Layout(width="190px"))
         self.reporting.on_click(self.report)
+        from .method_choice import MethodChoice
+        config = getattr(shell, 'user_ns', {}).get('CONFIG')
+        self.methods = MethodChoice(config, on_change=self._methods_changed) if config is not None else None
         self.controls = [self.message, self.button, self.reporting, self.navigation]
-        self.widget = widgets.VBox([self.message, widgets.HBox([self.button, self.reporting]), self.navigation])
+        self.widget = widgets.VBox([self.message, *([self.methods.widget] if self.methods else []),
+                                    widgets.HBox([self.button, self.reporting]), self.navigation])
         self.controls.append(self.widget)
 
     def _update_cell_order(self, ids, batch_start):
@@ -268,15 +272,24 @@ class BatchCheckpoint(ExecutionCheckpoint):
     def resume(self, _button=None):
         self.navigation.request("batch-start", self._resume)
 
+    def _methods_changed(self, valid):
+        self.button.disabled = not valid
+
     def _retry_controls(self):
         self.button.disabled = self.reporting.disabled = False
 
     def _resume(self):
+        if self.methods and not self.methods.valid:
+            self.message.value = '<b>Choose at least one lesion segmentation.</b>'
+            return False
         self.release()
+        if self.methods:
+            self.methods.disable()
         self.button.disabled = True
         self.reporting.disabled = True
         self.message.value = (
-            "<b>Starting batch processing.</b> Execution will pause again at QC.")
+            "<b>Starting batch processing</b>"
+            + (f" ({self.methods.summary()})" if self.methods else "") + ". Execution will pause again at QC.")
 
     def report(self, _button=None):
         self.navigation.request('report-setup', self._report)

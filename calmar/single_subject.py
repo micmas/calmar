@@ -48,11 +48,13 @@ class SingleSubjectInputs:
         self.start = w.Button(description='Run single-subject test', button_style='primary',
                               layout=w.Layout(width='230px'))
         self.start.on_click(lambda _: self.navigation.request('single-test-start', self.approve))
+        from .method_choice import MethodChoice
+        self.methods = MethodChoice(namespace['CONFIG'], on_change=self._methods_changed)
         self.subject.observe(self.apply, names='value')
         self.widget = w.VBox([w.HTML('<h3>Choose the single-subject test participant</h3>'
             'The default is a participant without processing outputs, when available. '
             'This selection applies to all single-subject processing and viewers below.'),
-            self.subject, self.start, self.message, self.navigation])
+            self.subject, self.methods.widget, self.start, self.message, self.navigation])
         if self.gate:
             self.gate.controls = [self.widget, self.navigation]
         self.apply()
@@ -65,7 +67,13 @@ class SingleSubjectInputs:
         self.ns['DIAG_SUBJECT_IDX'] = self.ns['CMP_SUBJECT_IDX'] = None
         self.message.value = f"Selected <b>{escape(entry['subject'])} {escape(entry.get('session') or '')}</b>. Click Run single-subject test to begin."
 
+    def _methods_changed(self, valid):
+        self.start.disabled = not valid
+
     def approve(self):
+        if not self.methods.valid:
+            self.message.value = 'Choose at least one lesion segmentation.'
+            return False
         self.apply()
         # A fresh test selection supersedes older downstream in-memory gates.
         if self.gate:
@@ -74,7 +82,8 @@ class SingleSubjectInputs:
                 if previous:
                     previous.close()
             self.gate.release()
-        self.message.value = 'Starting the selected single-subject test…'
+        self.methods.disable()
+        self.message.value = f'Starting the selected single-subject test ({self.methods.summary()})…'
         return True
 
     def close(self):
