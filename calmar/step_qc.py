@@ -27,7 +27,7 @@ from . import masks as cm
 from .study import mni_masks
 
 # Outline colours follow the notebook's mask-origin colours.
-COLORS = {"linda": "red", "synthstroke": "lime", "manual": "dodgerblue", "openads": "#ffcb7f",
+COLORS = {"linda": "red", "synthstroke": "lime", "manual": "dodgerblue", "openads": "sandybrown",
           "hdbet": "yellow", "hdbet_tissue": "orange", "template": "cyan", "bcbtoolkit": "magenta",
           "deepdisco": "cyan"}
 LABELS = {"linda": "LINDA", "synthstroke": "SynthStroke", "manual": "Manual", "openads": "OpenADS",

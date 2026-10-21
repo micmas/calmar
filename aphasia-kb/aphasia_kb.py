@@ -970,7 +970,7 @@ class KnowledgeBase:
         rows = rows.rename(columns={"id": "finding_id"})
         keep = ["region", "side", "lesion_pct", "region_pct", "predicts", "predicts_kind", "claim", "direction",
                 "citation", "method", "strength", "evidence_quality", "confidence", "source_id", "finding_id",
-                "contribution"]
+                "population", "time_post_onset", "phase", "contribution"]
         return rows[[c for c in keep if c in rows.columns]].reset_index(drop=True)
 
     def interpret_damage(

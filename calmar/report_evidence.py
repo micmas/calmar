@@ -142,6 +142,7 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
              f"findings, <b>{len(rows)}</b> concern regions this lesion damages, {coverage['undamaged']} concern "
              f"regions it does not damage, and {coverage['unmappable']} concern regions no atlas can represent "
              f"(e.g. the extreme capsule).</p>")
+    intro += laterality_note(damage)
     if rows is None or rows.empty:
         return intro + "<p style='color:#666'><em>No knowledge-base findings concern the damaged regions.</em></p>"
     rows = rows.assign(target_name=rows["predicts"].map(lambda t: _name(kb, t)),
@@ -202,6 +203,21 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
              "(click a region to see each finding; ⚠ marks regions whose evidence comes from "
              f"{THIN_STUDIES} studies or fewer):</p>" + "".join(blocks))
     return html
+
+
+def laterality_note(damage):
+    """A note when the lesion lies mainly in the right hemisphere: the knowledge
+    base is almost entirely about left-hemisphere language regions."""
+    if damage is None or damage.empty or "side" not in damage:
+        return ""
+    by_side = damage[damage["side"].isin(["left", "right"])].groupby("side")["lesion_pct"].max()
+    left, right = by_side.get("left", 0.0), by_side.get("right", 0.0)
+    if right > 0 and right > 2 * left:
+        return ("<p style='font-size:12px;color:#856404;margin:2px 0 6px 0'>⚠ This lesion lies mainly in the "
+                "<b>right</b> hemisphere. The knowledge base is almost entirely about left-hemisphere language "
+                "regions, so few or no findings apply; an absence of findings here does not mean an absence of "
+                "deficits.</p>")
+    return ""
 
 
 def _stars(rules, score):
