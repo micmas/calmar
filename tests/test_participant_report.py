@@ -132,3 +132,12 @@ def test_kb_version_counts_what_the_report_used(tmp_path):
         "statuses used: approved")
     version = pr.kb_version(KB_ROOT, kb)                      # the repository's KB is in git
     assert version["commit"] and version["date"]
+
+
+def test_evidence_levels_choose_the_kb_statuses():
+    assert pr.ReportSettings(evidence="approved").include == ("approved",)
+    assert pr.ReportSettings(evidence="in_review").include == ("approved", "in_review")
+    assert pr.ReportSettings(evidence="all").include == ("approved", "in_review", "draft")
+    assert pr.ReportSettings(include_drafts=False).include == ("approved",)       # older setting still works
+    with pytest.raises(ValueError):
+        pr.ReportSettings(evidence="everything").include

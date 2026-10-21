@@ -60,6 +60,11 @@ class ReportInputs:
         preferred = namespace.get("INTERP_DISPLAY_ATLAS", "HarvardOxford")
         self.atlas = w.Dropdown(options=atlases, value=preferred if preferred in atlases else atlases[0],
             description="Display atlas:", style={"description_width": "initial"}, layout=w.Layout(width="330px"))
+        from .participant_report import EVIDENCE_LABELS
+        evidence = namespace.get("INTERP_EVIDENCE") or "all"
+        self.evidence = w.Dropdown(description="Evidence:", options=[(v, k) for k, v in EVIDENCE_LABELS.items()],
+            value=evidence if evidence in EVIDENCE_LABELS else "all",
+            style={"description_width": "initial"}, layout=w.Layout(width="330px"))
         self.decode = w.Checkbox(value=namespace.get("INTERP_RUN_DECODING", False),
             description="Include Neurosynth decoding (optional; takes longer)", indent=False,
             layout=w.Layout(width="auto"))
@@ -76,12 +81,13 @@ class ReportInputs:
         self.source.observe(self.apply, names="value")
         self.atlas.observe(self.apply, names="value")
         self.decode.observe(self.apply, names="value")
+        self.evidence.observe(self.apply, names="value")
         self.compare.observe(self.show_comparison, names="selected_index")
         self.generate.on_click(lambda _: self.navigation.request("report-start", self.approve))
         self.widget = w.VBox([w.HTML("<h3>Choose the participant report</h3>"
             "<p>Choose a participant, lesion mask and display atlas below. "
             "Generate creates the report and its downloadable HTML file.</p>"),
-            self.subject, self.source, self.atlas, self.decode, self.summary,
+            self.subject, self.source, self.atlas, self.evidence, self.decode, self.summary,
             self.compare, self.generate, self.message, self.navigation])
         self.refresh()
 
@@ -99,13 +105,15 @@ class ReportInputs:
         if self.busy:
             return
         self.ns.update(INTERP_SUBJECT_IDX=self.subject.value, INTERP_MASK_SOURCE=self.source.value,
-                       INTERP_DISPLAY_ATLAS=self.atlas.value, INTERP_RUN_DECODING=self.decode.value)
+                       INTERP_DISPLAY_ATLAS=self.atlas.value, INTERP_RUN_DECODING=self.decode.value,
+                       INTERP_EVIDENCE=self.evidence.value)
         self.generate.disabled = self.source.value is None
         if self.source.value is None:
             self.summary.value = "<b>No available MNI lesion mask for this participant.</b> Complete its warp before generating a report."
         else:
             self.summary.value = (f"<b>Report selection:</b> {escape(self.subject.label)} · "
-                f"{escape(self.source.label)} mask · {escape(self.atlas.value)} atlas. "
+                f"{escape(self.source.label)} mask · {escape(self.atlas.value)} atlas · "
+                f"evidence: {escape(self.evidence.label)}. "
                 "Click Generate participant report when ready.")
         if self.compare.selected_index is not None:
             self.show_comparison()
