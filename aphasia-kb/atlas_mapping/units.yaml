@@ -15,7 +15,7 @@
 #   labels   HarvardOxford: list of labels (side from voxels)
 #            AAL / JHU: {left: [...], right: [...]}
 #   basis    why these labels: the atlas's own definition, or the reasoning
-#   review   true = a judgement call that a neuroanatomist should confirm
+#   review   true = a judgement call (approved 2026-10-21; README.md, "Review")
 units:
 
   # ── Frontal ───────────────────────────────────────────────────────────────
