@@ -1,0 +1,132 @@
+draft_path: drafts/predictors/lesion_volume__Forkel2014.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T05:52:23'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Forkel2014.md:
+      finding[0] (id=f1): imaging_details.reference_space=None invalid (required for
+      imaging method)'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Forkel2014.md:
+      finding[0] (id=f1): imaging_details.atlases_used must be present (use [] if
+      none)'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/3 quotes (33%) — anchored 1, exact 1, near 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.6): Among the four variables entered in the analysis
+      only lesion size was an indepen…'
+    - '  - [near] f1.sample (p.1): Sixteen patients (10 males; mean age 60 +/- 17
+      years, range 28-87 years) underwe…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+- run_id: 2
+  timestamp: '2026-10-22T06:09:18'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/3 quotes (33%) — anchored 1, exact 1, near 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.6): Among the four variables entered in the analysis
+      only lesion size was an indepen…'
+    - '  - [near] f1.sample (p.1): Sixteen patients (10 males; mean age 60 +/- 17
+      years, range 28-87 years) underwe…'
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: imaging_details.reference_space not extracted by the model — set to not_reported'
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - 'f1: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The finding incorrectly identifies the relationship as 'causal'.
+        The paper describes a hierarchical regression analysis where lesion size is
+        an 'independent predictor' of longitudinal aphasia severity. In statistical
+        modeling, a predictor is a correlational association, not a causal mechanism.
+        The draft also labels the direction as 'unlikely', which is confusing/not
+        supported by the text; the text clearly states it is a predictor of worse
+        recovery.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is recorded as 'causal', but the paper reports a
+          regression analysis identifying a predictor (correlation). Additionally,
+          the 'direction' is listed as 'unlikely', which is not a term used in the
+          paper to describe the result.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The finding\
+      \ incorrectly identifies the relationship as 'causal'. The paper describes a\
+      \ hierarchical regression analysis where lesion size is an 'independent predictor'\
+      \ of longitudinal aphasia severity. In statistical modeling, a predictor is\
+      \ a correlational association, not a causal mechanism. The draft also labels\
+      \ the direction as 'unlikely', which is confusing/not supported by the text;\
+      \ the text clearly states it is a predictor of worse recovery.\",\n  \"per_finding\"\
+      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
+      passage_supports_field\": true,\n      \"relationship_faithful\": false,\n \
+      \     \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limitations_captured\"\
+      : true,\n      \"omissions\": \"\",\n      \"concern\": \"The relation"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T06:09:18'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

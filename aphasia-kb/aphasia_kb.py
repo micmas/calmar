@@ -83,6 +83,7 @@ STATUS_VOCAB = {"draft", "in_review", "approved", "rejected", "legacy_v1"}
 #   B       a person must approve
 #   legacy  approved before the governance policy; not PDF-re-read
 REVIEW_TIER_VOCAB = {"A", "B", "legacy"}
+from phase import PHASE_VOCAB, finding_phase  # noqa: E402  (v2.6 sample.phase)
 REVIEWER_PREFIXES = ("human:", "model:")
 
 # Reviewer strings that pre-date the human:/model: prefixes and are known
@@ -278,13 +279,21 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
     # v2.4+ entries can use method=narrative_review with relaxed field rules.
     # v2.5 adds optional review-provenance fields (review_tier, per-finding
     # review block, audited_by/audited_on); no structural change.
-    _ALL_SV = (2, 2.1, 2.2, 2.3, 2.4, 2.5, "2", "2.1", "2.2", "2.3", "2.4", "2.5")
+    _ALL_SV = (2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6,
+               "2", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6")
     if sv not in _ALL_SV:
-        err(f"schema_version must be 2–2.5, got {sv!r}")
-    is_v21 = sv in _ALL_SV[1:6] + _ALL_SV[7:]
-    is_v22 = sv in _ALL_SV[2:6] + _ALL_SV[8:]
-    is_v23 = sv in _ALL_SV[3:6] + _ALL_SV[9:]
-    is_v24 = sv in _ALL_SV[4:6] + _ALL_SV[10:]
+        err(f"schema_version must be 2–2.6, got {sv!r}")
+    # Compare numerically: the slice-based test this replaces silently
+    # excluded every version added after it was written (2.6 drafts
+    # failed "predictor entries require schema_version 2.3 or higher").
+    try:
+        _v = float(sv)
+    except (TypeError, ValueError):
+        _v = 0.0
+    is_v21 = _v >= 2.1
+    is_v22 = _v >= 2.2
+    is_v23 = _v >= 2.3
+    is_v24 = _v >= 2.4
 
     # v2.3 predictor entries: validate file-level predictor fields.
     # (We check kind=='predictor' regardless of bucket so any file that
@@ -377,6 +386,9 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
                 err(f"{prefix}: sample.n missing")
             if not sample.get("population"):
                 err(f"{prefix}: sample.population missing")
+            ph = sample.get("phase")
+            if ph is not None and ph not in PHASE_VOCAB:
+                err(f"{prefix}: sample.phase={ph!r} invalid; allowed: {sorted(PHASE_VOCAB)}")
 
             # Statistics
             stats = f.get("statistics") or {}
@@ -666,6 +678,10 @@ class KnowledgeBase:
                                "strength",
                            )},
                         "sample_n": (f.get("sample") or {}).get("n"),
+                        # v2.6: recovery phase — stated `sample.phase`, else
+                        # inferred from the free-text time_post_onset (phase.py)
+                        "phase": finding_phase(f)[0],
+                        "phase_source": finding_phase(f)[1],
                         "stat_threshold": (f.get("statistics") or {}).get("threshold"),
                         "stat_effect_size": (f.get("statistics") or {}).get("effect_size"),
                         "confidence":  (f.get("provenance") or {}).get("confidence"),
@@ -902,6 +918,93 @@ class KnowledgeBase:
         )
         agg = agg.sort_values("score", key=lambda s: s.abs(), ascending=False)
         return agg.reset_index(drop=True)
+
+    def location_findings(
+        self,
+        damage: pd.DataFrame,
+        min_overlap: float = 5.0,
+        min_confidence: str | None = None,
+        min_region: float = 25.0,
+    ) -> pd.DataFrame:
+        """
+        Findings that apply to a lesion, one row per (finding, damaged region).
+
+        ``damage`` is ``atlas_mapping.region_damage(...)``: one row per
+        knowledge-base region with ``lesion_pct`` (share of the lesion inside
+        it) and ``region_pct`` (share of the region destroyed). A region is
+        damaged when ``lesion_pct >= min_overlap`` OR ``region_pct >=
+        min_region``: thin tracts can be almost destroyed while holding ~1 % of
+        a lesion (atlas_mapping/README.md, "Rules"). Findings are matched by
+        exact region name through the curated mapping (atlas_mapping/), never
+        by guessing from label text:
+
+          * forward: findings stored on a region entry (region -> what it
+            predicts), e.g. left_precentral_gyrus -> apraxia_of_speech;
+          * reversed: impairment findings naming the region as their target
+            (impairment <- region), e.g. brocas_aphasia -> left_ifg_pars_opercularis;
+            the impairment is what the damage points to.
+
+        Columns: region, side, lesion_pct, region_pct, predicts, predicts_kind,
+        claim, direction, citation, method, strength, evidence_quality,
+        confidence, source_id, finding_id, contribution (weight x strength x
+        evidence x confidence x direction sign, as in ``interpret_overlap``).
+        """
+        if damage is None or damage.empty or self.findings.empty:
+            return pd.DataFrame()
+        destroyed = damage["region_pct"].fillna(0) >= min_region
+        hit = damage[(damage["lesion_pct"] >= min_overlap) | destroyed].set_index("region")
+        if hit.empty:
+            return pd.DataFrame()
+        f = self.findings
+        if min_confidence:
+            order = {"low": 0, "medium": 1, "high": 2}
+            f = f[f["confidence"].map(lambda c: order.get(c, 0) >= order.get(min_confidence, 0))]
+        forward = f[(f["source_kind"] == "region") & f["source_id"].isin(hit.index)].assign(
+            region=lambda d: d["source_id"], predicts=lambda d: d["target"], predicts_kind=lambda d: d["target_kind"])
+        reverse = f[(f["source_kind"] == "impairment") & (f["target_kind"] == "region")
+                    & f["target"].isin(hit.index)].assign(
+            region=lambda d: d["target"], predicts=lambda d: d["source_id"], predicts_kind="impairment")
+        rows = pd.concat([forward, reverse], ignore_index=True)
+        if rows.empty:
+            return pd.DataFrame()
+        rows = rows.join(hit[["side", "lesion_pct", "region_pct"]], on="region")
+        # Weight: share of the region destroyed (what lesion-symptom studies
+        # relate deficits to); share of the lesion when the size is unknown.
+        rows["damage_w"] = rows["region_pct"].where(rows["region_pct"].notna(), rows["lesion_pct"]) / 100.0
+        rows["contribution"] = (
+            rows["damage_w"]
+            * rows["strength"].map(_STRENGTH_WEIGHT).fillna(1.0)
+            * rows["evidence_quality"].map(_EVIDENCE_WEIGHT).fillna(1.0)
+            * rows["confidence"].map(_CONFIDENCE_WEIGHT).fillna(1.0)
+            * rows["direction"].map(_DIRECTION_SIGN).fillna(0))
+        rows = rows.rename(columns={"id": "finding_id"})
+        keep = ["region", "side", "lesion_pct", "region_pct", "predicts", "predicts_kind", "claim", "direction",
+                "citation", "method", "strength", "evidence_quality", "confidence", "source_id", "finding_id",
+                "contribution"]
+        return rows[[c for c in keep if c in rows.columns]].reset_index(drop=True)
+
+    def interpret_damage(
+        self,
+        damage: pd.DataFrame,
+        min_overlap: float = 5.0,
+        min_confidence: str | None = None,
+        min_region: float = 25.0,
+    ) -> pd.DataFrame:
+        """``location_findings`` aggregated per predicted target, in the shape
+        of ``interpret_overlap`` (target, target_kind, score, n_findings,
+        citations, contributing_regions, direction)."""
+        rows = self.location_findings(damage, min_overlap=min_overlap, min_confidence=min_confidence,
+                                      min_region=min_region)
+        if rows.empty:
+            return pd.DataFrame()
+        agg = (rows.groupby(["predicts", "predicts_kind"], as_index=False)
+               .agg(score=("contribution", "sum"), n_findings=("contribution", "size"),
+                    citations=("citation", lambda s: sorted({c for c in s if isinstance(c, str)})),
+                    contributing_regions=("region", lambda s: sorted(set(s))))
+               .rename(columns={"predicts": "target", "predicts_kind": "target_kind"}))
+        agg["direction"] = agg["score"].apply(
+            lambda v: "likely" if v > 0 else ("unlikely" if v < 0 else "ambiguous"))
+        return agg.sort_values("score", key=lambda v: v.abs(), ascending=False).reset_index(drop=True)
 
     def interpret_predictors(
         self,

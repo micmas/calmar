@@ -1,0 +1,90 @@
+draft_path: drafts/predictors/severity_metric__Hope2013.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T05:54:16'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Hope2013.md:
+      predictor entries require short_definition'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Hope2013.md:
+      predictor_type=''behavioural'' requires assessment (non-empty list of test names)'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Hope2013.md:
+      finding[0] (id=f1): region_definition.kind=None invalid'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Hope2013.md:
+      finding[0] (id=f1): imaging_details.reference_space=None invalid (required for
+      imaging method)'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Hope2013.md:
+      finding[0] (id=f1): imaging_details.atlases_used must be present (use [] if
+      none)'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 2/3 quotes (67%) — anchored 1, exact 2
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.5): our learner can predict the later assessment
+      scores very accurately (R2 = 0.84, …'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+  - 'f1: strength=''strong'''
+- run_id: 2
+  timestamp: '2026-10-22T06:14:03'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Hope2013.md:
+      predictor_type=''behavioural'' requires assessment (non-empty list of test names)'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 2/3 quotes (67%) — anchored 1, exact 2
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.5): our learner can predict the later assessment
+      scores very accurately (R2 = 0.84, …'
+  - name: no_human_review_flags
+    passed: false
+    blocker: false
+    details:
+    - 'f1: imaging_details.reference_space not extracted by the model — set to not_reported'
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+  - 'f1: has provenance.flags'
+  - 'f1: strength=''strong'''
+last_run: '2026-10-22T06:14:03'
+latest_verdict: auto_reject
+latest_mode: deterministic_only

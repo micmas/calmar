@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 kb_status.py — what is in the knowledge base, who approved it, and what
-the lesion decoder can actually reach.
+what a lesion can actually reach through the atlas mapping.
 
     python kb_status.py                 # human-readable summary
     python kb_status.py --json          # the same as JSON (for figures/CI)
@@ -18,9 +18,8 @@ Sections of the summary
 * entries and findings per bucket
 * review provenance: human / model / legacy / none, per bucket
 * relationship types and strength ratings across findings
-* decoder reachability: which KB region ids `decode_lesion.py` can map a
-  HarvardOxford label to, how many findings each has, and which KB
-  regions are unreachable (so their findings never appear in a report)
+* atlas reachability: which KB region entries the curated mapping
+  (atlas_mapping/) lets a lesion reach, and which cannot be reached and why
 * papers: cited keys, which have a DOI in citations.md, and which have a
   PDF in papers/
 
@@ -41,6 +40,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 from aphasia_kb import parse_markdown, reviewer_kind  # noqa: E402
+from phase import finding_phase  # noqa: E402
 
 BUCKETS = ("regions", "impairments", "therapies", "predictors",
            "reviews", "ingredients")
@@ -105,6 +105,8 @@ def collect(root: Path) -> dict:
     rel = collections.Counter()
     strength = collections.Counter()
     methods = collections.Counter()
+    phase = collections.Counter()
+    phase_stated = 0
     cited: dict[str, set] = collections.defaultdict(set)
     region_findings: dict[str, int] = {}
     legacy_candidates: list[Path] = []
@@ -124,6 +126,9 @@ def collect(root: Path) -> dict:
         for f in fs:
             rel[str(f.get("relationship"))] += 1
             strength[str(f.get("strength"))] += 1
+            ph, src = finding_phase(f)
+            phase[ph] += 1
+            phase_stated += src == "stated"
             m = f.get("method")
             for mm in (m if isinstance(m, list) else [m]):
                 methods[str(mm)] += 1
@@ -131,17 +136,15 @@ def collect(root: Path) -> dict:
             if c:
                 cited[str(c)].add(f"{b}/{p.name}")
 
-    # decoder reachability
-    reach: dict[str, list[str]] = collections.defaultdict(list)
-    for label, rid in _decoder_map(root).items():
-        reach[rid].append(label)
-
-    reachable = {rid: {"ho_labels": labels,
-                       "findings": region_findings.get(rid),
-                       "exists": rid in region_findings}
-                 for rid, labels in reach.items() if rid != "_error"}
-    unreachable = {rid: n for rid, n in region_findings.items()
-                   if rid not in reach}
+    # Atlas reachability: which region findings a report can reach from lesion
+    # location, through the curated mapping (atlas_mapping/; README there).
+    import atlas_mapping
+    _, mapped, unmapped = atlas_mapping.load()
+    reachable = {rid: {"units": mapped[rid]["units"], "side": mapped[rid]["side"],
+                       "findings": n, "review": bool(mapped[rid].get("review"))}
+                 for rid, n in region_findings.items() if rid in mapped}
+    unreachable = {rid: {"findings": n, "reason": unmapped.get(rid, "missing from atlas_mapping/kb_regions.yaml")}
+                   for rid, n in region_findings.items() if rid not in mapped}
 
     dois = _citation_dois(root)
     papers_dir = root / "papers"
@@ -182,8 +185,10 @@ def collect(root: Path) -> dict:
         "review_total": dict(total_review),
         "relationship": dict(rel),
         "strength": dict(strength),
+        "phase": dict(phase.most_common()),
+        "phase_stated": phase_stated,
         "methods": dict(methods.most_common()),
-        "decoder": {"reachable": reachable, "unreachable": unreachable},
+        "atlas_mapping": {"reachable": reachable, "unreachable": unreachable},
         "papers": papers,
         "papers_unmatched": unmatched,
         "_legacy_candidates": [str(p.relative_to(root)) for p in legacy_candidates],
@@ -206,6 +211,10 @@ def print_summary(st: dict) -> None:
         print(f"  {len(st['_legacy_candidates'])} entries lack the "
               f"`review_tier: legacy` stamp — run --tag-legacy")
 
+    if st.get("phase"):
+        print("\n  Findings by recovery phase (v2.6; inferred from time_post_onset "
+              f"where not stated — {st.get('phase_stated', 0)} stated): "
+              + ", ".join(f"{k} {v}" for k, v in st["phase"].items()))
     print("\n  Findings by relationship: " +
           ", ".join(f"{k} {v}" for k, v in
                     sorted(st["relationship"].items(), key=lambda x: -x[1])))
@@ -215,19 +224,15 @@ def print_summary(st: dict) -> None:
     print("  Methods (top 6):          " +
           ", ".join(f"{k} {v}" for k, v in list(st["methods"].items())[:6]))
 
-    d = st["decoder"]
-    print("\n  Decoder reachability (HarvardOxford label → KB region id):")
-    for rid, info in sorted(d["reachable"].items(),
-                            key=lambda x: (x[1]["findings"] or 0)):
-        n = info["findings"]
-        flag = "" if info["exists"] else "  ← NO ENTRY"
-        thin = "  ← thin" if (n or 0) <= 2 else ""
-        print(f"    {rid:<36} {str(n):>3} findings  "
-              f"({len(info['ho_labels'])} labels){flag}{thin}")
+    d = st["atlas_mapping"]
+    n_reach = sum(v["findings"] for v in d["reachable"].values())
+    n_not = sum(v["findings"] for v in d["unreachable"].values())
+    print(f"\n  Atlas reachability (curated mapping, atlas_mapping/): region entries with "
+          f"{n_reach} findings reachable, {n_not} not")
     if d["unreachable"]:
-        print("  KB regions the decoder can never reach (no atlas mapping):")
-        for rid, n in sorted(d["unreachable"].items(), key=lambda x: -x[1]):
-            print(f"    {rid:<36} {n:>3} findings")
+        print("  Region entries a lesion cannot reach:")
+        for rid, info in sorted(d["unreachable"].items(), key=lambda x: -x[1]["findings"]):
+            print(f"    {rid:<40} {info['findings']:>3} findings  ({info['reason'][:70]})")
 
     missing = [k for k, v in st["papers"].items() if not v["pdf_present"]]
     print(f"\n  Papers: {len(st['papers'])} cited, "

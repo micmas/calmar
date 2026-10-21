@@ -811,12 +811,73 @@ findings:
       to the follow-up assessment.
 
       '
+- id: f9
+  target: prognosis
+  target_kind: prognosis
+  claim: Lesion volume does not significantly predict whether a patient recovers completely
+    from aphasia.
+  direction: no_effect
+  relationship: correlational
+  citation: '@Laska2001'
+  method: LSM
+  design: longitudinal
+  strength: moderate
+  evidence_quality: cohort
+  sample:
+    n: 71
+    population: acute stroke patients with visible lesions on CT
+    time_post_onset: acute stage to 18 months
+    phase: longitudinal
+    age_range: not_reported
+    handedness: not_reported
+    language: Swedish
+  statistics:
+    threshold: not_reported
+    effect_size: not_reported
+  confounders_controlled: []
+  confounders_not_controlled: []
+  region_definition:
+    kind: manual_ROI
+    description: Total lesion volume estimated from CT
+  imaging_details:
+    reference_space: not_reported
+    atlases_used: []
+    field_strength: not_reported
+    preprocessing_pipeline: not_reported
+  author_limitations:
+  - Lesion location is of no help in predicting outcome.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 419
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 7
+    quote: Among patients with visible lesions, lesion volume did not differ signi®cantly
+      between those who recovered completely and those who did not.
+    supports: claim
+  - section: Methods
+    page: 2
+    quote: Cerebral computed tomography (CT) was performed in 98% of the aphasic patients
+      [...] The volume of the lesion was estimated
+    supports: method
+  - section: Discussion
+    page: 9
+    quote: The results suggest that lesion location is of no help in predicting outcome.
+    supports: limitation
+  review:
+    reviewer: model:gemma4:26b
+    reviewed_on: '2026-10-22'
+    tier: A
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
 notes: Starter entry for schema v2.3. Lesion volume is the single most-controlled-for
   covariate in lesion-symptom mapping. Findings here should be reserved for *predictive*
   claims (volume → severity / recovery / therapy response), not the trivial "bigger
   lesion = more damage" tautology. Be careful to track whether a paper measures volume
   in native or MNI space — ratios change with normalisation.
-last_reviewed: '2026-05-06'
+last_reviewed: '2026-10-22'
 ---
 # Total lesion volume
 

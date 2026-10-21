@@ -281,7 +281,7 @@ prose or markdown around it:
 }
 
 Each draft's `content` field must:
-  - Start with `---` and a YAML frontmatter block (schema_version: 2.3)
+  - Start with `---` and a YAML frontmatter block (schema_version: 2.6)
   - Contain at least one valid `findings` entry (or be empty if you're
     creating a new region/impairment/therapy/predictor entry without findings)
   - Set `status: draft`
@@ -339,6 +339,16 @@ The complete workflow is in EXTRACTION_SKILL.md (below). Key rules:
    finding. Fill it from the authors' own stated caveats (usually the
    Discussion's limitations paragraph) and quote one of them with
    `supports: limitation`. Write `[]` only if the paper states none.
+
+8. RECOVERY PHASE: `sample.phase` is required on every finding with a
+   patient sample (schema v2.6). Use the Stroke Recovery and
+   Rehabilitation Roundtable bands, from the time post-onset the paper
+   reports: hyperacute (0–24 h), acute (1–7 days), early_subacute
+   (7 days–3 months), late_subacute (3–6 months), chronic (> 6 months);
+   mixed when the sample straddles bands with no dominant one;
+   longitudinal when the same patients were measured in two or more
+   phases; not_reported when the paper does not say. Keep the paper's
+   own wording in `sample.time_post_onset` as well.
 
 # Existing KB entries you can target
 
@@ -456,6 +466,7 @@ def build_prompt(skill_md: str, schema_md: str, citations_md: str,
 # Local inference via Ollama
 # ============================================================
 from model_config import resolve as resolve_model  # noqa: E402
+from phase import PHASE_VOCAB, infer_phase  # noqa: E402
 from ollama_client import (DEFAULT_HOST as DEFAULT_OLLAMA_HOST,  # noqa: E402
                            OllamaError, RepetitionLoop, autosize_num_ctx, chat,
                            check_model_available, is_local)
@@ -697,8 +708,28 @@ _LIMITATIONS_FLAG = ("author_limitations not extracted by the model — "
                      "verify against the paper's limitations paragraph")
 
 
+_REFSPACE_FLAG = ("imaging_details.reference_space not extracted by the model — "
+                  "set to not_reported; verify against the paper")
+_NON_IMAGING = {"behavioral_only", "clinical_RCT", "meta-analysis",
+                "computational_model", "narrative_review"}
+
+
+def _canonical_entry(kb_root: Path | None, bucket: str, entry_id: str | None) -> dict:
+    if not kb_root or not entry_id:
+        return {}
+    p = kb_root / bucket / f"{entry_id}.md"
+    if not p.is_file():
+        return {}
+    m = re.match(r"^---\n(.*?)\n---", p.read_text(encoding="utf-8"), re.DOTALL)
+    try:
+        return yaml.safe_load(m.group(1)) or {} if m else {}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 def _normalize_findings(content: str, bucket: str,
-                        citation: str | None) -> tuple[str, list[str]]:
+                        citation: str | None,
+                        kb_root: Path | None = None) -> tuple[str, list[str]]:
     """Parse the repaired draft and fix the omissions a local model makes
     on nearly every draft, each one visibly:
 
@@ -706,10 +737,17 @@ def _normalize_findings(content: str, bucket: str,
         flag, so the draft validates but lands in Tier B for a person
         (an empty list without the flag would read as "the authors
         stated none", which is almost never true).
-      * `region_definition` with no `kind` on a predictor finding →
-        dropped (predictors have no region to define).
+      * `region_definition` missing or without `kind` → `kind:
+        not_reported` (the schema requires the block on every finding;
+        a predictor or therapy finding simply has no region to define).
+      * imaging method with no `imaging_details.reference_space` →
+        `not_reported` plus a flag; `atlases_used` missing → [].
       * `citation` differing from the resolved key only in case → set
         to the resolved key, so promoted findings join citations.md.
+      * entry-level predictor fields (`short_definition`,
+        `predictor_type`, `units`, `direction_of_severity`) missing on a
+        draft whose id already exists canonically → copied from the
+        canonical entry, since promote.py merges the findings into it.
 
     Re-serialises the frontmatter through YAML; this is a draft, so the
     model's formatting is not worth preserving.
@@ -724,6 +762,13 @@ def _normalize_findings(content: str, bucket: str,
         return content, [f"frontmatter not parseable ({e}); left as written"]
     body = m.group(2)
     changed = False
+    if fm.get("kind") == "predictor":
+        canon = _canonical_entry(kb_root, bucket, fm.get("id"))
+        for key in ("short_definition", "predictor_type", "units", "direction_of_severity"):
+            if not fm.get(key) and canon.get(key):
+                fm[key] = canon[key]
+                changed = True
+                notes.append(f"{key} copied from the canonical {fm.get('id')} entry")
     for f in fm.get("findings") or []:
         if not isinstance(f, dict):
             continue
@@ -735,11 +780,45 @@ def _normalize_findings(content: str, bucket: str,
                 flags.append(_LIMITATIONS_FLAG)
             changed = True
             notes.append(f"{f.get('id')}: author_limitations missing → [] + flag")
-        rd = f.get("region_definition")
-        if bucket == "predictors" and isinstance(rd, dict) and not rd.get("kind"):
-            del f["region_definition"]
+        sample = f.get("sample")
+        if isinstance(sample, dict) and sample.get("phase") not in PHASE_VOCAB:
+            # v2.6: stated phase missing or off-vocabulary → infer it
+            # deterministically from the paper's own time_post_onset
+            inferred, basis = infer_phase(sample.get("time_post_onset"))
+            bad = sample.get("phase")
+            sample["phase"] = inferred
             changed = True
-            notes.append(f"{f.get('id')}: dropped empty region_definition")
+            notes.append(f"{f.get('id')}: sample.phase "
+                         + (f"{bad!r} → " if bad else "")
+                         + f"{inferred} ({basis})")
+        rd = f.get("region_definition")
+        if f.get("method") != "narrative_review" and \
+                (not isinstance(rd, dict) or not rd.get("kind")):
+            f["region_definition"] = {"kind": "not_reported",
+                                      **({k: v for k, v in rd.items() if k != "kind"}
+                                         if isinstance(rd, dict) else {})}
+            changed = True
+            notes.append(f"{f.get('id')}: region_definition.kind → not_reported")
+        methods = f.get("method")
+        methods = methods if isinstance(methods, list) else [methods]
+        if any(mm not in _NON_IMAGING for mm in methods if mm):
+            img = f.get("imaging_details")
+            if not isinstance(img, dict):
+                img = {}
+                f["imaging_details"] = img
+            if img.get("reference_space") not in ("MNI152", "MNI305", "Talairach",
+                                                  "native", "other", "not_reported"):
+                img["reference_space"] = "not_reported"
+                prov = f.setdefault("provenance", {})
+                flags = prov.setdefault("flags", [])
+                if _REFSPACE_FLAG not in flags:
+                    flags.append(_REFSPACE_FLAG)
+                changed = True
+                notes.append(f"{f.get('id')}: reference_space → not_reported + flag")
+            if "atlases_used" not in img:
+                img["atlases_used"] = []
+                changed = True
+                notes.append(f"{f.get('id')}: atlases_used → []")
         if citation and isinstance(f.get("citation"), str) and \
                 f["citation"] != citation and \
                 f["citation"].lstrip("@").lower() == citation.lstrip("@").lower():
@@ -768,7 +847,7 @@ def save_drafts(drafts: list, kb_root: Path,
         out = kb_root / "drafts" / bucket / d["filename"]
         out.parent.mkdir(parents=True, exist_ok=True)
         content, notes = _repair_frontmatter(d["content"], created_by)
-        content, more = _normalize_findings(content, bucket, citation)
+        content, more = _normalize_findings(content, bucket, citation, kb_root)
         notes.extend(more)
         out.write_text(content, encoding="utf-8")
         saved.append(out)
