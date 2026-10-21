@@ -63,13 +63,23 @@ TEMPLATE_CAVEAT = (
     "MNI152, which matters most for small or thin regions.")
 
 
+# KB entry statuses a report may draw on, by evidence level (report form "Evidence").
+EVIDENCE_LEVELS = {"approved": ("approved",),
+                   "in_review": ("approved", "in_review"),
+                   "all": ("approved", "in_review", "draft")}
+EVIDENCE_LABELS = {"approved": "Approved entries only",
+                   "in_review": "Approved + in review",
+                   "all": "All, including unreviewed drafts"}
+
+
 @dataclass
 class ReportSettings:
     """User decisions for the interpretation report (set in the settings cell)."""
     kb_atlases: tuple = DEFAULT_KB_ATLASES   # atlases used to query the KB
     display_atlas: str = "HarvardOxford"     # atlas for the damaged-regions table
     high_conf_only: bool = False             # only KB findings with confidence "high"
-    include_drafts: bool = True              # also use draft / in-review KB entries
+    include_drafts: bool = True              # older setting: True = evidence "all", False = "approved"
+    evidence: str | None = None              # "approved", "in_review" (approved + in review) or "all" (+ drafts)
     min_overlap_pct: float = 5.0             # min % of lesion in an ROI to count it
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
@@ -77,7 +87,10 @@ class ReportSettings:
 
     @property
     def include(self):
-        return ("approved", "in_review", "draft") if self.include_drafts else ("approved",)
+        level = self.evidence or ("all" if self.include_drafts else "approved")
+        if level not in EVIDENCE_LEVELS:
+            raise ValueError(f"evidence must be one of {list(EVIDENCE_LEVELS)}, not {level!r}")
+        return EVIDENCE_LEVELS[level]
 
 
 @dataclass
