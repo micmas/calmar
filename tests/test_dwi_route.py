@@ -73,11 +73,14 @@ def test_findings_carry_their_study_phase_and_the_report_flags_other_phases():
         dict(population="chronic left-hemisphere stroke survivors", phase=None),
         dict(population="acute stroke patients within 48 h", phase=None),
         dict(population="healthy volunteers", phase=None),
-        dict(population="chronic stroke", phase="subacute")])                 # an explicit phase wins
-    assert [finding_phases(r) for _, r in rows.iterrows()] == [{"chronic"}, {"acute"}, set(), {"subacute"}]
+        dict(population="chronic stroke", phase="late_subacute"),             # sample.phase wins
+        dict(population="acute and chronic stroke", phase="longitudinal")])   # falls back to the text
+    assert [finding_phases(r) for _, r in rows.iterrows()] == [
+        {"chronic"}, {"acute"}, set(), {"subacute"}, {"acute", "chronic"}]
     text = phase_summary(rows, "acute")
-    assert "1 were studied in the same phase, 2 in another phase" in text and "1 do not state it" in text
-    assert "read it with caution" in text
+    assert "2 were studied in the same phase, 2 in another phase" in text and "1 do not state it" in text
+    assert "read it with caution" not in text                               # not mostly another phase
+    assert "read it with caution" in phase_summary(rows, "subacute")        # 1 same, 3 other
 
 
 def test_right_hemisphere_lesions_are_explained():

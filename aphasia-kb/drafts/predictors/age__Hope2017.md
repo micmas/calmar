@@ -1,69 +1,76 @@
 ---
 schema_version: 2.3
 id: age
-name: "Age"
+name: Age
 kind: predictor
 predictor_type: demographic
 status: draft
-created_by: "agent:ollama-extract-cli/gemma4:31b-it-q8_0"
+created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0
 created_on: 2026-10-20
-short_definition: "Age of the patient."
-units: "years"
+short_definition: Age of the patient.
+units: years
 findings:
-  - id: f1
-    target: anomic_aphasia
-    target_kind: impairment
-    claim: "Age at stroke onset does not predict the direction of language recovery or decline in chronic aphasia."
-    direction: no_effect
-    relationship: correlational
-    citation: "@Hope2017"
-    method: behavioral_only
-    design: cross-sectional
-    strength: moderate
-    evidence_quality: cohort
-    sample:
-      n: 28
-      population: "right-handed left-hemisphere stroke patients"
-      time_post_onset: "T1 > 1 year"
-      age_range: "mean 51.7 years"
-      handedness: "all right-handed"
-      language: "English"
-    statistics:
-      threshold: "P < 0.05"
-      effect_size: "t = 0.86"
-      p_value: "0.40"
-    confounders_controlled: []
-    confounders_not_controlled: []
-    region_definition:
-      kind: not_reported
-      description: "Age at stroke onset."
-    author_limitations:
-      - "The distinction between improvers and decliners might reflect subtle multivariate distinctions or variable patterns of everyday language use."
-    provenance:
-      extracted_by: "agent"
-      extracted_on: 2026-01-01
-      paper_section: "Results, page 1725"
-      confidence: high
-      flags: []
-    source_passages:
-      - section: "Results"
-        page: 1725
-        quote: "There were no significant differences between the 'improvers' and 'decliners' in terms of age at stroke onset (t = 0.86, df = 22, P = 0.40)..."
-        supports: claim
-      - section: "Materials and methods"
-        page: 1719
-        quote: "Summary details of the 28 patients who met these criteria are as follows: 10 females; mean/standard deviation (SD) of age at stroke onset = 51.7/10.4 years..."
-        supports: sample
-      - section: "Results"
-        page: 1725
-        quote: "There were no significant differences between the 'improvers' and 'decliners' in terms of age at stroke onset (t = 0.86, df = 22, P = 0.40)..."
-        supports: statistics
-      - section: "Discussion"
-        page: 1726
-        quote: "The distinction between improvers and decliners might reflect some more subtle (e.g. more multivariate) distinction between the patients..."
-        supports: limitation
+- id: f1
+  target: anomic_aphasia
+  target_kind: impairment
+  claim: Age at stroke onset does not predict the direction of language recovery or decline in chronic
+    aphasia.
+  direction: no_effect
+  relationship: correlational
+  citation: '@Hope2017'
+  method: behavioral_only
+  design: cross-sectional
+  strength: moderate
+  evidence_quality: cohort
+  sample:
+    n: 28
+    population: right-handed left-hemisphere stroke patients
+    time_post_onset: T1 > 1 year
+    age_range: mean 51.7 years
+    handedness: all right-handed
+    language: English
+    phase: chronic
+  statistics:
+    threshold: P < 0.05
+    effect_size: t = 0.86
+    p_value: '0.40'
+  confounders_controlled: []
+  confounders_not_controlled: []
+  region_definition:
+    kind: not_reported
+    description: Age at stroke onset.
+  author_limitations:
+  - The distinction between improvers and decliners might reflect subtle multivariate distinctions or
+    variable patterns of everyday language use.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 1725
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 8
+    quote: There were no significant differences between the 'improvers' and 'decliners' in terms of age
+      at stroke onset (t = 0.86, df = 22, P = 0.40)...
+    supports: claim
+  - section: Materials and methods
+    page: 3
+    quote: 'Summary details of the 28 patients who met these criteria are as follows: 10 females; mean/standard
+      deviation (SD) of age at stroke onset = 51.7/10.4 years...'
+    supports: sample
+  - section: Results
+    page: 8
+    quote: There were no significant differences between the 'improvers' and 'decliners' in terms of age
+      at stroke onset (t = 0.86, df = 22, P = 0.40)...
+    supports: statistics
+  - section: Discussion
+    page: 9
+    quote: The distinction between improvers and decliners might reflect some more subtle (e.g. more multivariate)
+      distinction between the patients...
+    supports: limitation
+direction_of_severity: higher_is_worse
 ---
-
 # Age
 
 Age at stroke onset was not a significant predictor of the direction of language change in this chronic cohort.

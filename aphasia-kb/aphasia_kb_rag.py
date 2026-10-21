@@ -40,6 +40,7 @@ import math
 import os
 import sys
 from pathlib import Path
+from typing import Sequence
 from typing import Any, Optional
 
 # --------------------------------------------------------------------------
@@ -172,6 +173,8 @@ def _finding_record(kb, f: dict, *, base_score: float, reason: str) -> dict:
         # Review provenance (GOVERNANCE.md §4): who approved this finding.
         # 'human' | 'model' | 'legacy' (pre-policy approval) | 'none'
         "review_kind":   _clean(f.get("review_kind")) or "none",
+        "phase":         _clean(f.get("phase")) or "not_reported",   # v2.6
+        "phase_source":  _clean(f.get("phase_source")) or "none",
         "reviewer":      _clean(f.get("reviewer")),
     }
 
@@ -188,8 +191,14 @@ def retrieve(decode_result: dict, kb, *,
              min_overlap_pct: float = 1.0,
              min_term_r: float = 0.0,
              max_findings: int = 40,
-             human_approved_only: bool = False) -> dict:
+             human_approved_only: bool = False,
+             phases: Sequence[str] | None = None) -> dict:
     """Turn a ``decode_lesion`` result into a ranked bundle of KB evidence.
+
+    ``phases`` keeps only findings whose sample phase (v2.6; stated, else
+    inferred from time_post_onset) is in the set — e.g. ("chronic",
+    "mixed", "longitudinal") for a chronic patient. Dropped findings are
+    counted in ``kb_meta['n_excluded_by_phase']``.
 
     Returns a dict with keys: ``regions``, ``terms``, ``findings``, ``kb_meta``.
     With ``human_approved_only`` findings approved by a model or before the
@@ -274,6 +283,11 @@ def retrieve(decode_result: dict, kb, *,
         kept = [f for f in findings if f.get("review_kind") == "human"]
         n_excluded = len(findings) - len(kept)
         findings = kept
+    n_excluded_phase = 0
+    if phases:
+        kept = [f for f in findings if f.get("phase") in set(phases)]
+        n_excluded_phase = len(findings) - len(kept)
+        findings = kept
 
     findings.sort(key=lambda d: d["score"], reverse=True)
     findings = findings[:max_findings]
@@ -286,6 +300,8 @@ def retrieve(decode_result: dict, kb, *,
         "n_findings":    int(getattr(kb, "findings", _empty()).shape[0]),
         "human_approved_only": human_approved_only,
         "n_excluded_by_review": n_excluded,
+        "phases": list(phases) if phases else None,
+        "n_excluded_by_phase": n_excluded_phase,
         "review_kinds": {k: int(v) for k, v in
                          (getattr(kb, "findings", _empty())
                           .get("review_kind", _empty_series())
@@ -343,6 +359,11 @@ def render_report(retrieval: dict, *,
         L.append(f"> `--human-approved-only`: {km.get('n_excluded_by_review', 0)} "
                  f"matched finding(s) approved by a model or before the "
                  f"governance policy were excluded.")
+    if km.get("phases"):
+        L.append(f"> `--phase {' '.join(km['phases'])}`: {km.get('n_excluded_by_phase', 0)} "
+                 f"matched finding(s) from samples in another recovery phase were "
+                 f"excluded. Phase is inferred from each paper's time post-onset "
+                 f"where the entry does not state it.")
     L.append("")
 
     # --- Regions ---
@@ -402,6 +423,9 @@ def render_report(retrieval: dict, *,
                     bits.append(f"method: {f['method']}")
                 if f.get("sample_n"):
                     bits.append(f"n = {f['sample_n']}")
+                if f.get("phase") and f["phase"] != "not_reported":
+                    bits.append(f"phase: {f['phase']}"
+                                + ("*" if f.get("phase_source") == "inferred" else ""))
                 meta = (" · ".join(bits))
                 cite = f" [{f['citation']}]" if f.get("citation") else ""
                 mark = REVIEW_KIND_LABEL.get(f.get("review_kind") or "none", "")
@@ -532,6 +556,7 @@ def decode_and_explain(lesion_path: str | Path,
                        min_term_r: float = 0.0,
                        max_findings: int = 40,
                        human_approved_only: bool = False,
+                       phases: Sequence[str] | None = None,
                        decode_kwargs: dict | None = None) -> dict:
     """End-to-end: decode the lesion, retrieve KB evidence, build the report,
     and (optionally) an LLM narrative.
@@ -547,7 +572,8 @@ def decode_and_explain(lesion_path: str | Path,
                          min_overlap_pct=min_overlap_pct,
                          min_term_r=min_term_r,
                          max_findings=max_findings,
-                         human_approved_only=human_approved_only)
+                         human_approved_only=human_approved_only,
+                         phases=phases)
     report_md = render_report(
         retrieval,
         lesion_path=str(lesion_path),
@@ -591,6 +617,11 @@ def _cli(argv=None):
                          "model-approved and pre-policy (legacy) findings. "
                          "The notebook's clinical-interpretation cell sets "
                          "this by default (GOVERNANCE.md §4).")
+    ap.add_argument("--phase", nargs="+", default=None, metavar="PHASE",
+                    help="Keep only findings from samples in these recovery phases "
+                         "(hyperacute acute early_subacute late_subacute chronic mixed "
+                         "longitudinal not_reported). E.g. for a chronic patient: "
+                         "--phase chronic mixed longitudinal")
     ap.add_argument("-o", "--output", default=None, help="Write the report markdown here")
     args = ap.parse_args(argv)
 
@@ -599,6 +630,7 @@ def _cli(argv=None):
         use_llm=args.llm, model=args.model, host=args.ollama_host,
         min_overlap_pct=args.min_overlap_pct, min_term_r=args.min_term_r,
         human_approved_only=args.human_approved_only,
+        phases=args.phase,
     )
     if args.output:
         Path(args.output).write_text(res["report_md"], encoding="utf-8")

@@ -62,15 +62,23 @@ def _pill(text):
 PHASE_LABELS = {"acute": "acute", "subacute": "subacute", "chronic": "chronic"}
 
 
+#: KB ``sample.phase`` (schema v2.6, SRRR bands) → the report's recovery stages (aphasia_rules).
+SAMPLE_PHASE_STAGES = {"hyperacute": "acute", "acute": "acute", "early_subacute": "subacute",
+                       "late_subacute": "subacute", "chronic": "chronic"}
+
+
 def finding_phases(row):
-    """Recovery phases a finding was studied in: its explicit ``phase`` field,
-    else those named in its sample population (aphasia_rules); empty = unknown."""
+    """Recovery stages (acute / subacute / chronic) a finding was studied in.
+
+    From the KB's ``phase`` (``sample.phase``, stated or inferred from
+    ``time_post_onset`` by aphasia-kb/phase.py). When that is ``mixed``,
+    ``longitudinal`` or ``not_reported``, the stages named in the sample
+    population text are used (aphasia_rules); empty = unknown.
+    """
     import aphasia_rules
-    explicit = row.get("phase")
-    if isinstance(explicit, str):
-        return {explicit}
-    if isinstance(explicit, (list, tuple, set)):
-        return set(explicit)
+    stage = SAMPLE_PHASE_STAGES.get(row.get("phase"))
+    if stage:
+        return {stage}
     text = " ".join(str(row.get(k) or "") for k in ("population", "time_post_onset"))
     return aphasia_rules.stages_in_population(text)
 

@@ -83,6 +83,7 @@ STATUS_VOCAB = {"draft", "in_review", "approved", "rejected", "legacy_v1"}
 #   B       a person must approve
 #   legacy  approved before the governance policy; not PDF-re-read
 REVIEW_TIER_VOCAB = {"A", "B", "legacy"}
+from phase import PHASE_VOCAB, finding_phase  # noqa: E402  (v2.6 sample.phase)
 REVIEWER_PREFIXES = ("human:", "model:")
 
 # Reviewer strings that pre-date the human:/model: prefixes and are known
@@ -278,13 +279,21 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
     # v2.4+ entries can use method=narrative_review with relaxed field rules.
     # v2.5 adds optional review-provenance fields (review_tier, per-finding
     # review block, audited_by/audited_on); no structural change.
-    _ALL_SV = (2, 2.1, 2.2, 2.3, 2.4, 2.5, "2", "2.1", "2.2", "2.3", "2.4", "2.5")
+    _ALL_SV = (2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6,
+               "2", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6")
     if sv not in _ALL_SV:
-        err(f"schema_version must be 2–2.5, got {sv!r}")
-    is_v21 = sv in _ALL_SV[1:6] + _ALL_SV[7:]
-    is_v22 = sv in _ALL_SV[2:6] + _ALL_SV[8:]
-    is_v23 = sv in _ALL_SV[3:6] + _ALL_SV[9:]
-    is_v24 = sv in _ALL_SV[4:6] + _ALL_SV[10:]
+        err(f"schema_version must be 2–2.6, got {sv!r}")
+    # Compare numerically: the slice-based test this replaces silently
+    # excluded every version added after it was written (2.6 drafts
+    # failed "predictor entries require schema_version 2.3 or higher").
+    try:
+        _v = float(sv)
+    except (TypeError, ValueError):
+        _v = 0.0
+    is_v21 = _v >= 2.1
+    is_v22 = _v >= 2.2
+    is_v23 = _v >= 2.3
+    is_v24 = _v >= 2.4
 
     # v2.3 predictor entries: validate file-level predictor fields.
     # (We check kind=='predictor' regardless of bucket so any file that
@@ -377,6 +386,9 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
                 err(f"{prefix}: sample.n missing")
             if not sample.get("population"):
                 err(f"{prefix}: sample.population missing")
+            ph = sample.get("phase")
+            if ph is not None and ph not in PHASE_VOCAB:
+                err(f"{prefix}: sample.phase={ph!r} invalid; allowed: {sorted(PHASE_VOCAB)}")
 
             # Statistics
             stats = f.get("statistics") or {}
@@ -668,10 +680,10 @@ class KnowledgeBase:
                         "sample_n": (f.get("sample") or {}).get("n"),
                         "population": (f.get("sample") or {}).get("population"),
                         "time_post_onset": (f.get("sample") or {}).get("time_post_onset"),
-                        # Recovery phase the finding was studied in: an explicit
-                        # `phase:` (acute | subacute | chronic, or a list), else
-                        # derived from sample.population by aphasia_rules.
-                        "phase": f.get("phase"),
+                        # v2.6: recovery phase — stated `sample.phase`, else
+                        # inferred from the free-text time_post_onset (phase.py)
+                        "phase": finding_phase(f)[0],
+                        "phase_source": finding_phase(f)[1],
                         "stat_threshold": (f.get("statistics") or {}).get("threshold"),
                         "stat_effect_size": (f.get("statistics") or {}).get("effect_size"),
                         "confidence":  (f.get("provenance") or {}).get("confidence"),

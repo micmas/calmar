@@ -1,0 +1,94 @@
+draft_path: drafts/regions/left_posterior_middle_temporal_white_matter__Griffis2017.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T06:57:08'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 4/4 quotes (100%) — elided 2, exact 2
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Griffis2017: sample.n disagrees: [39, 43]'
+  review_tier: B
+  tier_reasons:
+  - new entry id (not appending to an existing entry)
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft contains a cross-finding consistency error regarding the
+        sample size (n=43 vs n=39). While the paper states n=43 for the whole cohort,
+        it notes that 4 patients were excluded from the auditory semantic decision
+        analyses (leaving n=39). The draft correctly identifies this discrepancy but
+        fails to resolve it in the finding details, making it unclear which sample
+        size applies to which finding. I am deferring due to this inconsistency.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The sample size n=43 is correct for the overall study, but the draft's
+          own internal consistency check flags a discrepancy with f2.
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The sample size n=39 is correct for the semantic task (43 total -
+          4 excluded), but the draft's internal consistency check flags a discrepancy
+          with f1.
+        verdict: agree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ contains a cross-finding consistency error regarding the sample size (n=43\
+      \ vs n=39). While the paper states n=43 for the whole cohort, it notes that\
+      \ 4 patients were excluded from the auditory semantic decision analyses (leaving\
+      \ n=39). The draft correctly identifies this discrepancy but fails to resolve\
+      \ it in the finding details, making it unclear which sample size applies to\
+      \ which finding. I am deferring due to this inconsistency.\",\n  \"per_finding\"\
+      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
+      passage_supports_field\": true,\n      \"relationship_faithful\": true,\n  \
+      \    \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limitations_captured\"\
+      : true,\n      \"omissions\": \"\",\n      \"concern\": \"The sample size n=43 "
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T06:57:08'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

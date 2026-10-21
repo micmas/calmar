@@ -1,0 +1,121 @@
+draft_path: drafts/predictors/therapy_intensity__Bhogal2003.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T05:55:01'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[0] (id=f1): region_definition.kind=None invalid'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[0] (id=f1): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[1] (id=f2): region_definition.kind=None invalid'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[1] (id=f2): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[2] (id=f3): region_definition.kind=None invalid'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[2] (id=f3): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[3] (id=f4): region_definition.kind=None invalid'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[3] (id=f4): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/16 quotes (62%) — anchored 4, elided 4, exact 6, near 2
+    - '6 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.5): the hours of therapy provided in a week was
+      significantly correlated to greater …'
+    - '  - [near] f1.limitation (p.5): Only 3 studies were rated to be of ''good''
+      quality (PEDro score=6), whereas the r…'
+    - '  - [anchored] f2.claim (p.1): Total hours of therapy were significantly correlated
+      with mean change in PICA (r…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  - 'f2: has provenance.flags'
+  - 'f3: has provenance.flags'
+  - 'f4: has provenance.flags'
+- run_id: 2
+  timestamp: '2026-10-22T06:17:48'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[0] (id=f1): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[1] (id=f2): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[2] (id=f3): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/therapy_intensity__Bhogal2003.md:
+      finding[3] (id=f4): predictor triplet partially set (have [''instrument''],
+      missing [''score_band'', ''interpretation'']); fill all three or none'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/16 quotes (62%) — anchored 4, elided 4, exact 6, near 2
+    - '6 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.5): the hours of therapy provided in a week was
+      significantly correlated to greater …'
+    - '  - [near] f1.limitation (p.5): Only 3 studies were rated to be of ''good''
+      quality (PEDro score=6), whereas the r…'
+    - '  - [anchored] f2.claim (p.1): Total hours of therapy were significantly correlated
+      with mean change in PICA (r…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  - 'f2: has provenance.flags'
+  - 'f3: has provenance.flags'
+  - 'f4: has provenance.flags'
+last_run: '2026-10-22T06:17:48'
+latest_verdict: auto_reject
+latest_mode: deterministic_only

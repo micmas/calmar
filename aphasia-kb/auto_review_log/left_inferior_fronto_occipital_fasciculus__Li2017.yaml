@@ -1,0 +1,91 @@
+draft_path: drafts/regions/left_inferior_fronto_occipital_fasciculus__Li2017.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T06:49:12'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/2 quotes (50%) — anchored 1, elided 1
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.statistics (p.5): Performance on each of the three cues in
+      semantic fluency task was significantly…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft claims a causal relationship ('Damage to... is associated
+        with...'), but the paper describes correlations (lesion-behavior and FA-behavior)
+        and uses the term 'associated' or 'correlated'. While the discussion mentions
+        a 'causal role' in reference to other studies, the current study's design
+        is cross-sectional/correlational. Furthermore, the statistics for the lesion
+        correlation in the draft (r=-0.46 to -0.55) are slightly inconsistent with
+        the text/table (r=-0.46 to -0.55 for semantic, but the specific range for
+        phonological is not explicitly provided in the same way in the text, though
+        Table 2 shows values).
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The draft labels the relationship as 'causal'. The paper reports
+          correlations (r values) and the design is cross-sectional. The authors discuss
+          the 'causal role' of the IFOF in the Discussion by citing other studies,
+          but the current study only demonstrates association/correlation. The draft
+          also lists 'causal' as the relationship type, which is a mischaracterization
+          of the study's own evidence.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ claims a causal relationship ('Damage to... is associated with...'), but the\
+      \ paper describes correlations (lesion-behavior and FA-behavior) and uses the\
+      \ term 'associated' or 'correlated'. While the discussion mentions a 'causal\
+      \ role' in reference to other studies, the current study's design is cross-sectional/correlational.\
+      \ Furthermore, the statistics for the lesion correlation in the draft (r=-0.46\
+      \ to -0.55) are slightly inconsistent with the text/table (r=-0.46 to -0.55\
+      \ for semantic, but the specific range for phonological is not explicitly provided\
+      \ in the same way in the text, though Table 2 shows values).\",\n  \"per_finding\"\
+      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
+      passage_supports_field\": true,\n      \"rela"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T06:49:12'
+latest_verdict: checks_passed
+latest_mode: with_llm_review
