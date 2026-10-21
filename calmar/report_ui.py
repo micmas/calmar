@@ -68,7 +68,7 @@ class ReportInputs:
         self.decode = w.Checkbox(value=namespace.get("INTERP_RUN_DECODING", False),
             description="Include Neurosynth decoding (optional; takes longer)", indent=False,
             layout=w.Layout(width="auto"))
-        self.summary, self.message = w.HTML(), w.HTML()
+        self.summary, self.message, self.agreement = w.HTML(), w.HTML(), w.HTML()
         self.generate = w.Button(description="Generate participant report", button_style="success",
             icon="play", layout=w.Layout(width="270px", min_height="36px"))
         self.navigation = NotebookNavigation(
@@ -87,7 +87,7 @@ class ReportInputs:
         self.widget = w.VBox([w.HTML("<h3>Choose the participant report</h3>"
             "<p>Choose a participant, lesion mask and display atlas below. "
             "Generate creates the report and its downloadable HTML file.</p>"),
-            self.subject, self.source, self.atlas, self.evidence, self.decode, self.summary,
+            self.subject, self.source, self.atlas, self.evidence, self.decode, self.summary, self.agreement,
             self.compare, self.generate, self.message, self.navigation])
         self.refresh()
 
@@ -99,7 +99,18 @@ class ReportInputs:
         self.source.value = previous if previous in sources else next(iter(sources), None)
         self.source.disabled = not sources
         self.busy = False
+        self.show_agreement()
         self.apply()
+
+    def show_agreement(self):
+        """Agreement of the automatic masks with the manual mask, when there is one."""
+        from .mask_method import manual_agreement_html
+        inventory = self.ns["mask_inventory_for"](self.entries[self.subject.value]) if "mask_inventory_for" in self.ns else {}
+        masks = {s: spaces["MNI"] for s, spaces in inventory.items() if "MNI" in spaces}
+        try:
+            self.agreement.value = manual_agreement_html(masks)
+        except Exception as exc:
+            self.agreement.value = f"<span style='font-size:12px'>Agreement with the manual mask not computed: {escape(str(exc))}</span>"
 
     def apply(self, *_):
         if self.busy:
