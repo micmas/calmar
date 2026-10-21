@@ -10,7 +10,10 @@
 #            (README.md, "Rules")
 #   side     left | right | both (both = either hemisphere)
 #   basis    why: the entry's definition, aliases or source paper
-#   review   true = a judgement call that a neuroanatomist should confirm
+#   review   true = a judgement call rather than a same-name match
+#
+# Review: every judgement call (review: true) in this file and in units.yaml
+# was approved by Michèle Masson-Trottier on 2026-10-21 (README.md, "Review").
 regions:
 
   # ── Inferior frontal gyrus ────────────────────────────────────────────────

@@ -65,7 +65,7 @@ Two levels keep it maintainable. The 90 region names in the KB (84 mapped, 6 not
    - *Reversed:* an impairment finding whose target is a region (that impairment ← damage to the region).
 6. **Weight of a finding** for this lesion: the share of the region destroyed (`region_pct`, what lesion–symptom studies relate deficits to), or the share of the lesion when the region's size is unknown. It is multiplied, as before, by the finding's strength, evidence quality, confidence and direction.
 
-## Decisions to review (⚑ in MAPPING.md)
+## Judgement calls (⚑ in MAPPING.md)
 
 `review: true` marks every mapping that is a judgement rather than a same-name match: 23 regions and 2 units. The ones that matter most:
 
@@ -77,6 +77,10 @@ Two levels keep it maintainable. The 90 region names in the KB (84 mapped, 6 not
 | **Composite or label-less areas**: anterior temporal lobe, temporoparietal junction, superior temporal sulcus, Spt, DLPFC, premotor cortex, basal temporal cortex, … | Each built from the units its definition or aliases name (basis in `kb_regions.yaml`). | — |
 | **Corpus callosum** | → JHU forceps major and minor only; JHU does not label the callosal body. | — |
 | **JHU tract masks are thin cores** (50 % probability, 2 mm) | "96 % destroyed" means 96 % of that core. | Use a lower-threshold or probabilistic tract atlas. |
+
+## Review
+
+All judgement calls (⚑: 23 regions and 2 units) and the rules above were reviewed and approved by Michèle Masson-Trottier on 2026-10-21. A judgement call keeps its ⚑ in `MAPPING.md` and in reports, to show it is a judgement rather than a same-name match. A new or changed judgement call needs its own review; record it here with the date.
 
 ## Not mappable (17 findings)
 
