@@ -82,6 +82,8 @@ class ReportSettings:
     evidence: str | None = None              # "approved", "in_review" (approved + in review) or "all" (+ drafts)
     min_overlap_pct: float = 5.0             # an ROI counts as damaged if it holds >= this % of the lesion
     min_region_pct: float = 25.0             # ... or if >= this % of the ROI is destroyed (small regions, thin tracts)
+    disconnectome: str = "bcb"               # map for tract disconnection: "bcb", "deepdisco" or "none"
+    min_disconnected_pct: float = 50.0       # a tract counts as disconnected if >= this % of it has p > 0.5
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
     threshold: float = 0.5                   # mask threshold for Dice between masks
@@ -689,7 +691,8 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     """
     from .atlas_overlap import prepare_report_overlap
     from .qc_decisions import report_qc_notice
-    from .report_evidence import location_coverage, location_section, measures_section
+    from .report_evidence import (MAP_LABELS, disconnection_section, disconnectome_map, location_coverage,
+                                  location_section, measures_section, tract_atlases)
     from .report_ui import ParticipantReport, report_sections
 
     messages = []
@@ -720,6 +723,18 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     damage, _ = lesion_damage(entry, source, settings, overlap_paths, reports_dir)
     location_rows = kb.location_findings(damage, min_overlap=settings.min_overlap_pct, min_region=settings.min_region_pct,
                                          min_confidence=("high" if settings.high_conf_only else None))
+    # Tracts disconnected by the lesion, from its BCBToolkit or DeepDisco map.
+    map_path = disconnectome_map(study, entry, source, settings.disconnectome)
+    disconnection, disconnection_rows, map_label = None, None, None
+    atlases = tract_atlases(namespace.get("ALL_ATLASES"))
+    if map_path is not None and atlases:
+        import atlas_mapping
+        disconnection = atlas_mapping.region_disconnection(atlas_mapping.tract_disconnection(map_path, atlases))
+        disconnection_rows = kb.location_findings(
+            disconnection, min_overlap=101.0, min_region=settings.min_disconnected_pct,
+            min_confidence=("high" if settings.high_conf_only else None))
+        map_label = MAP_LABELS[settings.disconnectome]
+        note(f"  Tract disconnection from {map_path.name}: {0 if disconnection_rows is None else len(disconnection_rows)} findings")
     damaged = damaged_regions(entry, source, settings, overlap_paths, reports_dir)
     note("  Overlap rows by atlas (matched to KB regions through aphasia-kb/atlas_mapping):")
     for atlas, n in per_atlas:
@@ -798,6 +813,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
 
       <h4 style="margin-top:18px">Lesion location: what the evidence says</h4>
       {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings)}
+
+      <h4 style="margin-top:18px">White-matter disconnection: what the evidence says</h4>
+      {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label)}
 
       <h4 style="margin-top:18px">This participant&rsquo;s measures: what the evidence says</h4>
       <p style="font-size:12px;color:#555;margin:4px 0 8px 0">

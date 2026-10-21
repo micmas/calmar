@@ -45,8 +45,11 @@ Two levels keep it maintainable. The 90 region names in the KB (84 mapped, 6 not
 1. **One atlas per unit.**
    - *HarvardOxford* (cortical, max-probability 25 %, 2 mm) for cortex.
    - *AAL* (SPM12) only where HarvardOxford has no label: putamen, pallidum, hippocampus, pars orbitalis, temporal-pole subdivisions, medial superior frontal gyrus.
-   - *JHU* (ICBM tracts, max-probability 50 %, 2 mm, from FSL) for the superior longitudinal, inferior longitudinal, inferior fronto-occipital and uncinate fasciculi and the callosal forceps.
-   - *XTRACT* (HCP tract atlas, max-probability 5 %, 1 mm, FSL 6.0.7.22; Warrington et al. 2020) for the tracts JHU does not label: arcuate fasciculus, SLF III, frontal aslant tract, middle longitudinal fasciculus, optic radiation. Added 2026-10-21; it closed the arcuate judgement call and made three tracts reachable.
+   - *JHU* (ICBM tracts, max-probability 50 %, 2 mm, from FSL) for the superior longitudinal, inferior longitudinal and inferior fronto-occipital fasciculi and the callosal forceps.
+     - JHU's label list includes the uncinate fasciculus, the cingulum and the temporal part of the SLF, but its 50 %-threshold image has no voxels for them (too thin).
+     - Until 2026-10-22 the uncinate was mapped to JHU, so its findings could never be reached. It now comes from XTRACT.
+     - `atlas_labels.json` lists only labels with voxels in each image, so the consistency check catches such a label.
+   - *XTRACT* (HCP tract atlas, max-probability 5 %, 1 mm, FSL 6.0.7.22; Warrington et al. 2020) for the tracts JHU's image does not contain: arcuate fasciculus, SLF III, frontal aslant tract, middle longitudinal fasciculus, optic radiation, uncinate fasciculus. Added 2026-10-21; it closed the arcuate judgement call and made three tracts reachable.
    - Destrieux is not used: it divides the same cortex more finely, adding no region the KB names.
    - Schaefer400 is not used: its parcels are functional networks, not the anatomical structures lesion–symptom studies report.
 2. **Hemisphere from the lesion, not the name.**
