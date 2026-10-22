@@ -4,9 +4,9 @@ Entry point: :func:`show_disconnectome_comparison`. It shows the same viewer
 and controls as the processing steps (``calmar.step_viewer``, stage
 ``compare``): the participant's ``Subject_in_MNI`` anatomy with, for the
 chosen lesion source, its template-space lesion, the BCBToolkit map and the
-DeepDisco map of the chosen model. The source and model buttons, the
-checkboxes, the plane and "Centre on lesion" act in the browser
-(``calmar.layer_controls``); they never reload files or recompute.
+DeepDisco maps. Only the selected lesion source is loaded initially; changing
+source loads that source's compact layer group through the kernel. Model,
+checkbox, plane and "Centre on lesion" changes remain browser-side and instant.
 
 Agreement metrics are computed on request (when the "Agreement metrics"
 section is opened) by the ``disconnectome`` reporting task, which runs in a
@@ -151,7 +151,8 @@ def show_disconnectome_comparison(study, entry, *, mask_source=None, model="whol
                                 selected_index=None)
     details.set_title(0, "Agreement metrics and optional glass-brain figures")
     shown = show_step_viewer("compare", entries, study, height=560, start=entries.index(entry),
-                             group=mask_source or "", variant=model or "", extra=(details,), key=viewer_key)
+                             group=mask_source or "", variant=model or "", extra=(details,), key=viewer_key,
+                             lazy_groups=True)
     if shown is None:
         display(HTML("<p>No participant with a T1w image to compare.</p>"))
         return None

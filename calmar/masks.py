@@ -23,7 +23,7 @@ def present(path):
 
 
 def discover_masks(entry, linda_dir, synthstroke_dir, *, template_dir=None, manual_path=None,
-                   manual_space="t1", openads_dir=None):
+                   manual_space="t1", openads_dir=None, openads_entry=None):
     """Return {source: {space: path}} for locally present, known lesion outputs.
 
 Spaces are ``T1w`` (the native image: the T1w, or the DWI in the acute route) and ``MNI``. A configured manual mask in another space is
@@ -38,6 +38,8 @@ masks warped by LINDA's registration.
     template = Path(template_dir or linda_dir)
     synth_mni = synth if template == linda else template
     stem = "_".join(x for x in (entry["subject"], entry.get("session")) if x)
+    openads_entry = openads_entry or entry
+    openads_stem = "_".join(x for x in (openads_entry["subject"], openads_entry.get("session")) if x)
     candidates = {
         "linda": {
             "T1w": [linda / "Prediction3_native.nii.gz",
@@ -56,7 +58,7 @@ masks warped by LINDA's registration.
     }
     if openads_dir is not None:
         oa = Path(openads_dir)
-        candidates["openads"] = {"T1w": [oa / f"{stem}_space-DWI_desc-lesion_mask.nii.gz"],
+        candidates["openads"] = {"T1w": [oa / f"{openads_stem}_space-DWI_desc-lesion_mask.nii.gz"],
                                  "MNI": [oa / "OpenADS_in_MNI.nii.gz"]}
     if manual_path is not None and manual_space in ("t1", "mni"):
         space = "T1w" if manual_space == "t1" else "MNI"

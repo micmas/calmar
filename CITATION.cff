@@ -9,9 +9,10 @@ repository-code: "https://github.com/micmas/calmar"
 abstract: >
   CALMaR is an open-source Jupyter notebook pipeline for automated lesion
   segmentation, quality control, and clinician-facing interpretation of
-  stroke lesion MRI data. It combines HD-BET skull stripping, LINDA lesion
-  segmentation, SynthStroke, and BCBToolkit disconnectome analysis with an
-  aphasia knowledge base to generate per-patient clinical reports including
+  stroke lesion MRI data. It combines HD-BET skull stripping, LINDA and
+  SynthStroke T1 lesion segmentation, OpenADS DWI lesion segmentation, and
+  BCBToolkit disconnectome analysis with an aphasia knowledge base to generate
+  per-patient clinical reports including
   predicted impairments, atlas-based regional overlap, Neurosynth decoding,
   and evidence-based therapy recommendations.
 authors:
@@ -28,5 +29,6 @@ keywords:
   - SynthStroke
   - HD-BET
   - MRI
+  - diffusion MRI
   - clinical decision support
   - BIDS

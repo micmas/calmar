@@ -29,8 +29,9 @@ class GuidedWorkflowTests(unittest.TestCase):
 
     def test_guided_defaults_preserve_selected_cohort(self):
         config = defaults()
-        self.assertEqual(config['MAX_SUBJECTS'], 3)
-        self.assertCountEqual(config['SUBJECT_FILTER'], ['sub-M2234','sub-M2173','sub-M2030'])
+        self.assertEqual(config['MAX_SUBJECTS'], 5)
+        self.assertCountEqual(config['SUBJECT_FILTER'],
+                              ['sub-M2002', 'sub-M2051', 'sub-M2061', 'sub-M2075', 'sub-M2103'])
 
     def test_navigation_targets_exist_once_in_each_notebook(self):
         for name in ('calmar-guided.ipynb', 'lesion-interpretation-pipeline.ipynb'):
@@ -38,8 +39,15 @@ class GuidedWorkflowTests(unittest.TestCase):
             roles = [role for c in notebook['cells'] for role in {
                 c.get('metadata', {}).get('calmar', {}).get('role'),
                 *c.get('metadata', {}).get('calmar', {}).get('roles', [])}]
-            for role in ('batch-start', 'skull-repair', 'after-qc', 'report-prepare', 'report-setup', 'single-test-start'):
+            for role in ('batch-start', 'skull-repair', 'after-qc', 'after-dwi-qc', 'report-prepare',
+                         'report-setup', 'single-test-selection', 'single-test-start'):
                 self.assertEqual(roles.count(role), 1, (name, role))
+
+    def test_optional_dwi_uses_the_qc_viewer_only(self):
+        source = ''.join(source_cell('calmar-optional-dwi')['source'])
+        self.assertIn('show_step(dwi_openads, DWI_STUDY', source)
+        self.assertIn('viewer=False', source)
+        self.assertIn('open_qc_review(', source)
 
     def test_cached_hdbet_preview_loads_anatomy_and_thresholded_mask_once(self):
         from calmar import review
@@ -69,6 +77,18 @@ class GuidedWorkflowTests(unittest.TestCase):
                 exec(''.join(source_cell(12)['source']),ns)
             self.assertEqual(ns['RAW_DATASET_DIR'],dataset)
             self.assertEqual(ns['DERIV_DIR'],dataset/'derivatives/linda')
+
+    def test_isles_source_uses_the_selected_local_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dataset = root/'ISLES-2022'; dataset.mkdir()
+            ns = dict(Path=Path, os=os, cw=SimpleNamespace(configure=lambda **kw:None), display=lambda *a: None,
+                _CALMAR_CONFIG_OVERRIDES={'PROJECT_DIR':root, 'DATASET_SOURCE':'isles2022',
+                                          'LOCAL_DATASET':dataset, 'MODALITY':'t1'})
+            with contextlib.redirect_stdout(io.StringIO()), patch.dict(os.environ):
+                exec(''.join(source_cell(12)['source']), ns)
+            self.assertEqual(ns['RAW_DATASET_DIR'], dataset)
+            self.assertEqual(ns['CONFIG']['MODALITY'], 'dwi')
 
 
 class GuidedRunnerTests(unittest.IsolatedAsyncioTestCase):
