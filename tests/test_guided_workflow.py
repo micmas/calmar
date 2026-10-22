@@ -29,8 +29,9 @@ class GuidedWorkflowTests(unittest.TestCase):
 
     def test_guided_defaults_preserve_selected_cohort(self):
         config = defaults()
-        self.assertEqual(config['MAX_SUBJECTS'], 3)
-        self.assertCountEqual(config['SUBJECT_FILTER'], ['sub-M2234','sub-M2173','sub-M2030'])
+        self.assertEqual(config['MAX_SUBJECTS'], 5)
+        self.assertCountEqual(config['SUBJECT_FILTER'],
+                              ['sub-M2002', 'sub-M2051', 'sub-M2061', 'sub-M2075', 'sub-M2103'])
 
     def test_navigation_targets_exist_once_in_each_notebook(self):
         for name in ('calmar-guided.ipynb', 'lesion-interpretation-pipeline.ipynb'):
