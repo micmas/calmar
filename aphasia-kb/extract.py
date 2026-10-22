@@ -762,9 +762,29 @@ def _normalize_findings(content: str, bucket: str,
         return content, [f"frontmatter not parseable ({e}); left as written"]
     body = m.group(2)
     changed = False
-    if fm.get("kind") == "predictor":
-        canon = _canonical_entry(kb_root, bucket, fm.get("id"))
-        for key in ("short_definition", "predictor_type", "units", "direction_of_severity"):
+    # reviews/: one entry per review paper, id `<topic>__<Key>` like the
+    # canonical ones — otherwise two reviews of the same topic (e.g. two
+    # MIT reviews, both `melodic_intonation_therapy_review`) would be
+    # merged into one entry on promotion
+    if bucket == "reviews" and citation:
+        key = citation.lstrip("@")
+        if fm.get("id") and not str(fm["id"]).endswith(f"__{key}"):
+            old_id = fm["id"]
+            fm["id"] = f"{str(old_id).split('__')[0].removesuffix('_review')}__{key}"
+            changed = True
+            notes.append(f"review id {old_id} → {fm['id']} (one entry per review paper)")
+    canon = _canonical_entry(kb_root, bucket, fm.get("id"))
+    if canon:
+        # the draft adds findings to an existing entry: promote.py merges
+        # them into it, so the entry-level fields are the canonical ones
+        # (a draft calling it "Melodic Intonation Therapy" next to the
+        # canonical "Melodic Intonation Therapy (MIT)" showed as two)
+        if canon.get("name") and fm.get("name") != canon["name"]:
+            notes.append(f"name {fm.get('name')!r} → canonical {canon['name']!r}")
+            fm["name"] = canon["name"]
+            changed = True
+        for key in ("short_definition", "predictor_type", "units", "direction_of_severity",
+                    "short_description", "targets_impairments", "hemisphere"):
             if not fm.get(key) and canon.get(key):
                 fm[key] = canon[key]
                 changed = True
