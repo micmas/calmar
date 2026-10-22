@@ -2,12 +2,15 @@
 phase of the evidence the report uses."""
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pandas as pd
 import pytest
 
 from calmar.method_choice import MethodChoice
-from calmar.study import (Study, derivative_dirs, discover_dwi, mni_masks, modality, segmentation_methods,
+from calmar.study import (Study, analysis_mask_sources, attach_dwi_inventory, derivative_dirs, discover_dwi,
+                          discover_dwi_inventory, mni_masks, modality, segmentation_methods,
                           select_participants, stage_selected, template_source)
 
 KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
@@ -31,12 +34,96 @@ def isles(root):
 
 
 def test_dwi_discovery_needs_an_adc_and_sets_the_native_image(tmp_path):
-    entries = discover_dwi(isles(tmp_path))
+    root = isles(tmp_path)
+    entries = discover_dwi(root)
     assert [e["subject"] for e in entries] == ["sub-strokecase0001", "sub-strokecase0002"]
+    inventory = discover_dwi_inventory(root)
+    assert [e["subject"] for e in inventory] == [
+        "sub-strokecase0001", "sub-strokecase0002", "sub-strokecase0003"]
+    assert inventory[-1]["adc"] is None
     e = entries[0]
     assert e["t1w"] == e["dwi"] and e["adc"].name.endswith("_adc.nii.gz") and e["modality"] == "dwi"
     chosen, _ = select_participants({"DATASET_SOURCE": "local", **DWI, "MAX_SUBJECTS": 1}, tmp_path)
     assert [c["subject"] for c in chosen] == ["sub-strokecase0001"]
+
+
+def test_t1_entry_inventory_keeps_dwi_from_same_and_other_sessions(tmp_path):
+    t1 = touch(tmp_path / "sub-one" / "ses-t1" / "anat" / "sub-one_ses-t1_T1w.nii.gz")
+    same = touch(tmp_path / "sub-one" / "ses-t1" / "dwi" / "sub-one_ses-t1_dwi.nii.gz")
+    other = touch(tmp_path / "sub-one" / "ses-acute" / "dwi" / "sub-one_ses-acute_dwi.nii.gz")
+    touch(other.with_name("sub-one_ses-acute_adc.nii.gz"))
+    entries = attach_dwi_inventory([{"subject": "sub-one", "session": "ses-t1", "t1w": t1}], tmp_path)
+    inventory = entries[0]["dwi_inventory"]
+    assert [item["dwi"] for item in inventory] == [other, same]
+    assert [(item["same_session"], item["openads_ready"]) for item in inventory] == [(False, True), (True, False)]
+
+
+def test_optional_openads_keeps_another_dwi_session_distinct(tmp_path):
+    from calmar.dwi_choice import apply_dwi_selection, openads_options
+    t1 = touch(tmp_path / "sub-one" / "ses-chronic" / "anat" / "sub-one_ses-chronic_T1w.nii.gz")
+    dwi = touch(tmp_path / "sub-one" / "ses-acute" / "dwi" / "sub-one_ses-acute_dwi.nii.gz")
+    adc = touch(dwi.with_name("sub-one_ses-acute_adc.nii.gz"))
+    entry = attach_dwi_inventory([{"subject": "sub-one", "session": "ses-chronic", "t1w": t1}], tmp_path)[0]
+    assert openads_options(entry)[0]["session"] == "ses-acute"
+    namespace = {"CONFIG": {"MODALITY": "t1", "SEGMENTATION_METHODS": ["synthstroke"], "ANALYSE_DWI": None},
+                 "SUBJECTS": [entry], "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+    apply_dwi_selection(namespace, {"sub-one": openads_options(entry)[0]})
+    selected = namespace["SUBJECTS"][0]
+    assert selected["session"] == "ses-chronic" and selected["dwi_analysis"]["session"] == "ses-acute"
+    assert namespace["CONFIG"]["ANALYSE_DWI"] is None
+    assert namespace["CONFIG"]["_DWI_ANALYSIS_SELECTED"] is True
+    assert namespace["DWI_SUBJECTS"][0]["t1w"] == dwi
+    assert namespace["DWI_SUBJECTS"][0]["adc"] == adc
+    assert analysis_mask_sources(namespace["CONFIG"]) == ("synthstroke", "openads", "manual")
+    study = Study(namespace["CONFIG"], tmp_path, tmp_path)
+    assert study.dirs(selected)["openads"] == tmp_path / "derivatives/openads/sub-one/ses-acute/anat"
+    native = touch(study.dirs(selected)["openads"] / "sub-one_ses-acute_space-DWI_desc-lesion_mask.nii.gz")
+    touch(study.dirs(selected)["openads"] / "OpenADS_in_MNI.nii.gz")
+    assert study.masks(selected)["openads"]["T1w"] == native
+    assert study.qc_anchor(selected, "openads").parent.name == "anat"
+
+
+def test_dwi_choice_close_does_not_register_the_panel_as_its_own_control(tmp_path):
+    from calmar.dwi_choice import DWIChoice
+
+    entry = {"subject": "sub-one", "session": "ses-t1", "t1w": str(tmp_path / "t1.nii.gz"),
+             "dwi_inventory": [{"subject": "sub-one", "session": "ses-dwi", "same_session": False,
+                                "dwi": str(tmp_path / "dwi.nii.gz"), "adc": str(tmp_path / "adc.nii.gz"),
+                                "openads_ready": True}]}
+    namespace = {"SUBJECTS": [entry], "CONFIG": {}, "RAW_DATASET_DIR": tmp_path,
+                 "PROJECT_DIR": tmp_path}
+    shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=lambda: None))
+    panel = DWIChoice(namespace, shell)
+    assert panel.checkpoint.controls == []
+    panel.navigation.request = Mock()
+    panel._request(True)
+    panel.navigation.request.assert_called_once()
+    assert panel.navigation.request.call_args.args[0] == "single-test-selection"
+    assert panel.navigation.request.call_args.kwargs["all_below"] is True
+    panel.close()
+
+
+def test_datalad_dangling_dwi_and_adc_links_are_discovered_without_fetching(tmp_path):
+    folder = tmp_path / "sub-one" / "ses-one" / "dwi"
+    folder.mkdir(parents=True)
+    dwi = folder / "sub-one_ses-one_dwi.nii.gz"
+    adc = folder / "sub-one_ses-one_adc.nii.gz"
+    dwi.symlink_to(tmp_path / "annex-dwi")
+    adc.symlink_to(tmp_path / "annex-adc")
+    assert not dwi.exists() and not adc.exists()
+    inventory = discover_dwi_inventory(tmp_path)
+    assert inventory[0]["dwi"] == dwi and inventory[0]["adc"] == adc
+    assert discover_dwi(tmp_path)[0]["adc"] == adc
+    assert not dwi.exists() and not adc.exists()
+
+
+def test_flat_and_single_inputs_can_inventory_dwi_by_filename(tmp_path):
+    flat_dwi = touch(tmp_path / "sub-flat_ses-dwi_dwi.nii.gz")
+    assert discover_dwi_inventory(tmp_path)[0]["subject"] == "sub-flat"
+    t1 = touch(tmp_path / "sub-one" / "ses-t1" / "anat" / "sub-one_ses-t1_T1w.nii.gz")
+    sibling = touch(tmp_path / "sub-one" / "ses-dwi" / "dwi" / "sub-one_ses-dwi_dwi.nii.gz")
+    selected, _ = select_participants({"DATASET_SOURCE": "single", "SINGLE_T1W": str(t1)}, t1.parent)
+    assert selected[0]["dwi_inventory"][0]["dwi"] == sibling
 
 
 def test_the_acute_route_runs_openads_and_not_the_t1_steps():

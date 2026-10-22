@@ -77,6 +77,7 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             await start.wait_for(timeout=30000)
             await page.wait_for_timeout(1000)
             source = page.locator('.widget-dropdown').filter(has_text='Input type:').locator('select')
+            route = page.locator('.widget-dropdown').filter(has_text='Imaging route:').locator('select')
             accession = page.locator('.widget-text').filter(has_text='OpenNeuro accession:')
             version = page.locator('.widget-text').filter(has_text='Dataset version:')
             local = page.locator('.widget-text').filter(has_text='Local dataset folder:')
@@ -100,6 +101,15 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             await sessions.locator('input').fill(session_value)
             await expect(random).to_be_enabled()
             await expect(random).not_to_be_checked()
+            await route.select_option('dwi')
+            await expect(source).to_have_value('isles2022')
+            await local.wait_for(state='visible')
+            await expect(cohort.locator('input')).to_have_value('')
+            await expect(sessions.locator('input')).to_have_value('')
+            await page.get_by_text('ISLES 2022:', exact=False).wait_for()
+            await route.select_option('t1')
+            await expect(cohort.locator('input')).to_have_value(participant_value)
+            await expect(sessions.locator('input')).to_have_value(session_value)
             for mode in ('Single T1 file', 'Local BIDS', 'Flat T1 folder', 'OpenNeuro', 'Single T1 file'):
                 await source.select_option(label=mode)
                 for field, visible in ((accession,mode=='OpenNeuro'), (version,mode=='OpenNeuro'),

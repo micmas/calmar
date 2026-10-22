@@ -86,6 +86,20 @@ class AcquisitionTests(unittest.TestCase):
                 process("acquisition",request)
         register.assert_not_called()
 
+    def test_acquisition_reports_dwi_in_same_and_other_sessions_without_fetching_it(self):
+        from calmar.processing import process
+        dwi = self.root / self.sub / "ses-dwi" / "dwi" / f"{self.sub}_ses-dwi_dwi.nii.gz"
+        request = dict(dataset=str(self.root), config={"MANUAL_MASK_ROOT": str(self.root / "no-manual")}, entries=[dict(
+            subject=self.sub, session=self.ses, t1w=str(self.t1),
+            dwi_inventory=[dict(dwi=str(dwi), session="ses-dwi", same_session=False, openads_ready=False)])])
+        with patch.dict("os.environ", {"SLURM_JOB_ID": "fixture"}), patch(
+                "calmar.processing.ensure_nifti_content", return_value=True) as fetch:
+            result = process("acquisition", request)[0]
+        self.assertEqual(fetch.call_count, 1)  # selected T1 only; arbitrary DWI remains metadata-only
+        self.assertEqual(result["qc"]["metrics"], {
+            "dwi_series_available": 1, "dwi_sessions_available": "ses-dwi",
+            "dwi_same_session": 0, "dwi_other_session": 1, "dwi_openads_ready": 0})
+
 
 if __name__ == "__main__":
     unittest.main()

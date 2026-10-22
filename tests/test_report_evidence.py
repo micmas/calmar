@@ -31,7 +31,9 @@ def test_location_section_shows_regions_damage_and_merges_kb_synonyms():
     assert ">association<" in html and "LIKELY" not in html
     assert "finding-claim" in html and "Evidence strength" in html and "Extraction confidence" in html
     assert "Source passages" in html and "Full citation for" in html
-    assert "Project-specific display heuristic" in html and "&#9733;" not in html
+    assert "Project-specific display heuristic" in html and "&#9733;" in html
+    assert "very strong / replicated" in html and "display-label" in html
+    assert "visually-hidden" in html and "of 4 stars" in html
     assert "All implicated regions:" in html and "display-signal-print" in html
     assert rows["source_path"].str.len().gt(0).all()
 
@@ -57,7 +59,7 @@ def test_wab_bands():
 
 
 def test_regions_resting_on_few_studies_are_marked():
-    damage = pd.DataFrame([dict(region="left_pallidum", side="left", lesion_pct=0.1, region_pct=40.0, review=False)])
+    damage = pd.DataFrame([dict(region="left_insula", side="left", lesion_pct=0.1, region_pct=40.0, review=False)])
     rows = KB.location_findings(damage, min_overlap=5, min_region=10)
     html = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings())
     assert "Limited citation base: 1 citation key" in html
@@ -85,13 +87,85 @@ def test_location_summary_keeps_association_null_mixed_and_inverse_counts_separa
     html = location_section(KB, rules, rows, damage,
                             {"findings": 4, "undamaged": 0, "unmappable": 0}, ReportSettings())
     for label in ("Associations", "Inverse associations", "Null findings", "Mixed results"):
-        assert f"<dt>{label}</dt><dd>1</dd>" in html
-    assert "<dt>Other / unclassified</dt><dd>1</dd>" in html
-    assert "Across 5 distinct matched findings" in html
+        assert f"<span><strong>{label}</strong> 1</span>" in html
+    assert "<span><strong>Other / unclassified</strong> 1</span>" in html
+    assert "5 distinct matched findings" in html
     assert "Left arcuate fasciculus" in html and "Left IFG Pars Opercularis" in html
     assert "Study method: Not reported" in html
     assert "<dd>Not reported</dd>" in html
     assert "findings may come from the same study or overlapping cohorts" in html
+
+
+def test_location_section_excludes_aphasia_types_and_non_symptom_targets():
+    damage = pd.DataFrame([
+        dict(region="left_ifg_pars_opercularis", side="left", lesion_pct=8.0, region_pct=40.0, review=False),
+    ])
+    common = dict(region="left_ifg_pars_opercularis", side="left", lesion_pct=8.0, region_pct=40.0,
+                  direction="likely", method="VLSM", strength="moderate", evidence_quality="observational",
+                  confidence="high", source_id="missing", contribution=1.0)
+    rows = pd.DataFrame([
+        dict(**common, predicts="speech_fluency", predicts_kind="impairment", claim="Symptom claim",
+             citation="@Symptom", finding_id="symptom"),
+        dict(**common, predicts="brocas_aphasia", predicts_kind="impairment", claim="Syndrome claim",
+             citation="@Syndrome", finding_id="syndrome"),
+        dict(**common, predicts="aphasia", predicts_kind="impairment", claim="Diagnosis claim",
+             citation="@Diagnosis", finding_id="diagnosis"),
+        dict(**common, predicts="language_recovery", predicts_kind="prognosis", claim="Prognosis claim",
+             citation="@Prognosis", finding_id="prognosis"),
+    ])
+    html = location_section(KB, rules, rows, damage,
+                            {"findings": 3, "undamaged": 0, "unmappable": 0}, ReportSettings())
+    assert "Speech fluency" in html and "Symptom claim" in html
+    assert "Syndrome claim" not in html and "@Syndrome" not in html
+    assert "Diagnosis claim" not in html and "@Diagnosis" not in html
+    assert "Language recovery" not in html and "Prognosis claim" not in html
+    assert "does not infer the presence or type of aphasia from a lesion" in html
+
+
+def test_additional_symptom_summaries_are_collapsed_together():
+    damage = pd.DataFrame([
+        dict(region="left_ifg_pars_opercularis", side="left", lesion_pct=8.0, region_pct=40.0, review=False),
+    ])
+    rows = pd.DataFrame([
+        dict(region="left_ifg_pars_opercularis", side="left", lesion_pct=8.0, region_pct=40.0,
+             predicts=f"symptom_{i}", predicts_kind="impairment", claim=f"Claim {i}", direction="likely",
+             citation=f"@Study{i}", method="VLSM", strength="moderate", evidence_quality="observational",
+             confidence="high", source_id="missing", finding_id=f"f{i}", contribution=10 - i)
+        for i in range(4)
+    ])
+    html = location_section(KB, rules, rows, damage,
+                            {"findings": 4, "undamaged": 0, "unmappable": 0}, ReportSettings(top_n=2))
+    soup = BeautifulSoup(html, "html.parser")
+    extra = soup.select_one("details.additional-outcomes")
+    assert extra is not None and not extra.has_attr("open")
+    assert "Show 2 additional symptom summaries" in extra.summary.get_text(" ", strip=True)
+
+
+def test_white_matter_provenance_is_collapsed_by_default():
+    from calmar.report_evidence import disconnection_section
+    html = disconnection_section(KB, pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), ReportSettings(),
+                                 "BCBToolkit", map_name="Disconnectome_expert.nii.gz", mask_label="manual lesion")
+    evidence_path = BeautifulSoup(html, "html.parser").select_one("details.evidence-path")
+    assert evidence_path is not None and not evidence_path.has_attr("open")
+    assert evidence_path.has_attr("data-print-open")
+    assert evidence_path.summary.get_text(" ", strip=True) == "Where this evidence comes from"
+
+
+def test_print_notes_when_additional_regions_are_only_in_interactive_html():
+    damage = pd.DataFrame([
+        dict(region=f"region_{i}", side="left", lesion_pct=10.0 - i, region_pct=40.0, review=False)
+        for i in range(3)
+    ])
+    rows = pd.DataFrame([
+        dict(region=f"region_{i}", region_name=f"Region {i}", side="left", lesion_pct=10.0 - i,
+             region_pct=40.0, predicts="speech_repetition", predicts_kind="impairment", claim=f"Claim {i}",
+             direction="likely", citation=f"@Study{i}", method=None, strength=None, evidence_quality=None,
+             confidence=None, source_id="missing", finding_id=f"f{i}", contribution=1.0, review=False)
+        for i in range(3)
+    ])
+    settings = ReportSettings(max_evidence_regions=1)
+    html = location_section(KB, rules, rows, damage, {"findings": 3, "undamaged": 0, "unmappable": 0}, settings)
+    assert "2 additional qualifying damaged regions are available in the interactive HTML report" in html
 
 
 def test_finding_disclosures_use_source_file_identity_and_handle_nan(tmp_path):
@@ -155,7 +229,7 @@ def test_each_finding_shows_its_study_phase_and_sections_summarise_it():
     phases = [dt.find_next_sibling("dd").get_text() for dt in soup.select(".finding-indicators dt")
               if dt.get_text() == "Study phase"]
     assert len(phases) == len(soup.select("article.finding")) > 0
-    assert any("⚠" in p for p in phases)                         # chronic evidence for an acute participant
+    assert any("stage mismatch" in p for p in phases)             # chronic evidence for an acute participant
     assert soup.select_one(".phase-summary") and "This participant is in the <b>acute</b>" in html
     plain = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings())
-    assert "phase-summary" not in plain and "⚠</dd>" not in plain
+    assert "phase-summary" not in plain and "stage mismatch" not in plain

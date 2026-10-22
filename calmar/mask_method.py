@@ -70,7 +70,8 @@ def _registration(dirs, mni_path):
 def mask_method(study, entry, source):
     """The steps that produced ``source``'s template-space mask, as sentences."""
     dirs = study.dirs(entry)
-    t1 = Path(entry["t1w"]).name
+    source_entry = entry.get("dwi_analysis") or entry if source == "openads" else entry
+    t1 = Path(source_entry["t1w"]).name
     mni = mni_masks(dirs)[source]
     if source == "linda":
         options = _options(dirs["linda"])
@@ -96,8 +97,8 @@ def mask_method(study, entry, source):
         return [_brain_mask(dirs), segmented, _registration(dirs, mni)]
     if source == "openads":
         options = _options(dirs["openads"])
-        dwi = Path(entry.get("dwi") or entry["t1w"]).name
-        adc = Path(entry["adc"]).name if entry.get("adc") else "its ADC map"
+        dwi = Path(source_entry.get("dwi") or source_entry["t1w"]).name
+        adc = Path(source_entry["adc"]).name if source_entry.get("adc") else "its ADC map"
         segmented = (f"Segmented by OpenADS ({options.get('module', 'openadscpu/1.0.0')}) on the diffusion-weighted "
                      f"image {dwi} with {adc}, inside OpenADS's own DWI brain mask."
                      if options is not None else f"Segmented by OpenADS on {dwi} ({NO_RECORD}).")

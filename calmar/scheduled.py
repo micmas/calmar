@@ -109,6 +109,8 @@ def _result_stamps(result):
     request = result.get('request', {})
     for entry in request.get('entries', []):
         paths.add(Path(entry['t1w']))
+        if entry.get('adc'):
+            paths.add(Path(entry['adc']))
         from .processing import manual_inputs
         mask, reference, _ = manual_inputs(request, entry)
         paths.update(p for p in (mask, reference) if p is not None)
@@ -189,15 +191,36 @@ def _split(stage, request):
     return [request]
 
 
+def _stage_payload(stage, payload):
+    """Payload fields that can affect ``stage`` or identify its running job.
+
+    Cross-session DWI inventory belongs only to acquisition reporting. Keeping
+    it out of every other stage avoids invalidating T1 processing caches or
+    duplicating an already-running job when dataset metadata gains a DWI file.
+    DWI sidecars are likewise inventory metadata until a processing stage
+    explicitly adopts them.
+    """
+    payload = dict(payload)
+    if stage != 'acquisition' and 'entries' in payload:
+        ignored = {'dwi_inventory', 'bval', 'bvec', 'json'}
+        # The selected DWI session changes the downstream disconnectome mask,
+        # but must not invalidate unrelated T1 processing caches.
+        if stage not in ('bcb', 'deepdisco'):
+            ignored.add('dwi_analysis')
+        payload['entries'] = [{k: v for k, v in entry.items() if k not in ignored}
+                              for entry in payload['entries']]
+    return payload
+
+
 def _identity_key(stage, payload):
     # UI selections already resolve to explicit entries. Their presentation
     # settings and report destinations do not change image-processing results.
-    identity = dict(payload)
+    identity = _stage_payload(stage, payload)
     if 'config' in identity:
         from .processing import ALGORITHM_VERSIONS
         identity['config'] = {k:v for k,v in identity['config'].items() if k not in (
             'PROJECT_DIR', 'REPORTS_SUBDIR', 'MASK_COLORS', 'TEST_SUBJECT_IDX', 'RUN_TEST',
-            'NIIVUE_URL_BASE', 'VERBOSE')}
+            'NIIVUE_URL_BASE', 'VERBOSE', 'ANALYSE_DWI', '_DWI_ANALYSIS_SELECTED')}
         identity['algorithms'] = ALGORITHM_VERSIONS
     return (stage, json.dumps(identity, default=str, sort_keys=True))
 
@@ -278,12 +301,12 @@ def _attach_running(stage, payload, project):
     running = set(queue.stdout.split())
     if not running:
         return None
-    wanted = json.loads(json.dumps(payload, default=str))
+    wanted = json.loads(json.dumps(_stage_payload(stage, payload), default=str))
     for submission in (project/'reports'/'jobs').glob('*/submission.json'):
         try:
             info = json.loads(submission.read_text())
-            if info.get('job_id') in running and info.get('stage') == stage and \
-                    json.loads((submission.parent/'request.json').read_text()) == wanted:
+            previous = _stage_payload(stage, json.loads((submission.parent/'request.json').read_text()))
+            if info.get('job_id') in running and info.get('stage') == stage and previous == wanted:
                 folder = submission.parent
                 print(f"{stage}: Slurm job {info['job_id']} is already running this request; waiting for it.",
                       flush=True)

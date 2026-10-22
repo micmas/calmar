@@ -115,4 +115,11 @@ def test_methods_table_describes_the_registration_used():
     assert 'LINDA' in steps({})['Template registration']
     without = steps({'SEGMENTATION_METHODS': ['synthstroke']})
     assert 'antsRegistrationSyN' in without['Template registration']
-    assert 'Lesion segmentation (LINDA)' not in without
+    assert 'Lesion segmentation (LINDA)' in without
+    table = methods_table({'SEGMENTATION_METHODS': ['synthstroke']}).set_index('Step')
+    assert table.loc['Lesion segmentation (LINDA)', 'Status / when used'] == 'Available, not selected'
+    assert 'OpenADS' in table.loc['Lesion segmentation (OpenADS)', 'Tool']
+    linda = methods_table({}).set_index('Step')
+    assert 'linda/0.5.1' in linda.loc['Template registration', 'Tool']
+    assert 'seed=' in linda.loc['Lesion segmentation (LINDA)', 'Parameters']
+    assert 'threads=' in linda.loc['Lesion segmentation (LINDA)', 'Parameters']
