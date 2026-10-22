@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: typicality_semantic_feature_analysis
-name: Semantic Feature Analysis
+name: Typicality-based Semantic Feature Analysis (SFA)
 kind: therapy
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

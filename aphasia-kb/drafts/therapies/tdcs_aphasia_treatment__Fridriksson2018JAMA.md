@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: tdcs_aphasia_treatment
-name: Transcranial Direct Current Stimulation for Aphasia
+name: Transcranial Direct Current Stimulation (tDCS) during aphasia treatment
 kind: therapy
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

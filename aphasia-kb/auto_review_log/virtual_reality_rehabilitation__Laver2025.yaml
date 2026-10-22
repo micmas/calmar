@@ -1,0 +1,366 @@
+draft_path: drafts/therapies/virtual_reality_rehabilitation__Laver2025.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T07:26:33'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/10 quotes (100%) — elided 3, exact 7
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Laver2025: sample.n disagrees: [279, 689, 871, 1495, 2830]'
+  review_tier: B
+  tier_reasons:
+  - bucket 'therapies' always needs a person
+  - new entry id (not appending to an existing entry)
+  - 'f2: strength=''strong'''
+  - 'f4: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: All findings accurately reflect the provided Cochrane review text.
+        Statistics, sample sizes, and effect sizes match the results sections and
+        summary tables. The author-stated limitations and certainty levels are correctly
+        captured for each outcome.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f3
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f4
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f5
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"All findings\
+      \ accurately reflect the provided Cochrane review text. Statistics, sample sizes,\
+      \ and effect sizes match the results sections and summary tables. The author-stated\
+      \ limitations and certainty levels are correctly captured for each outcome.\"\
+      ,\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n      \"passage_present\"\
+      : true,\n      \"passage_supports_field\": true,\n      \"relationship_faithful\"\
+      : true,\n      \"strength_fair\": true,\n      \"numbers_match\": true,\n  \
+      \    \"limitations_captured\": true,\n      \"omissions\": \"\",\n      \"concern\"\
+      : \"\",\n      \"verdict\": \"agree\"\n    },\n    {\n      \"id\": \"f2\",\n\
+      \      \"passage_present\": true,\n      \"passage_supports_field\": true,\n\
+      \      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n  \
+      \    \"numbers_match\""
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 2
+  timestamp: '2026-10-22T11:58:24'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/10 quotes (100%) — elided 3, exact 7
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Laver2025: sample.n disagrees: [279, 689, 871, 1495, 2830]'
+  review_tier: B
+  tier_reasons:
+  - bucket 'therapies' always needs a person
+  - new entry id (not appending to an existing entry)
+  - 'f2: strength=''strong'''
+  - 'f4: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: All findings accurately reflect the provided Cochrane review text.
+        The statistics (SMDs, CIs, n), evidence certainty (GRADE), and author limitations
+        match the paper verbatim. The relationship between VR and outcomes (responder)
+        is correctly interpreted from the 'may be beneficial' and 'probably increases'
+        language used by the authors.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f3
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f4
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f5
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"All findings\
+      \ accurately reflect the provided Cochrane review text. The statistics (SMDs,\
+      \ CIs, n), evidence certainty (GRADE), and author limitations match the paper\
+      \ verbatim. The relationship between VR and outcomes (responder) is correctly\
+      \ interpreted from the 'may be beneficial' and 'probably increases' language\
+      \ used by the authors.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\"\
+      ,\n      \"passage_present\": true,\n      \"passage_supports_field\": true,\n\
+      \      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n  \
+      \    \"numbers_match\": true,\n      \"limitations_captured\": true,\n     \
+      \ \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\": \"agree\"\
+      \n    },\n    {\n      \"id\": \"f2\",\n      \"passage_present\": true,\n \
+      \     \"passage_supports_field\": true,"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 3
+  timestamp: '2026-10-22T22:06:02'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/10 quotes (100%) — elided 3, exact 7
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Laver2025: sample.n disagrees: [279, 689, 871, 1495, 2830]'
+  review_tier: B
+  tier_reasons:
+  - bucket 'therapies' always needs a person
+  - new entry id (not appending to an existing entry)
+  - 'f2: strength=''strong'''
+  - 'f4: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: All findings accurately reflect the Cochrane review. The sample sizes,
+        effect sizes (SMD), confidence intervals, and certainty levels match the text
+        and Summary of Findings tables exactly. The author limitations and quoted
+        passages are verbatim and correctly support the claims.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f3
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f4
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f5
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"All findings\
+      \ accurately reflect the Cochrane review. The sample sizes, effect sizes (SMD),\
+      \ confidence intervals, and certainty levels match the text and Summary of Findings\
+      \ tables exactly. The author limitations and quoted passages are verbatim and\
+      \ correctly support the claims.\",\n  \"per_finding\": [\n    {\n      \"id\"\
+      : \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\": \"agree\"\
+      \n    },\n    {\n      \"id\": \"f2\",\n      \"passage_present\": true,\n \
+      \     \"passage_supports_field\": true,\n      \"relationship_faithful\": true,\n\
+      \      \"strength_fair"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T22:06:02'
+latest_verdict: defer_to_human
+latest_mode: with_llm_review

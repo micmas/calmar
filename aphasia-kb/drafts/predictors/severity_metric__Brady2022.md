@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: severity_metric
-name: Aphasia Severity
+name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
 predictor_type: clinical
 short_definition: The severity of aphasia at baseline, typically measured by a standardized language battery.

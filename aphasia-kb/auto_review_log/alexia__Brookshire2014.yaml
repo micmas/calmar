@@ -187,6 +187,201 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:03:31'
+- run_id: 3
+  timestamp: '2026-10-22T10:48:18'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/7 quotes (71%) — anchored 2, elided 1, exact 4
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.sample (p.3): The inclusion criteria for PWA were history
+      of left hemisphere stroke at least 6…'
+    - '  - [anchored] f1.limitation (p.14): We employed a retrospective analysis of
+      a convenience sample of individuals with…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Brookshire2014: sample.n disagrees: [67, 99]'
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  - 'f2: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft contains a cross-finding consistency error regarding the
+        sample size for f1 (noted in the draft itself as [67, 99]). While f1 correctly
+        identifies the total PWA sample (n=99), the discrepancy between the total
+        sample and the alexia subgroup (n=67) is handled inconsistently across the
+        findings. I am deferring due to this internal inconsistency in the draft's
+        representation of the sample hierarchy.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ contains a cross-finding consistency error regarding the sample size for f1\
+      \ (noted in the draft itself as [67, 99]). While f1 correctly identifies the\
+      \ total PWA sample (n=99), the discrepancy between the total sample and the\
+      \ alexia subgroup (n=67) is handled inconsistently across the findings. I am\
+      \ deferring due to this internal inconsistency in the draft's representation\
+      \ of the sample hierarchy.\",\n  \"per_finding\": [\n    {\n      \"id\": \"\
+      f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\": true,\n\
+      \      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n  \
+      \    \"numbers_match\": true,\n      \"limitations_captured\": true,\n     \
+      \ \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\": \"agree\"\
+      \n    },\n    {\n      \"id\": \"f2"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 4
+  timestamp: '2026-10-22T20:55:42'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/7 quotes (71%) — anchored 2, elided 1, exact 4
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.sample (p.3): The inclusion criteria for PWA were history
+      of left hemisphere stroke at least 6…'
+    - '  - [anchored] f1.limitation (p.14): We employed a retrospective analysis of
+      a convenience sample of individuals with…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Brookshire2014: sample.n disagrees: [67, 99]'
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  - 'f2: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft contains a cross-finding consistency error regarding the
+        sample size for f1. While the text confirms n=99 for the total PWA sample,
+        the draft's internal notes flag a discrepancy [67, 99]. More importantly,
+        f2 claims a causal relationship ('is predominantly') for a cross-sectional
+        study, which is a correlation/association. I am deferring due to the strength/relationship
+        mismatch and the sample size inconsistency.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is labeled as 'causal', but the study is cross-sectional/descriptive.
+          The claim 'occurring in approximately 68%' is a frequency/prevalence report,
+          not a causal link.
+        verdict: disagree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is labeled as 'causal' ('is predominantly'), but
+          the study is a cross-sectional observation of a specific sample. It describes
+          the nature of the impairment in this sample rather than establishing a causal
+          mechanism.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ contains a cross-finding consistency error regarding the sample size for f1.\
+      \ While the text confirms n=99 for the total PWA sample, the draft's internal\
+      \ notes flag a discrepancy [67, 99]. More importantly, f2 claims a causal relationship\
+      \ ('is predominantly') for a cross-sectional study, which is a correlation/association.\
+      \ I am deferring due to the strength/relationship mismatch and the sample size\
+      \ inconsistency.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n  \
+      \    \"passage_present\": true,\n      \"passage_supports_field\": true,\n \
+      \     \"relationship_faithful\": false,\n      \"strength_fair\": true,\n  \
+      \    \"numbers_match\": true,\n      \"limitations_captured\": true,\n     \
+      \ \"omissions\": \"\",\n      \"concern\": \"The relationship is labeled as\
+      \ 'causal'"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T20:55:42'
 latest_verdict: defer_to_human
 latest_mode: with_llm_review

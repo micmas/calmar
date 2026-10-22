@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: severity_metric
-name: Aphasia Severity Metric
+name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
 predictor_type: behavioural
 short_definition: A quantitative measure of overall aphasia severity, typically using the Aphasia Quotient

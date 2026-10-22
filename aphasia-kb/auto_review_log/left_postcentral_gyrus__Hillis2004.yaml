@@ -38,6 +38,82 @@ runs:
   - PDF quote match not run or not passed
   - new entry id (not appending to an existing entry)
   - 'f1: has provenance.flags'
-last_run: '2026-10-22T06:55:39'
+- run_id: 2
+  timestamp: '2026-10-22T11:31:44'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 1/4 quotes (25%) — absent 1, anchored 1, exact 1, near 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [near] f1.sample (p.2): Subjects were adults with first ever, non-lacunar,
+      ischaemic stroke affecting th…'
+    - '  - [anchored] f1.limitation (p.7): For example, a lesion may cause deafferentation
+      of a remote area of cortex, caus…'
+    - '1 quote(s) absent from the PDF — first 3:'
+    - '  - f1.claim (p.4): Among all 80 patients, there were five patients with apraxia
+      of speech who had n…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - PDF quote match not run or not passed
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+- run_id: 3
+  timestamp: '2026-10-22T21:39:02'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 1/4 quotes (25%) — absent 1, anchored 1, exact 1, near 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [near] f1.sample (p.2): Subjects were adults with first ever, non-lacunar,
+      ischaemic stroke affecting th…'
+    - '  - [anchored] f1.limitation (p.7): For example, a lesion may cause deafferentation
+      of a remote area of cortex, caus…'
+    - '1 quote(s) absent from the PDF — first 3:'
+    - '  - f1.claim (p.4): Among all 80 patients, there were five patients with apraxia
+      of speech who had n…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - PDF quote match not run or not passed
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+last_run: '2026-10-22T21:39:02'
 latest_verdict: auto_reject
 latest_mode: deterministic_only

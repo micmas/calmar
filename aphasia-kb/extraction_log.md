@@ -276,3 +276,39 @@ add an `EXTRACTED` line for every run.
 2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_superior_temporal_gyrus_wernickes | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
 2026-10-22 | MODEL-APPROVED | @Henseler2014 | left_supramarginal_gyrus_premotor | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
 2026-10-22 | REKEYED | @Oeckel2021 | was extracted as @MartinezOeckel2021 (PDF had no citations.md entry)
+2026-10-22 | RE-EXTRACTED | @Maher2006 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Pulvermuller2001 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Schlaug2008 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Stahl2013 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @vanderMeulen2012 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | EXTRACTED | @Maher2006 | constraint_induced_aphasia_therapy | CILT efficacy on WAB-AQ and narrative discourse in chronic aphasia
+2026-10-22 | EXTRACTED | @Pulvermuller2001 | constraint_induced_aphasia_therapy | 1 draft, 2 findings
+2026-10-22 | EXTRACTED | @Schlaug2008 | melodic_intonation_therapy | behavioral and fMRI effects of MIT vs SRT in n=2
+2026-10-22 | EXTRACTED | @Stahl2013 | melodic_intonation_therapy | comparative efficacy of singing vs rhythmic therapy
+2026-10-22 | EXTRACTED | @vanderMeulen2012 | melodic_intonation_therapy_review | narrative review of MIT efficacy and mechanisms
+2026-10-22 | RE-EXTRACTED | @Breier2008 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Schwartz2012 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Karnath2018 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Alyahya2020 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Benghanem2019 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Billot2022 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Bonilha2016 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Breitenstein2017 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Catani2008 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Griffis2017 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Halai2017 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | RE-EXTRACTED | @Hope2013 | previous drafts moved to _compare/superseded/2026-10-22/ | current extractor (thinking off)
+2026-10-22 | EXTRACTED | @Breier2008 | left_arcuate_fasciculus, left_superior_longitudinal_fasciculus | DTI study (n=20) linking FA values of AF/SLF to repetition and comprehension.
+2026-10-22 | EXTRACTED | @Schwartz2012 | left_supramarginal_gyrus, left_precentral_gyrus, left_ifg_pars_opercularis | VLSM of phonological errors in naming
+2026-10-22 | EXTRACTED | @Karnath2018 | lesion_behavior_mapping_methods | Narrative review of VLBM and MLBM methods
+2026-10-22 | EXTRACTED | @Alyahya2020 | left_ifg_pars_opercularis, left_middle_frontal_gyrus, left_arcuate_fasciculus | VBCM analysis of connected speech components in chronic aphasia.
+2026-10-22 | EXTRACTED | @Benghanem2019 | initial_aphasia_severity, lesion_volume, left_temporoparietal_junction | 3 drafts
+2026-10-22 | EXTRACTED | @Billot2022 | severity_metric, imaging_metric_rsfc | Multimodal ML prediction of treatment response (n=55)
+2026-10-22 | EXTRACTED | @Bonilha2016 | severity_metric, left_temporal_lobe, global_structural_network | 3 drafts
+2026-10-22 | EXTRACTED | @Breitenstein2017 | intensive_speech_and_language_therapy, severity_metric | RCT on intensive SLT (n=156) showing improved verbal communication (ANELT A-scale) and mRS as a predictor.
+2026-10-22 | EXTRACTED | @Catani2008 | arcuate_fasciculus_disconnection | narrative review of AF anatomy and disconnection paradigm
+2026-10-22 | EXTRACTED | @Griffis2017 | left_frontal_white_matter_bottleneck, left_posterior_temporal_white_matter_bottleneck | ROI-based regression and SVR-LSM showing bottleneck effects beyond tract/cortical load
+2026-10-22 | EXTRACTED | @Halai2017 | left_precentral_gyrus, left_superior_temporal_gyrus, left_anterior_temporal_lobe | VBCM analysis of PCA factors
+2026-10-22 | EXTRACTED | @Hope2013 | lesion_volume, time_post_onset | GPR-based prediction of speech production in n=270 patients
+2026-10-22 | MODEL-APPROVED | @Bonilha2016 | severity_metric | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-22 | MODEL-APPROVED | @Griffis2017 | left_frontal_white_matter_bottleneck | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A

@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: sex
-name: Sex
+name: Patient sex
 kind: predictor
 predictor_type: demographic
 short_definition: Biological sex of the patient.

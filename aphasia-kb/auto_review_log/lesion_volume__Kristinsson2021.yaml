@@ -149,6 +149,160 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:10:32'
+- run_id: 3
+  timestamp: '2026-10-22T10:54:56'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/5 quotes (100%) — elided 1, exact 4
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - 'f1: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The relationship is incorrectly labeled as 'causal'. The paper describes
+        a cross-sectional study examining 'associations' and 'correlations' between
+        lesion volume and language measures using linear regression. In scientific
+        literature, a correlation or association does not imply causation, and the
+        authors use the term 'association' throughout (e.g., p. 10, p. 1688). Labeling
+        this as a causal relationship is a violation of the relationship_faithful
+        check.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is recorded as 'causal', but the paper describes
+          a cross-sectional study reporting 'associations' and 'correlations'. The
+          authors explicitly state 'The only significant association was found...'
+          (p. 10), which does not support a causal claim.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The relationship\
+      \ is incorrectly labeled as 'causal'. The paper describes a cross-sectional\
+      \ study examining 'associations' and 'correlations' between lesion volume and\
+      \ language measures using linear regression. In scientific literature, a correlation\
+      \ or association does not imply causation, and the authors use the term 'association'\
+      \ throughout (e.g., p. 10, p. 1688). Labeling this as a causal relationship\
+      \ is a violation of the relationship_faithful check.\",\n  \"per_finding\":\
+      \ [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
+      passage_supports_field\": true,\n      \"relationship_faithful\": false,\n \
+      \     \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limitations_captured\"\
+      : true,\n      \"omissions\": \"\",\n      \"concern\": \"The re"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 4
+  timestamp: '2026-10-22T21:02:31'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/5 quotes (100%) — elided 1, exact 4
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - 'f1: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft incorrectly identifies the relationship as 'causal'. The
+        paper describes a cross-sectional study examining associations/correlations
+        between lesion volume and language measures using linear regression and SVR.
+        The authors explicitly use terms like 'association' and 'correlation', and
+        the design is cross-sectional, which cannot establish causality. Therefore,
+        the 'relationship_faithful' check fails.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is recorded as 'causal', but the paper describes
+          a cross-sectional study reporting associations and correlations. Causal
+          claims are not supported by the study design or text.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ incorrectly identifies the relationship as 'causal'. The paper describes a\
+      \ cross-sectional study examining associations/correlations between lesion volume\
+      \ and language measures using linear regression and SVR. The authors explicitly\
+      \ use terms like 'association' and 'correlation', and the design is cross-sectional,\
+      \ which cannot establish causality. Therefore, the 'relationship_faithful' check\
+      \ fails.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n      \"passage_present\"\
+      : true,\n      \"passage_supports_field\": true,\n      \"relationship_faithful\"\
+      : false,\n      \"strength_fair\": true,\n      \"numbers_match\": true,\n \
+      \     \"limitations_captured\": true,\n      \"omissions\": \"\",\n      \"\
+      concern\": \"The relationship is recorded as 'causal', but the pap"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:02:31'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

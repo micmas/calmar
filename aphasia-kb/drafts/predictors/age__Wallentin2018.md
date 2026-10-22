@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: age
-name: Age
+name: Age at stroke
 kind: predictor
 predictor_type: demographic
 short_definition: Age of the patient at the time of stroke.

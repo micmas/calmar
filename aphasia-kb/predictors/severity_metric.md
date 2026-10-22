@@ -1223,6 +1223,85 @@ findings:
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+- id: f10
+  target: anomic_aphasia
+  target_kind: therapy
+  claim: Patients with less severe aphasia at baseline achieve greater improvement
+    in naming following speech therapy.
+  direction: likely
+  relationship: responder
+  citation: '@Bonilha2016'
+  method: behavioral_only
+  design: cross-sectional
+  strength: moderate
+  evidence_quality: cohort
+  instrument: WAB-AQ
+  score_band: all severities
+  interpretation: Baseline severity moderates the magnitude of naming recovery.
+  sample:
+    n: 24
+    population: chronic left-hemisphere ischemic stroke
+    time_post_onset: at least 6 months
+    phase: chronic
+    age_range: mean 60.2 (SD 11.9)
+    handedness: all right-handed
+    language: not_reported
+  statistics:
+    threshold: P < .008
+    effect_size: T = 2.45
+    p_value: '.03'
+  confounders_controlled:
+  - age
+  - time since the stroke
+  - stroke lesion size
+  confounders_not_controlled: []
+  region_definition:
+    kind: not_reported
+    description: behavioural-only treatment-efficacy finding — no specific brain region
+  author_limitations:
+  - The study focused on only one aspect of aphasia, namely, anomia.
+  - All patients underwent identical treatment regardless of individual baseline performance
+    or type of aphasia.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, page 271
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 271
+    quote: In this model, WAB-AQ was also associated with treatment-related improvement
+      in naming (T = 2.45, P = .03); patients with less severe aphasia achieved a
+      higher naming improvement.
+    supports: claim
+  - section: Subjects
+    page: 268
+    quote: We studied 24 individuals recruited from the local community with chronic
+      aphasia as a result of a left hemisphere ischemic stroke that occurred at least
+      6 months prior to enrolling in this study.
+    supports: sample
+  - section: Statistical Analyses
+    page: 270
+    quote: The relationship between naming improvement and neural architecture was
+      investigated through multiple linear regressions... Control for multiple comparisons
+      was performed through Bonferroni correction... the level of statistical significance
+      of a given model was set at P < .05/6 = .008.
+    supports: method
+  - section: Limitations and Future Studies
+    page: 276
+    quote: Second, we focused on just one aspect of aphasia, namely, anomia.
+    supports: limitation
+  - section: Limitations and Future Studies
+    page: 276
+    quote: In addition, all patients underwent identical treatment, despite their
+      individual baseline performance or type of aphasia.
+    supports: limitation
+  review:
+    reviewer: model:gemma4:26b
+    reviewed_on: '2026-10-22'
+    tier: A
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
 notes: "This is the umbrella entry for *any* finding about how aphasia severity predicts\
   \ an outcome. Different studies use different instruments (WAB-AQ, BDAE severity,\
   \ CAT, AAT, …); rather than fragmenting the literature into one predictor entry\

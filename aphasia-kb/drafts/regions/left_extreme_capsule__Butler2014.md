@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: left_extreme_capsule
-name: Left Extreme Capsule
+name: Left Extreme Capsule (Ventral Language Pathway)
 kind: tract
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

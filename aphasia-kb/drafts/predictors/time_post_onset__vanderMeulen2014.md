@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: time_post_onset
-name: Time Post-Onset
+name: Time post-stroke onset
 kind: predictor
 predictor_type: clinical
 short_definition: The duration of time elapsed since the stroke event occurred.

@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: melodic_intonation_therapy
-name: Melodic Intonation Therapy
+name: Melodic Intonation Therapy (MIT)
 kind: therapy
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

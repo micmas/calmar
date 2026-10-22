@@ -1,6 +1,6 @@
 ---
 schema_version: 2.3
-id: dysarthria_interventions
+id: dysarthria_interventions__Mitchell2017
 name: Interventions for Dysarthria due to Stroke and Brain Injury
 kind: review
 status: draft

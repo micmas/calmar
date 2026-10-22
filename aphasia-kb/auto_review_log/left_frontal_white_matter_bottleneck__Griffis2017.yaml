@@ -1,0 +1,77 @@
+draft_path: drafts/regions/left_frontal_white_matter_bottleneck__Griffis2017.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-22T21:23:33'
+  mode: with_llm_review
+  verdict: auto_approve
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/5 quotes (100%) — elided 2, exact 3
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: A
+  tier_reasons: []
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: approve
+    parsed:
+      overall_verdict: approve
+      rationale: The finding accurately reflects the paper's results. The claim regarding
+        the anterior bottleneck and verbal fluency is supported by the abstract and
+        results section. The sample size, timing, and statistical thresholds match
+        the text exactly. The author-stated limitations regarding ROI definition and
+        the chronic-only sample are correctly captured.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"The finding\
+      \ accurately reflects the paper's results. The claim regarding the anterior\
+      \ bottleneck and verbal fluency is supported by the abstract and results section.\
+      \ The sample size, timing, and statistical thresholds match the text exactly.\
+      \ The author-stated limitations regarding ROI definition and the chronic-only\
+      \ sample are correctly captured.\",\n  \"per_finding\": [\n    {\n      \"id\"\
+      : \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\": \"agree\"\
+      \n    }\n  ]\n}"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:23:33'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

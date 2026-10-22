@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: left_arcuate_fasciculus_slf
-name: Left Arcuate Fasciculus / Superior Longitudinal Fasciculus
+name: Left Arcuate Fasciculus and Superior Longitudinal Fascicle (Dorsal Language Pathway)
 kind: tract
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

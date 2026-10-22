@@ -84,6 +84,173 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:31:18'
+- run_id: 2
+  timestamp: '2026-10-22T11:12:17'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 4/7 quotes (57%) — anchored 3, exact 4
+    - '3 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.4): An analysis of the overlap of the lesion with
+      the topography of atlas-based whit…'
+    - '  - [anchored] f1.sample (p.2): Subjects (n = 172) with a first symptomatic
+      stroke anywhere in the brain and cli…'
+    - '  - [anchored] f1.method (p.8): To provide low-dimensional information about
+      lesion location for deficit recover…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The relationship is incorrectly labeled as 'causal'. The paper describes
+        an association/prediction based on a regression model (correlation), not a
+        causal experiment. Additionally, the claim describes damage to the 'long segment'
+        of the arcuate fasciculus, whereas the text specifically mentions the 'long
+        segment of the arcuate fasciculus' in relation to the posterior segment, but
+        the statistical finding is an association, not a causal link.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is recorded as 'causal', but the paper describes
+          a predictive/associative relationship using regression analysis. The authors
+          state that lesion topography 'predicts' outcomes, which is a correlational/predictive
+          relationship, not a causal one.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The relationship\
+      \ is incorrectly labeled as 'causal'. The paper describes an association/prediction\
+      \ based on a regression model (correlation), not a causal experiment. Additionally,\
+      \ the claim describes damage to the 'long segment' of the arcuate fasciculus,\
+      \ whereas the text specifically mentions the 'long segment of the arcuate fasciculus'\
+      \ in relation to the posterior segment, but the statistical finding is an association,\
+      \ not a causal link.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n\
+      \      \"passage_present\": true,\n      \"passage_supports_field\": true,\n\
+      \      \"relationship_faithful\": false,\n      \"strength_fair\": true,\n \
+      \     \"numbers_match\": true,\n      \"limitations_captured\": true,\n    \
+      \  \"omissions\": \"\",\n      \"concern\": \"The relationship is "
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 3
+  timestamp: '2026-10-22T21:19:12'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 4/7 quotes (57%) — anchored 3, exact 4
+    - '3 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.4): An analysis of the overlap of the lesion with
+      the topography of atlas-based whit…'
+    - '  - [anchored] f1.sample (p.2): Subjects (n = 172) with a first symptomatic
+      stroke anywhere in the brain and cli…'
+    - '  - [anchored] f1.method (p.8): To provide low-dimensional information about
+      lesion location for deficit recover…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft incorrectly labels the relationship as 'causal'. The paper
+        describes an association/prediction based on regression analysis of lesion
+        topography, which is correlational. The claim that damage 'is associated with'
+        is supported, but the 'causal' tag is a misinterpretation of the statistical
+        relationship reported.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is tagged as 'causal', but the paper reports a regression
+          analysis where lesion topography predicts outcomes, which is a correlational/predictive
+          relationship, not a causal one.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ incorrectly labels the relationship as 'causal'. The paper describes an association/prediction\
+      \ based on regression analysis of lesion topography, which is correlational.\
+      \ The claim that damage 'is associated with' is supported, but the 'causal'\
+      \ tag is a misinterpretation of the statistical relationship reported.\",\n\
+      \  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n      \"passage_present\"\
+      : true,\n      \"passage_supports_field\": true,\n      \"relationship_faithful\"\
+      : false,\n      \"strength_fair\": true,\n      \"numbers_match\": true,\n \
+      \     \"limitations_captured\": true,\n      \"omissions\": \"\",\n      \"\
+      concern\": \"The relationship is tagged as 'causal', but the paper reports a\
+      \ regression analysis where lesion topography predicts outcomes, which is a\
+      \ corr"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:19:12'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

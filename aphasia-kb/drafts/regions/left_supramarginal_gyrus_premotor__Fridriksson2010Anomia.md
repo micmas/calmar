@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: left_supramarginal_gyrus_premotor
-name: Left Supramarginal Gyrus / Premotor
+name: Left Supramarginal Gyrus and Premotor Cortex (supra-Sylvian)
 kind: classical
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

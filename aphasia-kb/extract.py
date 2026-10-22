@@ -678,6 +678,14 @@ def _repair_frontmatter(content: str, created_by: str) -> tuple[str, list[str]]:
     if fixed != fm_block:
         notes.append("straightened smart quotes")
 
+    # An indented `---` inside the YAML (seen 2026-10-22, Griffis2017:
+    # between two findings) is never valid there; real fences start at
+    # column 0. Drop it rather than lose the whole draft.
+    unfenced = re.sub(r"(?m)^[ \t]+---[ \t]*\n", "", fixed)
+    if unfenced != fixed:
+        notes.append("removed a stray indented ---")
+        fixed = unfenced
+
     # Force-set created_by / created_on.
     today = dt.date.today().isoformat()
     if re.search(r"^created_by:.*$", fixed, re.MULTILINE):
@@ -885,7 +893,12 @@ def validate_drafts(saved: list[Path]) -> int:
         return 0
     total = 0
     for p in saved:
-        fm, _ = parse_markdown(p)
+        try:
+            fm, _ = parse_markdown(p)
+        except Exception as e:  # noqa: BLE001 — one bad draft must not stop the paper
+            print(f"  ⚠ {p.name}: frontmatter does not parse — fix by hand ({str(e).splitlines()[0]})")
+            total += 1
+            continue
         if not fm:
             print(f"  ⚠ {p.name}: no frontmatter")
             total += 1

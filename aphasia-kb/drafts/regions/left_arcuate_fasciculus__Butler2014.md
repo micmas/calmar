@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: left_arcuate_fasciculus
-name: Left Arcuate Fasciculus
+name: Left arcuate fasciculus
 kind: tract
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

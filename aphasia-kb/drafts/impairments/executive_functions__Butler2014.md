@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: executive_functions
-name: Executive Functions
+name: Executive functions
 kind: impairment
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

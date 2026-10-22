@@ -304,6 +304,224 @@ runs:
     extractor: agent:claude-sonnet-4-6
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:25:54'
+- run_id: 5
+  timestamp: '2026-10-22T11:08:28'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 18/18 quotes (100%) — exact 18
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  - 'f2: has provenance.flags'
+  - 'f3: has provenance.flags'
+  - 'f4: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft contains duplicate findings (f1/f3 and f2/f4). While the
+        content of the findings appears mostly accurate to the text, the presence
+        of exact duplicates is a structural error. Additionally, f1/f3 claims the
+        ATL is the 'primary substrate', whereas the authors suggest it 'becomes increasingly
+        influential' or is 'crucial', which is a subtle but important distinction
+        in strength/relationship. I defer due to the duplicate entries.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The claim that ATL is the 'primary substrate' is a slightly stronger
+          interpretation than the text's 'increasingly influential', though the authors
+          do support the idea that these regions are 'crucial'.
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f3
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: This is an exact duplicate of f1.
+        verdict: agree
+      - id: f4
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: This is an exact duplicate of f2.
+        verdict: agree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ contains duplicate findings (f1/f3 and f2/f4). While the content of the findings\
+      \ appears mostly accurate to the text, the presence of exact duplicates is a\
+      \ structural error. Additionally, f1/f3 claims the ATL is the 'primary substrate',\
+      \ whereas the authors suggest it 'becomes increasingly influential' or is 'crucial',\
+      \ which is a subtle but important distinction in strength/relationship. I defer\
+      \ due to the duplicate entries.\",\n  \"per_finding\": [\n    {\n      \"id\"\
+      : \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"The claim that ATL is the 'p"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:claude-sonnet-4-6
+    independent: true
+    papers_missing: []
+- run_id: 6
+  timestamp: '2026-10-22T21:15:00'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 18/18 quotes (100%) — exact 18
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  - 'f2: has provenance.flags'
+  - 'f3: has provenance.flags'
+  - 'f4: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft contains duplicate findings (f1/f3 and f2/f4). While the
+        content of the findings appears to accurately reflect the paper, the presence
+        of redundant entries makes the draft structurally unsound for a knowledge
+        base. I am deferring because I cannot approve a draft that repeats the same
+        findings twice.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f3
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f4
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ contains duplicate findings (f1/f3 and f2/f4). While the content of the findings\
+      \ appears to accurately reflect the paper, the presence of redundant entries\
+      \ makes the draft structurally unsound for a knowledge base. I am deferring\
+      \ because I cannot approve a draft that repeats the same findings twice.\",\n\
+      \  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n      \"passage_present\"\
+      : true,\n      \"passage_supports_field\": true,\n      \"relationship_faithful\"\
+      : true,\n      \"strength_fair\": true,\n      \"numbers_match\": true,\n  \
+      \    \"limitations_captured\": true,\n      \"omissions\": \"\",\n      \"concern\"\
+      : \"\",\n      \"verdict\": \"agree\"\n    },\n    {\n      \"id\": \"f2\",\n\
+      \      \"passage_present\": true,\n      \"passage_supports_field\": true,\n\
+      \      \"relationship_faithfu"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:claude-sonnet-4-6
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:15:00'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

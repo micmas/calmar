@@ -44,6 +44,94 @@ runs:
   - schema not clean
   - not every passage matched the PDF exactly
   - new entry id (not appending to an existing entry)
-last_run: '2026-10-22T07:16:57'
+- run_id: 2
+  timestamp: '2026-10-22T11:50:05'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/regions/right_middle_temporal_gyrus__Hope2017.md:
+      finding[0] (id=f1): unknown method=''VBM''; allowed: [''DTI'', ''EEG'', ''LSM'',
+      ''MEG'', ''MLPA'', ''MVPA'', ''NODDI'', ''RLSM'', ''TMS'', ''VBCM'', ''VLSM'',
+      ''behavioral_only'', ''clinical_RCT'', ''computational_model'', ''disconnectome'',
+      ''fMRI_FC'', ''fMRI_activation'', ''lesion_network_mapping'', ''meta-analysis'',
+      ''narrative_review'', ''rs_fMRI'', ''tDCS'', ''tractography'']'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 2/6 quotes (33%) — anchored 4, elided 1, exact 1
+    - '4 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.1722): The ''positive'' clusters (i.e. associating
+      increasing grey matter with increasing…'
+    - '  - [anchored] f1.sample (p.3): Summary details of the 28 patients who met
+      these criteria are as follows: 10 fem…'
+    - '  - [anchored] f1.statistics (p.4): The results were corrected for multiple
+      comparisons using permutation thresholdi…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+- run_id: 3
+  timestamp: '2026-10-22T21:55:29'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/regions/right_middle_temporal_gyrus__Hope2017.md:
+      finding[0] (id=f1): unknown method=''VBM''; allowed: [''DTI'', ''EEG'', ''LSM'',
+      ''MEG'', ''MLPA'', ''MVPA'', ''NODDI'', ''RLSM'', ''TMS'', ''VBCM'', ''VLSM'',
+      ''behavioral_only'', ''clinical_RCT'', ''computational_model'', ''disconnectome'',
+      ''fMRI_FC'', ''fMRI_activation'', ''lesion_network_mapping'', ''meta-analysis'',
+      ''narrative_review'', ''rs_fMRI'', ''tDCS'', ''tractography'']'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 2/6 quotes (33%) — anchored 4, elided 1, exact 1
+    - '4 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.1722): The ''positive'' clusters (i.e. associating
+      increasing grey matter with increasing…'
+    - '  - [anchored] f1.sample (p.3): Summary details of the 28 patients who met
+      these criteria are as follows: 10 fem…'
+    - '  - [anchored] f1.statistics (p.4): The results were corrected for multiple
+      comparisons using permutation thresholdi…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+last_run: '2026-10-22T21:55:29'
 latest_verdict: auto_reject
 latest_mode: deterministic_only
