@@ -1,7 +1,7 @@
 draft_path: drafts/regions/left_superior_longitudinal_fasciculus__Breier2008.md
 runs:
 - run_id: 1
-  timestamp: '2026-10-22T07:04:58'
+  timestamp: '2026-10-22T21:46:08'
   mode: with_llm_review
   verdict: checks_passed
   checks:
@@ -18,12 +18,14 @@ runs:
     passed: true
     blocker: true
     details:
-    - matched 0/2 quotes (0%) — anchored 2
-    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
-    - '  - [anchored] f1.claim (p.3): For the SLF, only the relationship between the
-      FA value and repetition was signi…'
-    - '  - [anchored] f1.region_definition (p.2): We obtained FA values for the SLF
-      as it runs anteroposterior, deep to the should…'
+    - matched 2/6 quotes (33%) — anchored 3, exact 2, near 1
+    - '4 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.484): For the SLF, only the relationship between
+      the FA value and repetition was signi…'
+    - '  - [near] f1.sample (p.483): All of the participants were at least 1 month
+      poststroke onset (mean, 22 months;…'
+    - '  - [anchored] f1.region_definition (p.484): We obtained FA values for the
+      SLF as it runs anteroposterior, deep to the should…'
   - name: no_human_review_flags
     passed: true
     blocker: false
@@ -34,18 +36,17 @@ runs:
   tier_reasons:
   - not every passage matched the PDF exactly
   - new entry id (not appending to an existing entry)
-  - 'f1: has provenance.flags'
   llm_review:
     model: gemma4:26b
     backend: ollama (local)
     verdict_override: null
     parsed:
       overall_verdict: approve
-      rationale: The finding accurately reflects the paper's results. The statistical
-        values (F-statistic, p-value, and threshold) match the text exactly. The sample
-        details (n=20, mean 22 months post-stroke) are correct. The claim of a correlational
-        relationship is faithful to the study design, and the author-stated limitations
-        regarding FA specificity and ROI shape are correctly captured.
+      rationale: The finding accurately reflects the paper's results. The claim of
+        independence from cortical damage is supported by the text stating findings
+        remained significant when using MR imaging ratings as covariates. The statistical
+        values, sample details, and limitations (FA non-specificity, ROI shape, and
+        poststroke reorganization) are all correctly extracted from the text.
       per_finding:
       - id: f1
         passage_present: true
@@ -59,16 +60,16 @@ runs:
         verdict: agree
       overall_verdict_v1: override_approve
     raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"The finding\
-      \ accurately reflects the paper's results. The statistical values (F-statistic,\
-      \ p-value, and threshold) match the text exactly. The sample details (n=20,\
-      \ mean 22 months post-stroke) are correct. The claim of a correlational relationship\
-      \ is faithful to the study design, and the author-stated limitations regarding\
-      \ FA specificity and ROI shape are correctly captured.\",\n  \"per_finding\"\
-      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
-      passage_supports_field\": true,\n      \"relationship_faithful\": true,\n  \
-      \    \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limitations_captured\"\
-      : true,\n      \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\"\
-      : \"agree\"\n    }\n  ]\n}"
+      \ accurately reflects the paper's results. The claim of independence from cortical\
+      \ damage is supported by the text stating findings remained significant when\
+      \ using MR imaging ratings as covariates. The statistical values, sample details,\
+      \ and limitations (FA non-specificity, ROI shape, and poststroke reorganization)\
+      \ are all correctly extracted from the text.\",\n  \"per_finding\": [\n    {\n\
+      \      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\": \"agree\"\
+      \n    }\n  ]\n}"
     error: null
     votes: 3
     vote_verdicts:
@@ -82,6 +83,6 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T07:04:58'
+last_run: '2026-10-22T21:46:08'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

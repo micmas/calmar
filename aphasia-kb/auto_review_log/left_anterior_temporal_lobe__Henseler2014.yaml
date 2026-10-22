@@ -150,6 +150,159 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:25:11'
+- run_id: 3
+  timestamp: '2026-10-22T11:08:00'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 2/2 quotes (100%) — exact 2
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: A
+  tier_reasons: []
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The finding claims a causal relationship ('causal'), whereas the
+        paper describes a correlational VLSM analysis ('correlates with'). In the
+        context of lesion-symptom mapping, finding a correlation between a lesion
+        and a deficit does not establish causality. Therefore, the `relationship_faithful`
+        check fails.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The draft labels the relationship as 'causal', but the paper reports
+          a correlation ('correlates with'). VLSM identifies associations, not causal
+          mechanisms.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The finding\
+      \ claims a causal relationship ('causal'), whereas the paper describes a correlational\
+      \ VLSM analysis ('correlates with'). In the context of lesion-symptom mapping,\
+      \ finding a correlation between a lesion and a deficit does not establish causality.\
+      \ Therefore, the `relationship_faithful` check fails.\",\n  \"per_finding\"\
+      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
+      passage_supports_field\": true,\n      \"relationship_faithful\": false,\n \
+      \     \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limitations_captured\"\
+      : true,\n      \"omissions\": \"\",\n      \"concern\": \"The draft labels the\
+      \ relationship as 'causal', but the paper reports a correlation ('correlates\
+      \ with'). VLSM identifies associations, not causal mechanisms."
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 4
+  timestamp: '2026-10-22T21:14:30'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 2/2 quotes (100%) — exact 2
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: A
+  tier_reasons: []
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft incorrectly identifies the relationship as 'causal'. The
+        paper describes a correlational study using VLSM (voxel-based lesion-symptom
+        mapping) to find associations between brain damage and performance. The authors
+        explicitly state they are investigating 'correlates' and 'associations', not
+        establishing causality. Additionally, the claim specifies 'anomic aphasia',
+        but the paper discusses naming of compound nouns as a specific symptom/task
+        within a broader lexico-semantic assessment, not as a diagnosis of anomic
+        aphasia.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is recorded as 'causal', but the paper describes
+          a correlational VLSM study. The authors use terms like 'correlates', 'associated
+          with', and 'relates to', which do not support a causal claim. Furthermore,
+          the finding targets 'anomic aphasia', whereas the text discusses the specific
+          task of naming compound nouns as a symptom/subtest.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ incorrectly identifies the relationship as 'causal'. The paper describes a\
+      \ correlational study using VLSM (voxel-based lesion-symptom mapping) to find\
+      \ associations between brain damage and performance. The authors explicitly\
+      \ state they are investigating 'correlates' and 'associations', not establishing\
+      \ causality. Additionally, the claim specifies 'anomic aphasia', but the paper\
+      \ discusses naming of compound nouns as a specific symptom/task within a broader\
+      \ lexico-semantic assessment, not as a diagnosis of anomic aphasia.\",\n  \"\
+      per_finding\": [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n\
+      \      \"passage_supports_field\": true,\n      \"relationship_faithful\": false,\n\
+      \      \"strength_fair\": true,\n      \"numbers_match\": true,\n      "
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:14:30'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

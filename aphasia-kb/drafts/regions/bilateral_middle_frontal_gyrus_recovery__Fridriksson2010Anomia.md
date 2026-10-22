@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: bilateral_middle_frontal_gyrus_recovery
-name: Bilateral Middle Frontal Gyrus Recovery
+name: Bilateral Middle Frontal Gyrus and Right Temporo-Occipital MTG — Fluency Recovery
 kind: classical
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

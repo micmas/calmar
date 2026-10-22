@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: lesion_volume
-name: Lesion Volume
+name: Total lesion volume
 kind: predictor
 predictor_type: imaging_metric
 short_definition: The total volume of the stroke lesion.

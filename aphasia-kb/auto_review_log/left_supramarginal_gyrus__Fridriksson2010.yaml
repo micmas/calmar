@@ -84,6 +84,173 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T07:10:56'
+- run_id: 2
+  timestamp: '2026-10-22T11:44:42'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/7 quotes (71%) — anchored 1, elided 1, exact 4, near 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.3): The WLS regression analysis of the PWI data
+      revealed that the best predictor of …'
+    - '  - [near] f1.sample (p.2): The mean patient age was 63.5 years (range 34-85,
+      SD 12).…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: The finding accurately reflects the paper's results. The claim correctly
+        identifies the predictor (hypoperfusion in the inferior left supramarginal
+        gyrus) and the relationship (predictor/causal). The statistics (Z = -4.21,
+        1% FDR) and sample details (n=39, left hemisphere ischemic stroke, timing)
+        match the text exactly. The author's limitation regarding aphasia types is
+        correctly captured.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"The finding\
+      \ accurately reflects the paper's results. The claim correctly identifies the\
+      \ predictor (hypoperfusion in the inferior left supramarginal gyrus) and the\
+      \ relationship (predictor/causal). The statistics (Z = -4.21, 1% FDR) and sample\
+      \ details (n=39, left hemisphere ischemic stroke, timing) match the text exactly.\
+      \ The author's limitation regarding aphasia types is correctly captured.\",\n\
+      \  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n      \"passage_present\"\
+      : true,\n      \"passage_supports_field\": true,\n      \"relationship_faithful\"\
+      : true,\n      \"strength_fair\": true,\n      \"numbers_match\": true,\n  \
+      \    \"limitations_captured\": true,\n      \"omissions\": \"\",\n      \"concern\"\
+      : \"\",\n      \"verdict\": \"agree\"\n    }\n  ]\n}"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 3
+  timestamp: '2026-10-22T21:50:30'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/7 quotes (71%) — anchored 1, elided 1, exact 4, near 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.3): The WLS regression analysis of the PWI data
+      revealed that the best predictor of …'
+    - '  - [near] f1.sample (p.2): The mean patient age was 63.5 years (range 34-85,
+      SD 12).…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: The finding accurately reflects the paper's results. The claim correctly
+        identifies the predictor (hypoperfusion in the inferior left supramarginal
+        gyrus) and the relationship (predictor/causal). Statistics (Z = -4.21, 1%
+        FDR) and sample details (n=39, ischemic stroke, time post-onset) match the
+        text exactly. The limitation regarding aphasia types and other deficits is
+        also correctly extracted from the discussion.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"The finding\
+      \ accurately reflects the paper's results. The claim correctly identifies the\
+      \ predictor (hypoperfusion in the inferior left supramarginal gyrus) and the\
+      \ relationship (predictor/causal). Statistics (Z = -4.21, 1% FDR) and sample\
+      \ details (n=39, ischemic stroke, time post-onset) match the text exactly. The\
+      \ limitation regarding aphasia types and other deficits is also correctly extracted\
+      \ from the discussion.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\"\
+      ,\n      \"passage_present\": true,\n      \"passage_supports_field\": true,\n\
+      \      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n  \
+      \    \"numbers_match\": true,\n      \"limitations_captured\": true,\n     \
+      \ \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\": \"agree\"\
+      \n    }\n  ]\n}"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:50:30'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

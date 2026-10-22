@@ -1,19 +1,13 @@
 draft_path: drafts/predictors/severity_metric__Bonilha2016.md
 runs:
 - run_id: 1
-  timestamp: '2026-10-22T05:53:40'
-  mode: deterministic_only
-  verdict: auto_reject
+  timestamp: '2026-10-22T21:04:32'
+  mode: with_llm_review
+  verdict: auto_approve
   checks:
   - name: schema_valid
-    passed: false
+    passed: true
     blocker: true
-    details:
-    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Bonilha2016.md:
-      finding[0] (id=f1): region_definition.kind=None invalid'
-    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Bonilha2016.md:
-      finding[0] (id=f1): predictor triplet partially set (have [''instrument''],
-      missing [''score_band'', ''interpretation'']); fill all three or none'
   - name: no_low_confidence_findings
     passed: true
     blocker: true
@@ -24,48 +18,61 @@ runs:
     passed: true
     blocker: true
     details:
-    - matched 1/1 quotes (100%) — exact 1
+    - matched 5/5 quotes (100%) — elided 1, exact 4
   - name: no_human_review_flags
     passed: true
     blocker: false
   - name: cross_finding_consistency
     passed: true
     blocker: false
-  review_tier: B
-  tier_reasons:
-  - schema not clean
-- run_id: 2
-  timestamp: '2026-10-22T06:12:47'
-  mode: deterministic_only
-  verdict: auto_reject
-  checks:
-  - name: schema_valid
-    passed: false
-    blocker: true
-    details:
-    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/severity_metric__Bonilha2016.md:
-      finding[0] (id=f1): predictor triplet partially set (have [''instrument''],
-      missing [''score_band'', ''interpretation'']); fill all three or none'
-  - name: no_low_confidence_findings
-    passed: true
-    blocker: true
-  - name: no_contradictions
-    passed: true
-    blocker: true
-  - name: pdf_quote_match
-    passed: true
-    blocker: true
-    details:
-    - matched 1/1 quotes (100%) — exact 1
-  - name: no_human_review_flags
-    passed: true
-    blocker: false
-  - name: cross_finding_consistency
-    passed: true
-    blocker: false
-  review_tier: B
-  tier_reasons:
-  - schema not clean
-last_run: '2026-10-22T06:12:47'
-latest_verdict: auto_reject
-latest_mode: deterministic_only
+  review_tier: A
+  tier_reasons: []
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: approve
+    parsed:
+      overall_verdict: approve
+      rationale: The finding accurately reflects the paper's results. The claim regarding
+        baseline severity (WAB-AQ) predicting naming improvement is directly supported
+        by the text and statistics (T=2.45, p=.03). The sample details, methodology
+        (Bonferroni correction), and author-stated limitations (focus on anomia and
+        identical treatment) are all correctly extracted and verified against the
+        provided text.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"The finding\
+      \ accurately reflects the paper's results. The claim regarding baseline severity\
+      \ (WAB-AQ) predicting naming improvement is directly supported by the text and\
+      \ statistics (T=2.45, p=.03). The sample details, methodology (Bonferroni correction),\
+      \ and author-stated limitations (focus on anomia and identical treatment) are\
+      \ all correctly extracted and verified against the provided text.\",\n  \"per_finding\"\
+      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
+      passage_supports_field\": true,\n      \"relationship_faithful\": true,\n  \
+      \    \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limitations_captured\"\
+      : true,\n      \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\"\
+      : \"agree\"\n    }\n  ]\n}"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:04:32'
+latest_verdict: auto_approve
+latest_mode: with_llm_review

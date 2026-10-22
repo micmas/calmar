@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: left_middle_temporal_gyrus
-name: Left Middle Temporal Gyrus
+name: Left Middle Temporal Gyrus (Ventral Stream Node)
 kind: classical
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

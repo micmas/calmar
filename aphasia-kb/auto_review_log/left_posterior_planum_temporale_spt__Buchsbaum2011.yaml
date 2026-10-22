@@ -98,6 +98,196 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:57:38'
+- run_id: 2
+  timestamp: '2026-10-22T11:33:21'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/10 quotes (100%) — elided 2, exact 8
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Buchsbaum2011: sample.n disagrees: [14, 105]'
+  review_tier: B
+  tier_reasons:
+  - new entry id (not appending to an existing entry)
+  - 'f2: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft contains a significant error in the sample size for f2.
+        While the text confirms 105 subjects for the fMRI analysis, the draft's 'statistics'
+        section for f2 claims '33% of subjects showed significant activation in Spt'.
+        The paper actually states that 33% is the *peak percentage of overlap* in
+        Spt (referring to the lesion/fMRI conjunction or anatomical variability),
+        not the percentage of subjects showing activation. This misinterpretation
+        of the 33% figure is a critical error.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: false
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: false
+        limitations_captured: true
+        omissions: ''
+        concern: The statistics field incorrectly attributes the '33%' value to the
+          percentage of subjects showing activation, whereas the paper uses 33% to
+          describe the peak percentage of overlap in Spt due to anatomical variability.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ contains a significant error in the sample size for f2. While the text confirms\
+      \ 105 subjects for the fMRI analysis, the draft's 'statistics' section for f2\
+      \ claims '33% of subjects showed significant activation in Spt'. The paper actually\
+      \ states that 33% is the *peak percentage of overlap* in Spt (referring to the\
+      \ lesion/fMRI conjunction or anatomical variability), not the percentage of\
+      \ subjects showing activation. This misinterpretation of the 33% figure is a\
+      \ critical error.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n \
+      \     \"passage_present\": true,\n      \"passage_supports_field\": true,\n\
+      \      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n  \
+      \    \"numbers_match\": true,\n      \"limitations_captured\": true,\n     \
+      \ \"omissions\""
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 3
+  timestamp: '2026-10-22T21:40:20'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 10/10 quotes (100%) — elided 2, exact 8
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Buchsbaum2011: sample.n disagrees: [14, 105]'
+  review_tier: B
+  tier_reasons:
+  - new entry id (not appending to an existing entry)
+  - 'f2: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: In f1, the relationship is described as 'causal' in the draft, but
+        the paper text presents this as a hypothesis/discussion point ('One hypothesis...
+        is that conduction aphasia is a deficit that is caused by damage to Spt').
+        The study itself is a cross-sectional lesion-overlap and fMRI conjunction
+        study, which provides correlational/associative evidence rather than establishing
+        causality. In f2, the statistics for the threshold are slightly misaligned
+        with the text's presentation of the conjunction threshold.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The draft labels the relationship as 'causal'. However, the paper
+          presents the causal link as a hypothesis being tested or discussed ('One
+          hypothesis... is that conduction aphasia is a deficit that is caused by
+          damage to Spt'). The study's design (lesion overlap and fMRI conjunction)
+          provides evidence of association/overlap, not direct causal proof.
+        verdict: disagree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The draft states '33% of subjects showed significant activation in
+          Spt' as a statistic. While the paper mentions 33% in the context of the
+          peak percentage of overlap in Spt (referring to the lesion/fMRI conjunction/anatomical
+          variability discussion on page 6), the actual fMRI activation results for
+          the subjects are described via thresholds (37% for encoding, 28% for delay).
+          The 33% figure in the text is specifically linked to the 'peak percentage
+          of overlap in Spt' in the discussion of anatomical variability, not the
+          raw percentage of subjects showing activation in the Spt cluster itself.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"In f1,\
+      \ the relationship is described as 'causal' in the draft, but the paper text\
+      \ presents this as a hypothesis/discussion point ('One hypothesis... is that\
+      \ conduction aphasia is a deficit that is caused by damage to Spt'). The study\
+      \ itself is a cross-sectional lesion-overlap and fMRI conjunction study, which\
+      \ provides correlational/associative evidence rather than establishing causality.\
+      \ In f2, the statistics for the threshold are slightly misaligned with the text's\
+      \ presentation of the conjunction threshold.\",\n  \"per_finding\": [\n    {\n\
+      \      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": false,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\""
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:40:20'
 latest_verdict: defer_to_human
 latest_mode: with_llm_review

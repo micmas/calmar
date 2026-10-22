@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: left_precentral_gyrus_insula
-name: Left Precentral Gyrus of the Insula
+name: Left precentral gyrus of the insula
 kind: classical
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

@@ -1,46 +1,9 @@
 draft_path: drafts/predictors/lesion_volume__Benghanem2019.md
 runs:
 - run_id: 1
-  timestamp: '2026-10-22T05:52:23'
-  mode: deterministic_only
-  verdict: auto_reject
-  checks:
-  - name: schema_valid
-    passed: false
-    blocker: true
-    details:
-    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Benghanem2019.md:
-      finding[0] (id=f1): region_definition.kind=None invalid'
-    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Benghanem2019.md:
-      finding[0] (id=f1): imaging_details.reference_space=None invalid (required for
-      imaging method)'
-    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/predictors/lesion_volume__Benghanem2019.md:
-      finding[0] (id=f1): imaging_details.atlases_used must be present (use [] if
-      none)'
-  - name: no_low_confidence_findings
-    passed: true
-    blocker: true
-  - name: no_contradictions
-    passed: true
-    blocker: true
-  - name: pdf_quote_match
-    passed: true
-    blocker: true
-    details:
-    - matched 3/3 quotes (100%) — exact 3
-  - name: no_human_review_flags
-    passed: true
-    blocker: false
-  - name: cross_finding_consistency
-    passed: true
-    blocker: false
-  review_tier: B
-  tier_reasons:
-  - schema not clean
-- run_id: 2
-  timestamp: '2026-10-22T06:08:24'
+  timestamp: '2026-10-22T21:00:23'
   mode: with_llm_review
-  verdict: defer_to_human
+  verdict: checks_passed
   checks:
   - name: schema_valid
     passed: true
@@ -55,65 +18,69 @@ runs:
     passed: true
     blocker: true
     details:
-    - matched 3/3 quotes (100%) — exact 3
+    - matched 1/3 quotes (33%) — anchored 2, exact 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.1305): The infarct volume explained 19.7% of the
+      variance (p = 0.001) [of 3-month good …'
+    - '  - [anchored] f1.method (p.1305): Infarct volume was defined as abnormal hyper-intense
+      regions observed on the DW …'
   - name: no_human_review_flags
-    passed: false
+    passed: true
     blocker: false
-    details:
-    - 'f1: imaging_details.reference_space not extracted by the model — set to not_reported'
   - name: cross_finding_consistency
     passed: true
     blocker: false
   review_tier: B
   tier_reasons:
-  - 'f1: has provenance.flags'
+  - not every passage matched the PDF exactly
   llm_review:
     model: gemma4:26b
     backend: ollama (local)
     verdict_override: null
     parsed:
-      overall_verdict: approve
-      rationale: The finding accurately reflects the paper's results. The claim that
-        infarct volume is a univariate predictor is supported by the text and Table
-        2. The statistics (19.7% variance, p=0.001) match the results section exactly.
-        The sample size (n=73) and the specific limitations regarding in-sample analysis
-        and MNI normalization underestimation are correctly extracted from the text.
+      overall_verdict: defer
+      rationale: The draft incorrectly labels the relationship as 'causal'. The paper
+        describes a predictive/associative relationship (univariate and multivariate
+        analyses) and explicitly notes that 'predict' should perhaps be replaced with
+        'explain' to avoid implying causality. The claim that large volume is associated
+        with poor outcome 'particularly in patients with initially severe aphasia'
+        is supported by the interaction effect described in the results.
       per_finding:
       - id: f1
         passage_present: true
         passage_supports_field: true
-        relationship_faithful: true
+        relationship_faithful: false
         strength_fair: true
         numbers_match: true
         limitations_captured: true
         omissions: ''
-        concern: ''
-        verdict: agree
-      overall_verdict_v1: override_approve
-    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"The finding\
-      \ accurately reflects the paper's results. The claim that infarct volume is\
-      \ a univariate predictor is supported by the text and Table 2. The statistics\
-      \ (19.7% variance, p=0.001) match the results section exactly. The sample size\
-      \ (n=73) and the specific limitations regarding in-sample analysis and MNI normalization\
-      \ underestimation are correctly extracted from the text.\",\n  \"per_finding\"\
-      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
-      passage_supports_field\": true,\n      \"relationship_faithful\": true,\n  \
-      \    \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limitations_captured\"\
-      : true,\n      \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\"\
-      : \"agree\"\n    }\n  ]\n}"
+        concern: The relationship is recorded as 'causal', but the paper describes
+          an association/prediction. The authors explicitly caution against using
+          'predict' instead of 'explain' to avoid such implications.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ incorrectly labels the relationship as 'causal'. The paper describes a predictive/associative\
+      \ relationship (univariate and multivariate analyses) and explicitly notes that\
+      \ 'predict' should perhaps be replaced with 'explain' to avoid implying causality.\
+      \ The claim that large volume is associated with poor outcome 'particularly\
+      \ in patients with initially severe aphasia' is supported by the interaction\
+      \ effect described in the results.\",\n  \"per_finding\": [\n    {\n      \"\
+      id\": \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": false,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"The relationship is "
     error: null
     votes: 3
     vote_verdicts:
-    - approve
-    - approve
-    - approve
+    - defer
+    - defer
+    - defer
     unanimous: true
-    guardrails:
-    - model said approve on Tier B; recorded as agree_defer — a person must approve
-      this tier
+    guardrails: []
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:08:24'
-latest_verdict: defer_to_human
+last_run: '2026-10-22T21:00:23'
+latest_verdict: checks_passed
 latest_mode: with_llm_review

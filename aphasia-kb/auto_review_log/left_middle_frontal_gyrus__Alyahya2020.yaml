@@ -1,9 +1,9 @@
 draft_path: drafts/regions/left_middle_frontal_gyrus__Alyahya2020.md
 runs:
 - run_id: 1
-  timestamp: '2026-10-22T06:51:07'
+  timestamp: '2026-10-22T21:35:21'
   mode: with_llm_review
-  verdict: defer_to_human
+  verdict: checks_passed
   checks:
   - name: schema_valid
     passed: true
@@ -18,15 +18,15 @@ runs:
     passed: true
     blocker: true
     details:
-    - matched 2/3 quotes (67%) — elided 1, exact 1, near 1
-    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
-    - '  - [near] f1.claim (p.8): The ''executive function'' component correlated
-      with the... middle frontal gyri…'
+    - matched 4/6 quotes (67%) — anchored 1, elided 1, exact 3, near 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.1548): the ''verbal quality'' component showed neural
+      correlates across left frontal regi…'
+    - '  - [near] f1.statistics (p.1544): The results were thresholded at P = 0.001
+      voxel-level and cluster-level correcte…'
   - name: no_human_review_flags
-    passed: false
+    passed: true
     blocker: false
-    details:
-    - 'f1: imaging_details.reference_space not extracted by the model — set to not_reported'
   - name: cross_finding_consistency
     passed: true
     blocker: false
@@ -34,20 +34,17 @@ runs:
   tier_reasons:
   - not every passage matched the PDF exactly
   - new entry id (not appending to an existing entry)
-  - 'f1: has provenance.flags'
   llm_review:
     model: gemma4:26b
     backend: ollama (local)
     verdict_override: null
     parsed:
       overall_verdict: defer
-      rationale: The draft claims a causal relationship ('Damage to... is associated
-        with...') for a finding that the paper describes using a 'voxel-based correlational
-        methodology (VBCM)'. The paper explicitly states it identifies 'statistical
-        relationships' via correlation, not causation. Additionally, while the draft
-        identifies the middle frontal gyrus as a correlate, the paper's main finding
-        for executive function (with lesion volume correction) includes the superior
-        frontal gyrus and precentral gyrus alongside the middle frontal gyrus.
+      rationale: The claim states that damage to the left middle frontal gyrus is
+        'associated with reduced verbal quality'. While the paper identifies the middle
+        frontal gyrus as a neural correlate of the 'verbal quality' component, the
+        relationship is described as a 'correlational methodology (VBCM)' rather than
+        causal. The draft incorrectly labels the relationship as 'causal'.
       per_finding:
       - id: f1
         passage_present: true
@@ -57,21 +54,22 @@ runs:
         numbers_match: true
         limitations_captured: true
         omissions: ''
-        concern: The relationship is recorded as 'causal', but the paper uses a correlational
-          methodology (VBCM) to identify 'statistical relationships'.
+        concern: The relationship is labeled as 'causal', but the paper explicitly
+          states they used a 'voxel-based correlational methodology (VBCM)' and identifies
+          'statistical relationships', which are correlational.
         verdict: disagree
       overall_verdict_v1: agree_defer
-    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
-      \ claims a causal relationship ('Damage to... is associated with...') for a\
-      \ finding that the paper describes using a 'voxel-based correlational methodology\
-      \ (VBCM)'. The paper explicitly states it identifies 'statistical relationships'\
-      \ via correlation, not causation. Additionally, while the draft identifies the\
-      \ middle frontal gyrus as a correlate, the paper's main finding for executive\
-      \ function (with lesion volume correction) includes the superior frontal gyrus\
-      \ and precentral gyrus alongside the middle frontal gyrus.\",\n  \"per_finding\"\
-      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
-      passage_supports_field\": true,\n      \"relationship_faithful\": false,\n \
-      \     \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limit"
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The claim\
+      \ states that damage to the left middle frontal gyrus is 'associated with reduced\
+      \ verbal quality'. While the paper identifies the middle frontal gyrus as a\
+      \ neural correlate of the 'verbal quality' component, the relationship is described\
+      \ as a 'correlational methodology (VBCM)' rather than causal. The draft incorrectly\
+      \ labels the relationship as 'causal'.\",\n  \"per_finding\": [\n    {\n   \
+      \   \"id\": \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": false,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"The relationship is labeled as\
+      \ 'causal', but the paper explicitly states they used a 'voxel-based co"
     error: null
     votes: 3
     vote_verdicts:
@@ -83,6 +81,6 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:51:07'
-latest_verdict: defer_to_human
+last_run: '2026-10-22T21:35:21'
+latest_verdict: checks_passed
 latest_mode: with_llm_review

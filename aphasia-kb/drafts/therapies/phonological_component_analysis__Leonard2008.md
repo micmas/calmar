@@ -1,7 +1,7 @@
 ---
 schema_version: 2.3
 id: phonological_component_analysis
-name: Phonological Components Analysis
+name: Phonological Component Analysis (PCA)
 kind: therapy
 status: draft
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0

@@ -1,6 +1,6 @@
 ---
 schema_version: 2.3
-id: melodic_intonation_therapy_review
+id: melodic_intonation_therapy__Zumbansen2014
 name: 'Melodic Intonation Therapy: Back to Basics'
 kind: review
 status: draft

@@ -86,6 +86,172 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T06:49:12'
+- run_id: 2
+  timestamp: '2026-10-22T11:26:09'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/2 quotes (50%) — anchored 1, elided 1
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.statistics (p.5): Performance on each of the three cues in
+      semantic fluency task was significantly…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft claims a causal relationship ('Damage to... is associated
+        with...'), but the paper describes correlations ('significantly correlated
+        with') and uses a cross-sectional design. While the authors discuss the 'causal
+        role' in the Discussion, the primary evidence provided is correlational. Additionally,
+        the statistics for the lesion correlation in the draft (r=-0.46 to -0.55)
+        are slightly different from the text (r=-0.55 to -0.46), though the range
+        is the same.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is recorded as 'causal' in the draft, but the study
+          design is cross-sectional and the results are based on correlations. The
+          paper itself uses the term 'causal role' in the discussion to interpret
+          findings, but the statistical evidence presented is correlational.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ claims a causal relationship ('Damage to... is associated with...'), but the\
+      \ paper describes correlations ('significantly correlated with') and uses a\
+      \ cross-sectional design. While the authors discuss the 'causal role' in the\
+      \ Discussion, the primary evidence provided is correlational. Additionally,\
+      \ the statistics for the lesion correlation in the draft (r=-0.46 to -0.55)\
+      \ are slightly different from the text (r=-0.55 to -0.46), though the range\
+      \ is the same.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n    \
+      \  \"passage_present\": true,\n      \"passage_supports_field\": true,\n   \
+      \   \"relationship_faithful\": false,\n      \"strength_fair\": true,\n    \
+      \  \"numbers_match\": true,\n      \"limitations_captured\": true,\n      \"\
+      omissions\": \"\",\n      \"conce"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+- run_id: 3
+  timestamp: '2026-10-22T21:33:40'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/2 quotes (50%) — anchored 1, elided 1
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.statistics (p.5): Performance on each of the three cues in
+      semantic fluency task was significantly…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft claims a causal relationship ('Damage to... is associated
+        with...'), but the paper describes correlations ('significantly correlated
+        with') and uses a cross-sectional design. While the authors discuss the 'causal
+        role' in the Discussion, the primary evidence provided is correlational. Additionally,
+        the statistics in the draft for the lesion effect (r=-0.46 to -0.55) are slightly
+        imprecise compared to the text (r=-0.55 to -0.46).
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: false
+        limitations_captured: true
+        omissions: ''
+        concern: 'The relationship is recorded as ''causal'', but the study is a cross-sectional
+          correlation study. The authors use the word ''causal'' in the discussion
+          to interpret findings, but the evidence itself is correlational. Also, the
+          r-value range in the draft is reversed/imprecise compared to the text (text:
+          -0.55 to -0.46).'
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ claims a causal relationship ('Damage to... is associated with...'), but the\
+      \ paper describes correlations ('significantly correlated with') and uses a\
+      \ cross-sectional design. While the authors discuss the 'causal role' in the\
+      \ Discussion, the primary evidence provided is correlational. Additionally,\
+      \ the statistics in the draft for the lesion effect (r=-0.46 to -0.55) are slightly\
+      \ imprecise compared to the text (r=-0.55 to -0.46).\",\n  \"per_finding\":\
+      \ [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
+      passage_supports_field\": true,\n      \"relationship_faithful\": false,\n \
+      \     \"strength_fair\": true,\n      \"numbers_match\": false,\n      \"limitations_captured\"\
+      : true,\n      \"omissions\": \"\",\n      \"concern\": \"The relationship is\
+      \ r"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-22T21:33:40'
 latest_verdict: checks_passed
 latest_mode: with_llm_review
