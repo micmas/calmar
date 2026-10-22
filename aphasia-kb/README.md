@@ -26,6 +26,7 @@ re-review. `python kb_status.py` prints the current numbers.
 |---|---|
 | understand the entry format | [`schema.md`](schema.md) (v2.6), then `examples/region_ifg_opercularis_fridriksson2018.md` |
 | take one PDF to an approved entry | [`HOWTO.md`](HOWTO.md) |
+| look up any command and its options | [`COMMANDS.md`](COMMANDS.md) |
 | know who may approve what | [`GOVERNANCE.md`](GOVERNANCE.md) |
 | choose or benchmark a local model | [`MODELS.md`](MODELS.md) and `models.yaml` |
 | see what is in the KB and what is thin | `python kb_status.py` |

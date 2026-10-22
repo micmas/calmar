@@ -499,6 +499,8 @@ hand.
 
 ## Quick reference: commands
 
+The full list, with every option, is [`COMMANDS.md`](COMMANDS.md).
+
 Every CLI command is now free and fully local. The "Where it runs"
 column flags whether any text leaves this machine.
 
