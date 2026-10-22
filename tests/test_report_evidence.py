@@ -122,33 +122,119 @@ def test_location_section_excludes_aphasia_types_and_non_symptom_targets():
     assert "does not infer the presence or type of aphasia from a lesion" in html
 
 
-def test_additional_symptom_summaries_are_collapsed_together():
+def test_symptom_summaries_use_multi_citation_multi_anatomy_relevance_not_top_n():
+    damage = pd.DataFrame([
+        dict(region="left_ifg_pars_opercularis", side="left", lesion_pct=8.0, region_pct=40.0, review=False),
+        dict(region="left_arcuate_fasciculus", side="left", lesion_pct=7.0, region_pct=35.0, review=False),
+    ])
+    common = dict(side="left", predicts_kind="impairment", direction="likely", method="VLSM",
+                  strength="moderate", evidence_quality="observational", confidence="high",
+                  source_id="missing", contribution=1.0)
+    rows = pd.DataFrame([
+        dict(**common, region="left_ifg_pars_opercularis", lesion_pct=8.0, region_pct=40.0,
+             predicts="multi_source_symptom", claim="Claim A", citation="@StudyA", finding_id="f1"),
+        dict(**common, region="left_arcuate_fasciculus", lesion_pct=7.0, region_pct=35.0,
+             predicts="multi_source_symptom", claim="Claim B", citation="@StudyB", finding_id="f2"),
+        dict(**common, region="left_ifg_pars_opercularis", lesion_pct=8.0, region_pct=40.0,
+             predicts="single_source_symptom", claim="Claim C", citation="@StudyC", finding_id="f3"),
+        dict(**common, region="left_arcuate_fasciculus", lesion_pct=7.0, region_pct=35.0,
+             predicts="single_anatomy_symptom", claim="Claim D", citation="@StudyD", finding_id="f4"),
+        dict(**common, region="left_arcuate_fasciculus", lesion_pct=7.0, region_pct=35.0,
+             predicts="single_anatomy_symptom", claim="Claim E", citation="@StudyE", finding_id="f5"),
+    ])
+    html = location_section(KB, rules, rows, damage,
+                            {"findings": 5, "undamaged": 0, "unmappable": 0}, ReportSettings(top_n=1))
+    soup = BeautifulSoup(html, "html.parser")
+    main = soup.select(".primary-outcomes > article.outcome-card")
+    extra = soup.select_one("details.additional-outcomes")
+    assert len(main) == 1 and main[0]["id"] == "symptom-multi-source-symptom"
+    assert extra is not None and not extra.has_attr("open")
+    assert "Show 2 symptom summaries below the primary display criterion" in extra.summary.get_text(" ", strip=True)
+    assert "at least 2 distinct citation keys and 2 distinct anatomy mappings" in html
+    assert "null, mixed and unclassified findings all count" in html
+
+
+def test_location_summary_explains_when_nothing_meets_primary_criterion():
     damage = pd.DataFrame([
         dict(region="left_ifg_pars_opercularis", side="left", lesion_pct=8.0, region_pct=40.0, review=False),
     ])
     rows = pd.DataFrame([
         dict(region="left_ifg_pars_opercularis", side="left", lesion_pct=8.0, region_pct=40.0,
-             predicts=f"symptom_{i}", predicts_kind="impairment", claim=f"Claim {i}", direction="likely",
-             citation=f"@Study{i}", method="VLSM", strength="moderate", evidence_quality="observational",
-             confidence="high", source_id="missing", finding_id=f"f{i}", contribution=10 - i)
-        for i in range(4)
+             predicts="speech_fluency", predicts_kind="impairment", claim="Claim", direction="likely",
+             citation="@Study", method="VLSM", strength="moderate", evidence_quality="observational",
+             confidence="high", source_id="missing", finding_id="f1", contribution=1.0),
     ])
     html = location_section(KB, rules, rows, damage,
-                            {"findings": 4, "undamaged": 0, "unmappable": 0}, ReportSettings(top_n=2))
-    soup = BeautifulSoup(html, "html.parser")
-    extra = soup.select_one("details.additional-outcomes")
-    assert extra is not None and not extra.has_attr("open")
-    assert "Show 2 additional symptom summaries" in extra.summary.get_text(" ", strip=True)
+                            {"findings": 1, "undamaged": 0, "unmappable": 0}, ReportSettings())
+    assert "No symptom summary meets the primary display criterion" in html
+    assert "Show 1 symptom summary below the primary display criterion" in html
 
 
 def test_white_matter_provenance_is_collapsed_by_default():
     from calmar.report_evidence import disconnection_section
-    html = disconnection_section(KB, pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), ReportSettings(),
+    html = disconnection_section(KB, rules, pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), ReportSettings(),
                                  "BCBToolkit", map_name="Disconnectome_expert.nii.gz", mask_label="manual lesion")
     evidence_path = BeautifulSoup(html, "html.parser").select_one("details.evidence-path")
     assert evidence_path is not None and not evidence_path.has_attr("open")
     assert evidence_path.has_attr("data-print-open")
     assert evidence_path.summary.get_text(" ", strip=True) == "Where this evidence comes from"
+
+
+def test_white_matter_summary_shows_direction_and_links_shared_lesion_symptoms():
+    from calmar.report_evidence import disconnection_section
+    common = dict(side="left", predicts="speech_repetition", predicts_kind="impairment", method="VLSM", strength="moderate",
+                  evidence_quality="observational", confidence="high", source_id="missing", contribution=1.0)
+    rows = pd.DataFrame([
+        dict(**common, region="left_arcuate_fasciculus", lesion_pct=0.0, region_pct=70.0,
+             claim="Association claim", direction="likely", citation="@StudyA", finding_id="f1"),
+        dict(**common, region="left_arcuate_fasciculus", lesion_pct=0.0, region_pct=70.0,
+             claim="Null claim", direction="no_effect", citation="@StudyB", finding_id="f2"),
+    ])
+    lesion_rows = pd.DataFrame([
+        dict(**common, region="left_ifg_pars_opercularis", lesion_pct=8.0, region_pct=40.0,
+             claim="Direct claim", direction="likely", citation="@StudyC", finding_id="f3"),
+    ])
+    damage = pd.DataFrame([
+        dict(region="left_arcuate_fasciculus", side="left", lesion_pct=0.0, region_pct=10.0, review=False),
+    ])
+    html = disconnection_section(KB, rules, rows, pd.DataFrame(), damage, ReportSettings(), "BCBToolkit",
+                                 lesion_rows=lesion_rows)
+    soup = BeautifulSoup(html, "html.parser")
+    summary = soup.select_one("details.tract-evidence > summary")
+    assert "Associations 1" in summary.get_text(" ", strip=True)
+    assert "Null findings 1" in summary.get_text(" ", strip=True)
+    assert "Same symptom target also listed under direct damage elsewhere" in summary.get_text(" ", strip=True)
+    assert summary.select_one("a") is None
+    link = soup.select_one(".shared-symptom-detail a")
+    assert link is not None and link["href"] == "#symptom-speech-repetition"
+    assert "this tract: 1 association, 1 null finding; direct damage elsewhere: 1 association" in html
+    assert "not independent or additive evidence" in html
+
+
+def test_white_matter_does_not_cross_reference_the_same_anatomy_to_itself():
+    from calmar.report_evidence import disconnection_section
+    row = dict(region="left_arcuate_fasciculus", side="left", lesion_pct=0.0, region_pct=70.0,
+               predicts="speech_repetition", predicts_kind="impairment", claim="Same finding", direction="likely",
+               citation="@StudyA", method="VLSM", strength="moderate", evidence_quality="observational",
+               confidence="high", source_id="missing", finding_id="f1", contribution=1.0)
+    html = disconnection_section(KB, rules, pd.DataFrame([row]), pd.DataFrame(), pd.DataFrame(),
+                                 ReportSettings(), "BCBToolkit", lesion_rows=pd.DataFrame([row]))
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.select_one(".shared-symptoms") is None
+    assert soup.select_one(".shared-symptom-detail") is None
+
+
+def test_white_matter_empty_state_distinguishes_filtered_non_symptom_records():
+    from calmar.report_evidence import disconnection_section
+    rows = pd.DataFrame([
+        dict(region="left_arcuate_fasciculus", side="left", lesion_pct=0.0, region_pct=70.0,
+             predicts="conduction_aphasia", predicts_kind="impairment", claim="Syndrome claim", direction="likely",
+             citation="@StudyA", method="VLSM", strength="moderate", evidence_quality="observational",
+             confidence="high", source_id="missing", finding_id="f1", contribution=1.0),
+    ])
+    html = disconnection_section(KB, rules, rows, pd.DataFrame(), pd.DataFrame(), ReportSettings(), "BCBToolkit")
+    assert "Disconnectome-matched tracts were found" in html
+    assert "no symptom-level targets eligible" in html
 
 
 def test_print_notes_when_additional_regions_are_only_in_interactive_html():
