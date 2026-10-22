@@ -34,7 +34,9 @@ from .widget_lifecycle import close_widget
 class QCPanel(w.VBox):
     def __init__(self, entries, stages_for, anchor_for, volumes_for, viewer,
                  checkpoint, *, encode_volumes=lambda volumes: volumes, skull_strip_repair=True,
-                 legend=("hdbet", "linda", "manual", "synthstroke")):
+                 legend=("hdbet", "linda", "manual", "synthstroke"),
+                 continue_role="after-qc", continue_label="Continue after QC",
+                 continue_prompt="Continue to disconnectomes and reports using the saved QC choices?"):
         self.entries = tuple(dict(e) for e in entries)
         self.stages_for = stages_for
         self.anchor_for = anchor_for
@@ -42,6 +44,8 @@ class QCPanel(w.VBox):
         self.viewer = viewer
         self.checkpoint = checkpoint
         self.encode_volumes = encode_volumes
+        self.continue_role = continue_role
+        self.continue_prompt = continue_prompt
         self.drafts = {}
         self.loading = False
         self.inactive = False
@@ -70,7 +74,7 @@ class QCPanel(w.VBox):
         self.save_next = w.Button(description="Save & next participant", button_style="success",
                                   layout=w.Layout(width="210px"))
         self.repair_button = w.Button(description="Run skull-strip repair", layout=w.Layout(width="190px"))
-        self.continue_button = w.Button(description="Continue after QC", layout=w.Layout(width="180px"))
+        self.continue_button = w.Button(description=continue_label, layout=w.Layout(width="210px"))
         self.existing_summary = w.HTML()
         self.use_existing = w.Button(description="Use existing QC", button_style="success",
                                      layout=w.Layout(width="170px"))
@@ -185,9 +189,8 @@ class QCPanel(w.VBox):
         if self.inactive:
             return False
         return self.navigation.request(
-            "after-qc", self._continue,
-            prompt=("Continue to disconnectomes and reports using the saved QC choices?"
-                    if confirm else ""))
+            self.continue_role, self._continue,
+            prompt=(self.continue_prompt if confirm else ""))
 
     def redo_qc(self):
         if self.inactive or not self.checkpoint.choose("review_requested"):
@@ -555,7 +558,9 @@ class QCVolumes:
 _ACTIVE_PANEL = None
 
 
-def open_qc_review(entries, study, settings=None, *, viewer, encode_volumes=lambda v: v):
+def open_qc_review(entries, study, settings=None, *, viewer, encode_volumes=lambda v: v,
+                   continue_role="after-qc", continue_label="Continue after QC",
+                   continue_prompt="Continue to disconnectomes and reports using the saved QC choices?"):
     """Pause at the QC checkpoint and display the rating panel.
 
     Participants without any stage to review are left out. A panel from an
@@ -574,6 +579,8 @@ def open_qc_review(entries, study, settings=None, *, viewer, encode_volumes=lamb
     pool = [e for e in entries if study.qc_stages(e)]
     _ACTIVE_PANEL = QCPanel(pool, study.qc_stages, study.qc_anchor, QCVolumes(study, settings),
                             viewer, checkpoint, encode_volumes=encode_volumes, skull_strip_repair=not acute,
-                            legend=("openads", "manual") if acute else ("hdbet", "linda", "manual", "synthstroke"))
+                            legend=("openads", "manual") if acute else ("hdbet", "linda", "manual", "synthstroke"),
+                            continue_role=continue_role, continue_label=continue_label,
+                            continue_prompt=continue_prompt)
     display(_ACTIVE_PANEL)
     return _ACTIVE_PANEL

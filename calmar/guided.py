@@ -15,6 +15,60 @@ from .notebook_navigation import NotebookNavigation
 from .timing import step_title
 
 NOTEBOOK = Path(__file__).resolve().parents[1] / "lesion-interpretation-pipeline.ipynb"
+SOURCE_OPTIONS = {
+    "t1": [("OpenNeuro", "openneuro"), ("Local BIDS", "local"),
+           ("Flat T1 folder", "flat"), ("Single T1 file", "single")],
+    "dwi": [("ISLES 2022 (local)", "isles2022"),
+            ("OpenNeuro", "openneuro"), ("Local BIDS", "local")],
+}
+
+
+def initial_input_route(config):
+    """Route whose source options can represent the configured default."""
+    return "dwi" if config.get("DATASET_SOURCE") == "isles2022" else config.get("MODALITY", "t1")
+
+
+def set_route_source_options(widget, route):
+    """Change valid input sources without resetting a still-valid selection."""
+    options = SOURCE_OPTIONS[route]
+    current = widget.value
+    widget._calmar_swapping_options = True
+    try:
+        if list(widget.options) != options:
+            widget.options = options
+        values = [value for _, value in options]
+        widget.value = current if current in values else "local"
+    finally:
+        widget._calmar_swapping_options = False
+
+
+def validate_isles_input(root, sub_filter=None, ses_filter=None):
+    """Validate an extracted ISLES root and return the requested DWI+ADC pairs."""
+    from .study import discover_dwi
+    root = Path(root)
+    if not root.is_dir():
+        raise ValueError("Enter an existing local dataset folder.")
+    all_pairs = discover_dwi(root)
+    if not all_pairs:
+        raise ValueError(
+            "No ISLES-style DWI+ADC pairs were found. Choose the extracted dataset root "
+            "containing sub-strokecase*/ses-*/dwi/*_dwi.nii.gz and sibling *_adc.nii.gz files."
+        )
+    if not (root / "derivatives").is_dir():
+        nested = sorted(path.parent for path in root.glob("*/derivatives")
+                        if any(path.parent.glob("sub-strokecase*")))
+        if nested:
+            raise ValueError(
+                f"The ISLES dataset is nested. Choose {nested[0]} as the dataset folder "
+                "so its sub-strokecase* and derivatives/ folders share one root."
+            )
+    pairs = discover_dwi(root, sub_filter, ses_filter)
+    if not pairs:
+        raise ValueError(
+            f"Found {len(all_pairs)} ISLES DWI+ADC pairs, but none match the participant/session filters. "
+            "Clear or change those filters."
+        )
+    return pairs
 
 
 def notebook_cells():
@@ -54,11 +108,20 @@ from .method_choice import METHOD_CHOICES
 def normalize_selection(values):
     """Interpret form filters without constraining the manual-mask session."""
     values = dict(values)
+    # ISLES 2022 is a DWI+ADC dataset with no T1w input. Keep its guided source
+    # self-contained: choosing it always selects the compatible OpenADS route.
+    if values.get("DATASET_SOURCE") == "isles2022":
+        values["MODALITY"] = "dwi"
     for key in ("SUBJECT_FILTER", "SESSION_FILTER"):
         values[key] = [v.strip() for v in values[key].split(",") if v.strip()] or None
     values["MAX_SUBJECTS"] = values["MAX_SUBJECTS"] or None
-    # One checkbox per automatic segmentation -> CONFIG["SEGMENTATION_METHODS"].
-    if any(f"_method_{m}" in values for m in METHOD_CHOICES):
+    # The DWI route currently has one eligible method; the T1 route exposes one
+    # checkbox per automatic segmentation.
+    if values.get("MODALITY", "t1") == "dwi":
+        for method in METHOD_CHOICES:
+            values.pop(f"_method_{method}", None)
+        values["SEGMENTATION_METHODS"] = ["openads"]
+    elif any(f"_method_{m}" in values for m in METHOD_CHOICES):
         values["SEGMENTATION_METHODS"] = [m for m in METHOD_CHOICES if values.pop(f"_method_{m}", False)]
         if not values["SEGMENTATION_METHODS"]:
             raise ValueError("Choose at least one lesion segmentation (LINDA or SynthStroke).")
@@ -152,8 +215,12 @@ def show_inputs(namespace):
                             description=label, style=style, layout=layout)
     def check(key, label):
         fields[key] = w.Checkbox(value=bool(cfg.get(key)), description=label, indent=False)
-    fields["DATASET_SOURCE"] = w.Dropdown(options=[("OpenNeuro", "openneuro"), ("Local BIDS", "local"),
-        ("Flat T1 folder", "flat"), ("Single T1 file", "single")], value=cfg["DATASET_SOURCE"], description="Input type:")
+    initial_route = initial_input_route(cfg)
+    fields["DATASET_SOURCE"] = w.Dropdown(options=SOURCE_OPTIONS[initial_route], value=cfg["DATASET_SOURCE"],
+                                           description="Input type:")
+    fields["MODALITY"] = w.Dropdown(
+        options=[("T1w — LINDA / SynthStroke", "t1"), ("DWI + ADC — OpenADS", "dwi")],
+        value=initial_route, description="Imaging route:", style=style)
     text("PROJECT_DIR", "Project folder:")
     text("OPENNEURO_ID", "OpenNeuro accession:")
     text("OPENNEURO_TAG", "Dataset version:")
@@ -167,7 +234,8 @@ def show_inputs(namespace):
     check("OVERWRITE", "Replace existing processing outputs")
     check("RANDOM_SAMPLE", "Randomly sample participants")
     text("MANUAL_MASK_PATH", "Manual mask (blank = discover):")
-    fields["MANUAL_MASK_SPACE"] = w.Dropdown(options=[("T1", "t1"), ("MNI", "mni"), ("Other scan", "other")],
+    fields["MANUAL_MASK_SPACE"] = w.Dropdown(options=[("Native processing image (T1w or DWI)", "t1"),
+                                                       ("MNI", "mni"), ("Other scan", "other")],
         value=cfg["MANUAL_MASK_SPACE"], description="Manual mask space:", style=style)
     text("MANUAL_MASK_REF", "Other reference scan:")
     fields["HDBET_MODE"] = w.Dropdown(options=["fast", "accurate"], value=cfg["HDBET_MODE"],
@@ -184,22 +252,83 @@ def show_inputs(namespace):
     single_input = w.VBox([fields["SINGLE_T1W"]])
     cohort_inputs = w.VBox([fields[key] for key in (
         "SUBJECT_FILTER", "SESSION_FILTER", "MAX_SUBJECTS", "RANDOM_SAMPLE")])
+    method_inputs = w.VBox([w.HTML("<b>Lesion segmentation</b> (at least one):"),
+                            *[fields[f"_method_{m}"] for m in METHOD_CHOICES],
+                            fields["HDBET_MODE"], fields["SYNTHSTROKE_TTA"]])
+    route_note = w.HTML()
+    isles_note = w.HTML(
+        "<b>ISLES 2022:</b> choose the extracted dataset root containing "
+        "<code>sub-strokecase*</code> and <code>derivatives/</code>. CALMaR checks for "
+        "sibling DWI/ADC pairs and recognises the official <code>*_msk.nii.gz</code> expert masks."
+    )
+    default_subjects = ", ".join(cfg["SUBJECT_FILTER"] or [])
+    default_sessions = ", ".join(cfg["SESSION_FILTER"] or [])
+    isles_state = {"active": False, "previous_filters": None, "auto_path": None}
+
+    def update_route(*_):
+        route = fields["MODALITY"].value
+        leaving_isles = route == "t1" and fields["DATASET_SOURCE"].value == "isles2022"
+        set_route_source_options(fields["DATASET_SOURCE"], route)
+        if leaving_isles:
+            fields["DATASET_SOURCE"].value = "openneuro"
+        if (route == "dwi" and fields["DATASET_SOURCE"].value == "openneuro"
+                and fields["OPENNEURO_ID"].value == str(cfg.get("OPENNEURO_ID") or "")):
+            fields["DATASET_SOURCE"].value = "isles2022"
+        method_inputs.layout.display = "" if route == "t1" else "none"
+        route_note.value = (
+            "<b>DWI route:</b> OpenADS requires a DWI with an exact sibling ADC map. "
+            "Regardless of route, the fetch step inventories every DWI series for each selected participant, "
+            "including other sessions, without treating an ordinary diffusion series as OpenADS-ready. "
+            "For the ISLES 2022 example, choose <b>ISLES 2022 (local)</b> below."
+            if route == "dwi" else
+            "<b>T1w route:</b> the fetch step also inventories any DWI series for each selected participant, "
+            "including other sessions; these are reported separately from the T1w processing input.")
+        update_input_mode()
+
+    fields["MODALITY"].observe(update_route, names="value")
 
     def update_input_mode(*_):
+        if getattr(fields["DATASET_SOURCE"], "_calmar_swapping_options", False):
+            return
         mode = fields["DATASET_SOURCE"].value
+        entering_isles = mode == "isles2022" and not isles_state["active"]
+        leaving_isles = mode != "isles2022" and isles_state["active"]
+        if entering_isles:
+            isles_state["previous_filters"] = (
+                fields["SUBJECT_FILTER"].value, fields["SESSION_FILTER"].value)
+            if (fields["SUBJECT_FILTER"].value == default_subjects
+                    and fields["SESSION_FILTER"].value == default_sessions):
+                fields["SUBJECT_FILTER"].value = ""
+                fields["SESSION_FILTER"].value = ""
+        elif leaving_isles and isles_state["previous_filters"] is not None:
+            fields["SUBJECT_FILTER"].value, fields["SESSION_FILTER"].value = isles_state["previous_filters"]
+            if (isles_state["auto_path"] is not None
+                    and fields["LOCAL_DATASET"].value == isles_state["auto_path"]):
+                fields["LOCAL_DATASET"].value = ""
+        isles_state["active"] = mode == "isles2022"
         for section, visible in (
             (openneuro_inputs, mode == "openneuro"),
-            (local_inputs, mode in ("local", "flat")),
+            (local_inputs, mode in ("local", "flat", "isles2022")),
             (single_input, mode == "single"),
             (cohort_inputs, mode != "single"),
+            (isles_note, mode == "isles2022"),
         ):
             section.layout.display = "" if visible else "none"
+        if mode == "isles2022" and not fields["LOCAL_DATASET"].value.strip():
+            project = Path(fields["PROJECT_DIR"].value).expanduser()
+            candidates = (project / "data" / "ISLES-2022", project / "ISLES-2022")
+            candidate = next((path for path in candidates if path.is_dir()), candidates[0])
+            fields["LOCAL_DATASET"].value = str(candidate)
+            isles_state["auto_path"] = str(candidate)
 
     fields["DATASET_SOURCE"].observe(update_input_mode, names="value")
+    update_route()
     update_input_mode()
     sampling_note = w.HTML()
     sampling_state = {"automatic": False, "previous": fields["RANDOM_SAMPLE"].value}
     def update_sampling(*_):
+        if getattr(fields["DATASET_SOURCE"], "_calmar_swapping_options", False):
+            return
         automatic = (fields["DATASET_SOURCE"].value == "openneuro"
                      and not any(p.strip() for p in fields["SUBJECT_FILTER"].value.split(","))
                      and not any(p.strip() for p in fields["SESSION_FILTER"].value.split(",")))
@@ -211,12 +340,19 @@ def show_inputs(namespace):
         sampling_state["automatic"] = automatic
         fields["RANDOM_SAMPLE"].disabled = automatic
         sampling_note.layout.display = "none" if fields["DATASET_SOURCE"].value == "single" else ""
-        sampling_note.value = (
-            "<b>Random selection:</b> sample participants up to the limit and choose a session "
-            "with a T1 for each. A manual mask may come from another session; its source scan "
-            "will be registered to the selected T1. Limit 0 includes all participants."
-            if automatic else "Sessions select T1 inputs. Manual-mask discovery can use another session of the same participant.")
-    for key in ("DATASET_SOURCE", "SUBJECT_FILTER", "SESSION_FILTER"):
+        if fields["MODALITY"].value == "dwi":
+            sampling_note.value = (
+                "Participants and sessions select DWI+ADC inputs. ISLES expert masks are native to the DWI; "
+                "other manual masks must declare their source space."
+            )
+        else:
+            sampling_note.value = (
+                "<b>Random selection:</b> sample participants up to the limit and choose a session "
+                "with a T1 for each. A manual mask may come from another session; its source scan "
+                "will be registered to the selected T1. Limit 0 includes all participants."
+                if automatic else
+                "Sessions select T1 inputs. Manual-mask discovery can use another session of the same participant.")
+    for key in ("DATASET_SOURCE", "MODALITY", "SUBJECT_FILTER", "SESSION_FILTER"):
         fields[key].observe(update_sampling, names="value")
     update_sampling()
     message = w.HTML()
@@ -230,8 +366,27 @@ def show_inputs(namespace):
                 values[key] = str(Path(values[key]).expanduser()) if values[key].strip() else None
             values["PROJECT_DIR"] = str(Path(values["PROJECT_DIR"]).expanduser().resolve())
             mode = values["DATASET_SOURCE"]
-            if mode in ("local", "flat") and not Path(values["LOCAL_DATASET"] or "__missing__").is_dir():
+            if mode in ("local", "flat", "isles2022") and not Path(values["LOCAL_DATASET"] or "__missing__").is_dir():
                 raise ValueError("Enter an existing local dataset folder.")
+            if mode == "isles2022":
+                validate_isles_input(values["LOCAL_DATASET"], values.get("SUBJECT_FILTER"),
+                                     values.get("SESSION_FILTER"))
+            elif mode in ("local", "flat"):
+                if values["MODALITY"] == "t1":
+                    from .study import discover_t1w
+                    found = discover_t1w(values["LOCAL_DATASET"], values.get("SUBJECT_FILTER"),
+                                         values.get("SESSION_FILTER"), cfg.get("T1W_SELECTION", "first"))
+                    if not found:
+                        raise ValueError(
+                            "No T1w images match this local dataset and participant/session selection."
+                        )
+                else:
+                    from .study import discover_dwi
+                    if not discover_dwi(values["LOCAL_DATASET"], values.get("SUBJECT_FILTER"),
+                                        values.get("SESSION_FILTER")):
+                        raise ValueError(
+                            "No DWI images with sibling ADC maps match this local dataset and selection."
+                        )
             if mode == "single" and not Path(values["SINGLE_T1W"] or "__missing__").is_file():
                 raise ValueError("Enter an existing T1 file.")
             if mode == "openneuro" and not values["OPENNEURO_ID"].startswith("ds"):
@@ -254,15 +409,15 @@ def show_inputs(namespace):
             return False
     start.on_click(lambda _: nav.request("guided-start", prepare,
         prompt="Start processing with these inputs? The workflow will pause at QC."))
-    sections = [openneuro_inputs, local_inputs, single_input, cohort_inputs]
+    sections = [openneuro_inputs, local_inputs, single_input, cohort_inputs,
+                method_inputs, route_note, isles_note]
     gate.controls = [*fields.values(), *sections, sampling_note, start, message, nav]
     display(w.VBox([w.HTML("<b>Inputs and options</b> — leave manual mask blank to use dataset reference masks. "
                           "Leave both OpenNeuro participant/session fields blank for random selection."),
+                    fields["MODALITY"], route_note,
                     fields["DATASET_SOURCE"], fields["PROJECT_DIR"],
-                    openneuro_inputs, local_inputs, single_input, cohort_inputs, sampling_note,
+                    openneuro_inputs, local_inputs, isles_note, single_input, cohort_inputs, sampling_note,
                     fields["RUN_TEST"], fields["OVERWRITE"],
                     fields["MANUAL_MASK_PATH"], fields["MANUAL_MASK_SPACE"], fields["MANUAL_MASK_REF"],
-                    w.HTML("<b>Lesion segmentation</b> (at least one):"),
-                    *[fields[f"_method_{m}"] for m in METHOD_CHOICES],
-                    fields["HDBET_MODE"], fields["SYNTHSTROKE_TTA"], start, message, nav]))
+                    method_inputs, start, message, nav]))
     gate._cancel_queued()

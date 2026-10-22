@@ -6,6 +6,16 @@ from calmar.timing import step_key, step_title
 from calmar.guided import source_cell
 
 
+def test_citation_resources_cover_both_imaging_routes_and_datasets():
+    import json
+    notebook = json.loads((Path(__file__).resolve().parents[1]/'lesion-interpretation-pipeline.ipynb').read_text())
+    source = ''.join(next(c for c in notebook['cells'] if c['id'] == 'calmar-citations')['source'])
+    for required in ('openadscpu/1.0.0', '10.1038/s43856-021-00062-8',
+                     'github.com/farialab/OpenADS', '10.5281/zenodo.7153326',
+                     '10.1038/s41597-022-01875-5'):
+        assert required in source
+
+
 def test_timing_labels_use_titles_and_current_cell_numbers():
     key = step_key('# CALMAR_CELL_ID: calmar-step-25\nprint(1)')
     assert key == 'calmar-step-25'

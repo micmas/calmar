@@ -176,6 +176,44 @@ def test_rerun_waits_for_the_job_already_running_for_the_same_request(tmp_path):
         assert _attach_running('linda', changed, tmp_path) is None          # other settings
 
 
+def test_dwi_inventory_only_changes_acquisition_cache_identity():
+    from calmar.scheduled import _identity_key
+    base = {'dataset': '/data', 'config': {},
+            'entries': [{'subject': 'sub-one', 'session': 'ses-one', 't1w': '/data/T1w.nii.gz'}]}
+    inventoried = {**base, 'entries': [{**base['entries'][0], 'dwi_inventory': [
+        {'dwi': '/data/DWI.nii.gz', 'session': 'ses-two', 'same_session': False,
+         'openads_ready': False, 'bval': '/data/DWI.bval'}]}]}
+    assert _identity_key('brain', base) == _identity_key('brain', inventoried)
+    assert _identity_key('acquisition', base) != _identity_key('acquisition', inventoried)
+
+
+def test_optional_dwi_selection_only_changes_downstream_disconnectome_identity():
+    from calmar.scheduled import _identity_key
+    base = {'dataset': '/data', 'config': {'MODALITY': 't1'},
+            'entries': [{'subject': 'sub-one', 'session': 'ses-t1', 't1w': '/data/T1w.nii.gz'}]}
+    selected = {**base, 'entries': [{**base['entries'][0], 'dwi_analysis': {
+        'subject': 'sub-one', 'session': 'ses-dwi', 'dwi': '/data/DWI.nii.gz',
+        'adc': '/data/ADC.nii.gz', 't1w': '/data/DWI.nii.gz'}}]}
+    assert _identity_key('brain', base) == _identity_key('brain', selected)
+    assert _identity_key('bcb', base) != _identity_key('bcb', selected)
+    toggled = {**base, 'config': {**base['config'], 'ANALYSE_DWI': True,
+                                  '_DWI_ANALYSIS_SELECTED': True}}
+    assert _identity_key('brain', base) == _identity_key('brain', toggled)
+
+
+def test_inventory_does_not_hide_a_pre_inventory_running_job(tmp_path):
+    from calmar.scheduled import _attach_running
+    old = {'dataset': str(tmp_path), 'config': {},
+           'entries': [{'subject': 'sub-one', 't1w': str(tmp_path/'T1.nii.gz')}]}
+    current = {**old, 'entries': [{**old['entries'][0], 'dwi_inventory': [
+        {'dwi': str(tmp_path/'DWI.nii.gz'), 'session': 'ses-two'}]}]}
+    folder = tmp_path/'reports'/'jobs'/'pre-inventory'; folder.mkdir(parents=True)
+    (folder/'request.json').write_text(json.dumps(old))
+    (folder/'submission.json').write_text(json.dumps({'job_id': '88', 'stage': 'linda'}))
+    with patch('calmar.scheduled.subprocess.run', return_value=SimpleNamespace(stdout='88\n')):
+        assert _attach_running('linda', current, tmp_path)['job'] == '88'
+
+
 def test_linda_cpus_follow_linda_threads():
     from calmar.scheduled import _resources
     assert _resources('linda', {'config': {}}) == ['--cpus-per-task=1']

@@ -42,6 +42,7 @@ from html import escape
 from pathlib import Path
 import base64
 import itertools
+import re
 import sys
 
 import pandas as pd
@@ -89,6 +90,9 @@ class ReportSettings:
     min_disconnected_pct: float = 50.0       # a tract counts as disconnected if >= this % of it has p > 0.5
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
+    max_evidence_regions: int = 8            # main region disclosures before the additional-region fold
+    min_summary_citations: int = 2           # primary symptom summary: distinct citation keys
+    min_summary_anatomies: int = 2           # primary symptom summary: distinct mapped anatomical units
     threshold: float = 0.5                   # mask threshold for Dice between masks
 
     @property
@@ -429,9 +433,14 @@ def _badge(direction):
 
 
 def _stars_html(rules, score):
-    _, label = rules.evidence_strength(score)
+    stars, label = rules.evidence_strength(score)
+    glyphs = "&#9733;" * stars if stars else "&mdash;"
     return (f"<span class='display-signal' title='Project display heuristic; raw score = {score:+.2f}'>"
-            f"Display signal: {escape(label)}</span>")
+            f"<span class='display-stars' aria-hidden='true'>{glyphs}</span>"
+            f"<span class='display-stars-print'>{stars}/4 stars</span>"
+            f"<span class='display-label' aria-hidden='true'>{escape(label)}</span>"
+            f"<span class='visually-hidden'>Project-specific display heuristic: {stars} of 4 stars; "
+            f"{escape(label)}.</span></span>")
 
 
 _TABLE_HEAD = ("<table style='border-collapse:collapse;font-size:13px;width:100%'>"
@@ -505,7 +514,7 @@ def _ingredient_badges(summary):
 
 
 def therapy_table(kb, df, stage_id, stage_label, therapy_stages):
-    """Matched therapies; ⚠ when their evidence comes from another recovery stage."""
+    """Matched therapies; mark evidence from another recovery stage."""
     if df is None or df.empty:
         return ("<p style='color:#666'><em>No therapy recommendations matched. "
                 "Add more impairment-targeted therapy KB entries to populate this section.</em></p>")
@@ -522,7 +531,7 @@ def therapy_table(kb, df, stage_id, stage_label, therapy_stages):
         if stage_id and evidence and stage_id not in evidence:
             warning = (f"Evidence for this therapy comes from {' / '.join(sorted(evidence))} patients; "
                        f"current patient is {stage_label}.")
-            warn = (" <details class='stage-warning'><summary>&#9888; Stage mismatch</summary>"
+            warn = (" <details class='stage-warning'><summary>Stage mismatch</summary>"
                     f"<span class='stage-warning-detail'>{escape(warning)}</span></details>"
                     f"<span class='print-only stage-warning-print'>{escape(warning)}</span>")
         rows.append(
@@ -558,18 +567,18 @@ def damaged_regions_html(df, display_atlas, atlas_dir):
         return "<p style='color:#666'><em>No damaged regions above threshold.</em></p>"
     from .anatomy_labels import label_table
     df = label_table(df, display_atlas, atlas_dir)
-    rows = [f"<tr><td data-label='{escape(display_atlas)} region' style='padding:3px 8px'>{escape(r['region'])}</td>"
-            f"<td data-label='Lesion side' style='padding:3px 8px'>{escape(r['lesion_hemisphere'])}</td>"
-            f"<td data-label='% of lesion in ROI' style='text-align:right;padding:3px 8px'>{r['lesion_in_roi_percent']:.1f}%</td>"
-            f"<td data-label='% of ROI lesioned' style='text-align:right;padding:3px 8px'>{r['roi_coverage_percent']:.1f}%</td>"
-            f"<td data-label='Overlap voxels' style='text-align:right;font-size:11px;color:#666;padding:3px 4px'>"
+    rows = [f"<tr><td data-label='{escape(display_atlas)} region'>{escape(r['region'])}</td>"
+            f"<td data-label='Lesion side' class='numeric'>{escape(r['lesion_hemisphere'])}</td>"
+            f"<td data-label='% of lesion in ROI' class='numeric'>{r['lesion_in_roi_percent']:.1f}%</td>"
+            f"<td data-label='% of ROI lesioned' class='numeric'>{r['roi_coverage_percent']:.1f}%</td>"
+            f"<td data-label='Overlap voxels' class='numeric secondary'>"
             f"{int(r.get('overlap_voxels', 0)):,} vox</td></tr>" for _, r in df.iterrows()]
     return ("<div class='table-scroll' role='region' aria-label='Damaged regions' tabindex='0'>"
             "<table class='data-table damaged-table'><thead><tr>"
             f"<th style='text-align:left;padding:4px 8px'>{display_atlas} region</th>"
-            "<th style='padding:4px 8px'>Lesion side</th>"
-            "<th style='padding:4px 8px'>% of lesion in ROI</th>"
-            "<th style='padding:4px 8px'>% of ROI lesioned</th><th></th></tr></thead><tbody>"
+            "<th class='numeric'>Lesion side</th>"
+            "<th class='numeric'>% of lesion in ROI</th>"
+            "<th class='numeric'>% of ROI lesioned</th><th class='numeric'>Overlap voxels</th></tr></thead><tbody>"
             + "".join(rows) + "</tbody></table></div><p class='method-note'>"
             "Lesion side is measured from the actual mask overlap; bilateral entries show left/right counts.</p>")
 
@@ -600,14 +609,12 @@ STAGE_COLOURS = {"acute": ("#f45b69", "rgba(244,91,105,.10)"),
 
 def stage_badge(stage_id, label):
     border, bg = STAGE_COLOURS.get(stage_id, STAGE_COLOURS[None])
-    return (f"<span style='background:{bg};color:#2b2b3a;border:1px solid {border};"
+    return (f"<span style='display:inline-block;white-space:nowrap;background:{bg};color:#2b2b3a;border:1px solid {border};"
             f"padding:1px 8px;border-radius:3px;font-size:11px;font-weight:bold'>{label}</span>")
 
 
 LEGEND_HTML = '''
-      <hr>
       <div class="legend">
-        <h5>How to read the evidence</h5>
         <p><b>Display signal</b> is CALMaR&rsquo;s project-specific ordering heuristic, not a formal evidence
         grade or participant-level prediction. Its basis is explained beside the outcome summaries.</p>
         <p><b>Relationship</b> is what a study reported between the region or measure and the outcome:
@@ -627,6 +634,19 @@ LEGEND_HTML = '''
       </div>'''
 
 
+def report_section(title, content, *, open=False):
+    """One accessible major report disclosure with parser-safe markers."""
+    opened = " open" if open else ""
+    section_id = "section-" + re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    return (f"<!-- calmar-section:{escape(title)} -->"
+            f"<details class='report-section' id='{section_id}' data-print-open{opened}><summary>"
+            f"<h2 class='section-title'><span>{title}</span>"
+            "<span class='section-action' aria-hidden='true'><span class='when-closed'>Open section</span>"
+            "<span class='when-open'>Close section</span></span></h2></summary>"
+            f"<!-- calmar-section-content --><div class='report-section-body'>{content}</div>"
+            "</details><!-- calmar-section-end -->")
+
+
 def standalone_html(title, body):
     """Wrap report markup in a printable standalone page."""
     return f'''<!DOCTYPE html>
@@ -643,11 +663,11 @@ def standalone_html(title, body):
 .calmar-report,.calmar-report *{{box-sizing:border-box}}
 html.calmar-report-page{{background:#f7f7f7}}
 .calmar-report{{font-family:Arial,Helvetica,sans-serif;background:#fff;color:var(--calmar-ink);
-  font-size:17px;line-height:1.55;overflow-wrap:anywhere}}
-body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
+  font-size:17px;line-height:1.55;overflow-wrap:break-word}}
+body.calmar-report{{width:min(94vw,88rem);margin:2.5rem auto;padding:0 1.5rem 4rem}}
 .calmar-report h1,.calmar-report h2,.calmar-report h3,.calmar-report h4,.calmar-report h5,.calmar-report h6{{color:var(--calmar-grape);line-height:1.25}}
-.calmar-report p{{max-width:72ch}}
-.calmar-report code{{font-size:.86em}}
+.calmar-report p{{max-width:100%}}
+.calmar-report code{{font-size:.86em;overflow-wrap:anywhere}}
 .calmar-report a{{color:var(--calmar-blue)}}
 .calmar-report button{{font:inherit}}
 .report-header{{border:1px solid var(--calmar-line-strong);border-top:5px solid var(--calmar-grape);
@@ -660,36 +680,64 @@ body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
 .calmar-provenance li+li{{margin-top:.3rem}}
 .provenance-warning{{display:block;border-left:4px solid var(--calmar-pink);padding-left:.5rem;margin-top:.35rem}}
 .report-content{{border:1px solid var(--calmar-line-strong);border-radius:5px;padding:1.4rem;background:#fff}}
-.report-content>h4{{font-size:1.5rem;margin:3.25rem 0 .5rem;padding-top:1.4rem;border-top:1px solid var(--calmar-line)}}
-.report-content>h4:first-child{{margin-top:0;padding-top:0;border-top:0}}
-.section-intro{{font-size:1.02rem;margin:.2rem 0 .8rem;color:var(--calmar-ink);max-width:68ch}}
-.method-note{{font-size:.88rem;color:var(--calmar-ink-2);margin:.35rem 0 .9rem;max-width:76ch}}
+.report-section{{border-top:1px solid var(--calmar-line)}}
+.report-section:first-child{{border-top:0}}
+.report-section>summary{{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;cursor:pointer;
+  padding:1.15rem .15rem;color:var(--calmar-grape);font-size:1.35rem;font-weight:700;line-height:1.25}}
+.report-section .section-title{{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  width:100%;font:inherit;color:inherit;margin:0}}
+.report-section>summary::marker{{color:var(--calmar-grape)}}
+.report-section-body{{padding:.1rem .25rem 2.1rem}}
+.section-action{{color:var(--calmar-blue);font-size:.75rem;font-weight:600;white-space:nowrap}}
+.section-action .when-open{{display:none}}
+.report-section[open] .section-action .when-closed{{display:none}}
+.report-section[open] .section-action .when-open{{display:inline}}
+.section-intro{{font-size:1.02rem;margin:.2rem 0 .8rem;color:var(--calmar-ink);max-width:100%}}
+.method-note{{font-size:.88rem;color:var(--calmar-ink-2);margin:.35rem 0 .9rem;max-width:100%}}
 .outcome-cards{{margin:1.25rem 0 2.25rem}}
 .outcome-card{{padding:1.25rem 0 1.45rem;border-top:1px solid var(--calmar-line);break-inside:avoid}}
 .outcome-card:last-child{{border-bottom:1px solid var(--calmar-line)}}
 .outcome-card header{{display:flex;gap:1rem;align-items:flex-start;justify-content:space-between}}
-.outcome-card h5{{font-size:1.18rem;margin:.08rem 0 .35rem}}
+.outcome-card h3{{font-size:1.18rem;margin:.08rem 0 .35rem}}
 .outcome-kind{{margin:0;color:var(--calmar-ink-2);font-size:.76rem;text-transform:uppercase;letter-spacing:.05em}}
-.display-signal{{display:inline-block;border:1px solid var(--calmar-line-strong);border-radius:3px;padding:.15rem .45rem;
-  color:var(--calmar-ink-2);background:var(--calmar-panel);font-size:.77rem;white-space:nowrap}}
+.display-signal{{display:inline-flex;flex-direction:column;align-items:flex-end;line-height:1.15;white-space:nowrap}}
+.display-stars{{color:var(--calmar-grape);font-family:"DejaVu Sans",Arial,Helvetica,sans-serif;
+  font-size:1rem;letter-spacing:.05em}}
+.display-stars-print{{display:none;color:var(--calmar-grape);font-size:.78rem}}
+.display-label{{color:#777784;font-size:.69rem;font-weight:400;margin-top:.12rem}}
 .display-signal-note{{border-left:4px solid var(--calmar-blue);padding:.55rem .8rem;margin:1rem 0;background:rgba(64,98,187,.06)}}
 .display-signal-note summary,.source-list summary,.region-list summary,.citation-detail summary,.finding-more summary,
 .measure-findings summary{{color:var(--calmar-blue);font-weight:600;cursor:pointer}}
 .calmar-report summary:focus-visible,.calmar-report button:focus-visible,.calmar-report [tabindex]:focus-visible{{outline:3px solid var(--calmar-cyan-ink);outline-offset:3px}}
 .visually-hidden{{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
   overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}}
-.finding-counts,.finding-indicators{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin:.85rem 0}}
-.finding-counts div,.finding-indicators div{{border-left:3px solid var(--calmar-line-strong);padding:.15rem .55rem}}
-.finding-counts dt,.finding-indicators dt{{font-size:.73rem;text-transform:uppercase;letter-spacing:.035em;color:var(--calmar-ink-2)}}
-.finding-counts dd,.finding-indicators dd{{margin:0;font-weight:700}}
+.matched-findings,.relevance-basis{{font-size:.88rem;color:var(--calmar-ink-2);margin:.35rem 0 .45rem}}
+.finding-counts{{display:flex;flex-wrap:wrap;gap:.25rem 1.2rem;margin:.45rem 0 .65rem;font-size:.86rem;color:var(--calmar-ink-2)}}
+.finding-counts span{{white-space:nowrap}}
+.finding-counts strong{{color:var(--calmar-ink);font-weight:650}}
+.finding-indicators{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin:.85rem 0}}
+.finding-indicators div{{border-left:3px solid var(--calmar-line-strong);padding:.15rem .55rem}}
+.finding-indicators dt{{font-size:.73rem;text-transform:uppercase;letter-spacing:.035em;color:var(--calmar-ink-2)}}
+.finding-indicators dd{{margin:0;font-weight:700}}
 .region-preview{{font-size:.9rem;color:var(--calmar-ink-2);margin:.75rem 0 .2rem}}
 .region-list,.source-list,.citation-detail{{font-size:.86rem;margin:.35rem 0}}
 .source-list>div{{margin:.4rem 0 .2rem .75rem}}
 .source-list .citation-detail{{margin:.25rem 0}}
 .citation-detail p{{margin:.35rem 0 .6rem;padding-left:.75rem;border-left:2px solid var(--calmar-line-strong)}}
 .subsection-heading{{margin:2rem 0 .75rem}}
-.subsection-heading h5{{font-size:1.25rem;margin:0 0 .25rem}}
+.subsection-heading h3{{font-size:1.25rem;margin:0 0 .25rem}}
 .subsection-heading p{{font-size:.9rem;color:var(--calmar-ink-2);margin:0}}
+.additional-regions,.additional-outcomes{{margin-top:.9rem;border:1px solid var(--calmar-line-strong);border-radius:3px;padding:.65rem .8rem}}
+.additional-regions>summary,.additional-outcomes>summary{{color:var(--calmar-blue);font-weight:600;cursor:pointer}}
+.additional-regions-body{{margin-top:.45rem}}
+.additional-outcomes>.outcome-cards{{margin:.5rem 0 0}}
+.tract-direction{{display:flex;flex-wrap:wrap;gap:.15rem .8rem;font-size:.82rem;color:var(--calmar-ink-2)}}
+.tract-direction span{{white-space:nowrap}}
+.shared-symptoms{{grid-column:1/-1;font-size:.82rem;color:var(--calmar-ink-2)}}
+.shared-symptom-detail{{margin:.25rem 0 1rem;padding:.5rem .8rem;border-left:3px solid var(--calmar-line-strong)}}
+.shared-symptom-detail p{{margin:.2rem 0}}
+.shared-symptom-detail ul{{margin:.4rem 0 .4rem 1.25rem;padding:0}}
+.shared-symptom-detail li+li{{margin-top:.2rem}}
 .region-evidence{{border-top:1px solid var(--calmar-line)}}
 .region-evidence:last-of-type{{border-bottom:1px solid var(--calmar-line)}}
 .region-evidence>summary{{display:grid;grid-template-columns:minmax(15rem,1.2fr) minmax(16rem,1fr);gap:.3rem 1rem;
@@ -706,11 +754,11 @@ body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
 .region-body{{padding:.25rem 0 1.25rem 1rem}}
 .region-alias{{font-size:.84rem;color:var(--calmar-ink-2);margin:.2rem 0 .8rem}}
 .outcome-findings{{margin:1rem 0 1.65rem}}
-.outcome-findings h6{{font-size:1.05rem;margin:0 0 .35rem}}
-.outcome-findings h6 span{{font-size:.78rem;font-weight:400;color:var(--calmar-ink-2)}}
+.outcome-findings h4{{font-size:1.05rem;margin:0 0 .35rem}}
+.outcome-findings h4 span{{font-size:.78rem;font-weight:400;color:var(--calmar-ink-2)}}
 .finding{{padding:1rem 0;border-top:1px solid var(--calmar-line);break-inside:avoid-page}}
-.finding-claim{{font-size:1rem;margin:0 0 .35rem;max-width:68ch}}
-.finding-source,.finding-governance{{font-size:.82rem;color:var(--calmar-ink-2);margin:.25rem 0;max-width:76ch}}
+.finding-claim{{font-size:1rem;margin:0 0 .35rem;max-width:100%}}
+.finding-source,.finding-governance{{font-size:.82rem;color:var(--calmar-ink-2);margin:.25rem 0;max-width:100%}}
 .citation-key{{font-weight:700;color:var(--calmar-blue)}}
 .finding-indicators{{grid-template-columns:repeat(3,minmax(0,1fr));max-width:48rem}}
 .finding-indicators dd{{font-size:.88rem;font-weight:600;text-transform:capitalize}}
@@ -726,7 +774,7 @@ body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
 .measure-cards{{border-top:1px solid var(--calmar-line)}}
 .measure-card{{padding:1.2rem 0;border-bottom:1px solid var(--calmar-line);break-inside:avoid}}
 .measure-card header{{display:grid;grid-template-columns:minmax(12rem,.7fr) minmax(15rem,1.3fr);gap:1rem}}
-.measure-card h5,.measure-card header p{{margin:0}}
+.measure-card h3,.measure-card header p{{margin:0}}
 .measure-card .secondary,.secondary{{color:var(--calmar-ink-2)}}
 .stage-warning{{display:inline-block;margin:.25rem 0;font-size:.75rem;font-weight:400}}
 .stage-warning summary{{color:var(--calmar-ink);font-weight:700;text-decoration:underline;text-decoration-color:var(--calmar-pink);
@@ -738,6 +786,15 @@ body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
 .data-table th{{background:var(--calmar-grape);color:#fff}}
 .data-table th,.data-table td{{padding:.45rem .55rem;text-align:left;vertical-align:top;border-bottom:1px solid var(--calmar-line)}}
 .data-table td{{overflow-wrap:anywhere}}
+.damaged-table th:first-child,.damaged-table td:first-child{{text-align:left}}
+.damaged-table .numeric{{text-align:center}}
+.evidence-path{{margin:.85rem 0 1.35rem;padding:.55rem .8rem;border-left:4px solid var(--calmar-blue);
+  background:rgba(64,98,187,.06);break-inside:avoid-page}}
+.evidence-path ol{{margin:.45rem 0 .45rem 1.25rem;padding:0}}
+.evidence-path>summary{{color:var(--calmar-blue);font-weight:600;cursor:pointer}}
+.evidence-path>div{{margin-top:.55rem}}
+.evidence-path li+li{{margin-top:.25rem}}
+.evidence-path p{{margin:.45rem 0 0;font-size:.88rem;color:var(--calmar-ink-2)}}
 .data-table .cell-value{{min-width:0}}
 .behaviour-table{{width:auto}}
 .legend{{font-size:.86rem;color:var(--calmar-ink-2);line-height:1.55}}
@@ -745,13 +802,13 @@ body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
 .legend p{{margin:.45rem 0}}
 .print-only{{display:none}}
 .calmar-report img{{max-width:100%;height:auto}}
-@media (max-width:700px){{
+@media screen and (max-width:700px){{
   body.calmar-report{{margin:0;padding:1rem .75rem 3rem;font-size:16px}}
   .report-header,.report-content{{padding:1rem}}
-  .report-content>h4{{font-size:1.32rem;margin-top:2.5rem}}
+  .report-section>summary{{font-size:1.18rem;align-items:flex-start}}
   .outcome-card header,.measure-card header{{display:block}}
   .display-signal{{white-space:normal;margin-top:.35rem}}
-  .finding-counts{{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .finding-counts{{gap:.2rem .8rem}}
   .finding-indicators{{grid-template-columns:1fr}}
   .region-evidence>summary{{grid-template-columns:1fr}}
   .region-notes{{grid-column:1}}
@@ -773,14 +830,25 @@ body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
   body.calmar-report{{max-width:none;margin:0;padding:0;font-size:10pt;line-height:1.42}}
   .no-print{{display:none!important}}
   .report-header,.report-content,.calmar-provenance{{border-color:var(--calmar-line-strong);box-shadow:none}}
-  .report-content>h4{{font-size:15pt;margin-top:1.6rem;break-after:avoid-page}}
   .outcome-card,.measure-card,.finding{{break-inside:avoid-page}}
   .region-evidence{{break-inside:auto}}
+  .region-evidence>summary{{display:block}}
+  .region-title,.region-facts,.region-notes,.tract-direction,.shared-symptoms{{display:block}}
+  .region-facts{{margin-top:.15rem}}
   .region-action{{display:none}}
+  .screen-only{{display:none!important}}
   .print-only{{display:block}}
   .stage-warning{{display:none}}
   .stage-warning-print{{font-size:8pt;border-left:2px solid var(--calmar-pink);padding-left:.35rem}}
   .calmar-report details>summary{{break-after:avoid-page}}
+  .calmar-report details:not([data-print-open]){{display:none!important}}
+  .calmar-report details[data-print-open]>*:not(summary){{display:block!important}}
+  .display-stars{{display:none}}
+  .display-stars-print{{display:inline}}
+  .report-section{{border-top:0}}
+  .report-section>summary{{font-size:15pt;padding:1.2rem 0 .35rem}}
+  .section-action{{display:none}}
+  .report-section-body{{padding:0 0 .6rem}}
   .table-scroll{{overflow:visible}}
   .calmar-report table{{break-inside:avoid-page}}
   .finding-more-body{{background:#fff}}
@@ -788,22 +856,40 @@ body.calmar-report{{max-width:72rem;margin:2.5rem auto;padding:0 1.5rem 4rem}}
 </style></head><body class="calmar-report">
 <div class="no-print" style="margin-bottom:16px">
   <button onclick="window.print()" style="padding:8px 18px;background:#4062bb;color:white;border:none;border-radius:4px;cursor:pointer">
-    &#128438; Save / Print PDF</button>
+    Save / Print PDF</button>
   <span style="color:#5a5a66;font-size:.82rem;margin-left:10px">Use your browser's PDF option when printing</span>
 </div>
 {body}
 <script>
+function revealReportTarget(id){{
+  const target=id && document.getElementById(id);
+  if(target){{
+    if(target.tagName==='DETAILS') target.open=true;
+    let ancestor=target.parentElement && target.parentElement.closest('details');
+    while(ancestor){{
+      ancestor.open=true;
+      ancestor=ancestor.parentElement && ancestor.parentElement.closest('details');
+    }}
+    target.scrollIntoView({{block:'start'}});
+  }}
+}}
 document.addEventListener('DOMContentLoaded',()=>{{
-  const target=location.hash && document.getElementById(location.hash.slice(1));
-  if(target && target.tagName==='DETAILS') target.open=true;
+  revealReportTarget(location.hash.slice(1));
+  document.addEventListener('click',(event)=>{{
+    const link=event.target.closest('a[href^="#"]');
+    if(link) revealReportTarget(link.getAttribute('href').slice(1));
+  }});
 }});
+window.addEventListener('hashchange',()=>revealReportTarget(location.hash.slice(1)));
 let calmarPrintState=[];
 window.addEventListener('beforeprint',()=>{{
-  calmarPrintState=[...document.querySelectorAll('details')].map(item=>item.open);
-  document.querySelectorAll('details.region-evidence, details.measure-findings').forEach(item=>{{item.open=true}});
+  const printable=[...document.querySelectorAll('details[data-print-open]')];
+  calmarPrintState=printable.map(item=>item.open);
+  printable.forEach(item=>{{item.open=true}});
 }});
 window.addEventListener('afterprint',()=>{{
-  document.querySelectorAll('details').forEach((item,index)=>{{item.open=calmarPrintState[index]}});
+  document.querySelectorAll('details[data-print-open]').forEach(
+    (item,index)=>{{item.open=calmarPrintState[index]}});
   calmarPrintState=[];
 }});
 </script>
@@ -866,8 +952,8 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     """
     from .atlas_overlap import prepare_report_overlap
     from .qc_decisions import report_qc_notice
-    from .report_evidence import (MAP_LABELS, disconnection_section, disconnectome_map, location_coverage,
-                                  location_section, measures_section, tract_atlases)
+    from .report_evidence import (MAP_LABELS, disconnection_section, disconnectome_map, is_symptom_target,
+                                  location_coverage, location_section, measures_section, tract_atlases)
     from .report_ui import ParticipantReport, report_sections
 
     messages = []
@@ -882,7 +968,8 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
         raise ValueError(f"No existing MNI mask for {source!r}, {entry['subject']} "
                          f"{entry.get('session') or ''}. Choose an available mask in the report selector.")
     mask = Path(study.mni_mask(entry, source))
-    brain = Path(study.template_dir(entry)) / "Subject_in_MNI.nii.gz"
+    brain = (Path(study.dirs(entry)["openads"]) / "Subject_in_MNI.nii.gz"
+             if source == "openads" else Path(study.template_dir(entry)) / "Subject_in_MNI.nii.gz")
     # prepare_report_overlap reads the atlas list from INTERP_KB_ATLASES; give it ours.
     view = dict(namespace, INTERP_KB_ATLASES=list(settings.kb_atlases))
     prepare_report_overlap(view, entry, source)
@@ -942,7 +1029,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     # 3. Therapies for predicted + WAB-implied impairments
     impairments = []
     if not imaging.empty:
-        impairments += list(imaging[imaging["target_kind"] == "impairment"]["target"].head(settings.top_n * 2))
+        symptom_rows = imaging.apply(
+            lambda row: is_symptom_target(rules, row["target"], row["target_kind"]), axis=1)
+        impairments += list(imaging[symptom_rows]["target"].head(settings.top_n * 2))
     if not predicted.empty:
         impairments += list(predicted[predicted["target_kind"] == "impairment"]["target"].head(settings.top_n))
     impairments = list(dict.fromkeys(impairments))
@@ -953,7 +1042,6 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
                                        max_results=settings.top_n)
 
     # 4. HTML
-    n_imaging = int((imaging["target_kind"] == "impairment").sum()) if not imaging.empty else 0
     n_pred = 0 if predicted.empty else len(predicted)
     n_therapy = 0 if therapies.empty else len(therapies)
     conf_note = ("(high-confidence findings only)" if settings.high_conf_only
@@ -982,42 +1070,38 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       </div>
     </header>
     '''
-    body = f'''
-    <main class="report-content">
-
-      <h4>Damaged regions ({settings.display_atlas},
-        &ge;{settings.min_overlap_pct}%)</h4>
-      <p class="section-intro">This table locates the lesion in the selected display atlas. It is an anatomical
-        overview; the evidence interpretation appears in the sections below.</p>
-      {damaged_regions_html(damaged, settings.display_atlas, atlas_dir)}
-
-      <h4>Behavioural / clinical data</h4>
-      <p class="section-intro">These participant measures provide context for the evidence lookup. Missing values
-        remain missing and are not inferred.</p>
+    context = f'''
+      <h3>Behavioural / clinical data</h3>
+      <p class="section-intro">These participant measures provide context before the lesion description. Missing
+        values remain missing and are not inferred.</p>
       {behaviour_html(rules, row, predictors, volume)}
-
-      <h4>Lesion location: what the evidence says</h4>
-      {location_section(kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings, phase=stage_id)}
-
-      <h4>White-matter disconnection: what the evidence says</h4>
-      {disconnection_section(kb, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id)}
-
-      <h4>This participant&rsquo;s measures: what the evidence says</h4>
-      <p class="section-intro">
-        Findings about measures such as lesion volume or aphasia severity report associations
-        in study groups (for example, larger lesions with more severe aphasia), not predictions for one person.
-      </p>
-      {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None, phase=stage_id)}
-
-      <h4>Therapy recommendations ({n_therapy} matched)</h4>
-      <p class="section-intro">
-        These are therapies with evidence targeting impairments represented above. They are research associations,
-        not prescriptions; recovery-stage mismatches remain marked for clinical review.
-      </p>
-      {therapy_table(kb, therapies, stage_id, stage_label, therapy_stages)}
-{LEGEND_HTML}
-    </main>
-    '''
+      <h3>Damaged regions ({settings.display_atlas}, &ge;{settings.min_overlap_pct}%)</h3>
+      <p class="section-intro">This table locates the lesion in the selected display atlas. It is an anatomical
+        overview; the literature interpretation follows in the next section.</p>
+      {damaged_regions_html(damaged, settings.display_atlas, atlas_dir)}'''
+    location = location_section(
+        kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings, phase=stage_id)
+    white_matter = disconnection_section(
+        kb, rules, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id,
+        map_name=map_path.name if map_path is not None else None, mask_label=label,
+        lesion_rows=location_rows)
+    measures = f'''
+      <p class="section-intro">Findings about measures such as lesion volume or aphasia severity report
+        associations in study groups (for example, larger lesions with more severe aphasia), not predictions for
+        one person.</p>
+      {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None, phase=stage_id)}'''
+    therapy = f'''
+      <p class="section-intro">These are therapies with evidence targeting impairments represented above. They are
+        research associations, not prescriptions; recovery-stage mismatches remain marked for clinical review.</p>
+      {therapy_table(kb, therapies, stage_id, stage_label, therapy_stages)}'''
+    body = ("<main class='report-content'>"
+            + report_section("Participant context and lesion overview", context, open=True)
+            + report_section("Lesion location: what the evidence says", location, open=True)
+            + report_section("White-matter disconnection: what the evidence says", white_matter)
+            + report_section("This participant’s measures: what the evidence says", measures)
+            + report_section(f"Therapy recommendations ({n_therapy} matched)", therapy)
+            + report_section("How to read the evidence", LEGEND_HTML)
+            + "</main>")
 
     # 5. Provenance, QC notice, overlay; save
     from .mask_method import mask_method_html
@@ -1026,9 +1110,15 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     except Exception as exc:          # the report is still useful without it
         method = None
         note(f"  mask method not described: {exc}")
-    qc = mask_qc_summary(study.qc_anchor(entry), mask, source)
+    try:
+        qc_anchor = study.qc_anchor(entry, source)
+        qc_directory = study.qc_dir(entry, source)
+    except TypeError:  # compatibility with lightweight third-party Study adapters
+        qc_anchor = study.qc_anchor(entry)
+        qc_directory = study.qc_dir(entry)
+    qc = mask_qc_summary(qc_anchor, mask, source)
     provenance = provenance_html(source, mask, qc, kb_scope=kb_scope, method=method, kb=kb_line)
-    qc_notice = report_qc_notice(Path(study.qc_dir(entry)), entry)
+    qc_notice = report_qc_notice(Path(qc_directory), entry)
     overlay = _overlay_img(namespace, entry, mask, brain, source)
     path, page, _ = save_report(entry, source, reports_dir, title_card, qc_notice, provenance, overlay, body)
     note(f"  Report saved → {path}")

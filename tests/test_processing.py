@@ -98,6 +98,32 @@ def test_configured_directories_and_optional_manual_mask(tmp_path):
     assert manual_inputs(request,entry)==(None,None,None)
 
 
+def test_isles_expert_mask_is_discovered_on_the_native_dwi_grid(tmp_path):
+    sub, ses = 'sub-strokecase0001', 'ses-0001'
+    dwi = tmp_path/sub/ses/'dwi'/f'{sub}_{ses}_dwi.nii.gz'
+    mask = tmp_path/'derivatives'/sub/ses/f'{sub}_{ses}_msk.nii.gz'
+    dwi.parent.mkdir(parents=True)
+    mask.parent.mkdir(parents=True)
+    image(dwi)
+    image(mask)
+    request = {'dataset': str(tmp_path), 'config': {'MODALITY': 'dwi'}}
+    entry = {'subject': sub, 'session': ses, 't1w': str(dwi), 'dwi': str(dwi)}
+    assert manual_inputs(request, entry) == (mask, None, 't1')
+
+
+def test_isles_mask_is_not_guessed_when_the_dwi_has_no_session(tmp_path):
+    sub, ses = 'sub-strokecase0001', 'ses-0001'
+    dwi = tmp_path/sub/'dwi'/f'{sub}_dwi.nii.gz'
+    mask = tmp_path/'derivatives'/sub/ses/f'{sub}_{ses}_msk.nii.gz'
+    dwi.parent.mkdir(parents=True)
+    mask.parent.mkdir(parents=True)
+    image(dwi)
+    image(mask)
+    request = {'dataset': str(tmp_path), 'config': {'MODALITY': 'dwi'}}
+    entry = {'subject': sub, 'session': None, 't1w': str(dwi), 'dwi': str(dwi)}
+    assert manual_inputs(request, entry) == (None, None, None)
+
+
 def test_disabled_segmentation_never_calls_tool(tmp_path,monkeypatch):
     monkeypatch.setenv('SLURM_JOB_ID','fixture')
     request={'dataset':str(tmp_path),'config':{'RUN_SEGMENTATION':False},

@@ -47,6 +47,15 @@ def test_layers_per_step(tmp_path, study):
         sv.step_layers('reporting', e, study)
 
 
+def test_registration_viewer_offers_processed_manual_mask(tmp_path, study):
+    study.dirs(None)['registration'] = study.dirs(None)['template']
+    manual = save(tmp_path/'linda'/'ExpertMask_in_MNI.nii.gz')
+    study.masks(None)['manual'] = {'MNI': manual}
+    _, layers = sv.step_layers('registration', entry(tmp_path), study)
+    assert [(layer['name'], layer['origin']) for layer in layers][-1] == ('Manual lesion', 'manual')
+    assert layers[-1]['path'] == manual and not layers[-1]['shown']
+
+
 def test_controls_describe_the_layers_and_keep_choices(tmp_path, study, monkeypatch):
     import ipywidgets
     viewer = ipywidgets.HTML()                                           # stands in for NiiVue

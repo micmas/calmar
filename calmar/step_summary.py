@@ -63,6 +63,14 @@ def _metric_lines(metrics):
     def take(key):
         used.add(key)
         return m.get(key)
+    if "dwi_series_available" in m:
+        total = take("dwi_series_available")
+        sessions = take("dwi_sessions_available")
+        same, other = take("dwi_same_session"), take("dwi_other_session")
+        ready = take("dwi_openads_ready")
+        text = (f"{total} series across {sessions}; {same} in the selected session, "
+                f"{other} in other sessions; {ready} with an exact sibling ADC map for OpenADS")
+        lines.append(("DWI availability", text))
     if "brain_volume_ml" in m:
         parts = [f"{_fmt(take('brain_volume_ml'))} ml"]
         if m.get("added_by_synthstrip_ml") is not None:
@@ -187,11 +195,11 @@ def step_html(result, *, title=None, images=False):
             + "".join(details) + "</div>")
 
 
-def show_step(result, study=None, *, title=None, images=False):
+def show_step(result, study=None, *, title=None, images=False, viewer=True):
     """Display the summary table, flags and commands of a step, then (with
     ``study``) the interactive viewer of its images."""
     display(HTML(step_html(result, title=title, images=images)))
-    if study is not None and result.get("stage") in VIEWER_STAGES:
+    if viewer and study is not None and result.get("stage") in VIEWER_STAGES:
         from .step_viewer import show_step_viewer
         # Participants with published outputs (not those whose step was skipped).
         done = {(e["subject"], e.get("session")) for e in result.get("results", [])

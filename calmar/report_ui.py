@@ -30,6 +30,13 @@ def file_link(path, label):
 
 def report_sections(body):
     """Group the report markup into notebook accordion sections."""
+    marked = re.findall(
+        r"<!-- calmar-section:(.*?) -->.*?<!-- calmar-section-content -->"
+        r"<div class=['\"]report-section-body['\"]>(.*?)</div>\s*</details>"
+        r"<!-- calmar-section-end -->", body, re.S)
+    if marked:
+        return [(" ".join(unescape(re.sub(r"<[^>]+>", "", title)).split()), content)
+                for title, content in marked]
     sections = []
     section_body = body.split("<hr", 1)[0]
     for title, content in re.findall(r"<h4[^>]*>(.*?)</h4>(.*?)(?=<h4|$)", section_body, re.S):

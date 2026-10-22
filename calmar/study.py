@@ -14,6 +14,7 @@ chronic (T1) route, the diffusion-weighted image in the acute (DWI) route
 and ``modality``. Nothing here runs a tool, downloads data or modifies an image.
 """
 from pathlib import Path
+import os
 import re
 
 from . import masks as cm
@@ -72,6 +73,20 @@ def segmentation_methods(config):
     return methods
 
 
+def analysis_mask_sources(config):
+    """Automatic masks offered downstream, followed by the manual mask.
+
+    A T1 workflow may opt into OpenADS for a participant's DWI+ADC pair,
+    including one from another session.  This remains separate from
+    :func:`segmentation_methods` so it cannot activate the earlier, mutually
+    exclusive acute-route cell.
+    """
+    sources = list(segmentation_methods(config))
+    if modality(config) == "t1" and config.get("_DWI_ANALYSIS_SELECTED") and "openads" not in sources:
+        sources.append("openads")
+    return tuple(sources) + ("manual",)
+
+
 def template_source(config):
     """Who registers each brain to the template: "linda" (its own registration,
     reused for every mask), "ants" (the registration step, T1 route without
@@ -120,6 +135,12 @@ def derivative_dirs(dataset, config, entry):
     suffix = Path(entry["subject"]) / (entry.get("session") or "") / "anat"
     dirs = {tool: Path(dataset) / config.get(key, f"derivatives/{tool}") / suffix
             for tool, key in DERIVATIVE_KEYS.items()}
+    # Optional DWI analysis is linked by participant but remains in the DWI
+    # session's derivative folder.  T1 products stay in the selected T1 session.
+    dwi = entry.get("dwi_analysis") or {}
+    if dwi and modality(config) == "t1":
+        dwi_suffix = Path(dwi.get("subject", entry["subject"])) / (dwi.get("session") or "") / "anat"
+        dirs["openads"] = Path(dataset) / config.get("OPENADS_SUBDIR", "derivatives/openads") / dwi_suffix
     dirs["template"] = dirs[{"linda": "linda", "ants": "registration", "openads": "openads"}[template_source(config)]]
     return dirs
 
@@ -153,8 +174,8 @@ def discover_t1w(root, sub_filter=None, ses_filter=None, selection="first"):
         parts = t1.relative_to(root).parts
         if any(part in ("derivatives", ".git", ".datalad") for part in parts):
             continue
-        sub = next((p for p in parts if p.startswith("sub-")), None)
-        ses = next((p for p in parts if p.startswith("ses-")), None)
+        sub = next((p for p in parts[:-1] if p.startswith("sub-")), None)
+        ses = next((p for p in parts[:-1] if p.startswith("ses-")), None)
         if sub is None:
             m = SUB_RE.search(t1.name)
             sub = m.group(1) if m else f"sub-{t1.name.removesuffix('.nii.gz')}"
@@ -174,30 +195,86 @@ def discover_t1w(root, sub_filter=None, ses_filter=None, selection="first"):
     return found
 
 
-def discover_dwi(root, sub_filter=None, ses_filter=None):
-    """List diffusion images with their ADC under ``root`` as entries (acute route).
+def discover_dwi_inventory(root, sub_filter=None, ses_filter=None):
+    """List every BIDS DWI series under ``root`` without assuming a tool.
 
-    Looks for ``sub-*/[ses-*/]dwi/*_dwi.nii.gz`` with an ``*_adc.nii.gz``
-    beside it (the ISLES-2022 layout: trace DWI, b1000, and its ADC map);
-    ``derivatives`` is skipped. ``t1w`` is set to the DWI, the native image.
+    Discovery is metadata-only, so DataLad annex links need not be materialised.
+    An exact sibling ``*_adc.nii.gz`` is recorded when present; that is the
+    layout OpenADS currently accepts, but ordinary 4-D DWI series without such
+    an ADC remain visible for future diffusion tools. Sidecars are recorded for
+    the same reason. ``derivatives`` and repository metadata are skipped.
     """
     root = Path(root)
     found = []
-    for dwi in sorted(root.rglob("*_dwi.nii.gz")):
+    candidates = []
+    for folder, dirs, files in os.walk(root):
+        dirs[:] = [name for name in dirs if name not in ("derivatives", ".git", ".datalad")]
+        candidates.extend(Path(folder) / name for name in files if name.endswith("_dwi.nii.gz"))
+    for dwi in sorted(candidates):
         parts = dwi.relative_to(root).parts
-        if any(part in ("derivatives", ".git", ".datalad") for part in parts):
-            continue
-        adc = dwi.with_name(dwi.name.replace("_dwi.nii.gz", "_adc.nii.gz"))
-        if not adc.exists() and not adc.is_symlink():
-            continue
-        sub = next((p for p in parts if p.startswith("sub-")), None)
-        ses = next((p for p in parts if p.startswith("ses-")), None)
+        sub = next((p for p in parts[:-1] if p.startswith("sub-")), None)
+        ses = next((p for p in parts[:-1] if p.startswith("ses-")), None)
+        if sub is None:
+            match = SUB_RE.search(dwi.name)
+            sub = match.group(1) if match else None
+        if ses is None:
+            match = SES_RE.search(dwi.name)
+            ses = match.group(1) if match else None
         if sub is None or not matches_filter(sub, sub_filter):
             continue
         if ses is not None and not matches_filter(ses, ses_filter):
             continue
-        found.append({"subject": sub, "session": ses, "t1w": dwi, "dwi": dwi, "adc": adc, "modality": "dwi"})
+        available = lambda path: path.exists() or path.is_symlink()
+        adc = dwi.with_name(dwi.name.replace("_dwi.nii.gz", "_adc.nii.gz"))
+        stem = str(dwi).removesuffix(".nii.gz")
+        sidecars = {kind: Path(stem + suffix) for kind, suffix in
+                    (("bval", ".bval"), ("bvec", ".bvec"), ("json", ".json"))}
+        found.append({"subject": sub, "session": ses, "dwi": dwi,
+                      "adc": adc if available(adc) else None,
+                      **{kind: path if available(path) else None for kind, path in sidecars.items()}})
     return found
+
+
+def discover_dwi(root, sub_filter=None, ses_filter=None, *, inventory=None):
+    """OpenADS-ready DWI+ADC pairs, represented as processing entries.
+
+    Generic DWI availability is deliberately handled by
+    :func:`discover_dwi_inventory`; this function retains the stricter acute
+    OpenADS route and therefore requires an exact sibling ADC map.
+    """
+    inventory = (discover_dwi_inventory(root, sub_filter, ses_filter)
+                 if inventory is None else inventory)
+    return [{**item, "t1w": item["dwi"], "modality": "dwi"}
+            for item in inventory
+            if item.get("adc") is not None
+            and matches_filter(item["subject"], sub_filter)
+            and (item.get("session") is None or matches_filter(item["session"], ses_filter))]
+
+
+def attach_dwi_inventory(entries, root, *, inventory=None):
+    """Attach all same-participant DWI series, including other sessions.
+
+    The selected anatomical/DWI session is not used as a filter. Each item is
+    labelled as same- or different-session and whether it has the exact ADC
+    sibling OpenADS needs. Nothing is downloaded here.
+    """
+    entries = [dict(entry) for entry in entries]
+    if not entries:
+        return entries
+    wanted = {entry["subject"] for entry in entries}
+    by_subject = {subject: [] for subject in wanted}
+    inventory = discover_dwi_inventory(root, wanted) if inventory is None else inventory
+    for item in inventory:
+        if item["subject"] not in wanted:
+            continue
+        by_subject[item["subject"]].append(item)
+    for entry in entries:
+        session = entry.get("session")
+        entry["dwi_inventory"] = [
+            {**item, "same_session": item.get("session") == session,
+             "openads_ready": item.get("adc") is not None}
+            for item in by_subject.get(entry["subject"], [])]
+    return entries
 
 
 def select_participants(config, dataset_dir):
@@ -209,10 +286,16 @@ def select_participants(config, dataset_dir):
     if source == "single":
         t1 = Path(config["SINGLE_T1W"]).expanduser().resolve()
         sub, ses = SUB_RE.search(str(t1)), SES_RE.search(str(t1))
-        return [{"subject": sub.group(1) if sub else "sub-single",
-                 "session": ses.group(1) if ses else None, "t1w": t1}], ""
+        entries = [{"subject": sub.group(1) if sub else "sub-single",
+                    "session": ses.group(1) if ses else None, "t1w": t1}]
+        inventory_root = next((parent.parent for parent in t1.parents if parent.name.startswith("sub-")),
+                              Path(dataset_dir))
+        return attach_dwi_inventory(entries, inventory_root), ""
+    inventory = None
     if modality(config) == "dwi":
-        entries = discover_dwi(dataset_dir, config.get("SUBJECT_FILTER"), config.get("SESSION_FILTER"))
+        inventory = discover_dwi_inventory(dataset_dir, config.get("SUBJECT_FILTER"))
+        entries = discover_dwi(dataset_dir, config.get("SUBJECT_FILTER"), config.get("SESSION_FILTER"),
+                               inventory=inventory)
     else:
         entries = discover_t1w(dataset_dir, config.get("SUBJECT_FILTER"),
                                config.get("SESSION_FILTER"), config.get("T1W_SELECTION", "first"))
@@ -221,12 +304,17 @@ def select_participants(config, dataset_dir):
         before = len({e["subject"] for e in entries})
         seed = config.get("RANDOM_SEED", 42)
         entries = sample_t1_participants(entries, n, seed=seed)
-        return entries, (f"Random sample of {len(entries)}/{before} participants "
-                         f"(MAX_SUBJECTS={n}, seed={seed}), one T1w session each.")
+        kind = "DWI+ADC" if modality(config) == "dwi" else "T1w"
+        note = (f"Random sample of {len(entries)}/{before} participants "
+                f"(MAX_SUBJECTS={n}, seed={seed}), one {kind} session each.")
+        return attach_dwi_inventory(entries, dataset_dir, inventory=inventory), note
     if n and 0 < n < len(entries):
         before = len(entries)
-        return entries[:n], f"First {n}/{before} T1w images (MAX_SUBJECTS={n})."
-    return entries, ""
+        entries = entries[:n]
+        kind = "DWI+ADC pairs" if modality(config) == "dwi" else "T1w images"
+        note = f"First {n}/{before} {kind} (MAX_SUBJECTS={n})."
+        return attach_dwi_inventory(entries, dataset_dir, inventory=inventory), note
+    return attach_dwi_inventory(entries, dataset_dir, inventory=inventory), ""
 
 
 # ── Per-participant paths ────────────────────────────────────────────────────
@@ -258,17 +346,17 @@ class Study:
         """LINDA's lesion mask in template space."""
         return self.linda_dir(entry) / "Lesion_in_MNI.nii.gz"
 
-    def qc_anchor(self, entry):
+    def qc_anchor(self, entry, source=None):
         """The mask whose ``*.qc.json`` sidecar holds every QC stage rating:
         LINDA's MNI lesion in the T1 route (also when LINDA did not run), the
         OpenADS MNI lesion in the acute (DWI) route."""
-        if modality(self.config) == "dwi":
+        if source == "openads" or modality(self.config) == "dwi":
             return self.dirs(entry)["openads"] / "OpenADS_in_MNI.nii.gz"
         return self.lesion_mni(entry)
 
-    def qc_dir(self, entry):
+    def qc_dir(self, entry, source=None):
         """Folder of the QC sidecar and the Do / Skip QC decision (``QC_decision.json``)."""
-        return self.qc_anchor(entry).parent
+        return self.qc_anchor(entry, source).parent
 
     def manual_mask_template(self, entry):
         template = self.config.get("MANUAL_MASK_PATH")
@@ -278,8 +366,10 @@ class Study:
 
     def masks(self, entry):
         """Existing masks as ``{source: {space: path}}``; nothing is computed."""
+        openads_entry = entry.get("dwi_analysis") or entry
         return cm.discover_masks(entry, self.linda_dir(entry), self.synthstroke_dir(entry),
                                  template_dir=self.template_dir(entry), openads_dir=self.dirs(entry)["openads"],
+                                 openads_entry=openads_entry,
                                  manual_path=self.manual_mask_template(entry),
                                  manual_space=self.config.get("MANUAL_MASK_SPACE", "t1"))
 

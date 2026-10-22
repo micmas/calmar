@@ -23,7 +23,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 
 ## Requirements
 
-- [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools that the retained Slurm scripts in `src/` load with pinned `module load` versions: LINDA, HD-BET, SynthStrip, SynthStroke, BCBToolkit, DeepDisco, ANTs, FSL, FreeSurfer (and OpenADS, used only by the benchmark), plus all Python/R dependencies
+- [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools that the retained Slurm scripts in `src/` load with pinned `module load` versions: LINDA, HD-BET, SynthStrip, SynthStroke, BCBToolkit, DeepDisco, ANTs, FSL, FreeSurfer and OpenADS, plus all Python/R dependencies
 - A BIDS-formatted dataset (the notebook fetches `ds004884` from OpenNeuro via datalad by default)
 - Python packages listed in `requirements.txt` (usually pre-installed in Neurodesktop; Setup prints terminal installation instructions for anything missing)
 
@@ -74,6 +74,23 @@ cd ~/neurodesktop-storage/calmar
 
 The notebook uses `Path.cwd()` for all paths — no path editing required as long as you open it from the repo root.
 
+### ISLES 2022 quickstart
+
+ISLES 2022 is distributed separately from OpenNeuro. Obtain and extract the
+[official dataset](https://www.isles-challenge.org/) so one directory contains
+both `sub-strokecase*` and `derivatives/`; the default local location is
+`data/ISLES-2022/`. In `calmar-guided.ipynb`:
+
+1. Choose **DWI + ADC — OpenADS** as the imaging route.
+2. Choose **ISLES 2022 (local)** as the input type.
+3. Select the extracted dataset root, optionally restrict the participants, and start.
+
+The form checks for `*_dwi.nii.gz` files with sibling `*_adc.nii.gz` maps before
+processing. It also recognises the official expert masks at
+`derivatives/{sub}/{ses}/{sub}_{ses}_msk.nii.gz`; users do not need to construct
+a `MANUAL_MASK_PATH` template. For a nonstandard copy, choose **Local BIDS** and
+configure the manual-mask path and space explicitly.
+
 The notebooks import the local `calmar` package directly; no editable install
 is required when launched from this directory. After updating from the older
 root-script layout, restart the kernel and rerun Setup so old module instances
@@ -112,8 +129,9 @@ selector lists only locally available MNI masks for the selected subject and
 session; native automatic masks remain available for QC. Configured manual masks
 must declare their space, and masks drawn on another scan need registration
 before they can be used in T1w QC. Finding a file does not validate its alignment.
-LINDA-specific edit and rerun actions remain specific to LINDA. DWI-only subject
-discovery and OpenADS integration are separate, planned extensions.
+LINDA-specific edit and rerun actions remain specific to LINDA. The acute DWI
+route discovers DWI/ADC pairs and uses OpenADS; its separate lesion and
+registration QC stages do not expose the LINDA-only repair actions.
 
 Lightweight regression checks (no segmentation or data downloads):
 
@@ -229,6 +247,16 @@ An optional mask-comparison viewer and Neurosynth checkbox are in the same form.
 **Generate participant report** starts the remaining report cells automatically.
 The result has one panel with expandable evidence sections, a lazy brain viewer,
 optional decoding and an HTML download. QC decisions remain in the saved report.
+The lesion-location section shows symptom summaries in its primary list when
+their matched records span at least two citation keys and two distinct anatomy
+mappings after knowledge-base synonyms are merged; every relationship type,
+including null and mixed findings, counts. This is a display relevance rule,
+not a certainty threshold.
+Other symptom summaries remain expandable. White-matter tract rows show the
+relationship-direction counts and cross-reference symptom targets that also
+have direct-damage evidence from a different anatomy. Each cross-reference
+shows the direction mix on both paths without treating them as independent or
+additive evidence.
 Use **Choose another report** to return to the form. The single-subject comparison
 remains the place to compare masks in native T1 space.
 Neurosynth reports whether decoding completed, how many terms were tested, and
@@ -280,6 +308,9 @@ LINDA registers each brain to its **ch2 (Colin27)** template (single-subject ana
 `SEGMENTATION_METHODS` (default `["linda", "synthstroke"]`) chooses the automatic segmentations; at least one is required. LINDA takes 1.5-3.7 h per participant, almost all of it its registration to the template. Without LINDA, the **registration step** (`src/analysis_29_registration.sh`, ANTs 2.6.5) registers the brain-extracted T1w directly to the MNI152 brain, with the SynthStroke lesion (dilated 2 voxels) excluded from the cost function: an affine stage (Mattes MI, one thread, seeded), then SyN (cross-correlation, `REGISTRATION_THREADS`), ANTs' documented route to a reproducible result. It took 9 min with 4 threads for sub-M2051 ses-284 (template correlation 0.66, vs 0.63 for LINDA's registration; SynthStroke's template-space mask Dice 0.80 between the two registrations). Its outputs, and the manual mask's products and template-space SynthStroke mask made with it, are in `derivatives/registration/`, so masks warped by the two registrations never share a file.
 
 **Acute route (`MODALITY = "dwi"`).** For acute stroke imaged with diffusion MRI (e.g. ISLES-2022: `sub-*/ses-*/dwi/*_dwi.nii.gz` with `*_adc.nii.gz`), OpenADS (`openadscpu/1.0.0`, `src/analysis_43_openads.sh`) segments the lesion on the DWI and its ADC map. The T1 steps (brain extraction, LINDA, SynthStroke, registration) are skipped.
+- **Guided ISLES input:** choose **ISLES 2022 (local)** and its extracted root. The form validates compatible pairs, and the official `*_msk.nii.gz` reference masks are discovered automatically.
+- **Optional DWI beside a T1 workflow:** after participant discovery, the notebooks ask whether to analyse any OpenADS-ready DWI/ADC pair they find. A pair may come from the selected T1 session or another session and remains labelled with its own session. The choice is recorded immediately, but OpenADS runs only after the ordinary T1/manual-mask registration inspection and QC. Its registration receives a separate QC checkpoint because DWI contrast and lesion boundaries can change over time, even when the anatomical lesion is expected to be stable in chronic stroke.
+- **DWI availability is broader than the OpenADS route:** participant discovery inventories every BIDS `*_dwi.nii.gz` for each selected participant, in the selected session and in other sessions. The acquisition summary reports the series, sessions and exact sibling ADC maps. Ordinary diffusion series are not labelled OpenADS-ready and are not downloaded arbitrarily; future diffusion tools can select the appropriate DWI and sidecars explicitly.
 - **Template space:** OpenADS also registers the DWI to MNI152 (affine + SyN against its JHU ADC template). Its own template-space "stroke" image is not the lesion, so the native lesion is warped with those transforms (`src/analysis_44_apply_openads_registration.sh`). On 10 ISLES-2022 cases the side was preserved in all, and OpenADS agreed with the expert masks at Dice 0.75–0.91 in template space for most lesions; small lesions are often missed.
 - **Same downstream steps:** manual masks, disconnectomes, atlas overlap and the report work as in the chronic route.
 - **Recovery phase:** reports tag each knowledge-base finding with the phase it was studied in, so an acute participant sees how much of the evidence comes from chronic-stroke studies.
@@ -327,6 +358,10 @@ If you use CALMaR in your research, please cite it using the metadata in `CITATI
 Michele Masson-Trottier (2025). CALMaR: Co-designed, Automated Lesion Mapping and Reporting (v1.0.0).
 GitHub: https://github.com/micmas/calmar
 ```
+
+The detailed notebook's **Citation and Resources** section lists the primary
+citations and software resources for each workflow tool, plus the ARC and ISLES
+2022 dataset citations.
 
 ---
 

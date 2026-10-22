@@ -6,10 +6,63 @@ import re
 import tempfile
 import unittest
 from calmar.cohort import sample_t1_participants
-from calmar.guided import normalize_selection, source_cell
+from calmar.guided import (SOURCE_OPTIONS, initial_input_route, normalize_selection, set_route_source_options,
+                           source_cell, validate_isles_input)
 
 
 class CohortTests(unittest.TestCase):
+    def test_route_change_preserves_local_source_and_replaces_t1_only_sources(self):
+        import ipywidgets as widgets
+        source = widgets.Dropdown(options=[("OpenNeuro", "openneuro"), ("Local BIDS", "local"),
+                                           ("Single T1", "single")], value="local")
+        set_route_source_options(source, "dwi")
+        self.assertEqual(source.value, "local")
+        set_route_source_options(source, "t1")
+        source.value = "single"
+        set_route_source_options(source, "dwi")
+        self.assertEqual(source.value, "local")
+
+    def test_dwi_guided_selection_uses_openads_not_t1_methods(self):
+        values = normalize_selection(dict(DATASET_SOURCE="local", MODALITY="dwi", SUBJECT_FILTER="sub-1",
+            SESSION_FILTER="", MAX_SUBJECTS=1, RANDOM_SAMPLE=False,
+            _method_linda=True, _method_synthstroke=True))
+        self.assertEqual(values["SEGMENTATION_METHODS"], ["openads"])
+        self.assertNotIn("_method_linda", values)
+
+    def test_isles_guided_source_is_explicit_and_forces_the_compatible_route(self):
+        self.assertIn(("ISLES 2022 (local)", "isles2022"), SOURCE_OPTIONS["dwi"])
+        self.assertEqual(initial_input_route({"DATASET_SOURCE": "isles2022", "MODALITY": "t1"}), "dwi")
+        values = normalize_selection(dict(
+            DATASET_SOURCE="isles2022", MODALITY="t1", SUBJECT_FILTER="",
+            SESSION_FILTER="", MAX_SUBJECTS=0, RANDOM_SAMPLE=False,
+            _method_linda=True, _method_synthstroke=True))
+        self.assertEqual(values["MODALITY"], "dwi")
+        self.assertEqual(values["SEGMENTATION_METHODS"], ["openads"])
+
+    def test_isles_validation_distinguishes_bad_filters_from_a_bad_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            folder = root/'sub-strokecase0001'/'ses-0001'/'dwi'
+            folder.mkdir(parents=True)
+            (root/'derivatives').mkdir()
+            for suffix in ('dwi', 'adc'):
+                (folder/f'sub-strokecase0001_ses-0001_{suffix}.nii.gz').write_bytes(b'x')
+            self.assertEqual(len(validate_isles_input(root)), 1)
+            with self.assertRaisesRegex(ValueError, '1 ISLES DWI\\+ADC pairs.*filters'):
+                validate_isles_input(root, ['sub-not-in-isles'])
+
+    def test_isles_validation_reports_a_nested_extraction_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            outer = Path(temporary)
+            root = outer/'ISLES-2022'
+            folder = root/'sub-strokecase0001'/'ses-0001'/'dwi'
+            folder.mkdir(parents=True)
+            (root/'derivatives').mkdir()
+            for suffix in ('dwi', 'adc'):
+                (folder/f'sub-strokecase0001_ses-0001_{suffix}.nii.gz').write_bytes(b'x')
+            with self.assertRaisesRegex(ValueError, f'Choose {re.escape(str(root))}'):
+                validate_isles_input(outer)
+
     def test_empty_openneuro_filters_enable_random_sampling(self):
         values = normalize_selection(dict(DATASET_SOURCE="openneuro", SUBJECT_FILTER=" , ",
             SESSION_FILTER="", MAX_SUBJECTS=3, RANDOM_SAMPLE=False))
