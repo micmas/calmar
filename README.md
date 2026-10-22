@@ -247,6 +247,16 @@ An optional mask-comparison viewer and Neurosynth checkbox are in the same form.
 **Generate participant report** starts the remaining report cells automatically.
 The result has one panel with expandable evidence sections, a lazy brain viewer,
 optional decoding and an HTML download. QC decisions remain in the saved report.
+The lesion-location section shows symptom summaries in its primary list when
+their matched records span at least two citation keys and two distinct anatomy
+mappings after knowledge-base synonyms are merged; every relationship type,
+including null and mixed findings, counts. This is a display relevance rule,
+not a certainty threshold.
+Other symptom summaries remain expandable. White-matter tract rows show the
+relationship-direction counts and cross-reference symptom targets that also
+have direct-damage evidence from a different anatomy. Each cross-reference
+shows the direction mix on both paths without treating them as independent or
+additive evidence.
 Use **Choose another report** to return to the form. The single-subject comparison
 remains the place to compare masks in native T1 space.
 Neurosynth reports whether decoding completed, how many terms were tested, and

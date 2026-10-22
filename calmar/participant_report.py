@@ -91,6 +91,8 @@ class ReportSettings:
     top_n: int = 5                           # rows per prediction / therapy table
     max_rois: int = 15                       # rows in the damaged-regions table
     max_evidence_regions: int = 8            # main region disclosures before the additional-region fold
+    min_summary_citations: int = 2           # primary symptom summary: distinct citation keys
+    min_summary_anatomies: int = 2           # primary symptom summary: distinct mapped anatomical units
     threshold: float = 0.5                   # mask threshold for Dice between masks
 
     @property
@@ -709,7 +711,7 @@ body.calmar-report{{width:min(94vw,88rem);margin:2.5rem auto;padding:0 1.5rem 4r
 .calmar-report summary:focus-visible,.calmar-report button:focus-visible,.calmar-report [tabindex]:focus-visible{{outline:3px solid var(--calmar-cyan-ink);outline-offset:3px}}
 .visually-hidden{{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
   overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}}
-.matched-findings{{font-size:.88rem;color:var(--calmar-ink-2);margin:.35rem 0 .45rem}}
+.matched-findings,.relevance-basis{{font-size:.88rem;color:var(--calmar-ink-2);margin:.35rem 0 .45rem}}
 .finding-counts{{display:flex;flex-wrap:wrap;gap:.25rem 1.2rem;margin:.45rem 0 .65rem;font-size:.86rem;color:var(--calmar-ink-2)}}
 .finding-counts span{{white-space:nowrap}}
 .finding-counts strong{{color:var(--calmar-ink);font-weight:650}}
@@ -729,6 +731,13 @@ body.calmar-report{{width:min(94vw,88rem);margin:2.5rem auto;padding:0 1.5rem 4r
 .additional-regions>summary,.additional-outcomes>summary{{color:var(--calmar-blue);font-weight:600;cursor:pointer}}
 .additional-regions-body{{margin-top:.45rem}}
 .additional-outcomes>.outcome-cards{{margin:.5rem 0 0}}
+.tract-direction{{display:flex;flex-wrap:wrap;gap:.15rem .8rem;font-size:.82rem;color:var(--calmar-ink-2)}}
+.tract-direction span{{white-space:nowrap}}
+.shared-symptoms{{grid-column:1/-1;font-size:.82rem;color:var(--calmar-ink-2)}}
+.shared-symptom-detail{{margin:.25rem 0 1rem;padding:.5rem .8rem;border-left:3px solid var(--calmar-line-strong)}}
+.shared-symptom-detail p{{margin:.2rem 0}}
+.shared-symptom-detail ul{{margin:.4rem 0 .4rem 1.25rem;padding:0}}
+.shared-symptom-detail li+li{{margin-top:.2rem}}
 .region-evidence{{border-top:1px solid var(--calmar-line)}}
 .region-evidence:last-of-type{{border-bottom:1px solid var(--calmar-line)}}
 .region-evidence>summary{{display:grid;grid-template-columns:minmax(15rem,1.2fr) minmax(16rem,1fr);gap:.3rem 1rem;
@@ -824,9 +833,10 @@ body.calmar-report{{width:min(94vw,88rem);margin:2.5rem auto;padding:0 1.5rem 4r
   .outcome-card,.measure-card,.finding{{break-inside:avoid-page}}
   .region-evidence{{break-inside:auto}}
   .region-evidence>summary{{display:block}}
-  .region-title,.region-facts,.region-notes{{display:block}}
+  .region-title,.region-facts,.region-notes,.tract-direction,.shared-symptoms{{display:block}}
   .region-facts{{margin-top:.15rem}}
   .region-action{{display:none}}
+  .screen-only{{display:none!important}}
   .print-only{{display:block}}
   .stage-warning{{display:none}}
   .stage-warning-print{{font-size:8pt;border-left:2px solid var(--calmar-pink);padding-left:.35rem}}
@@ -851,8 +861,8 @@ body.calmar-report{{width:min(94vw,88rem);margin:2.5rem auto;padding:0 1.5rem 4r
 </div>
 {body}
 <script>
-document.addEventListener('DOMContentLoaded',()=>{{
-  const target=location.hash && document.getElementById(location.hash.slice(1));
+function revealReportTarget(id){{
+  const target=id && document.getElementById(id);
   if(target){{
     if(target.tagName==='DETAILS') target.open=true;
     let ancestor=target.parentElement && target.parentElement.closest('details');
@@ -862,7 +872,15 @@ document.addEventListener('DOMContentLoaded',()=>{{
     }}
     target.scrollIntoView({{block:'start'}});
   }}
+}}
+document.addEventListener('DOMContentLoaded',()=>{{
+  revealReportTarget(location.hash.slice(1));
+  document.addEventListener('click',(event)=>{{
+    const link=event.target.closest('a[href^="#"]');
+    if(link) revealReportTarget(link.getAttribute('href').slice(1));
+  }});
 }});
+window.addEventListener('hashchange',()=>revealReportTarget(location.hash.slice(1)));
 let calmarPrintState=[];
 window.addEventListener('beforeprint',()=>{{
   const printable=[...document.querySelectorAll('details[data-print-open]')];
@@ -1064,8 +1082,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     location = location_section(
         kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings, phase=stage_id)
     white_matter = disconnection_section(
-        kb, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id,
-        map_name=map_path.name if map_path is not None else None, mask_label=label)
+        kb, rules, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id,
+        map_name=map_path.name if map_path is not None else None, mask_label=label,
+        lesion_rows=location_rows)
     measures = f'''
       <p class="section-intro">Findings about measures such as lesion volume or aphasia severity report
         associations in study groups (for example, larger lesions with more severe aphasia), not predictions for
