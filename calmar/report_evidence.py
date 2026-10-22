@@ -87,14 +87,15 @@ def finding_phases(row):
 
 
 def _phase_indicator(row, participant_phase):
-    """The finding's study phase as an indicator; ⚠ when it differs from the participant's."""
+    """The finding's study phase, with a text warning when it differs from the participant's."""
     phases = finding_phases(row)
     if not phases:
         return "<div><dt>Study phase</dt><dd>Not stated</dd></div>"
     text = "/".join(sorted(phases))
     if participant_phase and participant_phase not in phases:
         return (f"<div><dt>Study phase</dt><dd title='Studied in {escape(text)} stroke; this participant is "
-                f"{escape(participant_phase)}'>{escape(text.capitalize())} ⚠</dd></div>")
+                f"{escape(participant_phase)}'>{escape(text.capitalize())} "
+                "<span class='phase-mismatch'>(stage mismatch)</span></dd></div>")
     return f"<div><dt>Study phase</dt><dd>{escape(text.capitalize())}</dd></div>"
 
 
@@ -108,7 +109,7 @@ def phase_summary(rows, participant_phase):
     unknown = sum(not p for p in phases)
     note = (f"<p class='phase-summary'>This participant is in the <b>{escape(participant_phase)}</b> "
             f"phase. Of these {len(rows)} findings, {same} were studied in the same phase, {other} in another phase "
-            f"(marked ⚠) and {unknown} do not state it.")
+            f"(marked &ldquo;stage mismatch&rdquo;) and {unknown} do not state it.")
     if other > same:
         note += (" Most of this evidence comes from another recovery phase; lesion–symptom associations can differ "
                  "between phases (e.g. hypoperfusion and diaschisis after an acute stroke), so read it with caution.")
@@ -307,7 +308,7 @@ def _claims(kb, rows, *, target_column=None, dedupe_target=True, context=None, p
     for _, group in rows.groupby(target_column, sort=False):
         name = group["target_name"].iloc[0] if "target_name" in group else _name(kb, group[target_column].iloc[0])
         groups.append("<section class='outcome-findings'>"
-                      f"<h6>{escape(str(name))} <span>{len(group)} finding{'s' if len(group) != 1 else ''}</span></h6>"
+                      f"<h4>{escape(str(name))} <span>{len(group)} finding{'s' if len(group) != 1 else ''}</span></h4>"
                       "<div class='findings-list'>" +
                       "".join(_finding_article(r, context, phase) for _, r in group.iterrows()) +
                       "</div></section>")
@@ -326,6 +327,42 @@ def _html_id(prefix, value):
     return f"{prefix}-{token}" if token else prefix
 
 
+def _display_signal(rules, score):
+    stars, label = rules.evidence_strength(score)
+    glyphs = "&#9733;" * stars if stars else "&mdash;"
+    return (f"<span class='display-signal' title='Project display heuristic; raw score = {score:+.2f}'>"
+            f"<span class='display-stars' aria-hidden='true'>{glyphs}</span>"
+            f"<span class='display-stars-print'>{stars}/4 stars</span>"
+            f"<span class='display-label' aria-hidden='true'>{escape(label)}</span>"
+            f"<span class='visually-hidden'>Project-specific display heuristic: {stars} of 4 stars; "
+            f"{escape(label)}.</span></span>")
+
+
+def is_symptom_target(rules, target, kind):
+    """Whether a KB target is a symptom-level impairment for this report."""
+    if kind != "impairment":
+        return False
+    target = str(target)
+    normalized = re.sub(r"[^a-z0-9]+", "_", target.lower()).strip("_")
+    canonical_type = getattr(rules, "canonical_aphasia_type", lambda _: None)
+    return not (canonical_type(target) is not None or normalized == "aphasia" or normalized.endswith("_aphasia"))
+
+
+def _symptom_findings(rows, rules):
+    """Location findings whose targets are symptoms, not aphasia types.
+
+    Classical aphasia syndromes are stored as impairments in the knowledge
+    base, but displaying them against one participant's lesion reads as a
+    diagnostic classification.  Keep the underlying evidence untouched and
+    apply this deterministic presentation filter only in the participant
+    lesion-location section.
+    """
+    if rows is None or rows.empty:
+        return rows
+    keep = rows.apply(lambda row: is_symptom_target(rules, row["predicts"], row["predicts_kind"]), axis=1)
+    return rows[keep].copy()
+
+
 def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
     """HTML for the lesion-location evidence.
 
@@ -333,14 +370,19 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
     ``atlas_mapping.region_damage``; ``coverage``: counts of KB location
     findings by reachability (``location_coverage``).
     """
+    matched_before_filter = 0 if rows is None else len(rows)
+    rows = _symptom_findings(rows, rules)
     intro = (f"<p class='section-intro'>This section connects the participant&rsquo;s lesion location to "
-             "published group-level findings. Start with the outcome summaries, then open a damaged region to "
+             "published group-level findings about symptoms. Aphasia diagnoses, subtype labels and other non-symptom "
+             "targets are excluded: this report does not infer the presence or type of aphasia from a lesion. Start with the symptom "
+             "summaries, then open a damaged region to "
              "inspect each supporting, null or mixed finding.</p>"
              f"<p class='method-note'>A region counts as damaged when it holds "
              f"&ge;{settings.min_overlap_pct:g}% of the lesion or &ge;{settings.min_region_pct:g}% of it is destroyed. "
              f"Regions are matched to the knowledge base through the curated atlas mapping "
              f"(<code>aphasia-kb/atlas_mapping/</code>). Of the knowledge base's {coverage['findings']} location "
-             f"findings, <b>{len(rows)}</b> concern regions this lesion damages, {coverage['undamaged']} concern "
+             f"findings, {matched_before_filter} concern regions this lesion damages before the symptom-only display "
+             f"filter; <b>{len(rows)}</b> symptom findings are shown. {coverage['undamaged']} concern "
              f"regions it does not damage, and {coverage['unmappable']} concern regions no atlas can represent "
              f"(e.g. the extreme capsule).</p>")
     intro += laterality_note(damage)
@@ -368,14 +410,6 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
         classified = sum(counts.values())
         if classified < len(shown):
             counts["Other / unclassified"] = len(shown) - classified
-        statements = []
-        for label, number in counts.items():
-            if number:
-                statements.append(f"{number} {label.lower()}")
-        finding_summary = ", ".join(statements[:-1]) + ((" and " + statements[-1]) if len(statements) > 1 else
-                                                        (statements[0] if statements else "no classified findings"))
-        if len(statements) == 1:
-            finding_summary = statements[0]
         # Region coverage is anatomical context, so it must not be reduced when
         # an identical claim/citation is stored for more than one region.
         regions = sorted({n for n in g["region_name"]})
@@ -388,19 +422,17 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
         sources = (f"<details class='source-list'><summary>Sources ({len(cites)} citation "
                    f"key{'s' if len(cites) != 1 else ''})</summary><div>" +
                    "".join(_citation_details(cite, context) for cite in cites) + "</div></details>")
-        _, signal = rules.evidence_strength(score)
-        count_items = "".join(f"<div><dt>{escape(label)}</dt><dd>{number}</dd></div>"
+        count_items = "".join(f"<span><strong>{escape(label)}</strong> {number}</span>"
                               for label, number in counts.items() if number)
         card = (
             "<article class='outcome-card'>"
             f"<header><div><p class='outcome-kind'>{escape(str(g['predicts_kind'].iloc[0]))}</p>"
-            f"<h5>{escape(g['target_name'].iloc[0])}</h5></div>"
-            f"<span class='display-signal'>Display signal: {escape(signal)}"
-            "<span class='visually-hidden'>. Project-specific ordering heuristic, not an evidence grade.</span></span>"
+            f"<h3>{escape(g['target_name'].iloc[0])}</h3></div>"
+            f"{_display_signal(rules, score)}"
             "</header>"
-            f"<p>Across {len(shown)} distinct matched finding{'s' if len(shown) != 1 else ''}, {escape(finding_summary)}. "
-            "These are group associations, not a participant-level prediction.</p>"
-            f"<dl class='finding-counts'>{count_items}</dl>"
+            f"<p class='matched-findings'>{len(shown)} distinct matched finding"
+            f"{'s' if len(shown) != 1 else ''} · group associations, not a participant-level prediction.</p>"
+            f"<p class='finding-counts'>{count_items}</p>"
             f"<p class='region-preview'><strong>Region preview:</strong> {escape(preview)}</p>"
             f"{region_detail}{sources}"
             "<div class='print-only outcome-print-detail'>"
@@ -408,8 +440,8 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
             f"<p><strong>Sources:</strong> {escape(', '.join(cites) or 'None recorded')}</p>"
             "</div></article>")
         summary.append((abs(score), card))
-    summary = sorted(summary, key=lambda x: -x[0])[: settings.top_n * 2]
-    signal_note = ("<details class='display-signal-note' id='display-signal-note'>"
+    summary = sorted(summary, key=lambda x: -x[0])
+    signal_note = ("<details class='display-signal-note' id='display-signal-note' data-print-open>"
                    "<summary>What does the display signal mean?</summary>"
                    "<p><strong>Project-specific display heuristic, not an evidence grade.</strong> It is used only "
                    "to order these summaries. The calculation combines the proportion of each matched region "
@@ -420,12 +452,23 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
                     "ordering heuristic, not an evidence grade. It combines lesion overlap with stored finding "
                     "strength, study evidence class, extraction confidence and relationship direction. Counts "
                     "do not measure certainty, and records may share studies or cohorts.</p>")
-    html = intro + signal_note + "<div class='outcome-cards'>" + "".join(r for _, r in summary) + "</div>"
+    main_summary = summary[:settings.top_n]
+    additional_summary = summary[settings.top_n:]
+    cards = "<div class='outcome-cards'>" + "".join(r for _, r in main_summary) + "</div>"
+    if additional_summary:
+        count = len(additional_summary)
+        cards += ("<details class='additional-outcomes' data-print-open><summary>Show "
+                  f"{count} additional symptom summar{'ies' if count != 1 else 'y'}</summary>"
+                  "<div class='outcome-cards'>" + "".join(r for _, r in additional_summary) + "</div></details>")
+    html = intro + signal_note + cards
 
-    # Detail: one block per damaged region, largest damage first.
+    # Detail: one block per damaged region. "Main" is a display-only ranking
+    # by share of this lesion, then share of the region destroyed. It does not
+    # alter which findings contributed to the outcome summaries above.
     blocks = []
-    order = (rows.assign(_d=rows["region_pct"].fillna(rows["lesion_pct"]))
-             .groupby("anatomy")["_d"].max().sort_values(ascending=False).index)
+    ranked = (rows.groupby("anatomy").agg(_lesion=("lesion_pct", "max"), _region=("region_pct", "max"))
+              .fillna(0).sort_values(["_lesion", "_region"], ascending=False))
+    order = list(ranked.index)
     review = damage.set_index("region")["review"]
     for key in order:
         g = rows[rows["anatomy"] == key]
@@ -442,7 +485,7 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
         notes = "".join(x for x in (flag, thin) if x)
         region_id = _html_id("region", g["region"].iloc[0])
         blocks.append(
-            f"<details class='region-evidence' id='{region_id}'><summary>"
+            f"<details class='region-evidence' id='{region_id}' data-print-open><summary>"
             f"<span class='region-title'>{escape(first['region_name'])} <span>({escape(first['side'])})</span></span>"
             f"<span class='region-facts'>{escape(_damage_text(first))} · {len(shown)} distinct finding"
             f"{'s' if len(shown) != 1 else ''}</span>"
@@ -450,10 +493,25 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
             "<span class='region-action'><span class='when-closed'>Show findings</span>"
             "<span class='when-open'>Hide findings</span></span></summary>"
             f"<div class='region-body'>{also}{_claims(kb, g, target_column='predicts', context=context, phase=phase)}</div></details>")
+    limit = max(1, int(getattr(settings, "max_evidence_regions", 8)))
+    main_blocks, additional = blocks[:limit], blocks[limit:]
+    if additional:
+        count = len(additional)
+        noun = "regions" if count != 1 else "region"
+        more = ("<details class='additional-regions'><summary>Show "
+                f"{count} additional qualifying damaged {noun}"
+                "</summary><div class='additional-regions-body'>" + "".join(additional) + "</div></details>"
+                f"<p class='print-only additional-regions-print'>{count} additional qualifying damaged {noun} "
+                f"{'are' if count != 1 else 'is'} available in the interactive HTML report.</p>")
+    else:
+        more = ""
     html += phase_summary(rows, phase)
-    html += ("<div class='subsection-heading'><h5>Evidence by damaged region</h5>"
-             "<p>Open a region to inspect distinct findings, grouped by outcome. A limited citation base means "
-             f"{THIN_STUDIES} citation keys or fewer; it is not a certainty rating.</p></div>" + "".join(blocks))
+    html += ("<div class='subsection-heading'><h3>Evidence by damaged region</h3>"
+             f"<p>The {len(main_blocks)} main mapped ROI{'s' if len(main_blocks) != 1 else ''} below are ranked by "
+             "the share of this lesion they contain, then by the share of the ROI destroyed. Open one to inspect "
+             "distinct findings grouped by outcome. All qualifying regions still contribute to the summaries above; "
+             f"a limited citation base means {THIN_STUDIES} citation keys or fewer and is not a certainty rating.</p>"
+             "</div>" + "".join(main_blocks) + more)
     return html
 
 def laterality_note(damage):
@@ -464,7 +522,7 @@ def laterality_note(damage):
     by_side = damage[damage["side"].isin(["left", "right"])].groupby("side")["lesion_pct"].max()
     left, right = by_side.get("left", 0.0), by_side.get("right", 0.0)
     if right > 0 and right > 2 * left:
-        return ("<p class='laterality-note'>⚠ This lesion lies mainly in the "
+        return ("<p class='laterality-note'><b>Caution:</b> This lesion lies mainly in the "
                 "<b>right</b> hemisphere. The knowledge base is almost entirely about left-hemisphere language "
                 "regions, so few or no findings apply; an absence of findings here does not mean an absence of "
                 "deficits.</p>")
@@ -542,16 +600,16 @@ def measures_section(kb, predictors, days=None, min_confidence=None, phase=None)
             early = shown[shown["claim"].fillna("").str.contains(EARLY) | (shown["target_kind"] == "prognosis")]
             if len(early):
                 caution = (f"<div style='font-size:11px;color:#2b2b3a;border-left:3px solid #f45b69;"
-                           f"padding-left:.5rem;margin-top:3px'>⚠ {len(early)} of these findings "
+                           f"padding-left:.5rem;margin-top:3px'><b>Timing note:</b> {len(early)} of these findings "
                            "concern severity measured early after the stroke (or recovery from it); this score was "
                            f"measured {days:.0f} days after the stroke, so they apply only loosely.</div>")
         rows.append(
             "<article class='measure-card'>"
-            f"<header><h5>{escape(MEASURE_LABELS.get(pid, _name(kb, pid)))}</h5>"
+            f"<header><h3>{escape(MEASURE_LABELS.get(pid, _name(kb, pid)))}</h3>"
             f"<p>{_value_text(pid, value, days)}</p></header>"
             f"<p>{escape(polarity.capitalize() + '.') if polarity else 'Direction: see each finding.'} "
             f"<span class='secondary'>({len(shown)} distinct findings: {escape(counts)})</span></p>"
-            f"<details class='measure-findings'><summary>Show {len(shown)} distinct finding"
+            f"<details class='measure-findings' data-print-open><summary>Show {len(shown)} distinct finding"
             f"{'s' if len(shown) != 1 else ''}</summary>"
             f"{_claims(kb, g, target_column='target', dedupe_target=False, context=context, phase=phase)}</details>{caution}</article>")
     if not rows:
@@ -582,7 +640,8 @@ def tract_atlases(all_atlases):
             if name in ("JHU", "XTRACT")}
 
 
-def disconnection_section(kb, rows, disconnection, damage, settings, map_label, phase=None):
+def disconnection_section(kb, rows, disconnection, damage, settings, map_label, phase=None,
+                          *, map_name=None, mask_label=None):
     """HTML: tracts disconnected by the lesion (from a disconnectome map), with their findings.
 
     ``rows``: ``KnowledgeBase.location_findings`` on ``disconnection``
@@ -592,12 +651,22 @@ def disconnection_section(kb, rows, disconnection, damage, settings, map_label, 
     if map_label is None:
         return ("<p style='color:#666'><em>No disconnectome map for this lesion mask "
                 "(run the BCBToolkit or DeepDisco step, or choose another map in the report settings).</em></p>")
+    source = escape(mask_label or "selected lesion")
+    filename = f" (<code>{escape(map_name)}</code>)" if map_name else ""
     intro = ("<p class='section-intro'>This section shows white-matter tracts that may be interrupted beyond the "
              "visible lesion. Open a tract to inspect the group-level findings linked to it.</p>"
              f"<p class='method-note'>The {escape(map_label)} map gives, for every "
              "voxel, the probability that its fibres pass through the lesion. A tract counts as disconnected when "
              f"&ge;{settings.min_disconnected_pct:g}% of its voxels have a probability above 0.5. This catches tracts "
-             "cut by the lesion away from where it lies, which direct overlap misses.</p>")
+             "cut by the lesion away from where it lies, which direct overlap misses.</p>"
+             "<details class='evidence-path' data-print-open><summary>Where this evidence comes from</summary><div><ol>"
+             f"<li>The participant-specific <b>{source}</b> mask is the input.</li>"
+             f"<li>CALMaR reads its <b>{escape(map_label)}</b> probability map{filename}.</li>"
+             "<li>That map is overlapped with the JHU and XTRACT tract atlases using the threshold above.</li>"
+             "<li>Literature claims come from the tract/region entries in <code>aphasia-kb/</code>, linked through "
+             "the curated <code>aphasia-kb/atlas_mapping/</code>; each finding retains its citation and review details.</li>"
+             "</ol><p>The participant map calculation and the literature claims are separate provenance layers. "
+             "Group associations do not predict this participant&rsquo;s outcome.</p></div></details>")
     if rows is None or rows.empty:
         return intro + "<p style='color:#666'><em>No knowledge-base tract is disconnected above the threshold.</em></p>"
     direct = damage.set_index("region") if damage is not None and len(damage) else None
@@ -623,7 +692,7 @@ def disconnection_section(kb, rows, disconnection, damage, settings, map_label, 
                 f"{escape(', '.join(names[key][1:]))}</p>") if len(names[key]) > 1 else ""
         tract_id = _html_id("tract", g["region"].iloc[0])
         blocks.append(
-            f"<details class='region-evidence tract-evidence' id='{tract_id}'><summary>"
+            f"<details class='region-evidence tract-evidence' id='{tract_id}' data-print-open><summary>"
             f"<span class='region-title'>{escape(names[key][0])} <span>({escape(first['side'])})</span></span>"
             f"<span class='region-facts'>{first['region_pct']:.0f}% of the tract disconnected{escape(hit)} · "
             f"{len(shown)} distinct finding{'s' if len(shown) != 1 else ''}</span>"

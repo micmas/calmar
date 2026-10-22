@@ -86,6 +86,8 @@ def test_report_cell_saves_report_with_provenance_and_rules(fixture):
     assert "<b>Knowledge base:</b> version " in html and "papers ·" in html and "extracted findings" in html
     # Damaged regions use the min-overlap threshold (5 %): the 1 % ROI is not shown.
     assert "pars opercularis" in html and "Tiny ROI" not in html
+    assert html.index("Behavioural / clinical data") < html.index("Damaged regions")
+    assert html.count("class='report-section'") == 6 and html.count(" open><summary") == 2
     # WAB type spelt as in ds004884 is decomposed; 400 days -> chronic.
     assert "TranscorticalMotor" in html and "flu" in html
     assert "Chronic (&gt;6 mo)" in html or "Chronic (>6 mo)" in html
@@ -152,10 +154,14 @@ def test_standalone_report_is_responsive_accessible_and_prints_disclosures():
     assert "font-size:17px" in html and "line-height:1.55" in html
     assert "--calmar-grape:#52489c" in html and "--calmar-blue:#4062bb" in html
     assert "summary:focus-visible" in html
-    assert "details.region-evidence, details.measure-findings" in html
+    assert "document.querySelectorAll('details[data-print-open]')" in html
     assert ".print-only{display:none}" in html and ".print-only{display:block}" in html
-    assert "@media (max-width:700px)" in html and "overflow-wrap:anywhere" in html
-    assert "if(target && target.tagName==='DETAILS') target.open=true" in html
+    assert "@media screen and (max-width:700px)" in html and "overflow-wrap:break-word" in html
+    assert 'font-family:"DejaVu Sans",Arial,Helvetica,sans-serif' in html
+    assert "if(target.tagName==='DETAILS') target.open=true" in html
+    assert "target.parentElement.closest('details')" in html
+    assert ".calmar-report details[data-print-open]>*:not(summary){display:block!important}" in html
+    assert ".calmar-report details:not([data-print-open]){display:none!important}" in html
     assert "window.addEventListener('beforeprint'" in html and "item.open=true" in html
     assert "window.addEventListener('afterprint'" in html and "item.open=calmarPrintState[index]" in html
     style = html.split("<style>", 1)[1].split("</style>", 1)[0]
@@ -170,6 +176,6 @@ def test_therapy_stage_mismatch_is_keyboard_and_print_readable():
         short_description="Fixture description", rtss_summary=[], citations=["@Fixture"],
     )])
     html = pr.therapy_table(kb, therapies, "chronic", "Chronic (>6 mo)", {"fixture": {"acute"}})
-    assert "<details class='stage-warning'><summary>&#9888; Stage mismatch</summary>" in html
+    assert "<details class='stage-warning'><summary>Stage mismatch</summary>" in html
     assert "current patient is Chronic (&gt;6 mo)" in html
     assert "print-only stage-warning-print" in html

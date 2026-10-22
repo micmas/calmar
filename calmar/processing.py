@@ -23,7 +23,8 @@ from nibabel.processing import resample_from_to
 from . import qc as q
 from .acquisition import ensure_nifti_content
 from .process_output import COMMANDS, TOOLS, record as record_step
-from .study import derivative_dirs, file_token, mni_masks, segmentation_methods, stage_selected, template_source
+from .study import (derivative_dirs, file_token, mni_masks, modality, segmentation_methods,
+                    stage_selected, template_source)
 from . import templates
 from .brainmask import save_like
 
@@ -251,6 +252,9 @@ def manual_inputs(request, entry):
     publisher masks are searched (``derivatives/*lesion*/sub-X/**/*_desc-lesion_mask``),
     preferring the T1's own session. A mask from another session is still used;
     its session is reported so reviewers can judge the cross-session registration.
+    In the DWI route, the official ISLES 2022
+    ``derivatives/sub-X/ses-Y/sub-X_ses-Y_msk.nii.gz`` convention is also
+    recognised; that expert mask is already on the native DWI grid.
     """
     config = request['config']
     sub, ses = entry['subject'], entry.get('session') or ''
@@ -271,6 +275,12 @@ def manual_inputs(request, entry):
         hits.extend((folder/sub).rglob('*_desc-lesion_mask.nii.gz'))
     hits.sort(key=lambda p: (f'_{ses}_' not in p.name, str(p)))
     if not hits:
+        if modality(config) == 'dwi':
+            official_root = root/'derivatives'/sub
+            if ses:
+                official = official_root/ses/f'{sub}_{ses}_msk.nii.gz'
+                if official.exists() or official.is_symlink():
+                    return official, None, 't1'
         return None, None, None
     mask = hits[0]
     mask_ses = next((p for p in mask.parts if p.startswith('ses-')), '')
@@ -382,7 +392,13 @@ def to_fsl_2mm(mask_path, out_path, method='coverage'):
 # product's cache identity: changing a value marks existing outputs stale.
 
 def step_acquisition(config, entry, p, request):
-    """Fetch (datalad get) the T1w and, if found, the manual mask + its scan."""
+    """Fetch the selected processing inputs and inspect other DWI availability.
+
+    ``entry['dwi_inventory']`` is metadata-only: arbitrary diffusion series are
+    reported, not downloaded, until a compatible processing tool is selected.
+    The acute route's selected DWI+ADC pair remains an explicit input and is
+    materialised here.
+    """
     t1 = Path(entry['t1w'])
     mask, ref, _ = manual_inputs(request, entry)
     outputs = []
@@ -392,6 +408,19 @@ def step_acquisition(config, entry, p, request):
             raise RuntimeError(f'Acquisition failed: {source}')
         outputs.append({'path': str(source), 'image': validate_image(source)})
     return outputs
+
+
+def dwi_availability(entry):
+    """Readable acquisition metrics for DWI series in any participant session."""
+    inventory = entry.get('dwi_inventory') or []
+    sessions = sorted({item.get('session') or '(no session)' for item in inventory})
+    same = sum(bool(item.get('same_session')) for item in inventory)
+    ready = sum(bool(item.get('openads_ready')) for item in inventory)
+    return {'dwi_series_available': len(inventory),
+            'dwi_sessions_available': ', '.join(sessions) if sessions else 'none',
+            'dwi_same_session': same,
+            'dwi_other_session': len(inventory) - same,
+            'dwi_openads_ready': ready}
 
 
 BRAIN_MASK_METHODS = ('hdbet+synthstrip', 'hdbet')
@@ -735,9 +764,10 @@ def lesion_sources(config, key, p):
     selected = config.get(key, 'all')
     sources = list(masks) if selected == 'all' else (['linda', 'manual'] if selected == 'both' else [selected])
     # Segmentations that were not selected are not expected ("all"/"both").
-    run = segmentation_methods(config)
+    from .study import analysis_mask_sources
+    run = analysis_mask_sources(config)
     if selected in ('all', 'both'):
-        sources = [s for s in sources if s == 'manual' or s in run]
+        sources = [s for s in sources if s in run]
     return selected, [(s, masks[s]) for s in sources]
 
 
@@ -907,6 +937,9 @@ def process(stage, request):
         outputs = STEPS[stage](config, entry, p, request)
         result = {'subject': entry['subject'], 'session': entry.get('session'),
                   'seconds': time.monotonic()-started, 'outputs': outputs}
+        if stage == 'acquisition':
+            result['qc'] = {'png': None, 'metrics': dwi_availability(entry),
+                            'flags': [], 'complete': True}
         manual_info = None
         if stage == 'manual':
             mask, ref, space = manual_inputs(request, entry)

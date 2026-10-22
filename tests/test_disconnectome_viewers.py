@@ -180,6 +180,8 @@ class DisconnectomeTests(unittest.TestCase):
         by_name = {Path(l['path']).name: l['colormap'] for l in self.specs()}
         self.assertEqual(by_name['Disconnectome_linda.nii.gz'], 'green')
         self.assertEqual(by_name['DeepDisco_linda_whole_brain.nii.gz'], 'magenta')
+        self.ns["_disconnectome_comparison"]["controls"].group = "manual"
+        by_name = {Path(l['path']).name: l['colormap'] for l in self.specs()}
         self.assertEqual(by_name['ExpertMask_in_MNI.nii.gz'], 'yellow')
 
     def test_initial_source_and_model_are_honoured(self):

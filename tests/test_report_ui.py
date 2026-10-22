@@ -10,10 +10,16 @@ import pandas as pd
 
 from calmar.atlas_ui import OverlapSelection, overlap_table
 from calmar.report_ui import ParticipantReport, ReportInputs, report_sections
+from calmar.participant_report import report_section
 from calmar import colors
 
 
 class ReportInterfaceTests(unittest.TestCase):
+    def test_marked_section_titles_are_plain_accessible_text(self):
+        body = "<main>" + report_section("This participant’s measures: what the evidence says", "<p>Body</p>") + "</main>"
+        sections = report_sections(body)
+        self.assertEqual(sections[0][0], "This participant’s measures: what the evidence says")
+
     def test_report_viewer_uses_the_selected_mask_origin_colour(self):
         colors.configure({'manual': 'cyan'})
         self.addCleanup(colors.configure)

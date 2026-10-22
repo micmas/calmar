@@ -142,6 +142,18 @@ class QCPanelTests(unittest.TestCase):
         self.assertFalse(p.continue_after_qc())
         p.navigation.request.assert_not_called()
 
+    def test_optional_dwi_qc_can_continue_to_its_own_boundary(self):
+        self.panel.deactivate()
+        panel = QCPanel(self.entries, lambda e: ["openads_lesion"], self.anchor,
+                        lambda *args: [], Viewer(), self.gate,
+                        continue_role="after-dwi-qc", continue_label="Continue after DWI QC",
+                        continue_prompt="Continue after optional DWI review?")
+        self.addCleanup(panel.close)
+        panel.navigation.request = Mock(return_value=True)
+        panel.continue_after_qc()
+        panel.navigation.request.assert_called_once_with(
+            "after-dwi-qc", panel._continue, prompt="Continue after optional DWI review?")
+
     def test_navigation_status_does_not_erase_qc_choice(self):
         p = self.saved_panel({0: dict(skull_strip=1)})
         del p.navigation.request  # Exercise the real bridge, without a browser.

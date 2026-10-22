@@ -57,7 +57,8 @@ HINTS = {"brain": "The brain mask should cover all brain tissue, including a les
                     "Tick the ADC map: the lesion should be dark there. Very small lesions are often missed.",
          "registration": "The T1w warped to the MNI152 template. Tick MNI152 brain on and off: the warped brain "
                          "should fill the template's brain, with ventricles and cortex in the same places. Every "
-                         "template-space mask, disconnectome and atlas overlap relies on this registration.",
+                         "template-space mask, disconnectome and atlas overlap relies on this registration. "
+                         "When the manual mask has been processed, tick it to confirm that it remains on the lesion.",
          "manual": "The manual mask (registered to this T1w) is the reference for both automatic masks. "
                    "Tick the registered reference scan on and off: its anatomy should line up with the T1w; "
                    "if not, the manual mask is misplaced and the Dice scores are meaningless.",
@@ -124,6 +125,11 @@ def step_layers(stage, entry, study):
         lesion = study.masks(entry).get("synthstroke", {}).get("MNI")
         if cm.present(lesion):
             layers.append(_layer("SynthStroke lesion", "synthstroke", lesion, "lesion"))
+        # Show only the product validated/published by the manual step. For an
+        # MNI-space input, Study.masks() may otherwise return the raw source.
+        manual = Path(d["template"]) / "ExpertMask_in_MNI.nii.gz"
+        if cm.present(manual):
+            layers.append(_layer("Manual lesion", "manual", manual, "lesion", False))
     elif stage == "compare":
         # BCBToolkit and DeepDisco maps of one lesion source, each with its own checkbox.
         background = Path(d["template"]) / "Subject_in_MNI.nii.gz"
@@ -203,12 +209,15 @@ def _centre(layer, background):
     return None if mm is None else mm_to_frac(background, mm)
 
 
-def show_layers(nv, controls, background, layers, helpers=cw):
+def show_layers(nv, controls, background, layers, helpers=cw, *, available_groups=None,
+                available_variants=None):
     """Load ``background`` + ``layers`` into the viewer and describe them to the
     browser-side ``controls``, keeping the checkbox, source and model choices
     made so far. ``helpers``: the notebook's viewer helpers (``calmar.widgets``)."""
-    groups = list(dict.fromkeys(l["group"] for l in layers if l["group"]))
-    variants = [m for m in MODEL_NAMES if any(l["variant"] == m for l in layers)]
+    groups = (list(available_groups) if available_groups is not None else
+              list(dict.fromkeys(l["group"] for l in layers if l["group"])))
+    variants = (list(available_variants) if available_variants is not None else
+                [m for m in MODEL_NAMES if any(l["variant"] == m for l in layers)])
     roles = _roles(layers, controls.roles)
     group = controls.group if controls.group in groups else (groups[0] if groups else "")
     variant = controls.variant if controls.variant in variants else (variants[0] if variants else "")
@@ -247,12 +256,15 @@ class Shown(dict):
 
 
 def show_step_viewer(stage, entries, study, *, height=360, start=0, group="", variant="",
-                     extra=(), key=None):
+                     extra=(), key=None, lazy_groups=False, display_panel=True):
     """Display the step's viewer for ``entries``; returns its widgets (or None).
 
     ``start``: participant shown first; ``group``/``variant``: lesion source and
     DeepDisco model shown first (when available); ``extra``: widgets added
     under the viewer; ``key``: viewer registry key (default ``step_<stage>``).
+    With ``lazy_groups``, only the selected lesion source is read into NiiVue;
+    selecting another source reloads that compact group through the kernel.
+    ``display_panel=False`` lets a caller place the returned panel in tabs.
     """
     first = entries[start] if entries else None
     entries = [e for e in entries if e.get("t1w")]
@@ -265,22 +277,43 @@ def show_step_viewer(stage, entries, study, *, height=360, start=0, group="", va
                                    layout=widgets.Layout(width="320px", display="" if len(entries) > 1 else "none"))
     controls = LayerControls(plane=3, group=group or "", variant=variant or "")
     status = widgets.HTML()
+    state = {"loading": False}
 
     def load(*_):
-        entry = entries[participant.value]
-        background, layers = step_layers(stage, entry, study)
-        if background is None:
-            nv.load_volumes([])
-            controls.layers = []
-            status.value = f"No image to show for {_label(entry)} yet."
+        if state["loading"]:
             return
-        show_layers(nv, controls, background, layers)
-        status.value = "" if layers else "Only the background image is available for this participant."
+        state["loading"] = True
+        try:
+            entry = entries[participant.value]
+            background, all_layers = step_layers(stage, entry, study)
+            if background is None:
+                nv.load_volumes([])
+                controls.layers = []
+                status.value = f"No image to show for {_label(entry)} yet."
+                return
+            groups = list(dict.fromkeys(layer["group"] for layer in all_layers if layer["group"]))
+            variants = [model for model in MODEL_NAMES
+                        if any(layer["variant"] == model for layer in all_layers)]
+            chosen = controls.group if controls.group in groups else (groups[0] if groups else "")
+            layers = ([layer for layer in all_layers if not layer["group"] or layer["group"] == chosen]
+                      if lazy_groups and groups else all_layers)
+            show_layers(nv, controls, background, layers,
+                        available_groups=groups if lazy_groups else None,
+                        available_variants=variants if lazy_groups else None)
+            status.value = ("Only the background image is available for this participant."
+                            if not all_layers else
+                            "Changing lesion source loads only that source's maps; model and layer controls remain instant."
+                            if lazy_groups and len(groups) > 1 else "")
+        finally:
+            state["loading"] = False
 
     participant.observe(load, names="value")
+    if lazy_groups:
+        controls.observe(load, names="group")
     load()
     hint = widgets.HTML(f"<span style='font-size:12px'>{HINTS[stage]}</span>")
     panel = widgets.VBox([participant, controls, hint, status, nv, *extra])
-    display(panel)
+    if display_panel:
+        display(panel)
     return Shown(viewer=nv, participant=participant, controls=controls, status=status,
                  entries=entries, panel=panel)
