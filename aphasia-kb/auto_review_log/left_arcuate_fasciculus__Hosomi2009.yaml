@@ -248,6 +248,89 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T21:18:12'
+- run_id: 4
+  timestamp: '2026-10-23T12:54:37'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/7 quotes (71%) — absent 1, anchored 1, elided 1, exact 4
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.region_definition (p.2): When tracking the AF, we placed
+      three ROIs so that they covered the unilateral A…'
+    - '1 quote(s) absent from the PDF — first 3:'
+    - '  - f1.imaging_details (p.2): All images were obtained with a 1.5-T whole-body
+      MRI... Images were acquired usi…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - 'f1: has provenance.flags'
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: The finding accurately reflects the study's results. The claim, statistics
+        (sensitivity 0.83, specificity 0.86, p=0.015), sample (n=13, left MCA, <48h),
+        and limitations are all verbatim or directly supported by the text. The relationship
+        is correctly identified as predictive/correlational rather than causal, despite
+        the draft labeling it 'causal' (the text uses 'predicted', which in this context
+        refers to a predictive model/association).
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"The finding\
+      \ accurately reflects the study's results. The claim, statistics (sensitivity\
+      \ 0.83, specificity 0.86, p=0.015), sample (n=13, left MCA, <48h), and limitations\
+      \ are all verbatim or directly supported by the text. The relationship is correctly\
+      \ identified as predictive/correlational rather than causal, despite the draft\
+      \ labeling it 'causal' (the text uses 'predicted', which in this context refers\
+      \ to a predictive model/association).\",\n  \"per_finding\": [\n    {\n    \
+      \  \"id\": \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\": \"a"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-23T12:54:37'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

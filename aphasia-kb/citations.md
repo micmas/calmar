@@ -1686,3 +1686,194 @@ doi:10.1073/pnas.1521083113
 
 > Registered automatically from the PDF's DOI via Crossref on 2026-10-21 (file: 26470986.pdf). Check the entry; add a note on why the paper is in the KB.
 
+## @Munsch2016  [seed]
+Munsch F, Sagnier S, Asselineau J, Bigourdan A, Guttmann CR, Debruxelles S, Poli M, Renou P, Perez P, Dousset V, Sibon I, Tourdias T.
+Stroke Location Is an Independent Predictor of Cognitive Outcome.
+*Stroke*. 2016;47(1):66-73.
+doi:10.1161/strokeaha.115.011242
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: 00007670-201601000-00013.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Gilmore2019  [seed]
+Gilmore N, Meier EL, Johnson JP, Kiran S.
+Nonlinguistic Cognitive Factors Predict Treatment-Induced Recovery in Chronic Poststroke Aphasia.
+*Archives of Physical Medicine and Rehabilitation*. 2019;100(7):1251-1258.
+doi:10.1016/j.apmr.2018.12.024
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: 1-s2.0-S0003999319300061-main.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Ross2008  [seed]
+Ross ED, Monnot M.
+Neurology of affective prosody and its functional–anatomic organization in right hemisphere.
+*Brain and Language*. 2008;104(1):51-74.
+doi:10.1016/j.bandl.2007.04.007
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: 1-s2.0-S0093934X07000764-main.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Durfee2021  [seed]
+Durfee AZ, Sheppard SM, Blake ML, Hillis AE.
+Lesion loci of impaired affective prosody: A systematic review of evidence from stroke.
+*Brain and Cognition*. 2021;152:105759.
+doi:10.1016/j.bandc.2021.105759
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: 1-s2.0-S0278262621000798-main.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @ElHachioui2013  [seed]
+El Hachioui H, Lingsma HF, van de Sandt-Koenderman MWME, Dippel DWJ, Koudstaal PJ, Visch-Brink EG.
+Long-term prognosis of aphasia after stroke.
+*Journal of Neurology, Neurosurgery &amp; Psychiatry*. 2013;84(3):310-315.
+doi:10.1136/jnnp-2012-302596
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: 310.full.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Glascher2012  [seed]
+Gläscher J, Adolphs R, Damasio H, Bechara A, Rudrauf D, Calamia M, Paul LK, Tranel D.
+Lesion mapping of cognitive control and value-based decision making in the prefrontal cortex.
+*Proc. Natl. Acad. Sci. U.S.A.*. 2012;109(36):14681-14686.
+doi:10.1073/pnas.1206608109
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: 41706267.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Rodrigues2014  [seed]
+Rodrigues IT, Castro-Caldas A.
+Aphasia with recurring utterances: Old syndrome, new perspectives.
+*Aphasiology*. 2014;28(11):1350-1363.
+doi:10.1080/02687038.2014.921884
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: Aphasia with recurring utterances  Old syndrome  new perspectives.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Simic2019  [seed]
+Simic T, Rochon E, Greco E, Martino R.
+Baseline executive control ability and its relationship to language therapy improvements in post-stroke aphasia: a systematic review.
+*Neuropsychological Rehabilitation*. 2019;29(3):395-439.
+doi:10.1080/09602011.2017.1307768
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: Baseline executive control ability and its relationship to language therapy improvements in post-stroke aphasia  a systematic review.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Lukic2017  [seed]
+Lukic S, Barbieri E, Wang X, Caplan D, Kiran S, Rapp B, Parrish TB, Thompson CK.
+Right Hemisphere Grey Matter Volume and Language Functions in Stroke Aphasia.
+*Neural Plasticity*. 2017;2017:1-14.
+doi:10.1155/2017/5601509
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: Right_Hemisphere_Grey_Matter_V (1).pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @SkipperKallal2017  [seed]
+Skipper-Kallal LM, Lacey EH, Xing S, Turkeltaub PE.
+Right Hemisphere Remapping of Naming Functions Depends on Lesion Size and Location in Poststroke Aphasia.
+*Neural Plasticity*. 2017;2017:1-17.
+doi:10.1155/2017/8740353
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: Right_Hemisphere_Remapping_of_.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Cote2007  [seed]
+Côté H, Payer M, Giroux F, Joanette Y.
+Towards a description of clinical communication impairment profiles following right‐hemisphere damage.
+*Aphasiology*. 2007;21(6-8):739-749.
+doi:10.1080/02687030701192331
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: Towards a description of clinical communication impairment profiles following right hemisphere damage.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Brownsett2014  [seed]
+Brownsett SLE, Warren JE, Geranmayeh F, Woodhead Z, Leech R, Wise RJS.
+Cognitive control and its impact on recovery from aphasic stroke.
+*Brain*. 2014;137(1):242-254.
+doi:10.1093/brain/awt289
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: awt289.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Geranmayeh2017  [seed]
+Geranmayeh F, Chau TW, Wise RJS, Leech R, Hampshire A.
+Domain-general subregions of the medial prefrontal cortex contribute to recovery of language after stroke.
+*Brain*. 2017;140(7):1947-1958.
+doi:10.1093/brain/awx134
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: awx134.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Schumacher2019  [seed]
+Schumacher R, Halai AD, Lambon Ralph MA.
+Assessing and mapping language, attention and executive multidimensional deficits in stroke aphasia.
+*Brain*. 2019;142(10):3202-3216.
+doi:10.1093/brain/awz258
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: awz258.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Biesbroek2017  [seed]
+Biesbroek JM, Weaver NA, Biessels GJ.
+Lesion location and cognitive impact of cerebral small vessel disease.
+*Clinical Science*. 2017;131(8):715-728.
+doi:10.1042/cs20160452
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: cs1310715.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Lacey2017  [seed]
+Lacey EH, Skipper-Kallal LM, Xing S, Fama ME, Turkeltaub PE.
+Mapping Common Aphasia Assessments to Underlying Cognitive Processes and Their Neural Substrates.
+*Neurorehabil Neural Repair*. 2017;31(5):442-450.
+doi:10.1177/1545968316688797
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: lacey-et-al-2017-mapping-common-aphasia-assessments-to-underlying-cognitive-processes-and-their-neural-substrates.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Sheppard2020  [seed]
+Sheppard SM, Keator LM, Breining BL, Wright AE, Saxena S, Tippett DC, Hillis AE.
+Right hemisphere ventral stream for emotional prosody identification.
+*Neurology*. 2020;94(10).
+doi:10.1212/wnl.0000000000008870
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: sheppard-et-al-2019-right-hemisphere-ventral-stream-for-emotional-prosody-identification.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Zhao2018  [seed]
+Zhao L, Biesbroek JM, Shi L, Liu W, Kuijf HJ, Chu WW, Abrigo JM, Lee RK, Leung TW, Lau AY, Biessels GJ, Mok V, et al.
+Strategic infarct location for post-stroke cognitive impairment: A multivariate lesion-symptom mapping study.
+*J Cereb Blood Flow Metab*. 2018;38(8):1299-1311.
+doi:10.1177/0271678x17728162
+
+> Registered automatically from the PDF's DOI via Crossref on 2026-10-23 (file: zhao-et-al-2017-strategic-infarct-location-for-post-stroke-cognitive-impairment-a-multivariate-lesion-symptom-mapping.pdf). Check the entry; add a note on why the paper is in the KB.
+
+## @Rost2022  [seed]
+Rost NS, Brodtmann A, Pase MP, van Veluw SJ, Biffi A, Duering M, Hinman JD, Dichgans M.
+Post-Stroke Cognitive Impairment and Dementia.
+*Circ Res*. 2022;130(8):1252-1271.
+doi:10.1161/circresaha.122.319951
+
+> Registered by hand on 2026-10-23 from the PDF (DOI and citation printed on page 1; file: 00003012-202204150-00010.pdf); Crossref was not reachable from the machine that did it. Check the entry; add a note on why the paper is in the KB.
+
+## @Marien2004  [seed]
+Mariën P, Paghera B, De Deyn PP, Vignolo LA.
+Adult crossed aphasia in dextrals revisited.
+*Cortex*. 2004;40(1):41-74.
+doi:10.1016/s0010-9452(08)70920-1
+
+> Registered by hand on 2026-10-23 from the PDF (citation from page 1, DOI from the PDF metadata and the Elsevier PII in the filename; file: 1-s2.0-S0010945208709201-main.pdf); Crossref was not reachable from the machine that did it. Check the entry; add a note on why the paper is in the KB.
+
+## @Coppens2002  [seed]
+Coppens P, Hungerford S, Yamaguchi S, Yamadori A.
+Crossed aphasia: an analysis of the symptoms, their frequency, and a comparison with left-hemisphere aphasia symptomatology.
+*Brain Lang*. 2002;83(3):425-463.
+doi:10.1016/s0093-934x(02)00510-2
+
+> Registered by hand on 2026-10-23 from the PDF (citation from page 1, DOI from the Elsevier PII in the filename; file: 1-s2.0-S0093934X02005102-main.pdf); Crossref was not reachable from the machine that did it. Check the entry; add a note on why the paper is in the KB.
+
+## @Pendlebury2009  [seed]
+Pendlebury ST, Rothwell PM.
+Prevalence, incidence, and factors associated with pre-stroke and post-stroke dementia: a systematic review and meta-analysis.
+*Lancet Neurol*. 2009;8(11):1006-1018.
+doi:10.1016/s1474-4422(09)70236-4
+
+> Registered by hand on 2026-10-23 from the PDF (citation from page 1, DOI from the Elsevier PII in the filename; file: 1-s2.0-S1474442209702364-main.pdf); Crossref was not reachable from the machine that did it. Check the entry; add a note on why the paper is in the KB.
+
+## @Lo2019  [seed]
+Lo JW, Crawford JD, Desmond DW, Godefroy O, Jokinen H, Mahinrad S, Bae HJ, Lim JS, Köhler S, Douven E, et al.
+Profile of and risk factors for poststroke cognitive impairment in diverse ethnoregional groups.
+*Neurology*. 2019;93(24):e2257-e2271.
+doi:10.1212/wnl.0000000000008612
+
+> Registered by hand on 2026-10-23 from the PDF (HAL accepted manuscript; citation and DOI from its cover page; file: NEUROLOGY2018934554.pdf); Crossref was not reachable from the machine that did it. Check the entry; add a note on why the paper is in the KB.
+
+## @Weaver2021  [seed]
+Weaver NA, Kuijf HJ, Aben HP, Abrigo J, Bae HJ, Barbay M, Best JG, Bordet R, Chappell FM, Chen CPLH, et al.
+Strategic infarct locations for post-stroke cognitive impairment: a pooled analysis of individual patient data from 12 acute ischaemic stroke cohorts.
+*Lancet Neurol*. 2021;20(6):448-459.
+doi:10.1016/s1474-4422(21)00060-0
+
+> Registered by hand on 2026-10-23 from the PDF (HAL accepted manuscript; citation and DOI from its cover page; file: Werring_PSCI_manuscript_R1_final_cleaned.pdf); Crossref was not reachable from the machine that did it. Check the entry; add a note on why the paper is in the KB.

@@ -317,6 +317,98 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T21:09:02'
+- run_id: 5
+  timestamp: '2026-10-23T12:42:39'
+  mode: with_llm_review
+  verdict: defer_to_human
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/6 quotes (83%) — anchored 1, elided 1, exact 4
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f2.claim (p.9): When including age and stroke severity in a
+      regression analysis, however, no sig…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@Wallentin2018: sample.n disagrees: [48362, 1967038]'
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - 'f2: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: Both findings accurately reflect the two distinct parts of the paper
+        (the meta-analysis and the database query). The statistics, sample sizes (48,362
+        for meta-analysis and 1,967,038 for database), and the specific regression
+        results (including the t-values and p-values) match the text exactly. The
+        author's limitations regarding age/severity in the meta-analysis and the proxy/summary
+        data issues in the database analysis are correctly captured.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"Both\
+      \ findings accurately reflect the two distinct parts of the paper (the meta-analysis\
+      \ and the database query). The statistics, sample sizes (48,362 for meta-analysis\
+      \ and 1,967,038 for database), and the specific regression results (including\
+      \ the t-values and p-values) match the text exactly. The author's limitations\
+      \ regarding age/severity in the meta-analysis and the proxy/summary data issues\
+      \ in the database analysis are correctly captured.\",\n  \"per_finding\": [\n\
+      \    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-23T12:42:39'
 latest_verdict: defer_to_human
 latest_mode: with_llm_review

@@ -294,6 +294,104 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T21:39:51'
+- run_id: 4
+  timestamp: '2026-10-23T13:53:12'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 3/6 quotes (50%) — anchored 2, elided 1, exact 2, near 1
+    - '3 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.limitation (p.11): Though we attempted to remove contrasts
+      in which semantic processing was confoun…'
+    - '  - [near] f2.claim (p.6): Significant overlap for the 113 ''perceptual'' foci
+      occurred in the AG bilaterally…'
+    - '  - [anchored] f2.limitation (p.11): Though we attempted to remove contrasts
+      in which semantic processing was confoun…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  - 'f1: has provenance.flags'
+  - 'f1: strength=''strong'''
+  - 'f2: has provenance.flags'
+  - 'f2: strength=''strong'''
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: Both findings accurately reflect the meta-analysis results. f1 correctly
+        identifies the posterior cingulate gyrus as one of the seven principal regions
+        of the semantic network. f2 correctly identifies its involvement in the specific
+        sub-analysis of perceptual (concrete) knowledge, supported by the verbatim
+        quoted passage from page 6.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"Both\
+      \ findings accurately reflect the meta-analysis results. f1 correctly identifies\
+      \ the posterior cingulate gyrus as one of the seven principal regions of the\
+      \ semantic network. f2 correctly identifies its involvement in the specific\
+      \ sub-analysis of perceptual (concrete) knowledge, supported by the verbatim\
+      \ quoted passage from page 6.\",\n  \"per_finding\": [\n    {\n      \"id\"\
+      : \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"\",\n      \"verdict\": \"agree\"\
+      \n    },\n    {\n      \"id\": \"f2\",\n      \"passage_present\": true,\n \
+      \     \"passage_supports_field\": true,\n"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-23T13:53:12'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

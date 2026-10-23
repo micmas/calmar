@@ -86,6 +86,88 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T21:47:13'
+- run_id: 2
+  timestamp: '2026-10-23T14:07:37'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 5/7 quotes (71%) — absent 1, elided 3, exact 2, near 1
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [near] f1.statistics (p.9): Results are thresholded at p < .005 voxel-level,
+      p <= .001 family-wise error (FW…'
+    - '1 quote(s) absent from the PDF — first 3:'
+    - '  - f1.method (p.6): We used the T1-weighted images... and correlated these
+      with individual measures …'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The claim states that damage to the left STG is 'uniquely associated'
+        with impaired phonological skills. However, the paper's results (Section 3.4
+        and 3.5) specify that the phonological factor was uniquely correlated with
+        a cluster including the STG, MTG, and STS. Furthermore, the finding is based
+        on a VBCM (correlational) analysis, but the draft labels the relationship
+        as 'causal'.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is labeled as 'causal', but the paper describes
+          a VBCM (voxel-based correlational methodology), which identifies correlations
+          between lesion distribution and behavioral scores, not causal links.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The claim\
+      \ states that damage to the left STG is 'uniquely associated' with impaired\
+      \ phonological skills. However, the paper's results (Section 3.4 and 3.5) specify\
+      \ that the phonological factor was uniquely correlated with a cluster including\
+      \ the STG, MTG, and STS. Furthermore, the finding is based on a VBCM (correlational)\
+      \ analysis, but the draft labels the relationship as 'causal'.\",\n  \"per_finding\"\
+      : [\n    {\n      \"id\": \"f1\",\n      \"passage_present\": true,\n      \"\
+      passage_supports_field\": true,\n      \"relationship_faithful\": false,\n \
+      \     \"strength_fair\": true,\n      \"numbers_match\": true,\n      \"limitations_captured\"\
+      : true,\n      \"omissions\": \"\",\n      \"concern\": \"The relationship is\
+      \ labeled as 'causal', but the paper describes a VBCM (voxel-"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-23T14:07:37'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

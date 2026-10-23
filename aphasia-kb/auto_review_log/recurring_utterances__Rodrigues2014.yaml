@@ -1,0 +1,100 @@
+draft_path: drafts/impairments/recurring_utterances__Rodrigues2014.md
+runs:
+- run_id: 1
+  timestamp: '2026-10-23T12:28:58'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 7/8 quotes (88%) — exact 7, near 1
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [near] f1.statistics (p.4): A significance level of p <= .01 was adopted.…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: 'f1 contains a significant error in the statistics: the draft reports
+        AQ (U = 209.00; p = .000), but the paper text on page 6 (and page 8) explicitly
+        states the AQ statistic for the initial assessment is (U = 221.00; p = .002).
+        The draft''s value matches a different statistic found in the follow-up analysis,
+        but the claim is about the initial comparison. f2 is also problematic regarding
+        the relationship type.'
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: false
+        limitations_captured: true
+        omissions: ''
+        concern: The statistics for the AQ score do not match the paper. The draft
+          claims U = 209.00 (p = .000) for the initial comparison, but the paper text
+          on page 6 and page 8 states the initial comparison for AQ is U = 221.00
+          (p = .002). The value 209.00 appears later in the text (page 8) when discussing
+          the follow-up/inferential statistics, but the claim's context is the initial
+          comparison against controls.
+        verdict: disagree
+      - id: f2
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is labeled as 'causal', but the paper describes
+          a longitudinal observation of recovery (correlational/descriptive) without
+          establishing a causal mechanism for the recovery itself.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"f1 contains\
+      \ a significant error in the statistics: the draft reports AQ (U = 209.00; p\
+      \ = .000), but the paper text on page 6 (and page 8) explicitly states the AQ\
+      \ statistic for the initial assessment is (U = 221.00; p = .002). The draft's\
+      \ value matches a different statistic found in the follow-up analysis, but the\
+      \ claim is about the initial comparison. f2 is also problematic regarding the\
+      \ relationship type.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n\
+      \      \"passage_present\": true,\n      \"passage_supports_field\": true,\n\
+      \      \"relationship_faithful\": true,\n      \"strength_fair\": true,\n  \
+      \    \"numbers_match\": false,\n      \"limitations_captured\": true,\n    \
+      \  \"omissions\": \"\",\n      \"concern\": \"The statistics for the AQ score\
+      \ do not match the paper"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-23T12:28:58'
+latest_verdict: checks_passed
+latest_mode: with_llm_review

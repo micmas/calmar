@@ -81,6 +81,88 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T21:00:23'
+- run_id: 2
+  timestamp: '2026-10-23T12:33:39'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 1/3 quotes (33%) — anchored 2, exact 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.claim (p.1305): The infarct volume explained 19.7% of the
+      variance (p = 0.001) [of 3-month good …'
+    - '  - [anchored] f1.method (p.1305): Infarct volume was defined as abnormal hyper-intense
+      regions observed on the DW …'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: defer
+      rationale: The draft incorrectly labels the relationship as 'causal'. The paper
+        describes a predictive/associative relationship (univariate and multivariate
+        analyses) and explicitly notes that 'predict' should perhaps be replaced with
+        'explain' to avoid implying causality. The claim that large volume is associated
+        with poor outcome 'particularly in patients with initially severe aphasia'
+        is supported by the interaction effect described in the results.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: false
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: The relationship is recorded as 'causal', but the paper describes
+          an association/prediction and even includes a limitation/clarification that
+          they should use the word 'explain' rather than 'predict' to avoid such implications.
+          The study is a cohort study showing association, not a causal intervention.
+        verdict: disagree
+      overall_verdict_v1: agree_defer
+    raw_preview: "{\n  \"overall_verdict\": \"defer\",\n  \"rationale\": \"The draft\
+      \ incorrectly labels the relationship as 'causal'. The paper describes a predictive/associative\
+      \ relationship (univariate and multivariate analyses) and explicitly notes that\
+      \ 'predict' should perhaps be replaced with 'explain' to avoid implying causality.\
+      \ The claim that large volume is associated with poor outcome 'particularly\
+      \ in patients with initially severe aphasia' is supported by the interaction\
+      \ effect described in the results.\",\n  \"per_finding\": [\n    {\n      \"\
+      id\": \"f1\",\n      \"passage_present\": true,\n      \"passage_supports_field\"\
+      : true,\n      \"relationship_faithful\": false,\n      \"strength_fair\": true,\n\
+      \      \"numbers_match\": true,\n      \"limitations_captured\": true,\n   \
+      \   \"omissions\": \"\",\n      \"concern\": \"The relationship is "
+    error: null
+    votes: 3
+    vote_verdicts:
+    - defer
+    - defer
+    - defer
+    unanimous: true
+    guardrails: []
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-23T12:33:39'
 latest_verdict: checks_passed
 latest_mode: with_llm_review
