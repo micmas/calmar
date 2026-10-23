@@ -132,6 +132,50 @@ runs:
   - 'f1: strength=''strong'''
   - 'f2: has provenance.flags'
   - 'f2: strength=''strong'''
-last_run: '2026-10-22T21:46:24'
+- run_id: 4
+  timestamp: '2026-10-23T14:06:10'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 4/8 quotes (50%) — absent 2, anchored 2, exact 4
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.statistics (p.1): Intensity represents activation likelihood
+      estimation statistic value (P value f…'
+    - '  - [anchored] f2.statistics (p.1): Intensity represents activation likelihood
+      estimation statistic value (P value f…'
+    - '2 quote(s) absent from the PDF — first 3:'
+    - '  - f1.sample (p.1): phoneme-length studies'' peak focus density in left mid-STG
+      (A; n=14) [and] phone…'
+    - '  - f2.sample (p.1): word-length studies'' peak density in left anterior STG
+      (B; n=16) [and] word-leng…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: false
+    blocker: false
+    details:
+    - '@DeWitt2012: sample.n disagrees: [26, 32]'
+  review_tier: B
+  tier_reasons:
+  - PDF quote match not run or not passed
+  - 'f1: has provenance.flags'
+  - 'f1: strength=''strong'''
+  - 'f2: has provenance.flags'
+  - 'f2: strength=''strong'''
+last_run: '2026-10-23T14:06:10'
 latest_verdict: auto_reject
 latest_mode: deterministic_only

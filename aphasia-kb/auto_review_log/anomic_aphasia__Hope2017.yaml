@@ -136,6 +136,40 @@ runs:
   review_tier: B
   tier_reasons:
   - PDF quote match not run or not passed
-last_run: '2026-10-22T20:55:42'
+- run_id: 5
+  timestamp: '2026-10-23T12:28:13'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 2/4 quotes (50%) — absent 1, anchored 1, exact 2
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.sample (p.3): Summary details of the 28 patients who met
+      these criteria are as follows: 10 fem…'
+    - '1 quote(s) absent from the PDF — first 3:'
+    - '  - f1.statistics (p.1724): ...we found changes in the spoken object naming
+      scores were significantly correl…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - PDF quote match not run or not passed
+last_run: '2026-10-23T12:28:13'
 latest_verdict: auto_reject
 latest_mode: deterministic_only

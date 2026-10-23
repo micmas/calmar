@@ -312,3 +312,22 @@ add an `EXTRACTED` line for every run.
 2026-10-22 | EXTRACTED | @Hope2013 | lesion_volume, time_post_onset | GPR-based prediction of speech production in n=270 patients
 2026-10-22 | MODEL-APPROVED | @Bonilha2016 | severity_metric | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
 2026-10-22 | MODEL-APPROVED | @Griffis2017 | left_frontal_white_matter_bottleneck | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-23 | EXTRACTED | @Biesbroek2017 | cerebral_small_vessel_disease_cognition | narrative review of SVD lesion location and cognition
+2026-10-23 | EXTRACTED | @Brownsett2014 | left_dorsal_anterior_cingulate_cortex | f1: dACC/SFG activity correlates with communicative ability
+2026-10-23 | EXTRACTED | @Cote2007 | right_hemisphere_communication_profiles | 1 draft, 2 findings
+2026-10-23 | EXTRACTED | @Durfee2021 | affective_prosody_localization | Systematic review of RH prosody localization
+2026-10-23 | EXTRACTED | @ElHachioui2013 | severity_metric, age | longitudinal cohort, n=130, phonology as strongest linguistic predictor
+2026-10-23 | EXTRACTED | @Geranmayeh2017 | left_presma_dacc, severity_metric | longitudinal fMRI and behavioral prediction of recovery
+2026-10-23 | EXTRACTED | @Gilmore2019 | executive_functions, severity_metric | Predictors of PMG and PMGM in naming and sentence therapy
+2026-10-23 | EXTRACTED | @Glascher2012 | left_rostral_anterior_cingulate_cortex, left_middle_frontal_gyrus, left_ventromedial_prefrontal_cortex | 3 drafts
+2026-10-23 | EXTRACTED | @Lacey2017 | left_ifg_pars_opercularis, left_superior_temporal_gyrus, left_supramarginal_gyrus, left_middle_frontal_gyrus | SVR-LSM on 38 chronic LH stroke patients
+2026-10-23 | EXTRACTED | @Lukic2017 | right_middle_temporal_gyrus, right_supplementary_motor_area, right_insula | VBM/VLSM study on RH GM volume and language performance
+2026-10-23 | EXTRACTED | @Munsch2016 | severity_metric, left_superior_temporal_gyrus | VLSM and logistic regression on 289 stroke patients
+2026-10-23 | EXTRACTED | @Rodrigues2014 | recurring_utterances | behavioral profile and recovery of RU patients
+2026-10-23 | EXTRACTED | @Ross2008 | right_frontal_operculum, right_temporal_operculum, right_thalamus | 3 region-anchored drafts
+2026-10-23 | EXTRACTED | @Schumacher2019 | left_temporal_fusiform_cortex_posterior, left_middle_frontal_gyrus, lesion_volume | VBCM and correlation analysis of non-verbal cognitive components
+2026-10-23 | EXTRACTED | @Sheppard2020 | right_posterior_stg, right_amygdala, age | Acute RH stroke cohort (n=23); RLSM identifying right posterior STG and amygdala as predictors of prosody deficits.
+2026-10-23 | EXTRACTED | @Simic2019 | executive_functions | Systematic review of 15 studies on EC as a predictor of therapy success.
+2026-10-23 | EXTRACTED | @SkipperKallal2017 | lesion_volume, right_motor_cortex | 2 drafts
+2026-10-23 | EXTRACTED | @Zhao2018 | left_angular_gyrus, left_middle_temporal_gyrus | SVR-LSM and SVR-ROI analysis of 410 stroke patients
+2026-10-23 | MODEL-APPROVED | @Schumacher2019 | lesion_volume | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A

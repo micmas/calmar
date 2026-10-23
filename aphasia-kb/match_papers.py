@@ -35,7 +35,33 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
-_DOI = re.compile(r"\b(10\.\d{4,9}/[^\s\"'<>\]\)\},;]+)", re.I)
+_DOI_RE = re.compile(r"\b(10\.\d{4,9}/(?:[^\s\"'<>\[\]{}(),;\u27e8\u27e9]|\([^\s()]{1,12}\))+)", re.I)
+# A DOI broken over a line after "-" or "/" ("10.1016/s1474-\n4422(09)…").
+_DOI_BREAK = re.compile(r"(10\.\d{4,9}/\S*[-/])[ \t]*\r?\n[ \t]*(?=[0-9A-Za-z(])")
+
+
+class _DoiFinder:
+    """`_DOI.findall(text)` for every caller: keeps parenthesised parts
+    (Elsevier/Lancet `S1474-4422(21)00060-0`, which the old pattern cut
+    at the bracket), rejoins DOIs broken over a line, and stops at the
+    ⟨ ⟩ that HAL cover pages put around them."""
+    def findall(self, text: str) -> list[str]:
+        return _DOI_RE.findall(_DOI_BREAK.sub(r"\1", text))
+
+
+_DOI = _DoiFinder()
+# Elsevier download names carry the PII: 1-s2.0-S0010945208709201-main.pdf
+_PII = re.compile(r"(?i)\bS(\d{4})(\d{3}[\dX])(\d{2})(\d{5})(\d|X)\b")
+
+
+def pii_doi(name: str) -> str | None:
+    """DOI from an Elsevier PII in a filename (S0010945208709201 →
+    10.1016/s0010-9452(08)70920-1)."""
+    m = _PII.search(name)
+    if not m:
+        return None
+    a, b, yy, n, c = m.groups()
+    return f"10.1016/s{a}-{b}({yy}){n}-{c}".lower()
 # "Leff AP, Schofield TM," / "Rothi LJG." — surnames with initials
 _AUTHOR_LINE = re.compile(r"^(?:[A-Z][\w'’\-]+(?: [A-Z][\w'’\-]+)*,?\s+[A-Z]{1,4}[,.]\s*)+(?:et al\.?)?$")
 _STOP = {"the", "a", "an", "of", "in", "on", "at", "for", "with", "and",
@@ -47,7 +73,10 @@ def _norm_doi(d: str) -> str:
     d = d.strip().lower()
     d = re.sub(r"^https?://(dx\.)?doi\.org/", "", d)
     d = re.sub(r"^doi:\s*", "", d)
-    return d.rstrip(".,;:)")
+    d = d.rstrip(".,;:\u27e9")
+    while d.endswith(")") and d.count(")") > d.count("("):
+        d = d[:-1]
+    return d
 
 
 def read_citations(path: Path) -> dict[str, dict]:
@@ -98,9 +127,14 @@ def first_pages_text(path: Path, n_pages: int = 3) -> str:
         import fitz
     doc = fitz.open(str(path))
     try:
-        return "\n".join(doc[i].get_text() for i in range(min(n_pages, doc.page_count)))
+        text = "\n".join(doc[i].get_text() for i in range(min(n_pages, doc.page_count)))
+        # Older PDFs print no DOI; Elsevier keeps it in the metadata title
+        # ("doi:10.1016/…") and in the PII of its download name.
+        extra = [(doc.metadata or {}).get("title") or "", pii_doi(path.name) or ""]
     finally:
         doc.close()
+    extra = [f"doi:{d}" if d.startswith("10.") else d for d in extra if "10." in d]
+    return text + ("\n" + "\n".join(extra) if extra else "")
 
 
 def _slug(x: str) -> str:

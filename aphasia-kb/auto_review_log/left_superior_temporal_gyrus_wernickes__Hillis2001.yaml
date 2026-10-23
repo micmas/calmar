@@ -126,6 +126,48 @@ runs:
   - schema not clean
   - not every passage matched the PDF exactly
   - 'f1: strength=''strong'''
-last_run: '2026-10-22T21:49:26'
+- run_id: 4
+  timestamp: '2026-10-23T14:12:13'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: false
+    blocker: true
+    details:
+    - '/Users/uqmmasso/GITHUB/calmar/aphasia-kb/drafts/regions/left_superior_temporal_gyrus_wernickes__Hillis2001.md:
+      finding[0] (id=f1): unknown method[''PWI'']; allowed: [''DTI'', ''EEG'', ''LSM'',
+      ''MEG'', ''MLPA'', ''MVPA'', ''NODDI'', ''RLSM'', ''TMS'', ''VBCM'', ''VLSM'',
+      ''behavioral_only'', ''clinical_RCT'', ''computational_model'', ''disconnectome'',
+      ''fMRI_FC'', ''fMRI_activation'', ''lesion_network_mapping'', ''meta-analysis'',
+      ''narrative_review'', ''rs_fMRI'', ''tDCS'', ''tractography'']'
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 4/6 quotes (67%) — anchored 1, elided 1, exact 3, near 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.imaging_details (p.3): Gd-DTPA PWI were obtained on a Sigma
+      1.5-T echo planar imaging capable system...…'
+    - '  - [near] f1.statistics (p.3): A very high correlation (r = 0.84; p < 0.00001)
+      was found between the mean numbe…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - schema not clean
+  - not every passage matched the PDF exactly
+  - 'f1: strength=''strong'''
+last_run: '2026-10-23T14:12:13'
 latest_verdict: auto_reject
 latest_mode: deterministic_only

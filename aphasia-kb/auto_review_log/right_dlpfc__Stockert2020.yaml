@@ -241,6 +241,86 @@ runs:
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
     independent: true
     papers_missing: []
-last_run: '2026-10-22T21:54:29'
+- run_id: 4
+  timestamp: '2026-10-23T14:21:16'
+  mode: with_llm_review
+  verdict: checks_passed
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: true
+    blocker: true
+    details:
+    - matched 4/5 quotes (80%) — exact 4, near 1
+    - '1 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [near] f1.method (p.4): we contrasted the responses to SP and REV (SP >
+      REV) to obtain patterns of langu…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - not every passage matched the PDF exactly
+  - new entry id (not appending to an existing entry)
+  llm_review:
+    model: gemma4:26b
+    backend: ollama (local)
+    verdict_override: null
+    parsed:
+      overall_verdict: approve
+      rationale: The finding accurately reflects the paper's results. The claim about
+        right DLPFC activation increase being related to comprehension improvement
+        is verbatim on page 10. The sample size (n=34) and lesion descriptions match
+        the methods. The statistical threshold (P < 0.05, two-tailed) and the identified
+        limitations regarding the auditory paradigm and lesion grouping are correctly
+        extracted from the text.
+      per_finding:
+      - id: f1
+        passage_present: true
+        passage_supports_field: true
+        relationship_faithful: true
+        strength_fair: true
+        numbers_match: true
+        limitations_captured: true
+        omissions: ''
+        concern: ''
+        verdict: agree
+      overall_verdict_v1: override_approve
+    raw_preview: "{\n  \"overall_verdict\": \"approve\",\n  \"rationale\": \"The finding\
+      \ accurately reflects the paper's results. The claim about right DLPFC activation\
+      \ increase being related to comprehension improvement is verbatim on page 10.\
+      \ The sample size (n=34) and lesion descriptions match the methods. The statistical\
+      \ threshold (P < 0.05, two-tailed) and the identified limitations regarding\
+      \ the auditory paradigm and lesion grouping are correctly extracted from the\
+      \ text.\",\n  \"per_finding\": [\n    {\n      \"id\": \"f1\",\n      \"passage_present\"\
+      : true,\n      \"passage_supports_field\": true,\n      \"relationship_faithful\"\
+      : true,\n      \"strength_fair\": true,\n      \"numbers_match\": true,\n  \
+      \    \"limitations_captured\": true,\n      \"omissions\": \"\",\n      \"concern\"\
+      : \"\",\n      \"verdict\": \"agree\"\n    }\n  ]\n}"
+    error: null
+    votes: 3
+    vote_verdicts:
+    - approve
+    - approve
+    - approve
+    unanimous: true
+    guardrails:
+    - model said approve on Tier B; recorded as agree_defer — a person must approve
+      this tier
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+    independent: true
+    papers_missing: []
+last_run: '2026-10-23T14:21:16'
 latest_verdict: checks_passed
 latest_mode: with_llm_review

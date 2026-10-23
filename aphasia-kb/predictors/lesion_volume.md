@@ -872,12 +872,68 @@ findings:
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+- id: f10
+  target: executive_functions
+  target_kind: impairment
+  claim: Lesion volume is significantly correlated with non-verbal cognitive impairment
+    in patients with chronic aphasia.
+  direction: likely
+  relationship: correlational
+  citation: '@Schumacher2019'
+  method: behavioral_only
+  design: cross-sectional
+  strength: moderate
+  evidence_quality: cohort
+  sample:
+    n: 32
+    population: chronic post-stroke aphasia
+    time_post_onset: at least 1 year
+    phase: chronic
+    age_range: mean 64 (SD 11.9), range 45-88
+    handedness: pre-morbidly right-handed
+    language: native English speakers
+  statistics:
+    threshold: P = 0.05 two-tailed
+    effect_size: rs = 0.353
+  confounders_controlled: []
+  confounders_not_controlled: []
+  author_limitations:
+  - Future work will require replication based on larger group sizes.
+  provenance:
+    extracted_by: agent
+    extracted_on: 2026-01-01
+    paper_section: Results, Table 1
+    confidence: high
+    flags: []
+  source_passages:
+  - section: Results
+    page: 8
+    quote: Regarding patient characteristics, also shown in Table 1, non-verbal as
+      well as verbal severity correlated significantly with lesion volume
+    supports: claim
+  - section: Materials and methods
+    page: 3
+    quote: Thirty-eight participants were recruited... All participants had a single
+      left hemispheric stroke... at least 1 year before assessment and imaging
+    supports: sample
+  - section: Discussion
+    page: 12
+    quote: In the current study we obtained 32 cases... and so future work will require
+      replication based on larger groups sizes.
+    supports: limitation
+  region_definition:
+    kind: not_reported
+  review:
+    reviewer: model:gemma4:26b
+    reviewed_on: '2026-10-23'
+    tier: A
+    extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
 notes: Starter entry for schema v2.3. Lesion volume is the single most-controlled-for
   covariate in lesion-symptom mapping. Findings here should be reserved for *predictive*
   claims (volume → severity / recovery / therapy response), not the trivial "bigger
   lesion = more damage" tautology. Be careful to track whether a paper measures volume
   in native or MNI space — ratios change with normalisation.
-last_reviewed: '2026-10-22'
+last_reviewed: '2026-10-23'
 ---
 # Total lesion volume
 

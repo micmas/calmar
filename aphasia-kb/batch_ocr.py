@@ -215,14 +215,28 @@ def main(argv=None) -> int:
                    help="Actually run ocrmypdf (default: dry-run)")
     p.add_argument("--limit", type=int, default=0,
                    help="Stop after OCR'ing N candidates (useful for testing)")
+    p.add_argument("--all", action="store_true",
+                   help="Also probe papers that already have findings (skipped by default: "
+                        "a paper that was extracted has a text layer)")
     args = p.parse_args(argv)
 
     papers = args.papers_dir
     if not papers.is_dir():
         p.error(f"papers dir not found: {papers}")
 
-    pdfs = sorted(papers.glob("*.pdf"))
-    print(f"Scanning {len(pdfs)} PDF(s) in {papers}\n"
+    pdfs = sorted(f for f in papers.glob("*.pdf") if not f.stem.endswith("_annotated"))
+    n_done = 0
+    if not args.all:
+        try:
+            from extract import _extracted_citation_keys
+            done = {k.lstrip("@").lower() for k in _extracted_citation_keys(Path(__file__).resolve().parent)}
+        except Exception:  # noqa: BLE001 — without the KB, probe everything
+            done = set()
+        n_done = sum(f.stem.lower() in done for f in pdfs)
+        pdfs = [f for f in pdfs if f.stem.lower() not in done]
+    print(f"Scanning {len(pdfs)} PDF(s) in {papers}"
+          + (f"  ({n_done} already extracted, skipped; --all to include them)" if n_done else "")
+          + "\n"
           f"Threshold: {args.threshold} chars in first {PROBE_PAGES} pages\n"
           f"Mode: {'EXECUTE' if args.execute else 'DRY RUN'}\n")
 

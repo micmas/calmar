@@ -96,6 +96,38 @@ runs:
   - PDF quote match not run or not passed
   - 'f1: has provenance.flags'
   - 'f1: strength=''strong'''
-last_run: '2026-10-22T21:30:38'
+- run_id: 4
+  timestamp: '2026-10-23T13:25:50'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 2/3 quotes (67%) — absent 1, exact 2
+    - '1 quote(s) absent from the PDF — first 3:'
+    - '  - f1.statistics (p.8): BA45 ... P = 0.395…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - PDF quote match not run or not passed
+  - 'f1: has provenance.flags'
+  - 'f1: strength=''strong'''
+last_run: '2026-10-23T13:25:50'
 latest_verdict: auto_reject
 latest_mode: deterministic_only

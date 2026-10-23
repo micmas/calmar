@@ -114,6 +114,44 @@ runs:
   tier_reasons:
   - PDF quote match not run or not passed
   - new entry id (not appending to an existing entry)
-last_run: '2026-10-22T21:55:08'
+- run_id: 4
+  timestamp: '2026-10-23T14:22:27'
+  mode: deterministic_only
+  verdict: auto_reject
+  checks:
+  - name: schema_valid
+    passed: true
+    blocker: true
+  - name: no_low_confidence_findings
+    passed: true
+    blocker: true
+  - name: no_contradictions
+    passed: true
+    blocker: true
+  - name: pdf_quote_match
+    passed: false
+    blocker: true
+    details:
+    - matched 1/5 quotes (20%) — absent 2, anchored 2, exact 1
+    - '2 quote(s) real but not verbatim (a person confirms) — first 3:'
+    - '  - [anchored] f1.sample (p.2): Fourteen chronic (>6 months) aphasia patients
+      participated. [...] Patients were …'
+    - '  - [anchored] f1.region_definition (p.4): Three regions of interest (ROIs;
+      medial frontal, lateral frontal, and posterior …'
+    - '2 quote(s) absent from the PDF — first 3:'
+    - '  - f1.imaging_details (p.4): Lesions were masked on T1-weighted images using
+      ITK-Snap [...] and then warped i…'
+    - '  - f1.limitation (p.6): Small number of subjects in the groups...…'
+  - name: no_human_review_flags
+    passed: true
+    blocker: false
+  - name: cross_finding_consistency
+    passed: true
+    blocker: false
+  review_tier: B
+  tier_reasons:
+  - PDF quote match not run or not passed
+  - new entry id (not appending to an existing entry)
+last_run: '2026-10-23T14:22:27'
 latest_verdict: auto_reject
 latest_mode: deterministic_only
