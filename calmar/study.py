@@ -39,6 +39,29 @@ SEGMENTATION_METHODS = ROUTE_METHODS["t1"] + ROUTE_METHODS["dwi"]
 T1_ONLY_STAGES = ("brain", "linda", "synthstroke", "registration")
 DWI_ONLY_STAGES = ("openads",)
 
+# Entries from an additional cohort retain their own dataset and the config
+# values that differ from the notebook's primary cohort.  The keys are private
+# workflow metadata, not BIDS entities, and are removed before Slurm payloads
+# are executed (see calmar.scheduled).
+ENTRY_DATASET = "_calmar_dataset"
+ENTRY_CONFIG = "_calmar_config"
+
+
+def config_for_entry(config, entry):
+    """Return the effective configuration for ``entry``.
+
+    Ordinary one-dataset entries have no metadata and reuse ``config``.  A
+    mixed cohort entry can override only route/source/filter values while
+    continuing to inherit processing parameters from the primary config.
+    """
+    overrides = entry.get(ENTRY_CONFIG) or {}
+    return {**config, **overrides} if overrides else config
+
+
+def dataset_for_entry(dataset, entry):
+    """Return the dataset root associated with ``entry``."""
+    return Path(entry.get(ENTRY_DATASET, dataset))
+
 
 def modality(config):
     """"t1" (chronic route, default) or "dwi" (acute route: OpenADS on DWI + ADC)."""
@@ -132,6 +155,8 @@ def derivative_dirs(dataset, config, entry):
     manual mask's products: LINDA's folder when LINDA runs, otherwise the
     registration step's.
     """
+    dataset = dataset_for_entry(dataset, entry)
+    config = config_for_entry(config, entry)
     suffix = Path(entry["subject"]) / (entry.get("session") or "") / "anat"
     dirs = {tool: Path(dataset) / config.get(key, f"derivatives/{tool}") / suffix
             for tool, key in DERIVATIVE_KEYS.items()}
@@ -317,6 +342,64 @@ def select_participants(config, dataset_dir):
     return attach_dwi_inventory(entries, dataset_dir, inventory=inventory), ""
 
 
+def select_cohorts(config, dataset_dir, project_dir):
+    """Select the primary cohort plus optional route-aware cohorts.
+
+    ``ADDITIONAL_COHORTS`` contains dictionaries using the same keys as
+    ``CONFIG``.  Each additional entry records its dataset and only its cohort
+    overrides, allowing review/reporting and every Slurm stage to resolve the
+    correct route independently.  ``MAX_SUBJECTS`` applies within each cohort.
+    """
+    entries, primary_note = select_participants(config, dataset_dir)
+    notes = [primary_note] if primary_note else []
+    project_dir = Path(project_dir)
+    seen = {(entry["subject"], entry.get("session")) for entry in entries}
+    for number, overrides in enumerate(config.get("ADDITIONAL_COHORTS") or (), 1):
+        overrides = dict(overrides)
+        label = overrides.pop("NAME", f"additional cohort {number}")
+        cohort_config = {**config, **overrides, "ADDITIONAL_COHORTS": []}
+        source = cohort_config.get("DATASET_SOURCE")
+        if source in ("local", "flat", "isles2022"):
+            value = cohort_config.get("LOCAL_DATASET")
+            if not value:
+                raise ValueError(f"{label}: LOCAL_DATASET is required for DATASET_SOURCE={source!r}.")
+            cohort_dir = Path(value).expanduser()
+            if not cohort_dir.is_absolute():
+                cohort_dir = project_dir / cohort_dir
+        elif source == "single":
+            value = cohort_config.get("SINGLE_T1W")
+            if not value:
+                raise ValueError(f"{label}: SINGLE_T1W is required for DATASET_SOURCE='single'.")
+            single = Path(value).expanduser()
+            if not single.is_absolute():
+                single = project_dir / single
+            cohort_dir = single.resolve().parent
+            cohort_config["SINGLE_T1W"] = str(single.resolve())
+        else:
+            cohort_dir = project_dir / cohort_config.get("DATA_SUBDIR", "data") / cohort_config["OPENNEURO_ID"]
+        cohort_dir = cohort_dir.resolve()
+        if not cohort_dir.is_dir():
+            raise FileNotFoundError(f"{label}: dataset folder does not exist: {cohort_dir}")
+        if source == "isles2022":
+            cohort_config.update(MODALITY="dwi", SEGMENTATION_METHODS=["openads"])
+        segmentation_methods(cohort_config)
+        selected, note = select_participants(cohort_config, cohort_dir)
+        for entry in selected:
+            key = (entry["subject"], entry.get("session"))
+            if key in seen:
+                raise ValueError(f"{label}: duplicate participant/session in mixed cohort: {key}")
+            seen.add(key)
+            entry[ENTRY_DATASET] = str(cohort_dir)
+            entry[ENTRY_CONFIG] = {
+                key: value for key, value in cohort_config.items()
+                if key != "ADDITIONAL_COHORTS" and (key not in config or config[key] != value)
+            }
+        entries.extend(selected)
+        detail = f"{label}: {len(selected)} participant(s)"
+        notes.append(detail + (f" ({note})" if note else ""))
+    return entries, "; ".join(notes)
+
+
 # ── Per-participant paths ────────────────────────────────────────────────────
 
 class Study:
@@ -326,6 +409,12 @@ class Study:
         self.config = config
         self.dataset = Path(dataset_dir)
         self.project = Path(project_dir)
+
+    def config_for(self, entry):
+        return config_for_entry(self.config, entry)
+
+    def dataset_for(self, entry):
+        return dataset_for_entry(self.dataset, entry)
 
     def dirs(self, entry):
         return derivative_dirs(self.dataset, self.config, entry)
@@ -350,7 +439,7 @@ class Study:
         """The mask whose ``*.qc.json`` sidecar holds every QC stage rating:
         LINDA's MNI lesion in the T1 route (also when LINDA did not run), the
         OpenADS MNI lesion in the acute (DWI) route."""
-        if source == "openads" or modality(self.config) == "dwi":
+        if source == "openads" or modality(self.config_for(entry)) == "dwi":
             return self.dirs(entry)["openads"] / "OpenADS_in_MNI.nii.gz"
         return self.lesion_mni(entry)
 
@@ -359,19 +448,20 @@ class Study:
         return self.qc_anchor(entry, source).parent
 
     def manual_mask_template(self, entry):
-        template = self.config.get("MANUAL_MASK_PATH")
+        template = self.config_for(entry).get("MANUAL_MASK_PATH")
         if not template:
             return None
         return str(template).format(sub=entry["subject"], ses=entry.get("session") or "")
 
     def masks(self, entry):
         """Existing masks as ``{source: {space: path}}``; nothing is computed."""
+        config = self.config_for(entry)
         openads_entry = entry.get("dwi_analysis") or entry
         return cm.discover_masks(entry, self.linda_dir(entry), self.synthstroke_dir(entry),
                                  template_dir=self.template_dir(entry), openads_dir=self.dirs(entry)["openads"],
                                  openads_entry=openads_entry,
                                  manual_path=self.manual_mask_template(entry),
-                                 manual_space=self.config.get("MANUAL_MASK_SPACE", "t1"))
+                                 manual_space=config.get("MANUAL_MASK_SPACE", "t1"))
 
     def mni_sources(self, entry):
         return [source for source, spaces in self.masks(entry).items() if "MNI" in spaces]
@@ -388,7 +478,7 @@ class Study:
     def qc_stages(self, entry):
         from . import qc as q
         brain = self.linda_dir(entry) / "BrainMask.nii.gz"
-        if modality(self.config) == "dwi":
+        if modality(self.config_for(entry)) == "dwi":
             brain = None                # OpenADS's brain mask is not rated: its lesion is confined to it
         elif not cm.present(brain):
             brain = q.find_best_hdbet_mask(self.hdbet_dir(entry))

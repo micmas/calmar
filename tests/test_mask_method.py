@@ -8,7 +8,7 @@ import nibabel as nib
 import numpy as np
 
 from calmar.mask_method import NO_RECORD, manual_agreement, manual_agreement_html, mask_method
-from calmar.study import derivative_dirs
+from calmar.study import ENTRY_CONFIG, ENTRY_DATASET, Study, derivative_dirs
 
 
 def mask(path, box):
@@ -53,6 +53,20 @@ def test_linda_route_and_missing_records_are_stated(tmp_path):
     record(d['linda'], {'module': 'linda/0.5.1', 'brain_mask_bypass': True, 'random_seed': 7, 'threads': 1})
     steps = [x for x in mask_method(s, entry, 'linda') if x]
     assert 'using that brain mask' in steps[1] and 'random seed 7, 1 thread.' in steps[1]
+
+
+def test_isles_manual_mask_method_uses_its_dwi_dataset(tmp_path):
+    acute = tmp_path / 'ISLES-2022'
+    dwi = acute / 'sub-acute' / 'ses-1' / 'dwi' / 'sub-acute_ses-1_dwi.nii.gz'
+    mask_path = acute / 'derivatives' / 'sub-acute' / 'ses-1' / 'sub-acute_ses-1_msk.nii.gz'
+    mask(dwi, np.s_[1:3, 1:3, 1:3]); mask(mask_path, np.s_[2:4, 2:4, 2:4])
+    entry = {'subject': 'sub-acute', 'session': 'ses-1', 't1w': str(dwi), 'dwi': str(dwi),
+             ENTRY_DATASET: str(acute),
+             ENTRY_CONFIG: {'DATASET_SOURCE': 'isles2022', 'MODALITY': 'dwi',
+                            'SEGMENTATION_METHODS': ['openads']}}
+    steps = mask_method(Study({}, tmp_path / 'chronic', tmp_path), entry, 'manual')
+    assert mask_path.name in steps[0]
+    assert 'diffusion-weighted image' in steps[0]
 
 
 def test_agreement_only_with_a_manual_mask(tmp_path):

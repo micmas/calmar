@@ -819,15 +819,16 @@ class RerunQueuePanel(w.VBox):
     def __init__(self, entries, study, config, *, allow_overwriting_edits=False, reviewer=None):
         from .study import modality
         self.study, self.config, self.reviewer = study, config, reviewer
-        self.acute = modality(config) == "dwi"
-        tool = "OpenADS" if self.acute else "LINDA"
         self.job_output = Output()
         rows = []
         for entry in entries:
             record = q.QCRecord.load(study.qc_anchor(entry))
             if not record.marked_for_rerun:
                 continue
-            edited = not self.acute and manual_edits_since_last_run(_history(entry, study))
+            config_for = getattr(study, "config_for", lambda entry: config)
+            acute = modality(config_for(entry)) == "dwi"
+            tool = "OpenADS" if acute else "LINDA"
+            edited = not acute and manual_edits_since_last_run(_history(entry, study))
             blocked = edited and not allow_overwriting_edits
             ratings = ", ".join(f"{s}={record.stages[s].get('rating')}" for s in q.STAGES
                                 if (record.stages.get(s) or {}).get("rating"))
@@ -845,12 +846,15 @@ class RerunQueuePanel(w.VBox):
         with self.job_output:
             self.job_output.clear_output()
             try:
-                if self.acute:
-                    outputs = rerun_openads(entry, self.study, self.config, reviewer=self.reviewer)
+                from .study import modality
+                config_for = getattr(self.study, "config_for", lambda entry: self.config)
+                config = config_for(entry)
+                if modality(config) == "dwi":
+                    outputs = rerun_openads(entry, self.study, config, reviewer=self.reviewer)
                     print(f"✓ OpenADS re-run for {entry_label(entry)}: {', '.join(outputs)}. "
                           "Ratings were cleared; rerun the QC panel to rate the new outputs.")
                     return
-                mask = rerun_linda(entry, self.study, self.config, reviewer=self.reviewer)
+                mask = rerun_linda(entry, self.study, config, reviewer=self.reviewer)
                 print(f"✓ LINDA re-run for {entry_label(entry)} with brain mask {mask}. "
                       "Ratings were cleared; rerun the QC panel to rate the new outputs.")
             except Exception as error:

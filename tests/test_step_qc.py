@@ -42,6 +42,29 @@ def test_lesion_figures_metrics_and_flags(tmp_path):
     assert synth['flags'] == []
 
 
+def test_openads_static_qc_emphasises_small_components(tmp_path):
+    entry = {'subject': 'sub-a', 'session': 'ses-1', 't1w': str(tmp_path/'dwi.nii.gz')}
+    dirs = derivative_dirs(tmp_path, {'MODALITY': 'dwi'}, entry)
+    shape = (20, 20, 20)
+    save(tmp_path/'dwi.nii.gz', np.ones(shape))
+    lesion = np.zeros(shape); lesion[4:6, 4:6, 4:6] = 1; lesion[12:14, 12:14, 12:14] = 1
+    stem = 'sub-a_ses-1'
+    save(dirs['openads']/f'{stem}_space-DWI_desc-lesion_mask.nii.gz', lesion)
+    rows, _, _ = step_qc._openads(dirs, entry, entry['t1w'])
+    _, _, style = rows[0]['overlays'][0]
+    assert style['linewidth'] == 2.0 and style['fill_alpha'] > 0
+
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    try:
+        step_qc._panel(ax, np.ones(shape), rows[0]['overlays'], 2, 4)
+        assert len(ax.collections) >= 2  # translucent fill plus boundary contour
+    finally:
+        plt.close(fig)
+
+
 def test_brain_volume_flag_and_cross_session_manual(tmp_path):
     entry, dirs = fixture(tmp_path)
     brain = step_qc.stage_evidence('brain', entry, dirs, tmp_path/'reports')

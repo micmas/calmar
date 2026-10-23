@@ -689,6 +689,67 @@ def tract_atlases(all_atlases):
             if name in ("JHU", "XTRACT")}
 
 
+def _measured_disconnections(disconnection):
+    """Map-derived tract rows with a usable disconnection measurement."""
+    required = {"region", "side", "region_pct"}
+    if disconnection is None or disconnection.empty or not required.issubset(disconnection.columns):
+        return pd.DataFrame()
+    rows = disconnection.copy()
+    if "measured" in rows:
+        rows = rows[rows["measured"].fillna(False).astype(bool)]
+    rows["region_pct"] = pd.to_numeric(rows["region_pct"], errors="coerce")
+    return rows[rows["region_pct"].notna()].copy()
+
+
+def _qualifying_disconnections(disconnection, threshold):
+    """Map-derived tract rows at or above the report threshold."""
+    rows = _measured_disconnections(disconnection)
+    rows = rows[rows["region_pct"] >= threshold].copy() if not rows.empty else rows
+    if not rows.empty:
+        rows["anatomy"] = rows["region"].map(_anatomy_key)
+    return rows
+
+
+def _anatomical_tract_blocks(kb, disconnection, evidence_anatomies, damage):
+    """Describe disconnected tracts even when the KB has no symptom finding."""
+    if disconnection.empty:
+        return ""
+    direct = (damage.groupby("region")["region_pct"].max()
+              if damage is not None and len(damage) and {"region", "region_pct"}.issubset(damage.columns)
+              else None)
+    blocks = []
+    ranked = disconnection.groupby("anatomy")["region_pct"].max().sort_values(ascending=False, kind="stable")
+    for key in ranked.index:
+        if key in evidence_anatomies:
+            continue
+        group = disconnection[disconnection["anatomy"] == key]
+        first = group.loc[group["region_pct"].idxmax()]
+        names = list(dict.fromkeys(_name(kb, region) for region in group["region"]))
+        aliases = (f"<p class='region-alias'>Also represented as: {escape(', '.join(names[1:]))}</p>"
+                   if len(names) > 1 else "")
+        hit = ""
+        if direct is not None:
+            destroyed = direct.reindex(group["region"].unique()).dropna()
+            if len(destroyed) and destroyed.max() > 0:
+                hit = f" · also directly damaged ({destroyed.max():.0f}% destroyed)"
+        tract_id = _html_id("tract", first["region"])
+        blocks.append(
+            f"<details class='region-evidence tract-evidence tract-anatomy-only' id='{tract_id}' data-print-open>"
+            "<summary>"
+            f"<span class='region-title'>{escape(names[0])} <span>({escape(str(first['side']))})</span></span>"
+            f"<span class='region-facts'>{first['region_pct']:.0f}% of the tract disconnected{escape(hit)}</span>"
+            "<span class='tract-direction'><span><strong>Anatomical result only</strong></span></span>"
+            "<span class='region-notes'><span class='secondary'>No linked symptom-level finding</span></span>"
+            "<span class='region-action'><span class='when-closed'>Show context</span>"
+            "<span class='when-open'>Hide context</span></span></summary>"
+            f"<div class='region-body'>{aliases}<p>The disconnectome map derived from this participant&rsquo;s lesion crosses the report "
+            "threshold for this tract, but the current knowledge base has no eligible symptom-level literature "
+            "finding linked to it. The tract is therefore reported as anatomical context only; absence of a linked "
+            "finding is not evidence that it has no functional importance.</p></div></details>"
+        )
+    return "".join(blocks)
+
+
 def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_label, phase=None,
                           *, map_name=None, mask_label=None, lesion_rows=None):
     """HTML: tracts disconnected by the lesion (from a disconnectome map), with their findings.
@@ -701,10 +762,13 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
         return ("<p style='color:#666'><em>No disconnectome map for this lesion mask "
                 "(run the BCBToolkit or DeepDisco step, or choose another map in the report settings).</em></p>")
     matched_before_filter = 0 if rows is None else len(rows)
+    disconnection_available = not _measured_disconnections(disconnection).empty
+    qualifying = _qualifying_disconnections(disconnection, settings.min_disconnected_pct)
     source = escape(mask_label or "selected lesion")
     filename = f" (<code>{escape(map_name)}</code>)" if map_name else ""
     intro = ("<p class='section-intro'>This section shows white-matter tracts that may be interrupted beyond the "
-             "visible lesion. Open a tract to inspect the group-level findings linked to it.</p>"
+             "visible lesion. Open a tract to inspect its anatomical context and any group-level findings linked "
+             "to it.</p>"
              f"<p class='method-note'>The {escape(map_label)} map gives, for every "
              "voxel, the probability that its fibres pass through the lesion. A tract counts as disconnected when "
              f"&ge;{settings.min_disconnected_pct:g}% of its voxels have a probability above 0.5. This catches tracts "
@@ -724,29 +788,42 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
              "</ol><p>The participant map calculation and the literature claims are separate provenance layers. "
              "Group associations do not predict this participant&rsquo;s outcome.</p></div></details>")
     rows = _symptom_findings(rows, rules)
+    evidence_anatomies = (set() if rows is None or rows.empty
+                          else set(rows["region"].map(_anatomy_key)))
+    anatomy_only = _anatomical_tract_blocks(kb, qualifying, evidence_anatomies, damage)
     if rows is None or rows.empty:
-        message = ("Disconnectome-matched tracts were found, but their knowledge-base records contain no "
-                   "symptom-level targets eligible for this report." if matched_before_filter else
-                   "No symptom-level knowledge-base findings matched tracts above the disconnection threshold.")
-        return intro + f"<p style='color:#666'><em>{message}</em></p>"
+        if matched_before_filter:
+            message = ("Disconnectome-matched tracts were found, but their knowledge-base records contain no "
+                       "symptom-level targets eligible for this report. Their anatomical disconnection is still "
+                       "listed below.")
+        elif not disconnection_available:
+            message = "No tract-disconnection measurements were available for this map."
+        elif qualifying.empty:
+            message = "No mapped tract reached the disconnection threshold."
+        else:
+            message = ("No symptom-level knowledge-base findings matched these tracts. Their map-derived "
+                       "disconnection is still listed below as anatomical context.")
+        return intro + f"<p class='method-note'><em>{message}</em></p>" + anatomy_only
     lesion_rows = _symptom_findings(lesion_rows, rules)
     if lesion_rows is not None and not lesion_rows.empty:
         lesion_rows = lesion_rows.assign(anatomy=lesion_rows["region"].map(_anatomy_key))
-    direct = damage.set_index("region") if damage is not None and len(damage) else None
+    direct = (damage.groupby("region")["region_pct"].max()
+              if damage is not None and len(damage) and {"region", "region_pct"}.issubset(damage.columns)
+              else None)
     rows = rows.assign(target_name=rows["predicts"].map(lambda t: _name(kb, t)),
                        region_name=rows["region"].map(lambda t: _name(kb, t)),
                        anatomy=rows["region"].map(_anatomy_key))
     context = _evidence_context(kb)
     names = {key: g["region_name"].value_counts().index.tolist() for key, g in rows.groupby("anatomy")}
     blocks = []
-    for key in rows.groupby("anatomy")["region_pct"].max().sort_values(ascending=False).index:
+    for key in rows.groupby("anatomy")["region_pct"].max().sort_values(ascending=False, kind="stable").index:
         g = rows[rows["anatomy"] == key]
         shown = _distinct_findings(g, "predicts")
         count_items = _count_items(_direction_counts(shown))
         first = g.iloc[0]
         hit = ""
         if direct is not None:
-            destroyed = direct.reindex(g["region"].unique())["region_pct"].dropna()
+            destroyed = direct.reindex(g["region"].unique()).dropna()
             if len(destroyed) and destroyed.max() > 0:
                 hit = f" · also directly damaged ({destroyed.max():.0f}% destroyed)"
         studies = g["citation"].dropna().nunique()
@@ -795,4 +872,7 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
             "<span class='when-open'>Hide findings</span></span></summary>"
             f"<div class='region-body'>{also}{shared_detail}"
             f"{_claims(kb, g, target_column='predicts', context=context, phase=phase)}</div></details>")
-    return intro + phase_summary(rows, phase) + "".join(blocks)
+    anatomical_note = ("<p class='method-note'><strong>Additional disconnected tracts:</strong> the entries below "
+                       "cross the same map threshold but have no eligible symptom-level finding in the current "
+                       "knowledge base.</p>" + anatomy_only) if anatomy_only else ""
+    return intro + phase_summary(rows, phase) + "".join(blocks) + anatomical_note

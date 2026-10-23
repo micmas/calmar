@@ -4,6 +4,7 @@ from IPython import get_ipython
 from IPython.display import display, Markdown
 import ast
 import json
+import operator
 import re
 import time
 from pathlib import Path
@@ -94,6 +95,61 @@ def _saved_upstream_ids(shell, boundary_role=None):
 # released towards batch processing or towards reporting (its two buttons).
 # The report form's checkpoint is released by "generate", its Generate button.
 RECOVERY_COMMANDS = {"batch": ("batch", "report"), "skip-qc": ("skip-qc",), "generate": ("generate",)}
+_MISSING = object()
+
+
+def _open_report_setup(shell, *, reset_selection=True):
+    """Open report selection without changing any saved QC decision.
+
+    This is shared by the live batch-checkpoint button and the text recovery
+    command.  Keeping it independent of a *paused* BatchCheckpoint lets a
+    user recover from a stale notebook widget after that checkpoint has
+    already been released, as long as the kernel still has a valid selected
+    single-subject index.
+    """
+    namespace = getattr(shell, "user_ns", {})
+    waiting = [(name, getattr(shell, name, None)) for name in
+               ("_calmar_qc_checkpoint", "_calmar_report_checkpoint")]
+    if any(name == "_calmar_qc_checkpoint" and gate is not None and gate.paused
+           for name, gate in waiting):
+        raise RuntimeError(
+            "Quality control is waiting for a decision. Finish QC or use "
+            "%calmar_continue skip-qc; reporting was not opened."
+        )
+    if any(name == "_calmar_report_checkpoint" and gate is not None and gate.paused
+           for name, gate in waiting):
+        raise RuntimeError(
+            "The report form is waiting for validated inputs. Use "
+            "%calmar_continue generate [participant] [mask]; reporting was not reopened."
+        )
+    candidate = (namespace.get("TEST_SUBJECT_IDX", _MISSING) if reset_selection else
+                 namespace.get("INTERP_SUBJECT_IDX", namespace.get("TEST_SUBJECT_IDX", _MISSING)))
+    try:
+        if candidate is _MISSING or isinstance(candidate, bool):
+            raise TypeError
+        index = operator.index(candidate)
+    except TypeError:
+        raise RuntimeError(
+            "No single-subject selection is available. Rerun the participant "
+            "selection cell, then run the single-subject checkpoint cell."
+        )
+    subjects = namespace.get("SUBJECTS")
+    if subjects is None:
+        raise RuntimeError(
+            "No participant cohort is available. Rerun participant discovery "
+            "and selection before opening reporting."
+        )
+    if not 0 <= index < len(subjects):
+        raise RuntimeError(
+            "The selected participant is no longer in the current cohort. "
+            "Rerun the participant selection cell before opening reporting."
+        )
+    # Release old in-memory gates without changing any saved QC decisions.
+    for _, previous in waiting:
+        if previous is not None:
+            previous.close()
+    namespace["INTERP_SUBJECT_IDX"] = index
+    return index
 
 
 def _recovery_action(lines):
@@ -137,10 +193,16 @@ def enable_checkpoint_recovery(shell=None):
         elif action == "report":
             # The code equivalent of the "Jump to reporting" button.
             checkpoint = getattr(shell, "_calmar_batch_checkpoint", None)
-            if checkpoint is None or not checkpoint.paused:
-                raise RuntimeError("There is no paused batch checkpoint.")
-            checkpoint._report()
-            print("Reporting opened; batch processing was not run and saved QC is unchanged.\n"
+            if checkpoint is not None and checkpoint.paused:
+                if checkpoint._report() is False:
+                    raise RuntimeError(checkpoint._report_error)
+            else:
+                # The saved widget can outlive the paused state (for example,
+                # after Continue to batch was already chosen).  The explicit
+                # recovery command should still open report selection rather
+                # than fail on that stale control.
+                _open_report_setup(shell, reset_selection=False)
+            print("Reporting opened; saved QC is unchanged.\n"
                   "Next, run these cells one by one (Shift+Enter), not Run All Below:\n"
                   "  1. the report settings cell ('Settings for the participant interpretation report'),\n"
                   "  2. the report form cell, choose the participant and mask, click Generate;\n"
@@ -347,17 +409,17 @@ class BatchCheckpoint(ExecutionCheckpoint):
         self.navigation.request('report-setup', self._report)
 
     def _report(self):
-        # Release old in-memory gates without changing any saved QC decisions.
-        for name in ('_calmar_qc_checkpoint', '_calmar_report_checkpoint'):
-            previous = getattr(self.shell, name, None)
-            if previous is not None:
-                previous.close()
+        try:
+            _open_report_setup(self.shell)
+        except RuntimeError as error:
+            self._report_error = str(error)
+            self.message.value = f"<b>Could not open reporting:</b> {escape(str(error))}"
+            return False
         self.release()
         self.button.disabled = self.reporting.disabled = True
-        namespace = getattr(self.shell, 'user_ns', {})
-        namespace['INTERP_SUBJECT_IDX'] = namespace.get('TEST_SUBJECT_IDX', 0)
         self.message.value = ('<b>Opening report setup.</b> '
                               'Choose the participant and mask in the report selector. Saved QC is unchanged.')
+        return True
 
 
 class QCCheckpoint(ExecutionCheckpoint):

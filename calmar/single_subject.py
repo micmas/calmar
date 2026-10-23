@@ -16,11 +16,12 @@ def processing_status(entry, namespace):
     synth = Path(namespace['synthstroke_path_for'](entry))
     brain = Path(namespace['hdbet_path_for'](entry))
     present = lambda p: p.is_file() and p.stat().st_size > 0
-    from calmar.study import segmentation_methods
+    from calmar.study import config_for_entry, segmentation_methods
     wanted = {'linda': linda/'Lesion_in_MNI.nii.gz', 'synthstroke': synth/'SynthStroke_in_MNI.nii.gz'}
     if 'openads_path_for' in namespace:          # acute (DWI) route
         wanted['openads'] = Path(namespace['openads_path_for'](entry))/'OpenADS_in_MNI.nii.gz'
-    if all(m in wanted and present(wanted[m]) for m in segmentation_methods(namespace.get('CONFIG', {}))):
+    config = config_for_entry(namespace.get('CONFIG', {}), entry)
+    if all(m in wanted and present(wanted[m]) for m in segmentation_methods(config)):
         return 'Segmentations available'
     if any(present(p) for folder in (linda, synth, brain) for p in folder.glob('*.nii.gz')):
         return 'Partly processed'

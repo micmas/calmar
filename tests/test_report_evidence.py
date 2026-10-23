@@ -178,6 +178,7 @@ def test_white_matter_provenance_is_collapsed_by_default():
     assert evidence_path is not None and not evidence_path.has_attr("open")
     assert evidence_path.has_attr("data-print-open")
     assert evidence_path.summary.get_text(" ", strip=True) == "Where this evidence comes from"
+    assert "No tract-disconnection measurements were available" in html
 
 
 def test_white_matter_summary_shows_direction_and_links_shared_lesion_symptoms():
@@ -235,6 +236,71 @@ def test_white_matter_empty_state_distinguishes_filtered_non_symptom_records():
     html = disconnection_section(KB, rules, rows, pd.DataFrame(), pd.DataFrame(), ReportSettings(), "BCBToolkit")
     assert "Disconnectome-matched tracts were found" in html
     assert "no symptom-level targets eligible" in html
+
+
+def test_white_matter_without_findings_still_describes_disconnected_tracts():
+    from calmar.report_evidence import disconnection_section
+    disconnection = pd.DataFrame([
+        dict(region="right_arcuate_fasciculus", side="right", measured=True,
+             lesion_pct=0.0, region_pct=72.0, mean_probability=0.61),
+        dict(region="right_uncinate_fasciculus", side="right", measured=True,
+             lesion_pct=0.0, region_pct=30.0, mean_probability=0.34),
+    ])
+    html = disconnection_section(
+        KB, rules, pd.DataFrame(), disconnection, pd.DataFrame(), ReportSettings(), "BCBToolkit")
+    assert "Right Arcuate Fasciculus" in html and "72% of the tract disconnected" in html
+    assert "Right Uncinate Fasciculus" not in html  # below the configured 50% threshold
+    assert "Anatomical result only" in html
+    assert "absence of a linked finding is not evidence" in html
+    assert "No symptom-level knowledge-base findings matched these tracts" in html
+
+
+def test_white_matter_does_not_describe_unmeasured_tracts_as_below_threshold():
+    from calmar.report_evidence import disconnection_section
+    unavailable = pd.DataFrame([
+        dict(region="right_arcuate_fasciculus", side="right", measured=False,
+             lesion_pct=0.0, region_pct=72.0),
+    ])
+    html = disconnection_section(
+        KB, rules, pd.DataFrame(), unavailable, pd.DataFrame(), ReportSettings(), "BCBToolkit")
+    assert "No tract-disconnection measurements were available" in html
+    assert "reached the disconnection threshold" not in html
+
+
+def test_white_matter_anatomical_context_tolerates_duplicate_damage_rows():
+    from calmar.report_evidence import disconnection_section
+    disconnection = pd.DataFrame([
+        dict(region="right_arcuate_fasciculus", side="right", measured=True,
+             lesion_pct=0.0, region_pct=72.0),
+    ])
+    damage = pd.DataFrame([
+        dict(region="right_arcuate_fasciculus", region_pct=10.0),
+        dict(region="right_arcuate_fasciculus", region_pct=40.0),
+    ])
+    html = disconnection_section(
+        KB, rules, pd.DataFrame(), disconnection, damage, ReportSettings(), "BCBToolkit")
+    assert "also directly damaged (40% destroyed)" in html
+
+
+def test_white_matter_mixes_evidence_and_anatomical_only_tracts_without_duplicates():
+    from calmar.report_evidence import disconnection_section
+    finding = dict(region="left_arcuate_fasciculus", side="left", lesion_pct=0.0, region_pct=70.0,
+                   predicts="speech_repetition", predicts_kind="impairment", claim="Association claim",
+                   direction="likely", citation="@StudyA", method="VLSM", strength="moderate",
+                   evidence_quality="observational", confidence="high", source_id="missing",
+                   finding_id="f1", contribution=1.0)
+    disconnection = pd.DataFrame([
+        dict(region="left_arcuate_fasciculus", side="left", measured=True, lesion_pct=0.0, region_pct=70.0),
+        dict(region="right_arcuate_fasciculus", side="right", measured=True, lesion_pct=0.0, region_pct=70.0),
+    ])
+    html = disconnection_section(KB, rules, pd.DataFrame([finding]), disconnection, pd.DataFrame(),
+                                 ReportSettings(), "BCBToolkit")
+    soup = BeautifulSoup(html, "html.parser")
+    evidence = soup.select("details.tract-evidence:not(.tract-anatomy-only)")
+    anatomical = soup.select("details.tract-anatomy-only")
+    assert len(evidence) == 1 and "Left arcuate fasciculus" in evidence[0].get_text(" ", strip=True)
+    assert len(anatomical) == 1 and "Right Arcuate Fasciculus" in anatomical[0].get_text(" ", strip=True)
+    assert "Additional disconnected tracts" in html
 
 
 def test_print_notes_when_additional_regions_are_only_in_interactive_html():

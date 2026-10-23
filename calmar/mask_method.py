@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 
 from .masks import MASK_LABELS
-from .study import mni_masks
+from .study import mni_masks, modality
 
 NO_RECORD = "no run record (made before run records were kept)"
 
@@ -105,7 +105,11 @@ def mask_method(study, entry, source):
         return [segmented, _registration(dirs, mni)]
     if source == "manual":
         from .processing import manual_inputs
-        mask, reference, space = manual_inputs({"dataset": str(study.dataset), "config": study.config}, entry)
+        dataset_for = getattr(study, "dataset_for", lambda entry: study.dataset)
+        config_for = getattr(study, "config_for", lambda entry: study.config)
+        entry_config = config_for(entry)
+        mask, reference, space = manual_inputs(
+            {"dataset": str(dataset_for(entry)), "config": entry_config}, entry)
         drawn = f"Expert-drawn mask {Path(mask).name}" if mask else "Expert-drawn mask"
         if space == "mni":
             return [f"{drawn}, provided in template space and used as is."]
@@ -115,7 +119,8 @@ def mask_method(study, entry, source):
                      f"rigidly registered to the T1w {t1} (SimpleITK, Mattes mutual information, seed "
                      f"{options.get('sampling_seed', '—')}) and the mask resampled with nearest neighbour.")
         else:
-            to_t1 = f"{drawn}, drawn on the T1w {t1}, regridded with nearest neighbour."
+            native = "diffusion-weighted image" if modality(entry_config) == "dwi" else "T1w"
+            to_t1 = f"{drawn}, drawn on the {native} {t1}, regridded with nearest neighbour."
         if not options:
             to_t1 = to_t1[:-1] + f" ({NO_RECORD})."
         return [to_t1, _registration(dirs, mni)]

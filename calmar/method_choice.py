@@ -37,8 +37,11 @@ class MethodChoice:
         self.note = w.HTML()
         for box in self.boxes.values():
             box.observe(self.apply, names="value")
-        self.widget = w.VBox([w.HTML("<b>Lesion segmentation</b> (applies to the single-subject test "
-                                     "and to batch processing):"), *self.boxes.values(), self.note])
+        scope = (" (applies to T1 participants; DWI cohorts always use OpenADS):"
+                 if config.get("ADDITIONAL_COHORTS") else
+                 " (applies to the single-subject test and to batch processing):")
+        self.widget = w.VBox([w.HTML("<b>Lesion segmentation</b>" + scope),
+                             *self.boxes.values(), self.note])
         self.apply()
 
     @property
@@ -66,7 +69,8 @@ class MethodChoice:
     def summary(self):
         if self.acute:
             return "OpenADS"
-        return ", ".join(escape(METHOD_CHOICES[m].split(" lesion")[0]) for m in self.methods)
+        summary = ", ".join(escape(METHOD_CHOICES[m].split(" lesion")[0]) for m in self.methods)
+        return summary + ("; DWI cohorts: OpenADS" if self.config.get("ADDITIONAL_COHORTS") else "")
 
     def disable(self):
         for box in self.boxes.values():

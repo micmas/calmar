@@ -92,6 +92,10 @@ class AlignmentDisplayTests(unittest.TestCase):
         self.assertCountEqual(config["SESSION_FILTER"],
                               ["ses-1440", "ses-284", "ses-252", "ses-602", "ses-222"])
         self.assertEqual(config["MAX_SUBJECTS"], 5)
+        acute = config["ADDITIONAL_COHORTS"][0]
+        self.assertEqual(acute["MODALITY"], "dwi")
+        self.assertCountEqual(acute["SUBJECT_FILTER"],
+                              ["sub-strokecase0004", "sub-strokecase0009"])
         self.assertEqual(config["BCB_MASKS"], "all")
         self.assertEqual(config["DEEPDISCO_MASK_SOURCE"], "all")
         self.assertTrue(config["DEEPDISCO_RUN_ALL"])

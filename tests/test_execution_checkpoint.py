@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import time
 import unittest
+from types import SimpleNamespace
 
 from jupyter_client import KernelManager
 
@@ -118,7 +119,8 @@ class ExecutionCheckpointTests(unittest.TestCase):
         self.assertEqual(self.reply(self.client.execute(
             f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
             "from calmar.execution import pause_before_batch\n"
-            "report_ran = False\nTEST_SUBJECT_IDX = 2"))["status"], "ok")
+            "report_ran = False\nTEST_SUBJECT_IDX = 2\n"
+            "SUBJECTS = [dict(subject=f'sub-{i}') for i in range(3)]"))["status"], "ok")
         self.assertEqual(self.execute_cell("gate = pause_before_batch()", "calmar-step-39")["status"], "ok")
         self.assertEqual(self.execute_cell("report_ran = True", "calmar-step-81")["status"], "ok")
         self.assertEqual(self.execute_cell("assert not report_ran and gate.paused", "calmar-step-23")["status"], "ok")
@@ -126,6 +128,44 @@ class ExecutionCheckpointTests(unittest.TestCase):
         self.assertEqual(self.execute_cell("report_ran = True", "calmar-step-81")["status"], "ok")
         self.assertEqual(self.execute_cell("assert report_ran and not gate.paused and INTERP_SUBJECT_IDX == 2",
                                            "calmar-step-81")["status"], "ok")
+        # A stale saved checkpoint widget may offer the same recovery command
+        # after the gate was already released. It remains a safe, idempotent
+        # route to report setup instead of raising "no paused checkpoint".
+        self.assertEqual(self.reply(self.client.execute("%calmar_continue report"))["status"], "ok")
+        self.assertEqual(self.reply(self.client.execute("assert INTERP_SUBJECT_IDX == 2"))["status"], "ok")
+
+    def test_report_setup_requires_a_discovered_cohort_and_selection(self):
+        from calmar.execution import _open_report_setup
+        with self.assertRaisesRegex(RuntimeError, "No single-subject selection"):
+            _open_report_setup(SimpleNamespace(user_ns={}))
+        with self.assertRaisesRegex(RuntimeError, "No participant cohort"):
+            _open_report_setup(SimpleNamespace(user_ns={"TEST_SUBJECT_IDX": 0}))
+
+    def test_stale_report_command_cannot_bypass_a_paused_qc_gate(self):
+        setup = (f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
+                 "from calmar.execution import pause_before_batch, pause_for_qc\n"
+                 "from pathlib import Path\n"
+                 "TEST_SUBJECT_IDX = 0\nSUBJECTS = [dict(subject='sub-fixture', session='ses-1')]\n")
+        self.assertEqual(self.reply(self.client.execute(setup))["status"], "ok")
+        self.assertEqual(self.execute_cell("batch_gate = pause_before_batch()", "calmar-step-39")["status"], "ok")
+        self.assertEqual(self.reply(self.client.execute("%calmar_continue batch"))["status"], "ok")
+        with tempfile.TemporaryDirectory() as temporary:
+            code = (f"qc_root = Path({temporary!r})\n"
+                    "qc_gate = pause_for_qc(SUBJECTS, lambda entry: qc_root)")
+            self.assertEqual(self.execute_cell(code, "calmar-step-51")["status"], "ok")
+            try:
+                # Even recreating a paused batch checkpoint upstream must not
+                # restore the old path that could close this live QC gate.
+                self.assertEqual(self.execute_cell(
+                    "batch_gate = pause_before_batch()", "calmar-step-39")["status"], "ok")
+                blocked = self.execute_cell("%calmar_continue report", "calmar-step-23")
+                self.assertEqual(blocked["status"], "error")
+                self.assertIn("Quality control is waiting", blocked["evalue"])
+                self.assertEqual(list(Path(temporary).glob("QC_decision.json")), [])
+                self.assertEqual(self.execute_cell(
+                    "assert qc_gate.paused and batch_gate.paused", "calmar-step-39")["status"], "ok")
+            finally:
+                self.execute_cell("qc_gate.close(); batch_gate.close()", "calmar-step-39")
 
     def test_generate_command_releases_the_report_form_without_the_button(self):
         setup = (f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
@@ -170,7 +210,8 @@ class ExecutionCheckpointTests(unittest.TestCase):
     def test_reporting_shortcut_preserves_qc_and_stops_at_report_selection(self):
         setup = (f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
                  "from calmar.execution import pause_before_batch, ExecutionCheckpoint\n"
-                 "from pathlib import Path\nTEST_SUBJECT_IDX = 2\n")
+                 "from pathlib import Path\nTEST_SUBJECT_IDX = 2\n"
+                 "SUBJECTS = [dict(subject=f'sub-{i}') for i in range(3)]\n")
         self.assertEqual(self.reply(self.client.execute(setup))['status'], 'ok')
         self.assertEqual(self.execute_cell('gate = pause_before_batch()', 'calmar-step-39')['status'], 'ok')
         try:
