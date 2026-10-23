@@ -67,7 +67,7 @@ def scheduled_operation(function):
 PROCESSING_STAGES = ('acquisition', 'brain', 'linda', 'synthstroke', 'registration', 'openads', 'manual', 'bcb',
                      'deepdisco')
 # Bump when saved QC evidence changes, so older receipts without it are refreshed.
-QC_VERSION = 6
+QC_VERSION = 7
 
 
 class StepResult(dict):
@@ -101,6 +101,37 @@ def request_from_namespace(namespace, single=False):
         entries = [entries[namespace.get('TEST_SUBJECT_IDX',0)]]
     return {'dataset':str(namespace['RAW_DATASET_DIR']), 'config':namespace['CONFIG'],
             'entries':entries}
+
+
+def _entry_request(request, entry):
+    """Resolve mixed-cohort metadata into an ordinary one-entry request."""
+    from .study import ENTRY_CONFIG, ENTRY_DATASET, config_for_entry, dataset_for_entry
+    clean = {key: value for key, value in entry.items() if key not in (ENTRY_CONFIG, ENTRY_DATASET)}
+    config = {key: value for key, value in config_for_entry(request['config'], entry).items()
+              if key != 'ADDITIONAL_COHORTS'}
+    return {**request, 'dataset': str(dataset_for_entry(request['dataset'], entry)),
+            'config': config, 'entries': [clean]}
+
+
+def _restore_request(result, request):
+    """Keep route metadata in notebook results after jobs used clean entries."""
+    result['request'] = {**(result.get('request') or {}), **request,
+                         'entries': list(request.get('entries', ())) }
+    return result
+
+
+def _all_not_selected(stage, payloads):
+    """Build accurate per-route skip results without invoking the scheduler."""
+    from .study import stage_selected
+    if not all(not stage_selected(stage, payload.get('config', {})) for payload in payloads):
+        return None
+    parts = [_not_selected(stage, payload) for payload in payloads]
+    if len(parts) == 1:
+        return parts[0]
+    return StepResult({'stage': stage, 'job': '',
+                       'request': {**payloads[0], 'entries': [e for p in payloads for e in p['entries']]},
+                       'results': [row for part in parts for row in part['results']],
+                       'qc_version': QC_VERSION, 'elapsed': 0})
 
 
 def _result_stamps(result):
@@ -143,9 +174,10 @@ def run_step_sync(stage, namespace, *, single=False, timeout=43200):
         result = _run_payloads(stage, [namespace['_operation_request']], project, timeout)
     else:
         request = request_from_namespace(namespace, single)
-        from .study import stage_selected
-        result = (_run_payloads(stage, _split(stage, request), project, timeout)
-                  if stage_selected(stage, request['config']) else _not_selected(stage, request))
+        payloads = _split(stage, request)
+        skipped = _all_not_selected(stage, payloads) if stage in PROCESSING_STAGES else None
+        result = skipped if skipped is not None else _run_payloads(stage, payloads, project, timeout)
+        _restore_request(result, request)
     namespace.setdefault('SCHEDULED_RESULTS', {})[stage] = result
     if stage in PROCESSING_STAGES:
         _record_timings(stage, result, namespace.setdefault('BATCH_TIMINGS', {}))
@@ -164,10 +196,10 @@ def submit_step(stage, entries, study, *, timings=None, timeout=43200):
     ``StepResult``; nothing runs in the kernel.
     """
     request = {'dataset': str(study.dataset), 'config': study.config, 'entries': list(entries)}
-    from .study import stage_selected
-    if not stage_selected(stage, study.config):
-        return _not_selected(stage, request)
-    result = _run_payloads(stage, _split(stage, request), Path(study.project), timeout)
+    payloads = _split(stage, request)
+    skipped = _all_not_selected(stage, payloads)
+    result = skipped if skipped is not None else _run_payloads(stage, payloads, Path(study.project), timeout)
+    _restore_request(result, request)
     if timings is not None:
         _record_timings(stage, result, timings, show=False)  # show_step displays the times
     return result
@@ -186,8 +218,8 @@ def _not_selected(stage, request):
 
 def _split(stage, request):
     """One payload per participant for processing stages with several entries."""
-    if stage in PROCESSING_STAGES and len(request['entries']) > 1:
-        return [{**request, 'entries': [entry]} for entry in request['entries']]
+    if stage in PROCESSING_STAGES and request['entries']:
+        return [_entry_request(request, entry) for entry in request['entries']]
     return [request]
 
 
@@ -220,7 +252,8 @@ def _identity_key(stage, payload):
         from .processing import ALGORITHM_VERSIONS
         identity['config'] = {k:v for k,v in identity['config'].items() if k not in (
             'PROJECT_DIR', 'REPORTS_SUBDIR', 'MASK_COLORS', 'TEST_SUBJECT_IDX', 'RUN_TEST',
-            'NIIVUE_URL_BASE', 'VERBOSE', 'ANALYSE_DWI', '_DWI_ANALYSIS_SELECTED')}
+            'NIIVUE_URL_BASE', 'VERBOSE', 'ANALYSE_DWI', '_DWI_ANALYSIS_SELECTED',
+            'ADDITIONAL_COHORTS')}
         identity['algorithms'] = ALGORITHM_VERSIONS
     return (stage, json.dumps(identity, default=str, sort_keys=True))
 
@@ -382,6 +415,11 @@ def _run_payloads(stage, payloads, project, timeout):
     started = time.monotonic()
     parts, pending = [None]*len(payloads), []
     for i, payload in enumerate(payloads):
+        if stage in PROCESSING_STAGES:
+            from .study import stage_selected
+            if not stage_selected(stage, payload.get('config', {})):
+                parts[i] = _not_selected(stage, payload)
+                continue
         cached = _cached(stage, payload, project)
         if cached is not None:
             # Mark the reuse on each participant: their output statuses describe
@@ -392,7 +430,7 @@ def _run_payloads(stage, payloads, project, timeout):
             job = _attach_running(stage, payload, project) or _submit(stage, payload, project)
             job['index'], job['started'] = i, time.monotonic()
             pending.append(job)
-    reused = sum(1 for p in parts if p is not None)
+    reused = sum(1 for p in parts if p is not None and p.get('reused'))
     if reused:
         print(f'{stage}: using unchanged results for {reused} participant(s).' if len(payloads) > 1
               else f'{stage}: using unchanged results.', flush=True)
@@ -428,7 +466,7 @@ def _run_payloads(stage, payloads, project, timeout):
     if len(parts) == 1:
         merged = parts[0]
     else:
-        merged = {'stage': stage, 'job': ','.join(str(p.get('job')) for p in parts),
+        merged = {'stage': stage, 'job': ','.join(str(p['job']) for p in parts if p.get('job')),
                   'request': {**payloads[0], 'entries': [e for p in payloads for e in p['entries']]},
                   'results': [r for p in parts for r in p['results']], 'qc_version': QC_VERSION}
     merged = StepResult(merged)

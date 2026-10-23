@@ -32,6 +32,8 @@ class GuidedWorkflowTests(unittest.TestCase):
         self.assertEqual(config['MAX_SUBJECTS'], 5)
         self.assertCountEqual(config['SUBJECT_FILTER'],
                               ['sub-M2002', 'sub-M2051', 'sub-M2061', 'sub-M2075', 'sub-M2103'])
+        self.assertCountEqual(config['ADDITIONAL_COHORTS'][0]['SUBJECT_FILTER'],
+                              ['sub-strokecase0004', 'sub-strokecase0009'])
 
     def test_navigation_targets_exist_once_in_each_notebook(self):
         for name in ('calmar-guided.ipynb', 'lesion-interpretation-pipeline.ipynb'):
@@ -48,6 +50,11 @@ class GuidedWorkflowTests(unittest.TestCase):
         self.assertIn('show_step(dwi_openads, DWI_STUDY', source)
         self.assertIn('viewer=False', source)
         self.assertIn('open_qc_review(', source)
+
+    def test_mixed_atlas_tables_include_each_route_source(self):
+        source = ''.join(source_cell('calmar-step-69')['source'])
+        self.assertIn('config_for_entry(CONFIG, entry)', source)
+        self.assertIn('analysis_mask_sources', source)
 
     def test_cached_hdbet_preview_loads_anatomy_and_thresholded_mask_once(self):
         from calmar import review

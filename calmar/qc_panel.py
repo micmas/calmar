@@ -435,6 +435,9 @@ class QCDisplay:
     lesion_opacity: float = 0.80
     lesion_as_boundary: bool = True
     lesion_boundary_thickness: int = 1
+    openads_opacity: float = 1.0
+    openads_boundary_thickness: int = 2
+    openads_fill_opacity: float = 0.35
     brain_mask_opacity: float = 0.30
     skull_strip_show_extracted: bool = True
     manual_overlay_opacity: float = 0.50
@@ -524,8 +527,13 @@ class QCVolumes:
         mask = self._native_mask(entry, source)
         if mask.exists():
             if self.settings.lesion_as_boundary:
-                mask = q.ensure_lesion_boundary(mask, thickness=self.settings.lesion_boundary_thickness)
-            volumes.append(self._overlay(mask, source, self.settings.lesion_opacity))
+                thickness = (self.settings.openads_boundary_thickness if source == "openads"
+                             else self.settings.lesion_boundary_thickness)
+                mask = q.ensure_lesion_boundary(mask, thickness=thickness)
+            opacity = (self.settings.openads_opacity if source == "openads" and self.settings.lesion_as_boundary
+                       else self.settings.openads_fill_opacity if source == "openads"
+                       else self.settings.lesion_opacity)
+            volumes.append(self._overlay(mask, source, opacity))
         manual = self._native_mask(entry, "manual")
         if show_manual and cm.present(manual):
             volumes.append(self._overlay(manual, "manual", self.settings.manual_overlay_opacity))
@@ -574,12 +582,16 @@ def open_qc_review(entries, study, settings=None, *, viewer, encode_volumes=lamb
         except Exception:
             pass  # its widgets were already closed
     from .study import modality
-    acute = modality(study.config) == "dwi"
+    config_for = getattr(study, "config_for", lambda entry: study.config)
+    routes = {modality(config_for(entry)) for entry in entries}
     checkpoint = execution.pause_for_qc(entries, study.qc_dir, display_controls=False)
     pool = [e for e in entries if study.qc_stages(e)]
     _ACTIVE_PANEL = QCPanel(pool, study.qc_stages, study.qc_anchor, QCVolumes(study, settings),
-                            viewer, checkpoint, encode_volumes=encode_volumes, skull_strip_repair=not acute,
-                            legend=("openads", "manual") if acute else ("hdbet", "linda", "manual", "synthstroke"),
+                            viewer, checkpoint, encode_volumes=encode_volumes, skull_strip_repair="t1" in routes,
+                            legend=(("hdbet", "linda", "synthstroke", "openads", "manual")
+                                    if len(routes) > 1 else
+                                    (("openads", "manual") if "dwi" in routes
+                                     else ("hdbet", "linda", "manual", "synthstroke"))),
                             continue_role=continue_role, continue_label=continue_label,
                             continue_prompt=continue_prompt)
     display(_ACTIVE_PANEL)

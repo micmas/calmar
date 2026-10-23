@@ -11,7 +11,7 @@ import pytest
 from calmar.method_choice import MethodChoice
 from calmar.study import (Study, analysis_mask_sources, attach_dwi_inventory, derivative_dirs, discover_dwi,
                           discover_dwi_inventory, mni_masks, modality, segmentation_methods,
-                          select_participants, stage_selected, template_source)
+                          select_cohorts, select_participants, stage_selected, template_source)
 
 KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
 DWI = {"MODALITY": "dwi"}
@@ -45,6 +45,64 @@ def test_dwi_discovery_needs_an_adc_and_sets_the_native_image(tmp_path):
     assert e["t1w"] == e["dwi"] and e["adc"].name.endswith("_adc.nii.gz") and e["modality"] == "dwi"
     chosen, _ = select_participants({"DATASET_SOURCE": "local", **DWI, "MAX_SUBJECTS": 1}, tmp_path)
     assert [c["subject"] for c in chosen] == ["sub-strokecase0001"]
+
+
+def test_mixed_cohort_keeps_each_route_in_its_own_dataset(tmp_path):
+    chronic = tmp_path / "chronic"
+    acute = isles(tmp_path / "acute")
+    touch(chronic / "sub-chronic" / "ses-late" / "anat" / "sub-chronic_ses-late_T1w.nii.gz")
+    config = {
+        "DATASET_SOURCE": "local", "LOCAL_DATASET": str(chronic), "MODALITY": "t1",
+        "SEGMENTATION_METHODS": ["synthstroke"], "SUBJECT_FILTER": ["sub-chronic"],
+        "SESSION_FILTER": ["ses-late"], "MAX_SUBJECTS": 1,
+        "ADDITIONAL_COHORTS": [{
+            "NAME": "acute", "DATASET_SOURCE": "isles2022", "LOCAL_DATASET": str(acute),
+            "MODALITY": "dwi", "SEGMENTATION_METHODS": ["openads"],
+            "SUBJECT_FILTER": ["sub-strokecase0002"], "SESSION_FILTER": ["ses-0001"],
+            "MAX_SUBJECTS": 1,
+        }],
+    }
+    entries, note = select_cohorts(config, chronic, tmp_path)
+    assert [entry["subject"] for entry in entries] == ["sub-chronic", "sub-strokecase0002"]
+    assert "acute: 1 participant" in note
+    study = Study(config, chronic, tmp_path)
+    assert modality(study.config_for(entries[0])) == "t1"
+    assert modality(study.config_for(entries[1])) == "dwi"
+    assert study.dataset_for(entries[0]) == chronic
+    assert study.dataset_for(entries[1]) == acute
+    assert study.qc_anchor(entries[1]).parent == acute / "derivatives/openads/sub-strokecase0002/ses-0001/anat"
+
+    from calmar.scheduled import _split
+    payloads = _split("brain", {"dataset": str(chronic), "config": config, "entries": entries})
+    assert [modality(payload["config"]) for payload in payloads] == ["t1", "dwi"]
+    assert [Path(payload["dataset"]) for payload in payloads] == [chronic, acute]
+    assert all("_calmar_config" not in payload["entries"][0] for payload in payloads)
+
+
+def test_optional_dwi_ignores_primary_dwi_cohort_entries(tmp_path, capsys):
+    from calmar.dwi_choice import show_dwi_choice
+    from calmar.study import ENTRY_CONFIG, ENTRY_DATASET
+    t1_dwi = touch(tmp_path / "sub-chronic" / "ses-dwi" / "dwi" / "sub-chronic_ses-dwi_dwi.nii.gz")
+    t1_adc = touch(t1_dwi.with_name("sub-chronic_ses-dwi_adc.nii.gz"))
+    acute_dwi = touch(tmp_path / "acute" / "sub-acute" / "ses-1" / "dwi" / "sub-acute_ses-1_dwi.nii.gz")
+    acute_adc = touch(acute_dwi.with_name("sub-acute_ses-1_adc.nii.gz"))
+    inventory = lambda dwi, adc: [{"subject": dwi.name.split("_ses")[0], "session": "ses-dwi",
+                                   "dwi": dwi, "adc": adc, "openads_ready": True,
+                                   "same_session": False}]
+    entries = [
+        {"subject": "sub-chronic", "session": "ses-t1", "t1w": tmp_path / "t1.nii.gz",
+         "dwi_inventory": inventory(t1_dwi, t1_adc)},
+        {"subject": "sub-acute", "session": "ses-1", "t1w": acute_dwi, "dwi": acute_dwi,
+         "adc": acute_adc, "dwi_inventory": inventory(acute_dwi, acute_adc),
+         ENTRY_DATASET: str(tmp_path / "acute"),
+         ENTRY_CONFIG: {"MODALITY": "dwi", "SEGMENTATION_METHODS": ["openads"]}},
+    ]
+    namespace = {"CONFIG": {"MODALITY": "t1", "ANALYSE_DWI": True}, "SUBJECTS": entries,
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+    show_dwi_choice(namespace)
+    assert [entry["subject"] for entry in namespace["DWI_SUBJECTS"]] == ["sub-chronic"]
+    assert [entry["subject"] for entry in namespace["SUBJECTS"]] == ["sub-chronic", "sub-acute"]
+    assert "1 participant" in capsys.readouterr().out
 
 
 def test_t1_entry_inventory_keeps_dwi_from_same_and_other_sessions(tmp_path):
@@ -222,9 +280,29 @@ def test_acute_qc_volumes_show_the_dwi_and_the_warp(tmp_path):
     volumes = QCVolumes(study, QCDisplay(lesion_as_boundary=False))
     native = volumes("openads_lesion", entry)
     assert native[0]["path"] == entry["t1w"] and native[1]["name"] == "openads"
+    assert native[1]["opacity"] == 0.35  # filled mask leaves the diffusion signal visible
     warp = volumes("openads_mni_warp", entry)
     assert warp[0]["path"] == str(d["openads"] / "Subject_in_MNI.nii.gz")
     assert [v["name"] for v in warp[1:]] == ["openads"]
+
+
+def test_acute_qc_makes_fragmented_openads_boundaries_prominent(tmp_path, monkeypatch):
+    import calmar.qc as q
+    from calmar.qc_panel import QCVolumes
+    entry, study, d = openads_outputs(tmp_path)
+    entry = dict(entry, t1w=str(touch(tmp_path / "dwi.nii.gz")))
+    calls = []
+
+    def boundary(path, *, thickness):
+        calls.append((Path(path), thickness))
+        return path
+
+    monkeypatch.setattr(q, "ensure_lesion_boundary", boundary)
+    native = QCVolumes(study)("openads_lesion", entry)
+    assert calls[0][1] == 2
+    assert native[1]["name"] == "openads" and native[1]["opacity"] == 1.0
+    warp = QCVolumes(study)("openads_mni_warp", entry)
+    assert warp[1]["opacity"] == 0.80  # MNI view remains prominent for small acute lesions
 
 
 def test_openads_rerun_keeps_qc_history_and_clears_stale_ratings(tmp_path, monkeypatch):

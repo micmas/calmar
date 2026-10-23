@@ -126,10 +126,16 @@ def _panel(ax, bg, overlays, axis, index, heat=None):
     if axis in (1, 2):  # RAS data, rotated: subject left is on the image left
         ax.text(.03, .97, "L", color="white", fontsize=8, transform=ax.transAxes, va="top")
         ax.text(.97, .97, "R", color="white", fontsize=8, transform=ax.transAxes, va="top", ha="right")
-    for data, color in overlays:
+    for overlay in overlays:
+        data, color, *style_values = overlay
+        style = style_values[0] if style_values else {}
         sl = take(data)
         if (sl > 0.5).any() and (sl <= 0.5).any():
-            ax.contour(sl, levels=[0.5], colors=[color], linewidths=1.0)
+            if style.get("fill_alpha"):
+                ax.contourf(sl, levels=[0.5, max(1.5, float(sl.max()) + 0.5)],
+                            colors=[color], alpha=style["fill_alpha"])
+            ax.contour(sl, levels=[0.5], colors=[color],
+                       linewidths=style.get("linewidth", 1.0))
     ax.set_axis_off()
 
 
@@ -308,10 +314,14 @@ def _openads(dirs, entry, t1):
     brain_path = dirs["openads"] / "DWI_brain_mask.nii.gz"
     brain = _data(_load(brain_path, anat)) if cm.present(brain_path) else None
     metrics, flags = _lesion_metrics("openads", lesion, anat, brain)
-    rows = [dict(bg=_data(anat), overlays=[(lesion, COLORS["openads"])], focus=lesion,
+    # Small acute lesions are often fragmented. A thicker outline plus a faint
+    # fill keeps those components visible on bright DWI and dark ADC without
+    # hiding the underlying diffusion signal.
+    lesion_overlay = (lesion, COLORS["openads"], {"linewidth": 2.0, "fill_alpha": 0.24})
+    rows = [dict(bg=_data(anat), overlays=[lesion_overlay], focus=lesion,
                  label="DWI (b1000) · " + legend("openads"))]
     if entry.get("adc") and cm.present(entry["adc"]):
-        rows.append(dict(bg=_data(_load(entry["adc"], anat, order=1)), overlays=[(lesion, COLORS["openads"])],
+        rows.append(dict(bg=_data(_load(entry["adc"], anat, order=1)), overlays=[lesion_overlay],
                          focus=lesion, label="ADC · the acute lesion should be dark (restricted diffusion)"))
     sub_mni, les_mni = dirs["openads"] / "Subject_in_MNI.nii.gz", dirs["openads"] / "OpenADS_in_MNI.nii.gz"
     if cm.present(sub_mni):
@@ -320,7 +330,8 @@ def _openads(dirs, entry, t1):
         lm = _data(_load(les_mni, mni)) if cm.present(les_mni) else np.zeros(mni.shape)
         metrics["openads_mni_volume_ml"] = round(float((lm > .5).sum() * voxel_ml(mni)), 2)
         flags += warp_check("openads", metrics["openads_volume_ml"], metrics["openads_mni_volume_ml"])
-        rows.append(dict(bg=_data(mni), overlays=[(tpl_mask.astype(float), COLORS["template"]), (lm, COLORS["openads"])],
+        mni_lesion_overlay = (lm, COLORS["openads"], {"linewidth": 2.0, "fill_alpha": 0.24})
+        rows.append(dict(bg=_data(mni), overlays=[(tpl_mask.astype(float), COLORS["template"]), mni_lesion_overlay],
                          focus=lm, label=f"DWI in MNI152 · {legend('template', 'openads')}"))
     return rows, metrics, flags
 

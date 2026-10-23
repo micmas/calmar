@@ -1002,16 +1002,20 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
         note(f"    . {atlas:14s} {n:3d} regions overlapped")
 
     # 2. Clinical data -> KB predictor predictions, recovery stage
+    dataset_for = getattr(study, "dataset_for", lambda entry: dataset_dir)
+    dataset_dir = dataset_for(entry)
     row = participant_row(dataset_dir, entry["subject"])
     predictors = row_to_predictors(row)
     stage_id, stage_label = rules.classify_stage((row or {}).get("wab_days"))
     # STROKE_PHASE overrides; without onset data the acute (DWI) route is acute.
     from .study import modality
-    configured = (getattr(study, "config", None) or {}).get("STROKE_PHASE")
+    config_for = getattr(study, "config_for", lambda entry: getattr(study, "config", {}) or {})
+    entry_config = config_for(entry)
+    configured = entry_config.get("STROKE_PHASE")
     if configured in ("acute", "subacute", "chronic"):
         stage_id = configured
         stage_label = {s: label for s, label, *_ in rules.RECOVERY_STAGES}[configured]
-    elif stage_id is None and modality(getattr(study, "config", None) or {}) == "dwi":
+    elif stage_id is None and modality(entry_config) == "dwi":
         stage_id, stage_label = "acute", {s: label for s, label, *_ in rules.RECOVERY_STAGES}["acute"]
     try:
         therapy_stages = rules.therapy_evidence_stages(kb_root)

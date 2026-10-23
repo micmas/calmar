@@ -17,21 +17,32 @@ from IPython.display import display
 
 from .execution import ExecutionCheckpoint
 from .notebook_navigation import NotebookNavigation
-from .study import Study, modality
+from .study import ENTRY_CONFIG, ENTRY_DATASET, Study, config_for_entry, modality
 from .widget_lifecycle import close_widget
 
 
 def openads_options(entry):
     """OpenADS-ready inventory records, same-session first then by session/path."""
-    ready = [dict(item) for item in entry.get("dwi_inventory", ())
-             if item.get("openads_ready") and item.get("adc")]
+    ready = []
+    for item in entry.get("dwi_inventory", ()):
+        if not item.get("openads_ready") or not item.get("adc"):
+            continue
+        item = dict(item)
+        for key in (ENTRY_DATASET, ENTRY_CONFIG):
+            if key in entry:
+                item[key] = entry[key]
+        ready.append(item)
     return sorted(ready, key=lambda item: (
         not bool(item.get("same_session")), item.get("session") or "", str(item.get("dwi") or "")))
 
 
 def dwi_entry(item):
     """Convert one inventory item into the processing entry OpenADS expects."""
-    return {**item, "t1w": item["dwi"], "modality": "dwi"}
+    entry = {**item, "t1w": item["dwi"], "modality": "dwi"}
+    if ENTRY_CONFIG in entry:
+        entry[ENTRY_CONFIG] = {**entry[ENTRY_CONFIG], "MODALITY": "dwi",
+                               "SEGMENTATION_METHODS": ["openads"]}
+    return entry
 
 
 def apply_dwi_selection(namespace, selected):
@@ -75,7 +86,9 @@ class DWIChoice(w.VBox):
 
     def __init__(self, namespace, shell):
         self.namespace = namespace
-        self.entries = [dict(e) for e in namespace["SUBJECTS"]]
+        config = namespace["CONFIG"]
+        self.entries = [dict(e) for e in namespace["SUBJECTS"]
+                        if modality(config_for_entry(config, e)) == "t1"]
         self.checkpoint = ExecutionCheckpoint(
             shell, "Execution is paused for the optional DWI decision. Choose analyse or continue without DWI.")
         self.message = w.HTML()
@@ -160,11 +173,13 @@ def show_dwi_choice(namespace, shell=None):
         namespace.setdefault("DWI_SUBJECTS", [])
         print("DWI is the primary imaging route; OpenADS will run in the ordinary DWI cells.")
         return None
-    available = {entry["subject"]: openads_options(entry) for entry in namespace.get("SUBJECTS", ())}
+    t1_entries = [entry for entry in namespace.get("SUBJECTS", ())
+                  if modality(config_for_entry(config, entry)) == "t1"]
+    available = {entry["subject"]: openads_options(entry) for entry in t1_entries}
     available = {subject: options for subject, options in available.items() if options}
     if not available:
         apply_dwi_selection(namespace, {})
-        has_dwi = any(entry.get("dwi_inventory") for entry in namespace.get("SUBJECTS", ()))
+        has_dwi = any(entry.get("dwi_inventory") for entry in t1_entries)
         if has_dwi:
             print("DWI was detected, but optional OpenADS analysis is unavailable: no DWI has a matching ADC map.")
         else:

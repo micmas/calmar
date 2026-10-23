@@ -361,6 +361,9 @@ def show_inputs(namespace):
     def prepare():
         try:
             values = normalize_selection({key: widget.value for key, widget in fields.items()})
+            # The guided form deliberately describes one route.  Additional
+            # cohorts belong to the full notebook's explicit configuration.
+            values["ADDITIONAL_COHORTS"] = []
             values["RANDOM_SEED"] = cfg.get("RANDOM_SEED", 42)
             for key in ("LOCAL_DATASET", "SINGLE_T1W", "MANUAL_MASK_PATH", "MANUAL_MASK_REF"):
                 values[key] = str(Path(values[key]).expanduser()) if values[key].strip() else None

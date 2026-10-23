@@ -113,6 +113,31 @@ def test_one_job_per_participant_and_per_participant_reuse(tmp_path):
         assert 'sub-b' in submissions[-1][3]
 
 
+def test_mixed_result_restores_entry_metadata_for_step_viewers(tmp_path):
+    from calmar.scheduled import submit_step
+    from calmar.study import ENTRY_CONFIG, ENTRY_DATASET, Study
+    t1 = tmp_path / 'acute' / 'sub-a_dwi.nii.gz'; t1.parent.mkdir(); t1.write_bytes(b'dwi')
+    entry = {'subject': 'sub-a', 'session': 'ses-1', 't1w': str(t1), 'dwi': str(t1),
+             ENTRY_DATASET: str(t1.parent),
+             ENTRY_CONFIG: {'MODALITY': 't1', 'SEGMENTATION_METHODS': ['linda']}}
+    submissions = []
+    with patch('calmar.scheduled.subprocess.run', side_effect=_fake_scheduler(tmp_path, submissions)), \
+            patch('IPython.display.display'):
+        result = submit_step('brain', [entry], Study({}, tmp_path, tmp_path))
+    restored = result['request']['entries'][0]
+    assert restored[ENTRY_DATASET] == str(t1.parent)
+    assert restored[ENTRY_CONFIG]['MODALITY'] == 't1'
+
+
+def test_primary_cache_key_ignores_additional_cohort_selection():
+    from calmar.scheduled import _identity_key
+    request = {'dataset': '/data/chronic', 'entries': [{'subject': 'sub-a', 't1w': '/data/a.nii.gz'}],
+               'config': {'MODALITY': 't1', 'ADDITIONAL_COHORTS': [{'SUBJECT_FILTER': ['sub-acute-a']}]}}
+    changed = {**request, 'config': {**request['config'],
+               'ADDITIONAL_COHORTS': [{'SUBJECT_FILTER': ['sub-acute-b']}]}}
+    assert _identity_key('brain', request) == _identity_key('brain', changed)
+
+
 def test_receipt_without_saved_qc_evidence_is_refreshed(tmp_path):
     from calmar.scheduled import submit_step
     from calmar.study import Study
