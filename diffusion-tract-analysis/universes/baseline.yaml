@@ -1,0 +1,7 @@
+id: baseline
+description: >
+  Conservative report-eligible gradient threshold, selected manual lesion mask,
+  experimental single-shell tractometry and strict separation from normative
+  lesion-based disconnectomes.
+decisions:
+  reconstruction: ss3t_fod_autotrack

@@ -156,7 +156,7 @@ def test_dwi_choice_close_does_not_register_the_panel_as_its_own_control(tmp_pat
     panel.navigation.request = Mock()
     panel._request(True)
     panel.navigation.request.assert_called_once()
-    assert panel.navigation.request.call_args.args[0] == "single-test-selection"
+    assert panel.navigation.request.call_args.args[0] == "dmri-choice"
     assert panel.navigation.request.call_args.kwargs["all_below"] is True
     panel.close()
 

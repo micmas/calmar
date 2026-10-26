@@ -134,9 +134,9 @@ class DWIChoice(w.VBox):
                 for entry, options, include, pair in self.rows if include.value}
 
     def _request(self, analyse):
-        # With RUN_TEST false, running below must continue into the batch cell.
-        # With RUN_TEST true, the next checkpoint still provides the pause.
-        self.navigation.request("single-test-selection", lambda: self._apply(analyse), all_below=True)
+        # Directional dMRI is a separate decision in the next cell. It decides
+        # whether to continue to the single-test selection after its own choice.
+        self.navigation.request("dmri-choice", lambda: self._apply(analyse), all_below=True)
 
     def _apply(self, analyse):
         selected = self._selection() if analyse else {}

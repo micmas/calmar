@@ -16,16 +16,19 @@ Given a BIDS-formatted dataset, CALMaR will:
 1. **Segment lesions** using an HD-BET brain mask, LINDA and/or SynthStroke (`SEGMENTATION_METHODS`), and optionally BCBToolkit
 2. **QC every mask** with an interactive dashboard, stage-aware rubric, and edit audit trail
 3. **Analyse regional overlap** against five atlases (HarvardOxford, AAL, Destrieux, Schaefer400, JHU)
-4. **Decode the lesion** against Neurosynth v7 meta-analytic language/cognitive maps
-5. **Interpret clinically** using an aphasia knowledge base: predicted impairments, WAB-driven outcome predictions, and evidence-based therapy recommendations with stage-mismatch warnings
+4. **Optionally analyse directional dMRI** with lesion-aware QSIPrep and experimental QSIRecon tractometry, kept separate from normative disconnectomes
+5. **Optionally measure background brain health** with T1-derived atrophy-sensitive volumetry and stroke-aware FLAIR white-matter-hyperintensity burden
+6. **Decode the lesion** against Neurosynth v7 meta-analytic language/cognitive maps
+7. **Interpret clinically** using an aphasia knowledge base: predicted impairments, WAB-driven outcome predictions, and evidence-based therapy recommendations with stage-mismatch warnings
 
 ---
 
 ## Requirements
 
-- [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools that the retained Slurm scripts in `src/` load with pinned `module load` versions: LINDA, HD-BET, SynthStrip, SynthStroke, BCBToolkit, DeepDisco, ANTs, FSL, FreeSurfer and OpenADS, plus all Python/R dependencies
+- [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools that the retained Slurm scripts in `src/` load with pinned `module load` versions: LINDA, HD-BET, SynthStrip, SynthStroke, BCBToolkit, DeepDisco, DeepWMH, SynthSeg, ANTs, FSL, FreeSurfer, OpenADS, QSIPrep and QSIRecon, plus all Python/R dependencies
 - A BIDS-formatted dataset (the notebook fetches `ds004884` from OpenNeuro via datalad by default)
 - Python packages listed in `requirements.txt` (usually pre-installed in Neurodesktop; Setup prints terminal installation instructions for anything missing)
+- A FreeSurfer licence at `~/license.txt` or in `FS_LICENSE` when the optional QSIRecon route is selected
 
 ---
 
@@ -41,7 +44,12 @@ Given a BIDS-formatted dataset, CALMaR will:
 | `src/python/`, `src/r/` | Python/R implementations called by the analysis scripts |
 | `tests/` | Lightweight regression tests; no imaging jobs or downloads |
 | `alignment-repair/astra.yaml` | Scientific record of the native-to-MNI correction |
+| `diffusion-tract-analysis/astra.yaml` | Planned/implemented decisions and outputs for optional direct dMRI; no findings are recorded before execution and QC |
+| `brain-health-analysis/astra.yaml` | Scientific record for optional SynthSeg volumetry and stroke-aware DeepWMH measurements |
 | `docs/REPOSITORY_LAYOUT.md` | Module map, script entry points, and migration notes |
+| `docs/DOMAIN_SEVERITY_INPUT.md` | Report-only domain impairment scale, domain set, and instrument mapping proposed before any KB schema change |
+| `docs/CT_ROUTE.md` | CT lesion-segmentation and CT-to-MNI scope, reporting cautions, and minimum validation plan; no CT dependency is installed |
+| `docs/SAMPLE_APPLICABILITY_FIELDS.md` | Approval-gated proposal for stroke-history, laterality, modality, and age applicability fields |
 | `QC_RUBRIC.md` | Stage-aware QC rating reference (acute / subacute / chronic) |
 | `aphasia-kb/` | Aphasia literature knowledge base (see `aphasia-kb/README.md`) |
 | `container/` | In-container LINDA wrapper source (baked into the Neurodesk image) |
@@ -197,13 +205,16 @@ current cohort. **Do QC** enables manual review and repair work without marking
 QC complete. **Skip QC** saves a dated choice for each participant/session;
 newly generated reports, including printed PDFs, state **QC was skipped by the
 user**. Neither button runs subsequent cells. Existing ratings remain intact.
+**Skip QC → open report** skips only QC, records that decision, and then opens
+report settings and participant selection without running the remaining batch stages.
 
 If widgets remain at **Loading widget…**, the checkpoints also support explicit
 recovery commands in a temporary code cell. Run `%calmar_continue batch` by
 itself to release the batch checkpoint, then select the first batch code cell
 under **Batch processing** and choose **Run → Run All Cells Below**. At a paused QC checkpoint,
 `%calmar_continue skip-qc` records that QC was skipped by the user before releasing
-the pause. These commands do not run subsequent cells or repair widget loading.
+the pause. `%calmar_continue skip-qc-to-report` skips QC and opens report
+selection directly. These commands do not repair widget loading.
 Remove the temporary recovery cell afterwards so it is not part of later runs.
 
 **Preview and export results** uses one atlas, mask and participant selection
@@ -310,10 +321,30 @@ LINDA registers each brain to its **ch2 (Colin27)** template (single-subject ana
 **Acute route (`MODALITY = "dwi"`).** For acute stroke imaged with diffusion MRI (e.g. ISLES-2022: `sub-*/ses-*/dwi/*_dwi.nii.gz` with `*_adc.nii.gz`), OpenADS (`openadscpu/1.0.0`, `src/analysis_43_openads.sh`) segments the lesion on the DWI and its ADC map. The T1 steps (brain extraction, LINDA, SynthStroke, registration) are skipped.
 - **Guided ISLES input:** choose **ISLES 2022 (local)** and its extracted root. The form validates compatible pairs, and the official `*_msk.nii.gz` reference masks are discovered automatically.
 - **Optional DWI beside a T1 workflow:** after participant discovery, the notebooks ask whether to analyse any OpenADS-ready DWI/ADC pair they find. A pair may come from the selected T1 session or another session and remains labelled with its own session. The choice is recorded immediately, but OpenADS runs only after the ordinary T1/manual-mask registration inspection and QC. Its registration receives a separate QC checkpoint because DWI contrast and lesion boundaries can change over time, even when the anatomical lesion is expected to be stable in chronic stroke.
-- **DWI availability is broader than the OpenADS route:** participant discovery inventories every BIDS `*_dwi.nii.gz` for each selected participant, in the selected session and in other sessions. The acquisition summary reports the series, sessions and exact sibling ADC maps. Ordinary diffusion series are not labelled OpenADS-ready and are not downloaded arbitrarily; future diffusion tools can select the appropriate DWI and sidecars explicitly.
+- **Directional dMRI is a separate opt-in route:** participant discovery inventories every BIDS `*_dwi.nii.gz` in the selected and other participant sessions. `calmar.diffusion` checks the b-values, b-vectors and JSON sidecar without fetching the NIfTI, requires a b=0 image and at least 30 distinct diffusion directions for participant reporting, and detects an opposite phase-encoding series when present. Trace-DWI/ADC cases without gradients remain eligible for OpenADS but are not treated as tensor or tractography data.
+- **Direct processing and reporting:** selected series run after lesion QC through `src/analysis_45_dmri_preproc.sh` (QSIPrep 26.1.1), `analysis_46_dmri_recon.sh` (QSIRecon 26.0.1, default `ss3t_fod_autotrack`) and `analysis_47_dmri_metrics.sh`. The selected native-T1 lesion mask is supplied to QSIPrep as a BIDS lesion ROI. QSIRecon bundle FA/MD summaries are normalized to `derivatives/calmar-dmri/<sub>/<ses>/dwi/metrics/*_desc-direct_tractometry.tsv`; uncomputed fields remain explicitly missing. Reports place these participant measurements in their own section and never numerically combine them with BCB/DeepDisco probabilities. Because stroke pathology can cause registration or tracking failure, a missing bundle is never called proof of disconnection.
 - **Template space:** OpenADS also registers the DWI to MNI152 (affine + SyN against its JHU ADC template). Its own template-space "stroke" image is not the lesion, so the native lesion is warped with those transforms (`src/analysis_44_apply_openads_registration.sh`). On 10 ISLES-2022 cases the side was preserved in all, and OpenADS agreed with the expert masks at Dice 0.75–0.91 in template space for most lesions; small lesions are often missed.
 - **Same downstream steps:** manual masks, disconnectomes, atlas overlap and the report work as in the chronic route.
 - **Recovery phase:** reports tag each knowledge-base finding with the phase it was studied in, so an acute participant sees how much of the evidence comes from chronic-stroke studies.
+
+### Optional brain-health interpretation
+
+`ANALYSE_BRAIN_HEALTH` is an independent opt-in choice. On genuine T1w entries,
+`src/analysis_48_brain_health_anatomy.sh` runs robust SynthSeg 8.2.1 parcellation and records
+brain-tissue fraction and ventricular volume. These are **atrophy-sensitive descriptive
+features**, not a diagnosis: a single scan has no age-/scanner-matched reference, and a
+stroke cavity can look like tissue loss. The report therefore also shows a cavity-adjusted
+fraction and keeps the caveat visible.
+
+When a same-session FLAIR exists, `analysis_49_brain_health_wmh.sh` runs DeepWMH 1.0.1.
+`analysis_50_brain_health_metrics.sh` registers the selected native stroke lesion to FLAIR
+with ANTs 2.6.5 and reports both the raw hyperintensity volume and the remainder after
+excluding the lesion plus `BRAIN_HEALTH_LESION_EXCLUSION_MM` (default 3 mm). The remainder
+is called a **WMH candidate burden**, not automatically small-vessel disease. This matters
+especially in acute stroke, where infarct-related oedema can extend beyond the exclusion
+zone. CALMaR does not infer a Fazekas grade from volume. Results live under
+`derivatives/calmar-brain-health/<sub>/<ses>/anat/`, remain provisional until the saved PNG
+overlay is reviewed, and appear in a separate report section.
 
 ---
 

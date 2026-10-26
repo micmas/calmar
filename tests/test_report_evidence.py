@@ -58,6 +58,24 @@ def test_wab_bands():
                                                             "within normal limits"]
 
 
+def test_measure_without_kb_entry_shows_value_provenance_qc_and_needed_entry():
+    html = measures_section(KB, {
+        "wmh_candidate_ml": {
+            "value": None, "label": "Non-stroke WMH candidate burden", "units": "mL",
+            "method": "DeepWMH 1.0.1; stroke exclusion registered with ANTs 2.6.5",
+            "qc_status": "requires_visual_review", "missing_reason": "FLAIR was unavailable",
+        },
+        "age": 60,
+        "lesion_volume": 12,
+    })
+    assert "Non-stroke WMH candidate burden" in html and ">missing<" in html
+    assert "How computed: DeepWMH 1.0.1" in html and "Units: mL" in html
+    assert "QC: requires visual review" in html and "Missing because: FLAIR was unavailable" in html
+    assert "No matching knowledge-base predictor entry" in html
+    assert "<code>wmh_candidate_ml</code>" in html
+    assert html.index("Age at stroke") < html.index("Lesion volume")
+
+
 def test_regions_resting_on_few_studies_are_marked():
     damage = pd.DataFrame([dict(region="left_insula", side="left", lesion_pct=0.1, region_pct=40.0, review=False)])
     rows = KB.location_findings(damage, min_overlap=5, min_region=10)

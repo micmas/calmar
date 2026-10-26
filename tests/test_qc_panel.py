@@ -25,8 +25,11 @@ class QCPanelTests(unittest.TestCase):
         self.entries = [dict(subject=f"sub-{i}", session="ses-1") for i in range(2)]
         self.directory = lambda e: self.root / e["subject"] / e["session"]
         self.anchor = lambda e: self.directory(e) / "Lesion_in_MNI.nii.gz"
-        shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
-        self.gate = QCCheckpoint(shell, self.entries, self.directory)
+        self.shell = SimpleNamespace(
+            input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()),
+            user_ns={"SUBJECTS": self.entries, "TEST_SUBJECT_IDX": 1},
+        )
+        self.gate = QCCheckpoint(self.shell, self.entries, self.directory)
         self.addCleanup(self.gate.close)
         self.panel = QCPanel(self.entries, lambda e: ["skull_strip", "lesion", "expert_mni_warp"],
             self.anchor, lambda *args: [], Viewer(), self.gate)
@@ -153,6 +156,22 @@ class QCPanelTests(unittest.TestCase):
         panel.continue_after_qc()
         panel.navigation.request.assert_called_once_with(
             "after-dwi-qc", panel._continue, prompt="Continue after optional DWI review?")
+        self.assertIsNone(panel.skip_to_report)
+
+    def test_skip_qc_to_report_records_skip_and_opens_report_setup(self):
+        self.panel.navigation.request = Mock(
+            side_effect=lambda _role, callback, **_kwargs: callback()
+        )
+        self.panel.skip_to_report.click()
+        self.panel.navigation.request.assert_called_once_with(
+            "report-setup", self.panel._skip_qc_to_report,
+            prompt="Skip QC for this cohort and go directly to report selection?",
+        )
+        self.assertFalse(self.gate.paused)
+        self.assertTrue(self.panel.skip_to_report.disabled)
+        self.assertEqual(self.shell.user_ns["INTERP_SUBJECT_IDX"], 1)
+        for entry in self.entries:
+            self.assertIn("QC was skipped by the user", report_qc_text(self.directory(entry), entry))
 
     def test_navigation_status_does_not_erase_qc_choice(self):
         p = self.saved_panel({0: dict(skull_strip=1)})
