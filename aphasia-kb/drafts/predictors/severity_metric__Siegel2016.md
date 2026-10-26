@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -36,6 +36,7 @@ findings:
     age_range: mean 52.8 y (range 22-77)
     handedness: 119 right handed
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: permutation tests
     effect_size: lesion r2 = 64.6%, FC r2 = 51.1%
@@ -102,4 +103,31 @@ findings:
     page: 7
     quote: However, data from the cerebellum and basal ganglia were not included in this parcellation.
     supports: limitation
+  - section: added by backfill
+    page: 3
+    quote: 'The significance of each model was determined using permutation tests: attention (n = 80,
+      lesion P = 4 × 10⁻4, FC P < 1 × 10⁻4), visual memory (n = 79, lesion P = 9 × 10⁻4, FC P < 1 × 10⁻4),
+      verbal memory (n = 79, lesion P = 1.5 × 10⁻3, FC P < 1 × 10⁻4), language (n = 98, lesion P < 1 ×
+      10⁻4, FC P < 1 × 10⁻4), left motor (n = 91, lesion P < 1 × 10⁻4, FC P = 1.1 × 10⁻3), right motor
+      (n = 91, lesion P < 1 × 10⁻4, FC P < 1 × 10⁻4), left visual (n = 53, lesion P = 4 × 10⁻4, FC P =
+      0.0104), and right visual (n = 53, lesion P = 1 × 10⁻4, FC P = 0.0902) (Fig. S5).'
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: We used lesion maps, and vectorized FC matrices to generate lesion-deficit and FC-deficit models
+      using leave-one-out ridge regression (Fig. 2).
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 98
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
