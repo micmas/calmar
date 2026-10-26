@@ -87,7 +87,10 @@ def test_report_cell_saves_report_with_provenance_and_rules(fixture):
     # Damaged regions use the min-overlap threshold (5 %): the 1 % ROI is not shown.
     assert "pars opercularis" in html and "Tiny ROI" not in html
     assert html.index("Behavioural / clinical data") < html.index("Damaged regions")
-    assert html.count("class='report-section'") == 6 and html.count(" open><summary") == 2
+    assert html.count("class='report-section'") == 6 and html.count(" open><summary") == 3
+    # Non-lesion predictors come before lesion location (pessimist review, 2026-10-26)
+    assert html.index("This participant’s measures: what the evidence says") < \
+        html.index("Lesion location: what the evidence says")
     # WAB type spelt as in ds004884 is decomposed; 400 days -> chronic.
     assert "TranscorticalMotor" in html and "flu" in html
     assert "Chronic (&gt;6 mo)" in html or "Chronic (>6 mo)" in html

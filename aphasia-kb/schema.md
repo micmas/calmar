@@ -1,4 +1,4 @@
-# Schema v2.6
+# Schema v2.7
 
 Every entry is a single markdown file with **YAML frontmatter** followed by
 **prose**. The frontmatter is the contract that `aphasia_kb.py`,
@@ -51,8 +51,21 @@ documented change to *this file* and the loader together.
 >   infers it from `time_post_onset` (`phase.py`) and marks it
 >   `phase_source: inferred`. `aphasia_kb_rag.py --phase` filters on it.
 >
-> New entries must declare `schema_version: 2.6`. The loader reads older
-> entries (v1, v2.0–v2.5) for backwards compatibility.
+> - **v2.7** adds a finding-level `lesion_mapping` block (analysis type,
+>   patients analysed, minimum lesion overlap, lesion-volume correction,
+>   multiple-comparison correction) and `sample.cohort`. Moore et al.
+>   2026 (*Hum Brain Mapp* 47:e70619) showed that these design choices
+>   strongly change what a lesion-symptom mapping study can find, so
+>   findings from different designs are not interchangeable evidence.
+>   `lesion_mapping` is required on v2.7 findings that use a
+>   lesion-mapping method; for older entries the loader infers what
+>   `method`, `statistics.threshold` and `confounders_controlled`
+>   support (`lesion_mapping.py`, reported as `lm_source: inferred`).
+>   `sample.cohort` names a reused dataset so findings from the same
+>   patients are grouped, not counted as replications.
+>
+> New entries must declare `schema_version: 2.7`. The loader reads older
+> entries (v1, v2.0–v2.6) for backwards compatibility.
 
 ## File-level fields (every entry)
 
@@ -210,6 +223,7 @@ doesn't say.
 | `sample.language`           | S     | E.g. `English monolingual`, `Spanish-English bilingual`. |
 | `sample.recruitment`        | O     | One sentence. |
 | `sample.inclusion_criteria` | O     | List or one-sentence summary. |
+| `sample.cohort`             | S (v2.7) | A named, reused dataset the patients come from, e.g. `ARC`, `PLORAS`, `OCS`, a trial ID such as `NCT01927302`. Omit for a single-study sample. Findings sharing a cohort, or linked by a "cohort overlaps with @Key" flag, form one evidence group in reports (`lesion_mapping.cohort_groups`). |
 | `sample.exclusion_criteria` | O     | List or one-sentence summary. |
 
 ### Statistics
@@ -221,6 +235,26 @@ doesn't say.
 | `statistics.effect_size` | S   | E.g. `β = 0.34`, `OR 2.1`, `r = .42`. Use `not_reported` if absent. |
 | `statistics.ci_95`     | O     | E.g. `[1.4, 3.1]`. |
 | `statistics.p_value`   | O     | E.g. `.003`. |
+
+### Lesion-mapping design (v2.7)
+
+Required on v2.7 findings whose `method` includes `LSM`, `VLSM`,
+`RLSM`, `MLPA`, `VBCM`, `lesion_network_mapping` or `disconnectome`.
+
+| Field | R/S/O | Notes |
+|-------|-------|-------|
+| `lesion_mapping.analysis` | R | `univariate` \| `multivariate` \| `region_based` \| `network` \| `not_reported`. |
+| `lesion_mapping.n_analysed` | R | int — patients in this analysis (can be fewer than `sample.n`), or `not_reported`. |
+| `lesion_mapping.min_lesion_overlap` | S | Free text, e.g. `">= 5 patients"`, `"10 % of the sample"`, or `not_reported`. |
+| `lesion_mapping.lesion_volume_correction` | R | `direct` (direct total lesion volume control, dTLVC) \| `covariate` (volume as a covariate or regressed out) \| `none` (stated as uncontrolled) \| `not_reported`. |
+| `lesion_mapping.multiple_comparisons` | R | `permutation_fwe` \| `fwe` \| `cluster_fwe` \| `fdr` \| `bonferroni` \| `uncorrected` \| `not_reported`. |
+
+Reports show the design next to each finding: FDR (and uncorrected)
+analyses lean towards sensitivity, permutation / FWE / Bonferroni
+towards specificity (Moore 2026), and a finding gets a plain caution
+when lesion volume was not controlled or not stated, when no
+correction was used or stated, or when a multivariate analysis used
+fewer than 100 patients.
 
 ### Confounders
 
@@ -344,9 +378,15 @@ findings.
 > bucket types, changed required-ness) DO require a version bump.
 
 ```
-schema_version    = 2 | 2.1 | 2.2 | 2.3 | 2.4 | 2.5 | 2.6 (current)
+schema_version    = 2 | 2.1 | 2.2 | 2.3 | 2.4 | 2.5 | 2.6 | 2.7 (current)
 phase             = hyperacute | acute | early_subacute | late_subacute
                   | chronic | mixed | longitudinal | not_reported   # v2.6
+lesion_mapping.analysis = univariate | multivariate | region_based | network
+                        | not_reported                          # v2.7
+lesion_mapping.lesion_volume_correction = direct | covariate | none
+                        | not_reported                          # v2.7
+lesion_mapping.multiple_comparisons = permutation_fwe | fwe | cluster_fwe
+                        | fdr | bonferroni | uncorrected | not_reported  # v2.7
 status            = draft | in_review | approved | rejected | legacy_v1
 supports          = claim | method | sample | statistics | confounders
                   | region_definition | limitation | imaging_details

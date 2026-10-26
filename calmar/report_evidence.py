@@ -258,6 +258,54 @@ def _finding_more(raw, flat):
             "</summary><div class='finding-more-body'>" + "".join(sections) + "</div></details>")
 
 
+_ANALYSIS_TEXT = {"univariate": "univariate", "multivariate": "multivariate",
+                  "region_based": "region-based", "network": "network-level"}
+_CORRECTION_TEXT = {"permutation_fwe": "permutation (FWE) correction", "fwe": "FWE correction",
+                    "cluster_fwe": "cluster-level FWE correction", "fdr": "FDR correction",
+                    "bonferroni": "Bonferroni correction", "uncorrected": "no multiple-comparison correction"}
+_VOLUME_TEXT = {"direct": "direct total lesion volume control", "covariate": "lesion volume as a covariate",
+                "none": "lesion volume not controlled"}
+
+
+def _design_html(row, flat):
+    """Lesion-mapping design (schema v2.7) and its cautions, one line each.
+    Moore et al. 2026: these choices change what a lesion-symptom
+    mapping study can find, so the reader sees them next to the claim."""
+    def get(key):
+        return _first(row.get(key), flat.get(key))
+    if not _present(get("lm_source")):
+        return ""
+    parts = []
+    analysis = _ANALYSIS_TEXT.get(get("lm_analysis"))
+    if analysis:
+        parts.append(f"{analysis} lesion mapping")
+    n = get("lm_n")
+    if isinstance(n, (int, float)) and not isinstance(n, bool) and n == n:
+        parts.append(f"n = {int(n)}")
+    corr = get("lm_correction")
+    if corr in _CORRECTION_TEXT:
+        lean = {"sensitivity": " (leans sensitive)", "specificity": " (leans specific)"}.get(
+            get("lm_orientation") or "", "")
+        parts.append(_CORRECTION_TEXT[corr] + lean)
+    vol = _VOLUME_TEXT.get(get("lm_volume_correction"))
+    if vol:
+        parts.append(vol)
+    html = ""
+    if parts:
+        how = (" — read from the stated threshold and confounders"
+               if get("lm_source") == "inferred" else "")
+        html += (f"<p class='finding-governance finding-design'>Design: {escape(' · '.join(parts))}"
+                 f"{escape(how)}</p>")
+    cautions = get("design_cautions")
+    if isinstance(cautions, (list, tuple)) and cautions:
+        html += ("<p class='finding-governance finding-cautions'>Design cautions: "
+                 + escape("; ".join(str(c) for c in cautions)) + "</p>")
+    cohort = get("cohort")
+    if _present(cohort):
+        html += f"<p class='finding-governance finding-cohort'>Cohort: {escape(str(cohort))}</p>"
+    return html
+
+
 def _finding_article(row, context, phase=None):
     finding_id = _first(row.get("finding_id"), row.get("id"))
     key = (str(_first(row.get("source_path"), default="")), finding_id)
@@ -286,6 +334,7 @@ def _finding_article(row, context, phase=None):
         f"<div><dt>Extraction confidence</dt><dd>{escape(str(confidence))}</dd></div>"
         + _phase_indicator(row, phase) +
         "</dl>"
+        + _design_html(row, flat)
         + (f"<p class='finding-governance'>{escape(governance)}</p>" if governance else "")
         + _citation_details(citation, context)
         + _finding_more(raw, flat)
@@ -398,7 +447,7 @@ def _symptom_findings(rows, rules):
     return rows[keep].copy()
 
 
-def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
+def location_section(kb, rules, rows, damage, coverage, settings, phase=None, lesion_volume_ml=None):
     """HTML for the lesion-location evidence.
 
     ``rows``: ``KnowledgeBase.location_findings``; ``damage``:
@@ -420,6 +469,7 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
              f"filter; <b>{len(rows)}</b> symptom findings are shown. {coverage['undamaged']} concern "
              f"regions it does not damage, and {coverage['unmappable']} concern regions no atlas can represent "
              f"(e.g. the extreme capsule).</p>")
+    intro += lesion_size_note(lesion_volume_ml, rows)
     intro += laterality_note(damage)
     if rows is None or rows.empty:
         return intro + "<p style='color:#666'><em>No knowledge-base findings concern the damaged regions.</em></p>"
@@ -452,8 +502,13 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
         count_items = _count_items(counts)
         citation_count = len({citation.strip() for citation in shown["citation"]
                               if isinstance(citation, str) and citation.strip()})
+        # v2.7: papers sharing a cohort (or flagged as overlapping) are one
+        # evidence group, so they do not count as independent replications.
+        group_col = shown["cohort_group"] if "cohort_group" in shown.columns else shown["citation"]
+        group_count = len({str(x).strip() for x in group_col.fillna(shown["citation"])
+                           if isinstance(x, str) and x.strip()}) or citation_count
         anatomy_count = g["anatomy"].nunique()
-        relevant = (citation_count >= max(1, int(getattr(settings, "min_summary_citations", 2)))
+        relevant = (group_count >= max(1, int(getattr(settings, "min_summary_citations", 2)))
                     and anatomy_count >= max(1, int(getattr(settings, "min_summary_anatomies", 2))))
         symptom_id = _html_id("symptom", target)
         card = (
@@ -466,7 +521,10 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
             f"{'s' if len(shown) != 1 else ''} · group associations, not a participant-level prediction.</p>"
             f"<p class='finding-counts'>{count_items}</p>"
             f"<p class='relevance-basis'>{citation_count} distinct citation key"
-            f"{'s' if citation_count != 1 else ''} · {anatomy_count} distinct anatomy mapping"
+            f"{'s' if citation_count != 1 else ''}"
+            + (f" from {group_count} independent cohort{'s' if group_count != 1 else ''}"
+               if group_count != citation_count else "")
+            + f" · {anatomy_count} distinct anatomy mapping"
             f"{'s' if anatomy_count != 1 else ''} (KB synonyms merged)</p>"
             f"<p class='region-preview'><strong>Region preview:</strong> {escape(preview)}</p>"
             f"{region_detail}{sources}"
@@ -481,7 +539,9 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
                    "<p><strong>Project-specific display heuristic, not an evidence grade.</strong> It is used only "
                    "to order these summaries. The calculation combines the proportion of each matched region "
                    "damaged with the stored finding strength, study evidence class, extraction confidence and "
-                   "relationship direction. Finding counts do not measure certainty, and findings may come from "
+                   "relationship direction. Lesion-mapping findings whose study did not control (or did not "
+                   "state controlling) lesion volume, or used no stated multiple-comparison correction, count "
+                   "for less. Finding counts do not measure certainty, and findings may come from "
                    "the same study or overlapping cohorts.</p></details>")
     signal_note += ("<p class='print-only display-signal-print'><strong>Display signal:</strong> a project-specific "
                     "ordering heuristic, not an evidence grade. It combines lesion overlap with stored finding "
@@ -492,11 +552,12 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
     main_summary = [item for item in summary if item[0]]
     additional_summary = [item for item in summary if not item[0]]
     criterion = ("<p class='method-note'><strong>Primary display relevance criterion:</strong> a symptom appears "
-                 f"in the main list when its matched findings span at least {min_citations} distinct citation key"
-                 f"{'s' if min_citations != 1 else ''} and {min_anatomies} distinct anatomy mapping"
+                 f"in the main list when its matched findings span at least {min_citations} independent "
+                 f"evidence group{'s' if min_citations != 1 else ''} (citation keys, with papers from the same or "
+                 f"overlapping cohorts counted once) and {min_anatomies} distinct anatomy mapping"
                  f"{'s' if min_anatomies != 1 else ''} after KB synonyms are merged. Association, inverse, null, "
                  "mixed and unclassified findings all count toward this display threshold. This is a scanning rule, "
-                 "not a certainty threshold; citation keys and anatomical links need not be statistically independent.</p>")
+                 "not a certainty threshold; cohort overlap is only as complete as the knowledge base records it.</p>")
     cards = criterion
     if main_summary:
         cards += ("<div class='outcome-cards primary-outcomes'>" +
@@ -562,6 +623,26 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None):
              f"a limited citation base means {THIN_STUDIES} citation keys or fewer and is not a certainty rating.</p>"
              "</div>" + "".join(main_blocks) + more)
     return html
+
+def lesion_size_note(volume_ml, rows=None):
+    """Lesion volume first: a larger lesion damages more regions and so
+    matches more findings, whatever its location. Huygelier et al. 2025
+    found lesion volume, more than location, separated cognitive
+    profiles two weeks after stroke."""
+    if volume_ml is None:
+        return ""
+    try:
+        volume = float(volume_ml)
+    except (TypeError, ValueError):
+        return ""
+    regions = 0 if rows is None or getattr(rows, "empty", True) else rows["region"].nunique()
+    return ("<p class='method-note lesion-size-note'><strong>Lesion size first:</strong> this lesion is "
+            f"<b>{volume:.1f} mL</b>" + (f" and the matched findings concern {regions} damaged knowledge-base "
+                                          f"region{'s' if regions != 1 else ''}" if regions else "") +
+            ". Larger lesions damage more regions and therefore match more findings, whatever their location, "
+            "and lesion volume is itself one of the stronger correlates of severity. Read the number of findings "
+            "below as partly a measure of lesion size.</p>")
+
 
 def laterality_note(damage):
     """A note when the lesion lies mainly in the right hemisphere: the knowledge

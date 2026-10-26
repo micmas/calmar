@@ -281,7 +281,7 @@ prose or markdown around it:
 }
 
 Each draft's `content` field must:
-  - Start with `---` and a YAML frontmatter block (schema_version: 2.6)
+  - Start with `---` and a YAML frontmatter block (schema_version: 2.7)
   - Contain at least one valid `findings` entry (or be empty if you're
     creating a new region/impairment/therapy/predictor entry without findings)
   - Set `status: draft`
@@ -349,6 +349,24 @@ The complete workflow is in EXTRACTION_SKILL.md (below). Key rules:
    longitudinal when the same patients were measured in two or more
    phases; not_reported when the paper does not say. Keep the paper's
    own wording in `sample.time_post_onset` as well.
+
+9. LESION-MAPPING DESIGN (schema v2.7): every finding whose method is
+   LSM, VLSM, RLSM, MLPA, VBCM, lesion_network_mapping or disconnectome
+   needs a `lesion_mapping` block, read from the Methods:
+     analysis: univariate | multivariate | region_based | network | not_reported
+     n_analysed: the number of patients in THIS analysis (int) or not_reported
+     min_lesion_overlap: e.g. ">= 5 patients" or not_reported
+     lesion_volume_correction: direct (direct total lesion volume control,
+       dTLVC) | covariate (volume entered as a covariate / regressed out) |
+       none (the paper says it was not controlled) | not_reported
+     multiple_comparisons: permutation_fwe | fwe | cluster_fwe | fdr |
+       bonferroni | uncorrected | not_reported
+   Quote the sentence that states the correction or the volume control
+   with `supports: method` or `statistics`. Never guess: use
+   not_reported when the paper does not say.
+   `sample.cohort`: when the patients come from a named, reused dataset
+   (Aphasia Recovery Cohort "ARC", "PLORAS", "OCS", a trial ID such as
+   "NCT01927302"), name it; otherwise leave it out.
 
 # Existing KB entries you can target
 
@@ -467,6 +485,7 @@ def build_prompt(skill_md: str, schema_md: str, citations_md: str,
 # ============================================================
 from model_config import resolve as resolve_model  # noqa: E402
 from phase import PHASE_VOCAB, infer_phase  # noqa: E402
+import lesion_mapping as _lesion_mapping  # noqa: E402  (v2.7)
 from ollama_client import (DEFAULT_HOST as DEFAULT_OLLAMA_HOST,  # noqa: E402
                            OllamaError, RepetitionLoop, autosize_num_ctx, chat,
                            check_model_available, is_local)
@@ -685,6 +704,11 @@ def _repair_frontmatter(content: str, created_by: str) -> tuple[str, list[str]]:
     if unfenced != fixed:
         notes.append("removed a stray indented ---")
         fixed = unfenced
+    # Same for a lone JSON brace left between findings (Lukic2017: "    },").
+    unbraced = re.sub(r"(?m)^[ \t]+[{}],?[ \t]*\n", "", fixed)
+    if unbraced != fixed:
+        notes.append("removed a stray { or }")
+        fixed = unbraced
 
     # Force-set created_by / created_on.
     today = dt.date.today().isoformat()
@@ -716,6 +740,9 @@ _LIMITATIONS_FLAG = ("author_limitations not extracted by the model — "
                      "verify against the paper's limitations paragraph")
 
 
+_LESIONMAP_FLAG = ("lesion_mapping (v2.7 design) not extracted by the model — "
+                   "filled from statistics.threshold / confounders where the text says; "
+                   "check the Methods")
 _REFSPACE_FLAG = ("imaging_details.reference_space not extracted by the model — "
                   "set to not_reported; verify against the paper")
 _NON_IMAGING = {"behavioral_only", "clinical_RCT", "meta-analysis",
@@ -797,6 +824,10 @@ def _normalize_findings(content: str, bucket: str,
                 fm[key] = canon[key]
                 changed = True
                 notes.append(f"{key} copied from the canonical {fm.get('id')} entry")
+    try:
+        v27 = float(fm.get("schema_version") or 0) >= 2.7
+    except (TypeError, ValueError):
+        v27 = False
     for f in fm.get("findings") or []:
         if not isinstance(f, dict):
             continue
@@ -819,6 +850,20 @@ def _normalize_findings(content: str, bucket: str,
             notes.append(f"{f.get('id')}: sample.phase "
                          + (f"{bad!r} → " if bad else "")
                          + f"{inferred} ({basis})")
+        if v27 and _lesion_mapping.is_lesion_mapping(f) \
+                and not isinstance(f.get("lesion_mapping"), dict):
+            # v2.7 draft without its required design block → what the
+            # finding's own text supports, flagged. Older drafts are left
+            # alone: the loader infers the design for them on read and
+            # marks it `lm_source: inferred`.
+            lm, _ = _lesion_mapping.finding_lesion_mapping(f)
+            f["lesion_mapping"] = lm
+            prov = f.setdefault("provenance", {})
+            flags = prov.setdefault("flags", [])
+            if _LESIONMAP_FLAG not in flags:
+                flags.append(_LESIONMAP_FLAG)
+            changed = True
+            notes.append(f"{f.get('id')}: lesion_mapping inferred + flag")
         rd = f.get("region_definition")
         if f.get("method") != "narrative_review" and \
                 (not isinstance(rd, dict) or not rd.get("kind")):
