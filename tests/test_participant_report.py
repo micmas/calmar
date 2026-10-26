@@ -151,6 +151,21 @@ def test_evidence_levels_choose_the_kb_statuses():
         pr.ReportSettings(evidence="everything").include
 
 
+def test_domain_levels_are_explicit_and_not_inferred():
+    levels = pr.normalise_domain_levels({"naming": "moderate", "attention": "none"})
+    assert levels["naming"] == "moderate" and levels["attention"] == "none"
+    assert levels["reading"] == "not_assessed"
+    html = pr.domain_levels_html(levels)
+    assert "Naming / word finding" in html and "Moderate" in html
+    assert "Attention" in html and "None observed" in html
+    assert "Reading" in html and "Not assessed" in html
+    assert "not inferred from WAB-AQ" in html
+    with pytest.raises(ValueError, match="Unknown impairment domains"):
+        pr.normalise_domain_levels({"made_up": "mild"})
+    with pytest.raises(ValueError, match="Invalid level"):
+        pr.normalise_domain_levels({"naming": "profound"})
+
+
 def test_standalone_report_is_responsive_accessible_and_prints_disclosures():
     html = pr.standalone_html("Fixture", "<details><summary>Evidence</summary><p>Claim</p></details>")
     assert '<meta name="viewport"' in html

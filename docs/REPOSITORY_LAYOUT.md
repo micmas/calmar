@@ -8,6 +8,13 @@ KB tools remain in `aphasia-kb/` with their existing entry points.
 ```text
 calmar/
   acquisition.py        # fetch annex NIfTI inputs and check readable headers
+  dwi_choice.py         # optional trace-DWI + ADC / OpenADS selection
+  diffusion.py          # gradient eligibility and direct-tract report contract
+  dmri_choice.py        # separate opt-in directional-dMRI session selection
+  dmri_pipeline.py      # scheduler-only QSIPrep/QSIRecon/metrics orchestration
+  brain_health.py       # structural/WMH output contract and report section
+  brain_health_choice.py # optional per-participant T1/FLAIR selection
+  brain_health_pipeline.py # scheduler-only SynthSeg/DeepWMH/ANTs orchestration
   execution.py          # explicit checkpoint lock and manual continuation
   qc_decisions.py       # persistent QC choices and report notices
   qc.py                 # ratings, mask edits, registration, tool dispatch
@@ -25,12 +32,14 @@ calmar/
   viewer_transport.py   # deferred image transport and compact widget state
   synthetic.py          # benchmark phantom generation
 src/
-  analysis_*.sh         # retained analytical entry points
+  analysis_*.sh         # retained analytical entry points, including dMRI 45–47 and brain health 48–50
   python/               # implementations called by those entry points
   r/                    # LINDA API and transform helpers
 tests/
 container/              # in-container wrapper source and build instructions
 aphasia-kb/             # knowledge base, extraction, review, and interpretation
+diffusion-tract-analysis/ # ASTRA specification for the optional direct-dMRI route
+brain-health-analysis/  # ASTRA specification for optional atrophy/WMH features
 ```
 
 ## Updated imports and entry points

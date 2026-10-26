@@ -79,6 +79,9 @@ class QCPanel(w.VBox):
         self.use_existing = w.Button(description="Use existing QC", button_style="success",
                                      layout=w.Layout(width="170px"))
         self.redo = w.Button(description="Redo QC", button_style="primary")
+        self.skip_to_report = (w.Button(description="Skip QC → open report", button_style="warning",
+                                        layout=w.Layout(width="220px"))
+                               if continue_role == "after-qc" else None)
         saved = self._saved_records()
         self._show_existing_summary(saved)
         has_existing = any(self._has_saved_qc(i, record) for i, record in saved.items())
@@ -88,11 +91,14 @@ class QCPanel(w.VBox):
                 "Use existing QC continues directly to the next processing step. Skip QC remains available.")
         self.use_existing.on_click(lambda _: self.reuse_saved())
         self.redo.on_click(lambda _: self.redo_qc())
+        if self.skip_to_report is not None:
+            self.skip_to_report.on_click(lambda _: self.skip_qc_to_report())
         checkpoint.skip_qc.on_click(self._sync_existing_buttons)
-        choice_buttons = w.HBox(
-            [self.use_existing, self.redo, checkpoint.skip_qc] if has_existing
-            else [checkpoint.do_qc, checkpoint.skip_qc],
-                                layout=w.Layout(flex_flow="row wrap"))
+        choice_controls = ([self.use_existing, self.redo, checkpoint.skip_qc] if has_existing
+                           else [checkpoint.do_qc, checkpoint.skip_qc])
+        if self.skip_to_report is not None:
+            choice_controls.append(self.skip_to_report)
+        choice_buttons = w.HBox(choice_controls, layout=w.Layout(flex_flow="row wrap"))
         # The skull-strip repair (HD-BET + LINDA) belongs to the T1 route only.
         next_steps = w.HBox([self.repair_button, self.continue_button] if skull_strip_repair
                             else [self.continue_button],
@@ -191,6 +197,30 @@ class QCPanel(w.VBox):
         return self.navigation.request(
             self.continue_role, self._continue,
             prompt=(self.continue_prompt if confirm else ""))
+
+    def skip_qc_to_report(self):
+        """Record an explicit QC skip and open report selection in one action."""
+        if self.inactive or self.skip_to_report is None:
+            return False
+        return self.navigation.request(
+            "report-setup", self._skip_qc_to_report,
+            prompt="Skip QC for this cohort and go directly to report selection?")
+
+    def _skip_qc_to_report(self):
+        if self.inactive or not self.checkpoint.choose("skipped"):
+            return False
+        try:
+            execution._open_report_after_qc(self.checkpoint.shell)
+        except RuntimeError as error:
+            self.message.value = (
+                "QC was skipped and saved, but reporting could not be opened: " + escape(str(error))
+            )
+            return False
+        self.skip_to_report.disabled = True
+        self.message.value = (
+            "QC was skipped and saved. Opening report settings and participant selection."
+        )
+        return True
 
     def redo_qc(self):
         if self.inactive or not self.checkpoint.choose("review_requested"):
@@ -394,7 +424,8 @@ class QCPanel(w.VBox):
         self.inactive = True
         for control in [self.subject, self.stage, *self.rating_buttons.values(), self.issues, self.notes, self.reviewer, self.repair,
                         self.save, self.save_next, self.repair_button, self.continue_button,
-                        self.use_existing, self.redo]:
+                        self.use_existing, self.redo,
+                        *([self.skip_to_report] if self.skip_to_report else [])]:
             control.disabled = True
         self.message.value = "This QC panel was replaced. Use the newest QC panel."
 

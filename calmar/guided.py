@@ -142,7 +142,10 @@ async def run_cells(numbers, namespace, *, stop_at=None):
     """
     cells = notebook_cells()
     shell = get_ipython()
-    stop_at = cell_id(stop_at) if stop_at is not None else None
+    if isinstance(stop_at, (list, tuple, set)):
+        stop_at = {cell_id(value) for value in stop_at}
+    else:
+        stop_at = {cell_id(stop_at)} if stop_at is not None else set()
     for number in numbers:
         cell = source_cell(number, cells)
         number = cell["id"]
@@ -160,7 +163,7 @@ async def run_cells(numbers, namespace, *, stop_at=None):
             if inspect.isawaitable(result):
                 await result
         except Exception as error:
-            if number == stop_at and isinstance(error, namespace.get("StopExecution", type(None))):
+            if number in stop_at and isinstance(error, namespace.get("StopExecution", type(None))):
                 return
             raise
         finally:

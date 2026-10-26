@@ -41,7 +41,7 @@ class GuidedWorkflowTests(unittest.TestCase):
             roles = [role for c in notebook['cells'] for role in {
                 c.get('metadata', {}).get('calmar', {}).get('role'),
                 *c.get('metadata', {}).get('calmar', {}).get('roles', [])}]
-            for role in ('batch-start', 'skull-repair', 'after-qc', 'after-dwi-qc', 'report-prepare',
+            for role in ('batch-start', 'skull-repair', 'after-qc', 'after-dwi-qc', 'dmri-choice', 'brain-health-choice', 'report-prepare',
                          'report-setup', 'single-test-selection', 'single-test-start'):
                 self.assertEqual(roles.count(role), 1, (name, role))
 
