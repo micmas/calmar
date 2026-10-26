@@ -4,4 +4,5 @@ description: >
   experimental single-shell tractometry and strict separation from normative
   lesion-based disconnectomes.
 decisions:
+  motion_eddy_correction: tortoise
   reconstruction: ss3t_fod_autotrack

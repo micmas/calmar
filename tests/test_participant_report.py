@@ -13,7 +13,7 @@ from IPython.display import HTML
 from calmar.guided import source_cell
 from calmar import participant_report as pr
 
-KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
+KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
 
 
 def _mask(path, box):
@@ -91,8 +91,11 @@ def test_report_cell_saves_report_with_provenance_and_rules(fixture):
     # Non-lesion predictors come before lesion location (pessimist review, 2026-10-26)
     assert html.index("This participant’s measures: what the evidence says") < \
         html.index("Lesion location: what the evidence says")
-    # WAB type spelt as in ds004884 is decomposed; 400 days -> chronic.
-    assert "TranscorticalMotor" in html and "flu" in html
+    # The WAB type label is hidden; its Kertesz profile seeds the three domains.
+    assert "TranscorticalMotor" not in html and "WAB type</b>" not in html
+    assert "WAB/WAB-R profile" in html and "− impaired → mild profile floor" in html
+    assert "Speech fluency" in html and "Mild" in html
+    assert "TranscorticalMotor" not in "\n".join(report.messages)
     assert "Chronic (&gt;6 mo)" in html or "Chronic (>6 mo)" in html
     titles = [report.panel.tabs.children[0].get_title(i) for i in range(len(report.panel.tabs.children[0].children))]
     assert titles[0] == "Provenance and caveats" and "Generation details" in titles
@@ -164,6 +167,26 @@ def test_domain_levels_are_explicit_and_not_inferred():
         pr.normalise_domain_levels({"made_up": "mild"})
     with pytest.raises(ValueError, match="Invalid level"):
         pr.normalise_domain_levels({"naming": "profound"})
+
+
+def test_wab_type_profile_seeds_only_its_three_axes():
+    _, rules = pr._kb_modules(KB_ROOT)
+    levels, sources = pr.wab_profile_domain_levels(rules, "Broca")
+    assert levels["fluency"] == "mild"
+    assert levels["comprehension"] == "not_assessed"
+    assert levels["repetition"] == "mild"
+    assert levels["naming"] == "not_assessed"
+    assert sources == {"fluency": "wab_profile_impaired",
+                       "comprehension": "wab_profile_preserved",
+                       "repetition": "wab_profile_impaired"}
+    html = pr.domain_levels_html(levels, sources)
+    assert "− impaired → mild profile floor" in html
+    assert "+ relatively preserved → severity not assigned" in html
+    missing, missing_sources = pr.wab_profile_domain_levels(rules, None)
+    assert set(missing.values()) == {"not_assessed"} and missing_sources == {}
+
+    global_levels, _ = pr.wab_profile_domain_levels(rules, "Global")
+    assert {global_levels[key] for key in ("fluency", "comprehension", "repetition")} == {"mild"}
 
 
 def test_standalone_report_is_responsive_accessible_and_prints_disclosures():

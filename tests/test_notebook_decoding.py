@@ -13,7 +13,7 @@ def _namespace(tmp_path, report, message, **extra):
     return dict(INTERP_RUN_DECODING=True, _CALMAR_SETUP_READY=True,
                 PARTICIPANT_REPORT=report, SUBJECTS=[dict(subject='sub-fixture', session=None)],
                 INTERP_SUBJECT_IDX=0, INTERP_MASK_SOURCE='manual',
-                PROJECT_DIR=tmp_path, RAW_DATASET_DIR=tmp_path/'data', APHASIA_KB_ROOT=tmp_path/'aphasia-kb',
+                PROJECT_DIR=tmp_path, RAW_DATASET_DIR=tmp_path/'data', APHASIA_KB_ROOT=tmp_path/'stroke-aphasia-kb',
                 _report_inputs=SimpleNamespace(message=message), **extra)
 
 
@@ -32,7 +32,7 @@ def test_setup_flag_allows_decode_and_result_status_is_truthful(tmp_path, succes
         exec(''.join(source_cell(85)['source']), ns)
     # Decoding runs in Slurm (via run_reporting_task), never in the kernel.
     submit.assert_called_once_with({'PROJECT_DIR': tmp_path}, 'decode', mask=str(mask),
-                                   kb_root=str(tmp_path/'aphasia-kb'), dataset=str(tmp_path/'data'))
+                                   kb_root=str(tmp_path/'stroke-aphasia-kb'), dataset=str(tmp_path/'data'))
     html = panel.add_decoding.call_args.args[0]
     assert 'Neurosynth' in html
     assert ('incomplete' in message.value) is (not success)

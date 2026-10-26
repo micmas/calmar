@@ -21,7 +21,7 @@ TOOLS = {
     "bcb": "BCBToolkit disconnectome (bcbtoolkit/0.0.0, run_disco.sh)",
     "deepdisco": "DeepDisco (deepdisco/20251008)",
     "atlas": "nilearn world-coordinate resampling",
-    "report": "CALMaR + aphasia-kb",
+    "report": "CALMaR + stroke-aphasia-kb",
 }
 
 def methods_table(config):
@@ -60,6 +60,9 @@ def methods_table(config):
         registration_meaning = "Registers the brain-extracted T1w and every T1-route mask to FSL MNI152NLin6Asym."
     if optional_dwi:
         registration_meaning += " The optional OpenADS mask uses its own DWI affine + SyN registration and QC."
+    hmc = {"tortoise": "TORTOISE DIFFPREP", "eddy": "FSL eddy",
+           "shoreline": "SHORELine"}.get(c("DMRI_HMC_METHOD", "tortoise"),
+                                           c("DMRI_HMC_METHOD", "tortoise"))
     rows = [
         ("Input discovery and acquisition", TOOLS["acquisition"], "Used",
          "Selected T1w or DWI+ADC content; inventories all participant DWI sessions."),
@@ -87,7 +90,8 @@ def methods_table(config):
          "Segments acute ischaemic lesions; another participant session is allowed and remains separately labelled/QC'd."),
         ("Direct diffusion preprocessing", TOOLS["dmri_preproc"],
          "Selected (opt-in)" if direct_dmri else "Optional; gradient-bearing 4-D dMRI only",
-         f"lesion mask={c('DMRI_MASK_SOURCE', 'manual')}; output resolution={c('DMRI_OUTPUT_RESOLUTION', 2.0)} mm; eddy HMC",
+         f"lesion mask={c('DMRI_MASK_SOURCE', 'manual')}; output resolution={c('DMRI_OUTPUT_RESOLUTION', 2.0)} mm; "
+         f"{hmc} motion/eddy correction",
          "Lesion-aware preprocessing, gradient rotation, motion/eddy correction and distortion correction when metadata permit."),
         ("Direct tract reconstruction", TOOLS["dmri_recon"],
          "Selected (experimental)" if direct_dmri else "Optional; not run by default",

@@ -13,7 +13,7 @@ from calmar.study import (Study, analysis_mask_sources, attach_dwi_inventory, de
                           discover_dwi_inventory, mni_masks, modality, segmentation_methods,
                           select_cohorts, select_participants, stage_selected, template_source)
 
-KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
+KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
 DWI = {"MODALITY": "dwi"}
 
 
