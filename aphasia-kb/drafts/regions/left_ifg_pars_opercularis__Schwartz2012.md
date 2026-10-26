@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_ifg_pars_opercularis
 name: Left IFG Pars Opercularis (Broca's area, dorsal stream hub)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     age_range: mean 58 years (range 26-79 years)
     handedness: premorbid right handedness
     language: English as primary language
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.01
     effect_size: t = 4.46
@@ -104,4 +105,22 @@ findings:
       ''Even in the presence of good regional power, the power to detect differences between two regions
       may be low when the two regions are positively correlated'''
     supports: limitation
+  - section: added by backfill
+    page: 5
+    quote: a t-test was performed at each voxel comparing scores on the dependent variable between patients
+      with and without lesions in that voxel.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 106
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

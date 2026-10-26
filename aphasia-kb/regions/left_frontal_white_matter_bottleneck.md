@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_frontal_white_matter_bottleneck
 name: Left Frontal White Matter Bottleneck
 kind: tract
@@ -73,6 +73,8 @@ findings:
       CT or MRI-confirmed left hemisphere cortical lesion; completed all 17 tests.
     exclusion_criteria: left-handed premorbidly; right hemisphere or bilateral lesions;
       did not complete full battery.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'FDR q = 0.1 (relaxed threshold; note: all other factors used q = 0.05);
       isolated clusters ≤50 voxels removed'
@@ -229,6 +231,33 @@ findings:
       and anatomically heterogeneous inferior and middle portions of the frontal lobe.
 
       '
+  - section: added by backfill
+    page: 7
+    quote: VLSM analysis was performed by running a simple regression analysis at
+      each voxel, with the lesion status as the independent variable and the factor
+      score as the dependent variable.
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: Only voxels lesioned in at least 10 participants were included in analysis
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: We call this approach ‘direct total lesion volume control’.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 99
+    min_lesion_overlap: 10 participants
+    lesion_volume_correction: direct
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: semantic_recognition_multimodal
   target_kind: impairment
@@ -259,6 +288,8 @@ findings:
       CT or MRI-confirmed left hemisphere cortical lesion; completed all 17 tests.
     exclusion_criteria: left-handed premorbidly; right hemisphere or bilateral lesions;
       did not complete full battery.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'FDR q = 0.1 (relaxed threshold; note: all other factors used q = 0.05);
       isolated clusters ≤50 voxels removed'
@@ -415,6 +446,33 @@ findings:
       and anatomically heterogeneous inferior and middle portions of the frontal lobe.
 
       '
+  - section: added by backfill
+    page: 7
+    quote: VLSM analysis was performed by running a simple regression analysis at
+      each voxel, with the lesion status as the independent variable and the factor
+      score as the dependent variable.
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: Only voxels lesioned in at least 10 participants were included in analysis
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: We call this approach ‘direct total lesion volume control’.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 99
+    min_lesion_overlap: 10 participants
+    lesion_volume_correction: direct
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f3
   target: fluency
   target_kind: impairment
@@ -435,6 +493,7 @@ findings:
     age_range: mean 53 (SD = 15; range = 23-90)
     handedness: mean 0.85 (SD = 0.43)
     language: English
+    cohort: not_reported
   statistics:
     threshold: Bonferroni-Holm correction to control the FWE at 0.05
     effect_size: not_reported
@@ -493,11 +552,44 @@ findings:
     quote: A limitation of the current study is that the bottleneck ROIs were defined
       using thresholded tract probability maps.
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: Data were collected from 43 patients with chronic left hemispheric stroke
+      participating in different studies by our laboratory.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Thus, we ﬁt a 4-predictor model to each task that included (1) lesion status
+      for the posterior bottleneck, (2) lesion status for the anterior bottleneck,
+      (3) the interaction of the lesion status terms (i.e. to account for the possibility
+      that the effect of damage to both regions was not additive), and (4) total lesion
+      volume as predictors.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: These models were considered signiﬁcant if the p-value for the F-test against
+      the intercept-only model survived Bonferroni-Holm correction to control the
+      FWE at 0.05 across all three (i.e. one for each task) models (Aickin and Gensler,
+      1996).
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 43
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: bonferroni
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 source: draft
 last_reviewed: '2026-10-22'
 reviewer: claude-cowork

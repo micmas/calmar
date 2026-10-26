@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: lesion_volume
 name: Total lesion volume
 kind: predictor
@@ -33,6 +33,7 @@ findings:
     age_range: 20 to 90 years (mean = 61.27; SD = 12.21)
     handedness: 242 right handed
     language: English as a first language
+    cohort: PLORAS
   statistics:
     threshold: p < 0.001
     effect_size: R2 = 0.35
@@ -84,4 +85,33 @@ findings:
     quote: One criticism of the system described here is that it pools scans taken both soon after stroke
       (within the first month), and many years later (30 years or more).
     supports: limitation
+  - section: added by backfill
+    page: not_reported
+    quote: In the cross-sectional configuration, we ran 270 of these assessments – one for each patient
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Our next experiment sought to begin to redress that imbalance by including lesion volume (expressed
+      as the total number of lesioned voxels) – information that has been recognised as predictive of
+      aphasics stroke patients' initial symptoms and eventual prognosis
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: Our outcome of interest was the recovery of speech production over time, as this behaviour
+      is well characterised in the patient data we already have available in our PLORAS database (Price
+      et al., 2010a).
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 270
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

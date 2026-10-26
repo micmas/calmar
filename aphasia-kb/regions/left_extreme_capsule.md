@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_extreme_capsule
 name: Left Extreme Capsule (Ventral Language Pathway)
 kind: tract
@@ -58,6 +58,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers with no neurological history.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.05 corrected for multiple comparisons (fMRI comprehension contrast,
       t > 5.2); PIBI > 0.0148 (DTI)
@@ -217,6 +219,13 @@ findings:
 
       '
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: auditory_comprehension
   target_kind: impairment
@@ -243,6 +252,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.05 corrected (fMRI; t > 5.2); PIBI > 0.0148 (DTI)
     cluster_extent: null
@@ -354,6 +365,13 @@ findings:
 
       '
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: left_posterior_middle_temporal_gyrus
   target_kind: region
@@ -382,6 +400,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers with no neurological history.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.05 corrected for multiple comparisons (fMRI comprehension contrast,
       t > 5.2); PIBI > 0.0148 (DTI)
@@ -541,6 +561,13 @@ findings:
 
       '
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f4
   target: auditory_comprehension
   target_kind: impairment
@@ -567,6 +594,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.05 corrected (fMRI; t > 5.2); PIBI > 0.0148 (DTI)
     cluster_extent: null
@@ -678,6 +707,13 @@ findings:
 
       '
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 notes: 'This is a healthy-volunteer fMRI + DTI study. The extreme capsule finding
   is correlational
 

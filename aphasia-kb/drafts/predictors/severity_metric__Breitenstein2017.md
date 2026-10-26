@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -32,6 +32,7 @@ findings:
     age_range: 18-70 years
     handedness: not_reported
     language: German
+    cohort: FCET2EC
   statistics:
     threshold: p < 0.0001
     effect_size: not_reported
@@ -72,6 +73,19 @@ findings:
     quote: Second, the study design did not address whether a critical time window exists after stroke
       for maximum treatment effects to be achieved.
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: The aims of our multicentre randomised controlled trial, From Controlled Experimental Trial
+      2 Everyday Communication (FCET2EC), were to assess the effectiveness of 3 weeks or more of intensive
+      (≥10 h per week) speech and language therapy in chronic aphasia after stroke compared with 3 weeks
+      of treatment deferral in terms of improved everyday verbal communication.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 created_by: agent:ollama-extract-cli/gemma4:31b-it-q8_0
 created_on: 2026-10-22
 ---

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_posterior_planum_temporale_spt
 name: Left Posterior Planum Temporale (Area Spt)
 kind: classical
@@ -29,6 +29,7 @@ findings:
     handedness: all right-handed except one left-handed and one ambidextrous
     language: Native English speakers
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: not_reported
     cluster_extent: null
@@ -88,6 +89,24 @@ findings:
       of 33%... reﬂects to some extent the neuroanatomical var-iability of the posterior portion of the
       planum temporale
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: All 14 patients’ reconstructed lesions were then overlaid to reveal regions of maximal lesion
+      overlap.
+    supports: method
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 14
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: conduction_aphasia
   target_kind: impairment
@@ -108,6 +127,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: permutation-based corrected p < .05; conjunction threshold 22%
     cluster_extent: 70
@@ -171,4 +191,10 @@ findings:
     quote: The peak percentage of overlap in Spt was what might appear to be a relatively modest value
       of 33%
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

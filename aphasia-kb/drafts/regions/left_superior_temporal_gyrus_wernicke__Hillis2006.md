@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_superior_temporal_gyrus_wernicke
 name: Left Superior Temporal Gyrus (Wernicke's Area and Planum Temporale)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     age_range: mean 64.7 (SD 10.7) years
     handedness: right handed
     language: English
+    cohort: not_reported
   statistics:
     threshold: p < 0.05 after Bonferroni correction
     effect_size: beta = 0.20
@@ -106,4 +107,26 @@ findings:
     quote: Although this threshold of hypoperfusion does not necessarily correspond to tissue that is
       at risk for progressing to infarction in the absence of restored blood flow...
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: Areas of reperfusion that contributed to improvement in oral naming of pictures from day 1
+      to days 3–5 were identified using stepwise linear regression.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The current study was restricted to a subset of 87 patients who had impaired naming
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 87
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

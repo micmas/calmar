@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_superior_temporal_gyrus_wernickes
 name: Left Superior Temporal Gyrus (Wernicke's region, mid-posterior)
 kind: classical
@@ -45,6 +45,8 @@ findings:
       BDAE Short Form errors.
     exclusion_criteria: Significant history of previous neurological disorder including
       previous stroke (TIAs excepted).
+    phase: early_subacute
+    cohort: not_reported
   statistics:
     threshold: not_reported (lesion overlap map only; no voxel-wise statistical threshold)
     cluster_extent: null
@@ -149,6 +151,34 @@ findings:
     quote: The current study recruited 12 participants with WA. This sample size reflected
       an a priori power calculation; however, this calculation was conducted on chronic
       WA data, and the sample remains small.
+  - section: added by backfill
+    page: 3
+    quote: The lesion overlap map is displayed in Figure 1.
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: Overall, the group displayed a relatively homogeneous lesion distribution,
+      with high overlap in the white matter of the left superior temporal lobe.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: Participants with WA were recruited in the acute-subacute phase (0-2 months
+      postonset [MPO]).
+    supports: sample
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 12
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: auditory_comprehension
   target_kind: impairment
@@ -173,6 +203,8 @@ findings:
     recruitment: NHS referral from south of England in-patient services.
     inclusion_criteria: WA diagnosis criteria; monolingual English.
     exclusion_criteria: Previous neurological disorder.
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: p < .001
     cluster_extent: null
@@ -221,6 +253,18 @@ findings:
     supports: limitation
     quote: Although all individuals in this study had residual comprehension impairments
       at 9 MPO, improvements in language comprehension occurred for all but 1 participant.
+  - section: added by backfill
+    page: 2
+    quote: Longitudinal neuropsychological assessments were undertaken 3 times at
+      2.5, 5, and 9 MPO.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: wernickes_aphasia
   target_kind: impairment
@@ -241,6 +285,7 @@ findings:
     handedness: all right-handed
     language: native German
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR p < 0.05
     effect_size: not_reported
@@ -279,11 +324,34 @@ findings:
     quote: the fact that we investigated chronic aphasia may favour larger lesions
       to contribute to the overall results and may sharpen the distinction
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: To grant reasonable levels of statistical power, statistical analyses were
+      restricted to those voxels where at least 10% of the patients were lesioned.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The resulting maps were corrected for multiple comparisons using a 1% false
+      discovery rate (FDR corrected P 5 0.01) for the AAT subtests.
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 102
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 source: curated
 last_reviewed: '2026-10-22'
 notes: "This draft captures two findings from Robson 2019 anchored to the left mid-posterior\n\

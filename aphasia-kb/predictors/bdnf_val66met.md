@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: bdnf_val66met
 name: BDNF Val66Met genotype (rs6265)
 kind: predictor
@@ -42,6 +42,8 @@ findings:
       74 enrolled.
     inclusion_criteria: Chronic stroke-induced aphasia; PNT baseline <140/175.
     exclusion_criteria: not_reported
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p = 0.03
     cluster_extent: null
@@ -124,6 +126,18 @@ findings:
     supports: limitation
     quote: we did not compare levels of depression between participants with typical
       and atypical BDNF genotype
+  - section: added by backfill
+    page: 1
+    quote: Seventy-four individuals with chronic stroke-induced aphasia completed
+      15 language therapy sessions
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: severity_metric
   target_kind: predictor
@@ -153,6 +167,8 @@ findings:
       below aphasia diagnostic cutoff (≥93.7 excluded).
     exclusion_criteria: WAB-AQ ≥93.7 (aphasia diagnosis threshold); Met66Met homozygote
       excluded (insufficient n for analysis).
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001 (main effect of BDNF genotype on WAB-AQ in linear regression)
     cluster_extent: null
@@ -237,6 +253,18 @@ findings:
     supports: limitation
     quote: A potential limitation of this study is the modest sample size used to
       examine the behavioral effects of a genetic polymorphism.
+  - section: added by backfill
+    page: 4
+    quote: Participants were 19 subjects with a single left-hemisphere ischemic stroke
+      that occurred >6 months prior to participation.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: severity_metric
   target_kind: predictor
@@ -261,6 +289,8 @@ findings:
     recruitment: University of Pennsylvania Institutional Review Board approved study.
     inclusion_criteria: Single left-hemisphere ischemic stroke >6 months prior.
     exclusion_criteria: WAB-AQ ≥93.7; Met66Met homozygote excluded.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001
     cluster_extent: null
@@ -325,6 +355,18 @@ findings:
     page: 377
     supports: limitation
     quote: Future work may explore the utility of these indicators in
+  - section: added by backfill
+    page: 4
+    quote: Participants were 19 subjects with a single left-hemisphere ischemic stroke
+      that occurred >6 months prior to participation.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f4
   target: severity_metric
   target_kind: predictor
@@ -349,6 +391,8 @@ findings:
     recruitment: University of Pennsylvania Institutional Review Board approved study.
     inclusion_criteria: Single left-hemisphere ischemic stroke >6 months prior.
     exclusion_criteria: WAB-AQ ≥93.7; Met66Met homozygote excluded.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001
     cluster_extent: null
@@ -416,6 +460,18 @@ findings:
       which biomarkers of neuroplasticity have the strongest
 
       predictive power of long-term functional outcomes.'
+  - section: added by backfill
+    page: 4
+    quote: Participants were 19 subjects with a single left-hemisphere ischemic stroke
+      that occurred >6 months prior to participation.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f5
   target: severity_metric
   target_kind: predictor
@@ -445,6 +501,8 @@ findings:
       below aphasia diagnostic cutoff (≥93.7 excluded).
     exclusion_criteria: WAB-AQ ≥93.7 (aphasia diagnosis threshold); Met66Met homozygote
       excluded (insufficient n for analysis).
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001 (main effect of BDNF genotype on WAB-AQ in linear regression)
     cluster_extent: null
@@ -529,6 +587,18 @@ findings:
     supports: limitation
     quote: A potential limitation of this study is the modest sample size used to
       examine the behavioral effects of a genetic polymorphism.
+  - section: added by backfill
+    page: 4
+    quote: Participants were 19 subjects with a single left-hemisphere ischemic stroke
+      that occurred >6 months prior to participation.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f6
   target: severity_metric
   target_kind: predictor
@@ -553,6 +623,8 @@ findings:
     recruitment: University of Pennsylvania Institutional Review Board approved study.
     inclusion_criteria: Single left-hemisphere ischemic stroke >6 months prior.
     exclusion_criteria: WAB-AQ ≥93.7; Met66Met homozygote excluded.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001
     cluster_extent: null
@@ -617,6 +689,18 @@ findings:
     page: 377
     supports: limitation
     quote: Future work may explore the utility of these indicators in
+  - section: added by backfill
+    page: 4
+    quote: Participants were 19 subjects with a single left-hemisphere ischemic stroke
+      that occurred >6 months prior to participation.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f7
   target: severity_metric
   target_kind: predictor
@@ -641,6 +725,8 @@ findings:
     recruitment: University of Pennsylvania Institutional Review Board approved study.
     inclusion_criteria: Single left-hemisphere ischemic stroke >6 months prior.
     exclusion_criteria: WAB-AQ ≥93.7; Met66Met homozygote excluded.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001
     cluster_extent: null
@@ -708,6 +794,18 @@ findings:
       which biomarkers of neuroplasticity have the strongest
 
       predictive power of long-term functional outcomes.'
+  - section: added by backfill
+    page: 4
+    quote: Participants were 19 subjects with a single left-hemisphere ischemic stroke
+      that occurred >6 months prior to participation.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 source: curated
 last_reviewed: '2026-05-06'
 notes: 'This predictor entry captures the BDNF Val66Met genotype as a predictor of

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_precentral_gyrus_insula
 name: Left precentral gyrus of the insula
 kind: classical
@@ -27,6 +27,7 @@ findings:
     handedness: not_reported
     language: native English speakers
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P = 0.05 (controlling the expected proportion of false positives)
     effect_size: not_reported
@@ -70,6 +71,24 @@ findings:
     quote: an area may emerge as relevant either because it has a direct causal role or because of a diaschitic
       effect
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: We applied VLSM to measures of speech fluency and language comprehension in 101 left-hemisphere-damaged
+      aphasic patients
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 101
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: fluency
   target_kind: impairment
@@ -89,6 +108,7 @@ findings:
     handedness: not_reported
     language: native English speakers
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: not_reported
@@ -122,4 +142,28 @@ findings:
     quote: We constructed four maps factoring out the effects of these voxels by carrying out analyses
       of covariance (ANCOVAs)
     supports: method
+  - section: added by backfill
+    page: 3
+    quote: We constructed four maps factoring out the effects of these voxels by carrying out analyses
+      of covariance (ANCOVAs) at all other voxels using the state (intact or lesioned) of each voxel of
+      interest as the covariates
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: We analyzed data on speech fluency and language comprehension for 101 left-hemisphere-injured
+      stroke patients
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 101
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

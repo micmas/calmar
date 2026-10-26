@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_ifg_pars_opercularis
 name: Left IFG Pars Opercularis (Broca's area, dorsal stream hub)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: native speaker of English
     phase: early_subacute
+    cohort: PLORAS
   statistics:
     threshold: p < 0.05
     effect_size: BF = 0.116
@@ -81,5 +82,39 @@ findings:
     quote: Estimating the effect of damage only in terms of lesion load in atlas-based regions of interest
       may therefore lead to false negative results.
     supports: limitation
+  - section: added by backfill
+    page: 6
+    quote: To investigate whether inter-patient differences in speech productions abilities were significantly
+      explained by the degree of damage to Broca’s area, surrounding brain regions or both, we applied
+      a series of multiple regression models to the data (n = 134).
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: 'we factored out variance that was unrelated to lesion site by including the following regressors
+      of no interest: (i) total lesion volume'
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: it would have been overly conservative to apply a correction for multiple comparisons within
+      Model 2 (our main result), for example.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Patients with an ischaemic or haemorrhagic stroke were selected from the Predicting Language
+      Outcome and Recovery After Stroke (PLORAS) database (Seghier et al., 2016)
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 134
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 Findings from @GajardoVidal2021 challenge the classical view of BA44, showing it does not uniquely predict long-term speech production deficits when white matter damage is accounted for.

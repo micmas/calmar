@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: semantic_feature_analysis
 name: Semantic Feature Analysis
 kind: therapy
@@ -33,6 +33,7 @@ findings:
     handedness: right
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: generalized improvement defined as ability to name at least 3 more probe items than the
       maximum number named during baseline
@@ -82,6 +83,12 @@ findings:
     quote: The present experiment is a Phase II outcomes research study aiming to refine the participant
       selection criteria, treatment protocol, and outcome measures...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: wernickes_aphasia
   target_kind: impairment
@@ -102,6 +109,7 @@ findings:
     handedness: right
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: generalized improvement defined as ability to name at least 3 more probe items than the
       maximum number named during baseline
@@ -151,6 +159,12 @@ findings:
     quote: The present experiment is a Phase II outcomes research study aiming to refine the participant
       selection criteria, treatment protocol, and outcome measures...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f3
   target: fluency
   target_kind: impairment
@@ -171,6 +185,7 @@ findings:
     handedness: right
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: not_reported
@@ -215,6 +230,12 @@ findings:
     quote: The present experiment is a Phase II outcomes research study aiming to refine the participant
       selection criteria, treatment protocol, and outcome measures...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f4
   target: semantic_feature_analysis
   target_kind: therapy
@@ -235,6 +256,7 @@ findings:
     handedness: right
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: not_reported
@@ -278,4 +300,10 @@ findings:
     quote: The present experiment is a Phase II outcomes research study aiming to refine the participant
       selection criteria, treatment protocol, and outcome measures...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

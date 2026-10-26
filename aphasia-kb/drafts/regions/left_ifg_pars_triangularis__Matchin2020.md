@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_ifg_pars_triangularis
 name: Left IFG Pars Triangularis (BA 45)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: uncorrected voxel-wise p < 0.05
     effect_size: t(51) = 3.133 (LV covariate), t(51) = 2.458 (LV + WPM covariates)
@@ -83,4 +84,31 @@ findings:
     quote: Omitting subjects with low speech output also likely precludes analysis of patients with both
       severe agrammatic and nonfluent speech.
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: Of the 53 successfully classified subjects, 21 were assigned to the PARAGRAMMATIC group, 11
+      to the AGRAMMATIC group, and 17 to the NGD group.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: all of our lesion-symptom mapping analyses included lesion volume as a covariate.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Only voxels that were damaged in at least 5 subjects (~10% of sample) were included in the
+      analyses.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 53
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

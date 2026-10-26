@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: right_middle_temporal_gyrus
 name: Right Middle Temporal Gyrus
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: English first language
     phase: longitudinal
+    cohort: PLORAS
   statistics:
     threshold: permutation thresholding (P < 0.05), cluster extent > 30 voxels
     effect_size: r = 0.88 (cross-validation positive-only)
@@ -100,6 +101,16 @@ findings:
     quote: The distinction between improvers and decliners might reflect some more subtle (e.g. more multivariate)
       distinction between the patients, or it might reflect variable patterns of everyday language use...
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: Our patient data were extracted from our PLORAS database (Seghier et al., 2016)
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Right Middle Temporal Gyrus
 

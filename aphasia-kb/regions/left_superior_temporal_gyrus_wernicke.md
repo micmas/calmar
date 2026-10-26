@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_superior_temporal_gyrus_wernicke
 name: Left Superior Temporal Gyrus (Wernicke's Area and Planum Temporale)
 kind: classical
@@ -71,6 +71,8 @@ findings:
       completed all 17 tests.
     exclusion_criteria: left-handed premorbidly; right hemisphere or bilateral lesions;
       did not complete full battery.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.05; isolated clusters ≤50 voxels removed
     cluster_extent: null
@@ -225,6 +227,33 @@ findings:
       Speech Recognition factors, although to different extents.
 
       '
+  - section: added by backfill
+    page: 7
+    quote: VLSM analysis was performed by running a simple regression analysis at
+      each voxel, with the lesion status as the independent variable and the factor
+      score as the dependent variable.
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: Only voxels lesioned in at least 10 participants were included in analysis
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: We call this approach ‘direct total lesion volume control’.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 99
+    min_lesion_overlap: 10 participants
+    lesion_volume_correction: direct
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: speech_recognition_phonological
   target_kind: impairment
@@ -256,6 +285,8 @@ findings:
       completed all 17 tests.
     exclusion_criteria: left-handed premorbidly; right hemisphere or bilateral lesions;
       did not complete full battery.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.05; isolated clusters ≤50 voxels removed
     cluster_extent: null
@@ -410,6 +441,33 @@ findings:
       Speech Recognition factors, although to different extents.
 
       '
+  - section: added by backfill
+    page: 7
+    quote: VLSM analysis was performed by running a simple regression analysis at
+      each voxel, with the lesion status as the independent variable and the factor
+      score as the dependent variable.
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: Only voxels lesioned in at least 10 participants were included in analysis
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: We call this approach ‘direct total lesion volume control’.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 99
+    min_lesion_overlap: 10 participants
+    lesion_volume_correction: direct
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f3
   target: semantics
   target_kind: impairment
@@ -426,6 +484,7 @@ findings:
     n: 64
     population: post-stroke aphasia
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.01
     effect_size: peak t around 1.8
@@ -465,11 +524,39 @@ findings:
       thereby yielding the correlation with performance that Hillis and colleagues
       observed.
     supports: limitation
+  - section: added by backfill
+    page: 5
+    quote: Voxels in which fewer than ﬁve patients were lesioned were excluded from
+      the voxel-based lesion-symptom mapping analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: A simple t-test comparing the scores between patients with and without
+      lesions was performed at each voxel using the VoxBo brain imaging package
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: The resulting t-map was thresholded to control the false discovery rate
+      (Genovese et al., 2002) at q = 0.01
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 64
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
 source: draft
 last_reviewed: '2026-10-22'
 reviewer: claude-cowork

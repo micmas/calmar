@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_hippocampus
 name: Left Hippocampus
 kind: classical
@@ -30,6 +30,7 @@ findings:
     handedness: all right-handed
     language: German
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < 0.05
     effect_size: r = 0.65
@@ -99,6 +100,32 @@ findings:
     quote: Our results should be treated as preliminary... our results cannot be generalized to patients
       with severe apraxia of speech.
     supports: limitation
+  - section: added by backfill
+    page: 5
+    quote: these measures were correlated with naming performance for TrO and UnTrO
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: 'Training success for TrO was neither correlated with duration of aphasia (post-pre: r=−0.07,
+      p=0.84) nor with lesion size (post-pre: r=−0.10, p=0.78; follow-up-pre: r=-−0.20, p=0.56).'
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: Ten consecutively recruited patients
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 10
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: severity_metric
   target_kind: predictor
@@ -119,6 +146,7 @@ findings:
     handedness: all right-handed
     language: German
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < 0.05
     effect_size: r = 0.85
@@ -189,5 +217,11 @@ findings:
     quote: Our results should be treated as preliminary... our results cannot be generalized to patients
       with severe apraxia of speech.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 Findings from Meinzer et al. (2010) indicate that both the volume and the surrounding white matter integrity of the left hippocampus are critical predictors of success in intensive naming therapy for chronic aphasia.

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: time_post_onset
 name: Time post-stroke onset
 kind: predictor
@@ -32,6 +32,7 @@ findings:
     age_range: 20 to 90 years
     handedness: not_reported
     language: English
+    cohort: PLORAS
   statistics:
     threshold: p < 0.001
     effect_size: R2 = 0.59
@@ -68,4 +69,33 @@ findings:
     quote: our preferred predictor configuration systematically under-estimates the severity of the impairments
       suffered by the most impaired patients
     supports: limitation
+  - section: added by backfill
+    page: not_reported
+    quote: In the cross-sectional configuration, we ran 270 of these assessments – one for each patient
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: The best subset included 37 relevant predictors (R2 = 0.59, F = 38.38, p b 0.001), including
+      time post-stroke (the most signiﬁcant, single predictor), lesion volume, and encroachment into 35
+      regions of the brain
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: Our outcome of interest was the recovery of speech production over time, as this behaviour
+      is well characterised in the patient data we already have available in our PLORAS database (Price
+      et al., 2010a).
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 270
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

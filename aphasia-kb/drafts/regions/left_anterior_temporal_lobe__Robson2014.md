@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_anterior_temporal_lobe__Robson2014
 name: Left Anterior Temporal Lobe (Residual Comprehension Substrate in Wernicke's Aphasia)
 kind: region
@@ -64,6 +64,7 @@ findings:
     exclusion_criteria: non-right-handed; non-native English; bilateral or right hemisphere lesions; cognitive
       impairment pre-stroke
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'Whole brain: p < 0.005 uncorrected, minimum 4-voxel extent. ROI: one-sample t-test, one-tailed
       p < 0.05'
@@ -221,6 +222,12 @@ findings:
     supports: sample
     quote: Twelve participants with chronic Wernicke's aphasia [two female, mean age 70.1, standard deviation
       (SD) 8.7]
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: right_anterior_superior_temporal_gyrus
   target_kind: region
@@ -247,6 +254,7 @@ findings:
     inclusion_criteria: same as f1
     exclusion_criteria: same as f1
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'ROI: one-sample t-test, one-tailed p < 0.05'
     cluster_extent: not_reported
@@ -324,6 +332,12 @@ findings:
     quote: Semantic processing of written words in Wernicke's aphasia was additionally supported by recruitment
       of the right anterior superior temporal lobe, a region previously associated with recovery from
       auditory-verbal comprehension impairments
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f3
   target: semantic_comprehension_residual
   target_kind: impairment
@@ -353,6 +367,7 @@ findings:
     exclusion_criteria: non-right-handed; non-native English; bilateral or right hemisphere lesions; cognitive
       impairment pre-stroke
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'Whole brain: p < 0.005 uncorrected, minimum 4-voxel extent. ROI: one-sample t-test, one-tailed
       p < 0.05'
@@ -510,6 +525,12 @@ findings:
     supports: sample
     quote: Twelve participants with chronic Wernicke's aphasia [two female, mean age 70.1, standard deviation
       (SD) 8.7]
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f4
   target: right_anterior_superior_temporal_gyrus
   target_kind: region
@@ -536,6 +557,7 @@ findings:
     inclusion_criteria: same as f1
     exclusion_criteria: same as f1
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'ROI: one-sample t-test, one-tailed p < 0.05'
     cluster_extent: not_reported
@@ -613,6 +635,12 @@ findings:
     quote: Semantic processing of written words in Wernicke's aphasia was additionally supported by recruitment
       of the right anterior superior temporal lobe, a region previously associated with recovery from
       auditory-verbal comprehension impairments
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 source: draft
 last_reviewed: '2026-05-07'
 reviewer: claude-cowork

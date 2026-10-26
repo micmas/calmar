@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_precentral_gyrus
 name: Left Precentral Gyrus
 kind: classical
@@ -56,6 +56,8 @@ findings:
       language abnormalities.
     exclusion_criteria: Multiple strokes; right-hemisphere stroke; history of neurological
       disease; developmental language abnormalities.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 permutation-corrected (4000 permutations); TFCE (threshold-free
       cluster enhancement)
@@ -132,6 +134,36 @@ findings:
       to recent studies with primary progressive apraxia of speech
     page: 5
     supports: claim
+  - section: added by backfill
+    page: 2
+    quote: Forty-three patients who incurred a single-event left-hemisphere stroke
+      (17 women; mean age, 59.2±10.7) were included.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Whole-brain analyses were completed with the threshold for statistical
+      significance set to P<0.05, using 4000 permutations to control for multiple
+      comparisons.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: All were tested at the chronic phase of recovery (ie, >6 months post stroke;
+      mean month post onset, 52.5±38.9).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 43
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: aphasia_speech_production_errors
   target_kind: impairment
@@ -157,6 +189,8 @@ findings:
       phase.
     exclusion_criteria: Multiple strokes; right-hemisphere stroke; history of neurological
       disease.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 permutation-corrected (4000 permutations); TFCE threshold 12.86
     cluster_extent: 15639 voxels survived thresholding for aphasia-related errors
@@ -214,6 +248,30 @@ findings:
       errors that are characteristic of AOS
     page: 5
     supports: claim
+  - section: added by backfill
+    page: 2
+    quote: Forty-three patients who incurred a single-event left-hemisphere stroke
+      (17 women; mean age, 59.2±10.7) were included.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Whole-brain analyses were completed with the threshold for statistical
+      significance set to P<0.05, using 4000 permutations to control for multiple
+      comparisons.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 43
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f3
   target: apraxia_of_speech
   target_kind: impairment
@@ -242,6 +300,8 @@ findings:
     exclusion_criteria: Severely reduced spontaneous speech (motor assessment not
       feasible); inadequate brain imaging (3 cases excluded); lacunar infarct; bilateral
       or right-hemisphere lesion.
+    phase: early_subacute
+    cohort: not_reported
   statistics:
     threshold: 5% familywise error rate; 3000 permutations; Liebermeister test
     cluster_extent: minimum 3% of subjects with lesion per voxel included
@@ -319,6 +379,44 @@ findings:
       gyrus in the VLSM
     page: 4
     supports: claim
+  - section: added by backfill
+    page: 2
+    quote: The presence or absence of a lesion in a given voxel was compared between
+      the 2 groups using the Liebermeister test.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: In total, 136 patients (70.5±12.9 years old, 79 males) were included.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The voxels in which ≥3% of the subjects had lesions were included in the
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: A 5% family-wise thresholding with 3000 permutations was used to correct
+      for multiple comparisons.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The median interval between stroke onset and neuropsychological evaluation
+      was 7 days (5–10).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 136
+    min_lesion_overlap: '>= 3%'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f4
   target: apraxia_of_speech_with_aphasia
   target_kind: impairment
@@ -343,6 +441,8 @@ findings:
       territory; right-handed; no prior dementia.
     exclusion_criteria: Severely reduced spontaneous speech; inadequate imaging; lacunar
       infarct.
+    phase: early_subacute
+    cohort: not_reported
   statistics:
     threshold: 5% familywise error rate; 3000 permutations; Z>=3.005
     cluster_extent: scattered clusters across basal ganglia, corona radiata, centrum
@@ -401,6 +501,44 @@ findings:
       compared with pure AOS
     page: 4
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: The presence or absence of a lesion in a given voxel was compared between
+      the 2 groups using the Liebermeister test.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: In total, 136 patients (70.5±12.9 years old, 79 males) were included.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The voxels in which ≥3% of the subjects had lesions were included in the
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: A 5% family-wise thresholding with 3000 permutations was used to correct
+      for multiple comparisons.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The median interval between stroke onset and neuropsychological evaluation
+      was 7 days (5–10).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 136
+    min_lesion_overlap: '>= 3%'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f5
   target: apraxia_of_speech
   target_kind: impairment
@@ -429,6 +567,8 @@ findings:
     exclusion_criteria: Severely reduced spontaneous speech (motor assessment not
       feasible); inadequate brain imaging (3 cases excluded); lacunar infarct; bilateral
       or right-hemisphere lesion.
+    phase: early_subacute
+    cohort: not_reported
   statistics:
     threshold: 5% familywise error rate; 3000 permutations; Liebermeister test
     cluster_extent: minimum 3% of subjects with lesion per voxel included
@@ -506,6 +646,44 @@ findings:
       gyrus in the VLSM
     page: 4
     supports: claim
+  - section: added by backfill
+    page: 2
+    quote: The presence or absence of a lesion in a given voxel was compared between
+      the 2 groups using the Liebermeister test.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: In total, 136 patients (70.5±12.9 years old, 79 males) were included.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The voxels in which ≥3% of the subjects had lesions were included in the
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: A 5% family-wise thresholding with 3000 permutations was used to correct
+      for multiple comparisons.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The median interval between stroke onset and neuropsychological evaluation
+      was 7 days (5–10).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 136
+    min_lesion_overlap: '>= 3%'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f6
   target: apraxia_of_speech_with_aphasia
   target_kind: impairment
@@ -530,6 +708,8 @@ findings:
       territory; right-handed; no prior dementia.
     exclusion_criteria: Severely reduced spontaneous speech; inadequate imaging; lacunar
       infarct.
+    phase: early_subacute
+    cohort: not_reported
   statistics:
     threshold: 5% familywise error rate; 3000 permutations; Z>=3.005
     cluster_extent: scattered clusters across basal ganglia, corona radiata, centrum
@@ -588,6 +768,44 @@ findings:
       compared with pure AOS
     page: 4
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: The presence or absence of a lesion in a given voxel was compared between
+      the 2 groups using the Liebermeister test.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: In total, 136 patients (70.5±12.9 years old, 79 males) were included.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The voxels in which ≥3% of the subjects had lesions were included in the
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: A 5% family-wise thresholding with 3000 permutations was used to correct
+      for multiple comparisons.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The median interval between stroke onset and neuropsychological evaluation
+      was 7 days (5–10).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 136
+    min_lesion_overlap: '>= 3%'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f7
   target: form_to_articulation
   target_kind: impairment
@@ -608,6 +826,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: not significant at Bonferroni corrected alpha-level of 0.002
     effect_size: R2 = 0.16
@@ -641,11 +860,44 @@ findings:
       gyrus, P = 0.003, R2 = 0.16... note that this model was not statistically significant
       at the Bonferroni corrected alpha-level of 0.002.
     supports: claim
+  - section: added by backfill
+    page: 4
+    quote: The cortical regions and white matter tracts comprised a neuroanatomical
+      model where the mean intensity value in each region of interest, as well as
+      lesion size, was entered into a stepwise regression analysis to predict the
+      speech and language measures (Fig. 2).
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: 'To control for multiple comparisons, the stepwise regression analyses
+      were Bonferroni corrected where P = 0.05 was divided by the number of predictors:
+      21 regions of interest and one factor for lesion size (for 22 total predictors).'
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: Out of 76 patients included in the database, data from 64 patients (29
+      females) who had incurred a single left hemisphere stroke (60 ischaemic; four
+      haemorrhagic) resulting in chronic aphasia (46 months post-stroke) were included
+      in this research (Supplementary material).
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 64
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: bonferroni
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 reviewer: auto-reviewer
 reviewed_on: '2026-05-06'
 last_reviewed: '2026-10-22'

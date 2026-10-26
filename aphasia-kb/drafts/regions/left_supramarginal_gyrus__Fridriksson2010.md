@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_supramarginal_gyrus
 name: Left Supramarginal Gyrus
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: not_reported
     language: Icelandic
     phase: acute
+    cohort: not_reported
   statistics:
     threshold: 1% false-discovery rate (FDR)
     effect_size: Z = -4.21
@@ -95,4 +96,17 @@ findings:
       apraxia of speech, nonfluent aphasia, or auditory comprehension impairment rather than the primary
       repetition impairment seen in conduction aphasia.
     supports: limitation
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 39
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

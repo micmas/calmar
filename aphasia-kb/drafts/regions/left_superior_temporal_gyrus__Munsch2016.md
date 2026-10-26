@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_superior_temporal_gyrus
 name: Left Superior Temporal Gyrus (Dorsal Stream Node)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     age_range: older than 18 years
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: FDR P < 0.05
     effect_size: not_reported
@@ -82,4 +83,27 @@ findings:
     page: 71
     quote: Regarding our VLSM maps, only few voxels remained eloquent after false discovery rate correction...
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: Statistical maps of functional and cognitive eloquent regions were derived from the first 215
+      patients (development sample) using voxel-based lesion-symptom mapping.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: The resulting Z score maps were controlled for multiple comparisons using the false discovery
+      rate correction to ensure a false-positive rate of P<0.05.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 215
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_precentral_gyrus_insula
 name: Left precentral gyrus of the insula
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: English
     phase: hyperacute
+    cohort: not_reported
   statistics:
     threshold: chi-square test
     effect_size: chi2(1) = 0.47 (insula), 0.09 (anterior insula), 0.16 (superior tip of precentral gyrus
@@ -106,5 +107,29 @@ findings:
       of that region ('diaschisis') without causing hypoperfusion apparent on PWI or bioenergetic failure
       apparent on DWI.
     supports: limitation
+  - section: added by backfill
+    page: not_reported
+    quote: 'We studied two consecutive series of patients with acute strokes in the territory of the left
+      MCA: one series of 40 patients with insular damage and one series of 40 patients without insular
+      damage'
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Association between apraxia of speech and each area of infarct and/or hypoperfusion was identified
+      by c2.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 80
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 Finding f1 contradicts the widely cited claim from @Dronkers1996 that the superior tip of the precentral gyrus of the insula is essential for speech articulation.

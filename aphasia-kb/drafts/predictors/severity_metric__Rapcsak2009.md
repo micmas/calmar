@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -37,6 +37,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: one-tailed p-value
     effect_size: R^2 = 66.9%
@@ -71,4 +72,10 @@ findings:
     supports: limitation
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

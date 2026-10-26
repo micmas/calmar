@@ -28,6 +28,7 @@ findings:
     age_range: 31 to 83 years
     handedness: right-hand-dominant
     language: native speakers of English
+    cohort: not_reported
   statistics:
     threshold: P <= 0.0125 (corrected for 4 comparisons)
     effect_size: chi-square = 38.1
@@ -102,6 +103,14 @@ findings:
     quote: Recognizing the limitations of WAB-R classification and the relatively small sample size of
       our study
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    unresolved:
+    - lesion_mapping
 - id: f2
   target: brocas_aphasia
   target_kind: impairment
@@ -122,6 +131,7 @@ findings:
     age_range: 24 to 85 years
     handedness: right-hand-dominant
     language: native speakers of English
+    cohort: not_reported
   statistics:
     threshold: P <= 0.0125
     effect_size: chi-square = 0.54
@@ -170,6 +180,14 @@ findings:
     quote: Recognizing the limitations of WAB-R classification and the relatively small sample size of
       our study
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    unresolved:
+    - lesion_mapping
 - id: f3
   target: brocas_aphasia
   target_kind: impairment
@@ -190,6 +208,7 @@ findings:
     age_range: 39 to 80 years
     handedness: right-hand-dominant
     language: native speakers of English
+    cohort: not_reported
   statistics:
     threshold: P <= 0.0125
     effect_size: acute chi2=20; chronic chi2=0
@@ -239,4 +258,21 @@ findings:
       of reorganization of structure/function relationships (as confirmed in the longitudinal study of
       20 patients).
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: In a subset of 20 patients studied longitudinally
+    supports: method
+  lesion_mapping:
+    analysis: not_reported
+    n_analysed: 20
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

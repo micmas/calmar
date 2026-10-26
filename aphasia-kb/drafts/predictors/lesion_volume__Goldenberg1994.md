@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: lesion_volume__Goldenberg1994
 name: Total lesion volume as predictor of recovery and therapy gain (Goldenberg & Spatt 1994)
 aliases:
@@ -51,6 +51,7 @@ findings:
       contralateral lesion not counted (one patient had additional right-hemisphere lesion neglected for
       size calculation)
     phase: mixed
+    cohort: not_reported
   statistics:
     threshold: Pearson correlation, p<.05 (uncorrected; multiple univariate tests as authors note)
     cluster_extent: null
@@ -144,6 +145,35 @@ findings:
     page: 11
     supports: claim
     quote: Our results confirm that size of lesion exerts a negative influence on recovery of aphasia
+  - section: added by backfill
+    page: 4
+    quote: Lesion size had negative correlations to initial AAT-profile height (r = –0.47, p < .05) as
+      well as to the amount of improvement during spontaneous recovery (r = –.49, p < .05), during therapy
+      (r = –.41, p < .05) and across the whole observation period which includes spontaneous recovery,
+      therapy and the post-therapeutic period (r = –.75, p < .001).
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: There remained 4 women and 14 men with a mean age of 61.8 (range 34 to 79).
+    supports: method
+  - section: added by backfill
+    page: 11
+    quote: the results were obtained by multiple univariate statistical tests without correction for the
+      multiplicity of comparisons
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 18
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 source: curated
 last_reviewed: 2026-05-07
 notes: 'Goldenberg & Spatt 1994 (Brain Lang 47:684–698). Vienna cohort, n=18 chronic

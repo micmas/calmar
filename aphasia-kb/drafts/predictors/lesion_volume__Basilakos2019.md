@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: lesion_volume
 name: Total lesion volume
 kind: predictor
@@ -34,6 +34,7 @@ findings:
     handedness: premorbidly right-handed
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: P < .001
     effect_size: t = -4.3, P = .001
@@ -96,5 +97,22 @@ findings:
     page: 10
     quote: First, the sample size was relatively small
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: This is a retrospective study including multi–time point assessment of N = 35 participants
+    supports: method
+  lesion_mapping:
+    analysis: not_reported
+    n_analysed: 35
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 # Findings on the relationship between lesion volume and initial aphasia severity.

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: alexia
 name: Alexia
 kind: impairment
@@ -27,6 +27,7 @@ findings:
     handedness: 91 R, 6 L, 2 A
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: score < 36.67/52 on SAPA Subtest 1 (2 SD below NC mean)
     effect_size: 67.78%
@@ -67,6 +68,12 @@ findings:
     quote: We employed a retrospective analysis of a convenience sample of individuals with chronic aphasia
       that may not have been fully representative of the population...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: alexia
   target_kind: impairment
@@ -87,6 +94,7 @@ findings:
     handedness: 91 R, 6 L, 2 A
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001
     effect_size: t(66) = 9.09
@@ -124,5 +132,11 @@ findings:
     quote: this study is limited by the fact that only oral reading abilities for single words were assessed,
       and this work does not speak to text comprehension abilities in PWA and alexia.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 Findings from Brookshire et al. (2014) regarding the prevalence and nature of alexia in a chronic aphasia cohort.

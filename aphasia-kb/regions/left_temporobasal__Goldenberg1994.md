@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_temporobasal__Goldenberg1994
 name: Left Temporobasal Cortex (basal temporal lobe / entorhinal–perisylvian junction)
 kind: classical
@@ -50,6 +50,8 @@ findings:
       behaviour and general health adequate for therapy participation
     exclusion_criteria: ceiling AAT-profile (>65) at therapy onset (n=2 excluded);
       right-hemisphere lesion-volume not counted in size estimate
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Mann–Whitney U tests (nonparametric, justified by small subgroup sizes);
       p<.05 uncorrected; multiple comparisons not corrected
@@ -202,6 +204,35 @@ findings:
     quote: Such lesions may cause a disconnection between the hippocampus and perisylvian
       language area either by damage to entorhi- nal cortex or by disruption of fibers
       which connect entorhinal to perisyl- vian cortex
+  - section: added by backfill
+    page: 9
+    quote: In six patients (E.R., J.K., R.P., V.K., W.B., E.K.) the lesions affected
+      the basal portion of the temporal lobe.
+    supports: method
+  - section: added by backfill
+    page: 11
+    quote: the results were obtained by multiple univariate statistical tests without
+      correction for the multiplicity of comparisons
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: Patients with aphasia caused by a cerebrovascular accident were taken into
+      the study not earlier than 2 months after the accident.
+    supports: sample
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 18
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 source: curated
 last_reviewed: 2026-05-07
 notes: 'Goldenberg & Spatt 1994 (Brain Lang 47:684–698). Vienna cohort, n=18 chronic

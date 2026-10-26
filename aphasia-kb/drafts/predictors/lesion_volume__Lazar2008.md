@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: lesion_volume
 name: Total lesion volume
 kind: predictor
@@ -32,6 +32,7 @@ findings:
     age_range: mean 63.8 (SD 5.6)
     handedness: 20/22 right-handed
     language: English- and Spanish-speaking
+    cohort: PARIS
   statistics:
     threshold: p = 0.30 to 0.40
     effect_size: r = -0.23 (baseline), -0.19 (90-day)
@@ -67,4 +68,16 @@ findings:
     quote: Among the limits of this study was the small sample size; a larger cohort might have increased
       the extent to which our regression model would explain variance
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: Using our Performance and Recovery in Stroke Study (PARIS) database, we evaluated consecutive
+      first-time stroke patients with aphasia and diffusion-weighted-image-positive lesions on admission
+      and at 90 days.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

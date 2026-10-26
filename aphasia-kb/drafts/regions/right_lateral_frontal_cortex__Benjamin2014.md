@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: right_lateral_frontal_cortex
 name: Right Lateral Frontal Cortex
 kind: classical
@@ -29,6 +29,7 @@ findings:
     handedness: all right-handed
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: P < .05
     effect_size: t = -2.602 (posttreatment), t = -2.332 (3-month follow-up)
@@ -110,6 +111,12 @@ findings:
     page: 6
     quote: Small number of subjects in the groups...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Right Lateral Frontal Cortex
 

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: age
 name: Age at stroke
 kind: predictor
@@ -32,6 +32,7 @@ findings:
     age_range: mean 55.09 years, SD 17.22
     handedness: all right-handed
     language: premorbid fluent speakers of English
+    cohort: not_reported
   statistics:
     threshold: p < 0.05
     effect_size: p = 0.009
@@ -85,11 +86,39 @@ findings:
     quote: There were a relatively small number of participants with longitudinal data at both the acute
       and chronic stages
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: Multivariable linear regression was used to identify the independent predictors of overall
+      emotional prosody identification impairment
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: Only regions from the proposed ventral stream where at least 2 participants had damage were
+      included in the analysis
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: 'The following independent variables were entered into the initial model: percent damage to
+      each of 7 regions of interest (posterior STG, STG, temporal pole, IFG pars orbitalis, lateral OFC,
+      amygdala, sagittal stratum), overall lesion volume, age, and education.'
+    supports: method
   region_definition:
     kind: not_reported
   imaging_details:
     reference_space: not_reported
     atlases_used: []
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 23
+    min_lesion_overlap: '>= 2 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
-
 Finding f1 identifies age as a demographic predictor of emotional prosody identification impairment.

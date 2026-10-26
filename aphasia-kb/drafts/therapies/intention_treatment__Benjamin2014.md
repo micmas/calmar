@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: intention_treatment
 name: Intention Treatment
 kind: therapy
@@ -32,6 +32,7 @@ findings:
     handedness: all right-handed
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: P < .01
     effect_size: t = 3.33
@@ -65,6 +66,12 @@ findings:
     supports: claim
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Intention Treatment
 

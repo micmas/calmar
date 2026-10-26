@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: age
 name: Age at stroke
 kind: predictor
@@ -31,6 +31,7 @@ findings:
     age_range: mean 78.6 (consecutive group), range 34-99
     handedness: not_reported
     language: Swedish
+    cohort: not_reported
   statistics:
     threshold: P < 0.01
     effect_size: not_reported
@@ -81,6 +82,11 @@ findings:
     quote: A combination of different and adjusted aphasia tests provided the possibility to assess almost
       all acute aphasic patients.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 Finding f1 describes the longitudinal association between age and the degree of recovery (measured by ANELT) in a cohort of 119 acute aphasic patients.

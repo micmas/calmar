@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_arcuate_fasciculus
 name: Left arcuate fasciculus
 kind: tract
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: native speakers of Russian
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .01
     effect_size: r = .503 (naming), r = .442 (sentence construction)
@@ -106,5 +107,11 @@ findings:
       of white or grey matter involvement cannot be definitively determined here, as only lesion size
       (but not location) was used as a covariate in the correlational analyses.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 Finding f1: Left AF integrity (FA) correlates with naming and sentence construction scores.

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: imaging_metric_structural_disconnection
 name: Structural Disconnection (Network Modification)
 kind: predictor
@@ -33,6 +33,7 @@ findings:
     handedness: 98 patients left-handed or ambidextrous
     language: not_reported
     phase: chronic
+    cohort: PLORAS
   statistics:
     threshold: one-tailed variance test
     effect_size: all p > 0.2
@@ -94,5 +95,32 @@ findings:
     quote: One caveat to these results is that we have inferred connectivity disruption from T1-weighted
       MRI, rather than measuring it "directly" with subject-specific diffusion data.
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: Our sample included 818 stroke patients extracted from the PLORAS database
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: Like the lesion load model, all of these models also include basic demographic data and lesion
+      volume.
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: Correlating each variable, singly, with our target language score, we kept only those variables
+      for which the result was signiﬁcant after a Bonferroni correction for multiple comparisons.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 818
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: bonferroni
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 Notes: This study specifically tests whether structural disconnection (as a predictor) adds value over regional lesion load. It concludes that it does not, likely because the two are highly correlated (r = -0.94 for first principal components).

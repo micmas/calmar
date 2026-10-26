@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_superior_temporal_gyrus__Leff2009
 name: Left Posterior Superior Temporal Gyrus and Sulcus (Auditory STM / Comprehension Shared Substrate)
 kind: region
@@ -54,6 +54,7 @@ findings:
     exclusion_criteria: digit span 0–1 (to exclude severe output disorders); other neurological/major
       psychiatric disorder
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < 0.05 FWE-corrected across whole brain; extent ≥ 25 contiguous voxels
     cluster_extent: 25 voxels minimum
@@ -173,6 +174,33 @@ findings:
     supports: sample
     quote: Two hundred and ten patients were identified from a large, ongoing research database compiled
       for studying the structure-function relationships
+  - section: added by backfill
+    page: 5
+    quote: The grey matter images from the 210 patients were entered into a multiple regression model.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: In three of our analyses, we also entered the estimated volume of tissue loss (stroke volume)
+      as a regressor.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: We only report and discuss regions that showed signiﬁcant positive effects at P50.05 after
+      correction for multiple comparisons across the whole brain at the height (voxel) level
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 210
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: spoken_sentence_comprehension
   target_kind: impairment
@@ -199,6 +227,7 @@ findings:
     inclusion_criteria: same as f1
     exclusion_criteria: same as f1
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: r(199) = 0.22, p = 0.002 (spoken sentence comprehension); non-significant for single words
       r = -0.03, p = 0.66; and written sentences r = 0.05, p = 0.45
@@ -287,6 +316,28 @@ findings:
     supports: region_definition
     quote: it is the posterior superior temporal gyrus and sulcus rather than the inferior parietal lobe
       that is necessary for intact auditory short-term memory capacity
+  - section: added by backfill
+    page: 5
+    quote: The grey matter images from the 210 patients were entered into a multiple regression model.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: In three of our analyses, we also entered the estimated volume of tissue loss (stroke volume)
+      as a regressor.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 210
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f3
   target: auditory_short_term_memory_capacity
   target_kind: impairment
@@ -315,6 +366,7 @@ findings:
     exclusion_criteria: digit span 0–1 (to exclude severe output disorders); other neurological/major
       psychiatric disorder
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < 0.05 FWE-corrected across whole brain; extent ≥ 25 contiguous voxels
     cluster_extent: 25 voxels minimum
@@ -434,6 +486,33 @@ findings:
     supports: sample
     quote: Two hundred and ten patients were identified from a large, ongoing research database compiled
       for studying the structure-function relationships
+  - section: added by backfill
+    page: 5
+    quote: The grey matter images from the 210 patients were entered into a multiple regression model.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: In three of our analyses, we also entered the estimated volume of tissue loss (stroke volume)
+      as a regressor.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: We only report and discuss regions that showed signiﬁcant positive effects at P50.05 after
+      correction for multiple comparisons across the whole brain at the height (voxel) level
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 210
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f4
   target: spoken_sentence_comprehension
   target_kind: impairment
@@ -460,6 +539,7 @@ findings:
     inclusion_criteria: same as f1
     exclusion_criteria: same as f1
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: r(199) = 0.22, p = 0.002 (spoken sentence comprehension); non-significant for single words
       r = -0.03, p = 0.66; and written sentences r = 0.05, p = 0.45
@@ -548,6 +628,28 @@ findings:
     supports: region_definition
     quote: it is the posterior superior temporal gyrus and sulcus rather than the inferior parietal lobe
       that is necessary for intact auditory short-term memory capacity
+  - section: added by backfill
+    page: 5
+    quote: The grey matter images from the 210 patients were entered into a multiple regression model.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: In three of our analyses, we also entered the estimated volume of tissue loss (stroke volume)
+      as a regressor.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 210
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 source: draft
 last_reviewed: '2026-05-07'
 reviewer: claude-cowork

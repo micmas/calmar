@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_ifg_pars_opercularis
 name: Left IFG Pars Opercularis (Broca's area, dorsal stream hub)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     age_range: mean 62.97 (SD 12.41)
     handedness: mixed (32 right, 2 ambidextrous, 4 left)
     language: native English speakers
+    cohort: not_reported
   statistics:
     threshold: P < .005 with a cluster threshold of 500 mm3
     effect_size: not_reported
@@ -107,4 +108,31 @@ findings:
       vector weights do not necessarily correspond to the level of their importance to the cognitive process
       being studied.
     supports: limitation
+  - section: added by backfill
+    page: 3
+    quote: Multivariate lesion-symptom mapping was carried out on each factor score using support vector
+      regression–based lesion-symptom mapping (SVR-LSM) running under Matlab R2014a
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Only voxels damaged in at least 10% of participants were included in our analysis.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Because SVR-LSM considers all voxels simultaneously in a single, nonlinear regression model,
+      correction for multiple comparisons is not considered required.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 38
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: direct
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

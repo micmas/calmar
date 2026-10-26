@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_anterior_temporal_lobe
 name: Left Anterior Temporal Lobe
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: pre-morbid right handedness
     language: English as primary language
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.01
     effect_size: not_reported
@@ -82,6 +83,29 @@ findings:
       earlier, there were too few patients with lesions in the inferior temporal or fusiform gyri to detect
       effects there.
     supports: limitation
+  - section: added by backfill
+    page: 5
+    quote: Voxels in which fewer than ﬁve patients were lesioned were excluded from the voxel-based lesion-symptom
+      mapping analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: A simple t-test comparing the scores between patients with and without lesions was performed
+      at each voxel using the VoxBo brain imaging package
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 64
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: semantics
   target_kind: impairment
@@ -99,6 +123,7 @@ findings:
     n: 64
     population: post-stroke aphasia
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.01
   confounders_controlled:
@@ -136,6 +161,34 @@ findings:
     quote: It must be emphasized that the region within the left anterior temporal lobe that our analysis
       picked out almost certainly underestimates the extent of the temporal lobe involvement.
     supports: limitation
+  - section: added by backfill
+    page: 5
+    quote: Voxels in which fewer than ﬁve patients were lesioned were excluded from the voxel-based lesion-symptom
+      mapping analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: To control for semantic errors in production that arise instead from faulty conceptualization,
+      we performed an analysis in which NVcomp scores were factored out of the SemErr measure by regression.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: The resulting t-map was thresholded to control the false discovery rate (Genovese et al., 2002)
+      at q = 0.01
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 64
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 # Left Anterior Temporal Lobe
 

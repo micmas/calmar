@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: therapy_intensity
 name: Therapy Intensity
 kind: predictor
@@ -38,6 +38,7 @@ findings:
     handedness: not_reported
     language: English
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: p=0.001
     effect_size: r=0.957
@@ -80,6 +81,12 @@ findings:
     supports: limitation
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: severity_metric
   target_kind: predictor
@@ -100,6 +107,7 @@ findings:
     handedness: not_reported
     language: English
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: p=0.0001
     effect_size: r=0.958
@@ -141,6 +149,12 @@ findings:
     supports: limitation
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f3
   target: severity_metric
   target_kind: predictor
@@ -161,6 +175,7 @@ findings:
     handedness: not_reported
     language: English
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: p=0.0001
     effect_size: r=0.963
@@ -203,6 +218,12 @@ findings:
     supports: limitation
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f4
   target: severity_metric
   target_kind: predictor
@@ -223,6 +244,7 @@ findings:
     handedness: not_reported
     language: English
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: p=0.0001
     effect_size: r=-0.948
@@ -264,5 +286,11 @@ findings:
     supports: limitation
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 This meta-analysis of 10 clinical trials demonstrates that higher therapy intensity (measured by hours per week and total hours) is strongly correlated with greater improvement in aphasia recovery as measured by the PICA and Token Test, while longer overall duration in weeks is inversely correlated with improvement.

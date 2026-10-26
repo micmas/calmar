@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: age
 name: Age at stroke
 kind: predictor
@@ -31,6 +31,7 @@ findings:
     age_range: mean 74.5 (SD 10.9)
     handedness: not_reported
     language: not_reported
+    cohort: Copenhagen Stroke Study
   statistics:
     threshold: p < 0.05
     effect_size: not_reported
@@ -71,8 +72,17 @@ findings:
     quote: The aphasia assessment employed in this study rates spoken language, but does not assess auditory
       impressive function.
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: This study is part of the Copenhagen Stroke Study described in detail elsewhere {73.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 # Findings from Pedersen 1995
 
 In this large cohort, age did not independently predict the degree of language recovery when controlling for initial severity.

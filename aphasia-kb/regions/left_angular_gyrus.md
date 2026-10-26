@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_angular_gyrus
 name: Left Angular Gyrus
 kind: classical
@@ -37,6 +37,8 @@ findings:
       (right hemisphere ROIs excluded due to no lesions)
     exclusion_criteria: bilateral lesions; right hemisphere ROIs had no lesions in
       any participant
+    phase: acute
+    cohort: not_reported
   statistics:
     threshold: LASSO regression with leave-one-out cross-validation (λ minimizing
       mean cross-validated error); inference via post-LASSO t-test
@@ -161,6 +163,35 @@ findings:
       small for the acute stroke participants.
 
       '
+  - section: added by backfill
+    page: 13
+    quote: A minimum of Hve participants had lesions in the 13 remaining ROIs used
+      in the analyses of acute stroke data
+    supports: method
+  - section: added by backfill
+    page: 13
+    quote: Acute stroke models included total lesion volume as well as percent damage
+      in each of the 13 ROIs as predictors.
+    supports: method
+  - section: added by backfill
+    page: 13
+    quote: Least Absolute Shrinkage and Selection Operator (LASSO) regression (Tibshirani,
+      1996) was used to evaluate which ROIs were related to behaviour on object and
+      action naming.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 37
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: action_naming
   target_kind: impairment
@@ -186,6 +217,8 @@ findings:
     inclusion_criteria: acute left hemisphere stroke
     exclusion_criteria: bilateral lesions; right hemisphere regions not assessed (no
       lesions)
+    phase: acute
+    cohort: not_reported
   statistics:
     threshold: LASSO regression with leave-one-out cross-validation
     cluster_extent: not_reported
@@ -253,6 +286,35 @@ findings:
     quote: 'Left angular gyrus −0.524 −0.555 <.001* −0.405 −0.487 0.728
 
       '
+  - section: added by backfill
+    page: 13
+    quote: A minimum of Hve participants had lesions in the 13 remaining ROIs used
+      in the analyses of acute stroke data
+    supports: method
+  - section: added by backfill
+    page: 13
+    quote: Acute stroke models included total lesion volume as well as percent damage
+      in each of the 13 ROIs as predictors.
+    supports: method
+  - section: added by backfill
+    page: 13
+    quote: Least Absolute Shrinkage and Selection Operator (LASSO) regression (Tibshirani,
+      1996) was used to evaluate which ROIs were related to behaviour on object and
+      action naming.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 37
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 source: extracted
 notes: 'PPA EXCLUSION: This paper includes both acute stroke (N=37 with imaging) and
   primary progressive

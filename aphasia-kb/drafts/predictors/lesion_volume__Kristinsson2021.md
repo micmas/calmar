@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: lesion_volume
 name: Total lesion volume
 kind: predictor
@@ -33,6 +33,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001
     effect_size: 'WAB-AQ estimate: −0.184'
@@ -77,4 +78,10 @@ findings:
     quote: Last, we did not validate the prediction accuracy of our models in an independent sample of
       persons with aphasia.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

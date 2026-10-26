@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_superior_temporal_gyrus
 name: Left Superior Temporal Gyrus (Dorsal Stream Node)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: FDR < 10^-3, k > 150cm3
     cluster_extent: not_reported
@@ -74,6 +75,12 @@ findings:
     quote: Intensity represents activation likelihood estimation statistic value (P value for false discovery
       rate < 10^-3, k > 150cm3).
     supports: statistics
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: semantics
   target_kind: impairment
@@ -93,6 +100,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: FDR < 10^-3, k > 150cm3
     cluster_extent: not_reported
@@ -139,5 +147,11 @@ findings:
     quote: Intensity represents activation likelihood estimation statistic value (P value for false discovery
       rate < 10^-3, k > 150cm3).
     supports: statistics
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 This entry adds findings from a meta-analysis of healthy speech perception, supporting a hierarchical ventral stream model where phoneme and word recognition are localized to the mid and anterior STG respectively.

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_arcuate_fasciculus
 name: Left arcuate fasciculus
 kind: tract
@@ -28,6 +28,7 @@ findings:
     age_range: mean 54 (s.d. 11), range 19–83
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.001
     effect_size: not_reported
@@ -92,4 +93,26 @@ findings:
     quote: it is important to note that we did not track either perfusion or functional MRI data that
       could clarify other possible mechanisms of recovery.
     supports: limitation
+  - section: added by backfill
+    page: 8
+    quote: The loadings on each of the included components for each subject were added to the prediction
+      model that included age, lesion size, education, therapy and the sub-acute score.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: Of the final sample of 132 patients
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 132
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

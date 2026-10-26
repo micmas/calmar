@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -38,6 +38,7 @@ findings:
     handedness: all right-handed
     language: English-speaking
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .01, one-tailed
     effect_size: not_reported
@@ -74,5 +75,11 @@ findings:
     page: 14
     quote: it is acknowledged that due to the small sample size, the power of this analysis is limited.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 Baseline naming severity (BNT) was a significant predictor of response to PCA treatment.

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: lesion_volume
 name: Total lesion volume
 aliases:
@@ -781,6 +781,8 @@ findings:
       at initial assessment
     exclusion_criteria: did not meet above criteria; moved before completing testing;
       ongoing life stressors affecting language performance
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple linear regression, F(4,13)=3.51, p=.037, R²=0.519 (unadjusted),
       R²adj=0.37
@@ -889,6 +891,32 @@ findings:
       approach in a larger sample.
 
       '
+  - section: added by backfill
+    page: 5
+    quote: The 18 individuals included in the study (12 male) had a mean age of 52.9
+      (standard deviation (SD) = ±12.7; range = 30–77), years of education of 15 (SD
+      = ±3.2; range = 12–21), and MPO of 39.8 (SD = ±39.2; range = 5–133) at the initial
+      assessment.
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: Eighteen people with aphasia initially evaluated in the chronic stage were
+      retested at least one year later.
+    supports: sample
+  lesion_mapping:
+    analysis: not_reported
+    n_analysed: 18
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f8
   target: severity_metric
   target_kind: predictor
@@ -914,6 +942,8 @@ findings:
       registry
     inclusion_criteria: as above for f1
     exclusion_criteria: as above for f1
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: backward stepwise regression, F(3,14)=5.96, p=.008, R²=0.561 (unadjusted),
       R²adj=0.47
@@ -991,6 +1021,18 @@ findings:
       to the follow-up assessment.
 
       '
+  - section: added by backfill
+    page: 1
+    quote: Eighteen people with aphasia initially evaluated in the chronic stage were
+      retested at least one year later.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f9
   target: prognosis
   target_kind: prognosis
@@ -1011,6 +1053,7 @@ findings:
     age_range: not_reported
     handedness: not_reported
     language: Swedish
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: not_reported
@@ -1047,11 +1090,29 @@ findings:
     page: 9
     quote: The results suggest that lesion location is of no help in predicting outcome.
     supports: limitation
+  - section: added by backfill
+    page: not_reported
+    quote: The lesion was clearly outlined on the cerebral CT scan in 71 of the 119
+      patients with aphasia
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 71
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f10
   target: executive_functions
   target_kind: impairment
@@ -1072,6 +1133,7 @@ findings:
     age_range: mean 64 (SD 11.9), range 45-88
     handedness: pre-morbidly right-handed
     language: native English speakers
+    cohort: not_reported
   statistics:
     threshold: P = 0.05 two-tailed
     effect_size: rs = 0.353
@@ -1108,6 +1170,12 @@ findings:
     reviewed_on: '2026-10-23'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 notes: Starter entry for schema v2.3. Lesion volume is the single most-controlled-for
   covariate in lesion-symptom mapping. Findings here should be reserved for *predictive*
   claims (volume → severity / recovery / therapy response), not the trivial "bigger

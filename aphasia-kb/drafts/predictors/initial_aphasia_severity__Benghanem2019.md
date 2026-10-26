@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: initial_aphasia_severity
 name: Initial aphasia severity (acute WAB composite)
 kind: predictor
@@ -42,6 +42,7 @@ findings:
     age_range: median 63.7 (IQR 52.3-78)
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: p < 0.0002
     effect_size: OR 0.744
@@ -84,4 +85,10 @@ findings:
     supports: limitation
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

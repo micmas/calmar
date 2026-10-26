@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_middle_temporal_gyrus
 name: Left Middle Temporal Gyrus (Ventral Stream Node)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < 0.05 (uncorrected)
     effect_size: Z = 2.20
@@ -82,5 +83,29 @@ findings:
       results from each suggest that patients' response to treatment relies on both structural integrity
       of specific brain regions... and recruitment of both the left frontal and parietal regions.
     supports: limitation
+  - section: added by backfill
+    page: 3
+    quote: Then, a t test was performed on a voxel-by-voxel basis to examine the relationship between
+      localized damage and change in correct naming when lesion size was entered as a cofactor (Bates
+      et al., 2003).
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Data from all 26 patients were included in the structural MRI analysis of change in correct
+      naming.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 26
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 Finding f1 describes the negative impact of posterior left temporal lobe damage on the efficacy of anomia treatment.

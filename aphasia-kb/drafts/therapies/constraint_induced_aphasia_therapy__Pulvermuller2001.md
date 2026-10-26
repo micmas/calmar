@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: constraint_induced_aphasia_therapy
 name: Constraint-Induced Aphasia Therapy (CIAT / CILT)
 kind: therapy
@@ -34,6 +34,7 @@ findings:
     age_range: mean 53.9-55.4 years
     handedness: mostly right-handed (3 ambidextrous)
     language: monolingual native speakers of German
+    cohort: not_reported
   statistics:
     threshold: P < 0.0008 (planned comparison for CI group)
     effect_size: cumulative change of 17% for CI group vs 2% for control group
@@ -83,6 +84,12 @@ findings:
     quote: Results presented here are from a single study into a new therapeutic domain. Replication of
       these findings in a larger population of patients is important.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: severity_metric
   target_kind: predictor
@@ -103,6 +110,7 @@ findings:
     age_range: mean 55.4 years
     handedness: mostly right-handed
     language: monolingual native speakers of German
+    cohort: not_reported
   statistics:
     threshold: P < 0.001 (self-ratings); P < 0.01 (clinician ratings)
     effect_size: 30% increase in amount of communication (self-ratings); 10% increase (clinician ratings)
@@ -135,4 +143,10 @@ findings:
     page: 4
     quote: Results presented here are from a single study into a new therapeutic domain.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

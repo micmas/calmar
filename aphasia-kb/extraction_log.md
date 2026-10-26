@@ -334,3 +334,143 @@ add an `EXTRACTED` line for every run.
 2026-10-26 | BACKFILLED | @Alyahya2018NounVerb | cohort, lesion_mapping, phase | 99 value(s) written, 0 not (no quote found) across 33 finding(s) | model: gemma4:31b-it-q8_0
 2026-10-26 | BACKFILLED | @Alyahya2020 | cohort, lesion_mapping | 8 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
 2026-10-26 | BACKFILLED | @Baldo2006 | cohort, lesion_mapping, phase | 6 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Baldo2011 | cohort, lesion_mapping | 2 value(s) written, 2 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Baldo2013 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Barbieri2023 | cohort, phase | 32 value(s) written, 0 not (no quote found) across 16 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Basilakos2015 | cohort, lesion_mapping, phase | 3 value(s) written, 3 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Basilakos2019 | cohort, lesion_mapping | 5 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Bates2003 | cohort, lesion_mapping | 4 value(s) written, 12 not (no quote found) across 8 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Benghanem2019 | cohort, lesion_mapping | 5 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Benjamin2014 | cohort | 4 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Bhogal2003 | cohort | 4 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Billot2022 | cohort, lesion_mapping | 2 value(s) written, 2 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Binder2009 | cohort | 12 value(s) written, 0 not (no quote found) across 12 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Bonilha2014 | cohort, lesion_mapping, phase | 9 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Bonilha2016 | cohort | 1 value(s) written, 2 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Boyle2004 | cohort | 4 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Brady2022 | cohort | 4 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Breier2008 | cohort | 3 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Breining2022 | cohort, lesion_mapping, phase | 2 value(s) written, 4 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Breitenstein2017 | cohort | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Brookshire2014 | cohort | 4 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Brownsett2014 | cohort | 1 value(s) written, 0 not (no quote found) across 1 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Buchsbaum2011 | cohort, lesion_mapping | 3 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Butler2014 | cohort, lesion_mapping | 4 value(s) written, 8 not (no quote found) across 6 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Corbetta2015 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Cote2007 | cohort | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @DenOuden2019 | cohort, lesion_mapping, phase | 18 value(s) written, 0 not (no quote found) across 6 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @DeWitt2012 | cohort | 3 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Dresang2022 | cohort, phase | 12 value(s) written, 0 not (no quote found) across 6 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Dronkers1996 | cohort, lesion_mapping, phase | 3 value(s) written, 0 not (no quote found) across 1 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Dronkers2004 | cohort, lesion_mapping | 2 value(s) written, 12 not (no quote found) across 7 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @ElHachioui2013 | cohort | 1 value(s) written, 1 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Forkel2014 | cohort | 3 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Fridriksson2010 | cohort, lesion_mapping | 4 value(s) written, 4 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Fridriksson2010Anomia | cohort, lesion_mapping | 6 value(s) written, 0 not (no quote found) across 5 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Fridriksson2013 | cohort, lesion_mapping | 4 value(s) written, 6 not (no quote found) across 5 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Fridriksson2018 | cohort, lesion_mapping, phase | 72 value(s) written, 0 not (no quote found) across 24 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Fridriksson2018Anatomy | cohort, lesion_mapping, phase | 24 value(s) written, 0 not (no quote found) across 8 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Fridriksson2018BDNF | cohort, phase | 4 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Fridriksson2018JAMA | cohort | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @GajardoVidal2021 | cohort, lesion_mapping | 2 value(s) written, 4 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Geranmayeh2017 | cohort | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Gilmore2019 | cohort | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Glascher2012 | cohort, lesion_mapping | 1 value(s) written, 5 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Godecke2021 | cohort | 1 value(s) written, 0 not (no quote found) across 1 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Goldenberg1994 | cohort, lesion_mapping, phase | 5 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Griffis2017 | cohort, lesion_mapping | 2 value(s) written, 4 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Halai2017 | cohort, lesion_mapping | 2 value(s) written, 4 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Han2013 | cohort, lesion_mapping | 2 value(s) written, 4 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Harvey2022 | cohort, lesion_mapping, phase | 5 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Henseler2014 | cohort, lesion_mapping | 6 value(s) written, 10 not (no quote found) across 8 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Hillis2001 | cohort | 1 value(s) written, 0 not (no quote found) across 1 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Hillis2004 | cohort, lesion_mapping | 3 value(s) written, 3 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Hillis2006 | cohort, lesion_mapping | 2 value(s) written, 4 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Hope2013 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Hope2017 | cohort | 6 value(s) written, 0 not (no quote found) across 6 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Hope2018 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 1 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Hosomi2009 | cohort | 1 value(s) written, 0 not (no quote found) across 1 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Hu2025 | cohort, phase | 4 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Itabashi2015 | cohort, lesion_mapping, phase | 12 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Ivanova2016 | cohort | 3 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Johnson2019 | cohort | 1 value(s) written, 1 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Kasdan2025 | cohort, lesion_mapping | 3 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Kristinsson2021 | cohort, lesion_mapping | 2 value(s) written, 1 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Kristinsson2025 | cohort, lesion_mapping, phase | 6 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Kummerer2013 | cohort, lesion_mapping | 2 value(s) written, 2 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Lacey2017 | cohort, lesion_mapping | 2 value(s) written, 6 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Laska2001 | cohort, lesion_mapping | 3 value(s) written, 1 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Laver2025 | cohort | 5 value(s) written, 0 not (no quote found) across 5 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Lazar2008 | cohort | 1 value(s) written, 1 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Lazar2010 | cohort, phase | 2 value(s) written, 0 not (no quote found) across 1 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Leff2009 | cohort, lesion_mapping | 8 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Leonard2008 | cohort | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Li2017 | cohort, lesion_mapping | 4 value(s) written, 8 not (no quote found) across 6 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Lukic2017 | cohort, lesion_mapping | 2 value(s) written, 6 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Maher2006 | cohort, phase | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Marchina2011 | cohort, phase | 20 value(s) written, 0 not (no quote found) across 10 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @MassonTrottier2021 | cohort, phase | 8 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Matchin2020 | cohort, lesion_mapping | 2 value(s) written, 2 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Meinzer2010 | cohort, lesion_mapping | 2 value(s) written, 1 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Mirman2015 | cohort, lesion_mapping, phase | 14 value(s) written, 7 not (no quote found) across 7 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Munsch2016 | cohort, lesion_mapping | 6 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Naeser2005 | cohort, phase | 4 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Nouwens2017 | cohort | 1 value(s) written, 0 not (no quote found) across 1 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Ochfeld2010 | cohort, lesion_mapping | 4 value(s) written, 2 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Oeckel2021 | cohort, lesion_mapping | 2 value(s) written, 2 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Pedersen1995 | cohort | 1 value(s) written, 1 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Pedersen2004 | cohort, phase | 8 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Pflugshaupt2009 | cohort, lesion_mapping | 7 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Pulvermuller2001 | cohort, phase | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Ramsey2017 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Rapcsak2009 | cohort, lesion_mapping | 5 value(s) written, 10 not (no quote found) across 8 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Robson2014 | cohort | 4 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Robson2019 | cohort, lesion_mapping, phase | 13 value(s) written, 0 not (no quote found) across 6 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Rodrigues2014 | cohort | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Rogalsky2018 | cohort, lesion_mapping | 2 value(s) written, 4 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Ross2008 | cohort, lesion_mapping | 8 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Saur2006 | cohort | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Saur2008 | cohort, phase | 20 value(s) written, 0 not (no quote found) across 10 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Schlaug2008 | cohort, phase | 3 value(s) written, 1 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Schumacher2019 | cohort, lesion_mapping | 3 value(s) written, 2 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Schwartz2009 | cohort, lesion_mapping | 8 value(s) written, 2 not (no quote found) across 5 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Schwartz2012 | cohort, lesion_mapping | 2 value(s) written, 4 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Sebastian2014 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Sheppard2020 | cohort, lesion_mapping | 2 value(s) written, 4 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Baldo2011 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Basilakos2015 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Bates2003 | cohort, lesion_mapping | 12 value(s) written, 0 not (no quote found) across 8 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Billot2022 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Bonilha2016 | cohort | 2 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Breining2022 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Butler2014 | cohort, lesion_mapping | 8 value(s) written, 0 not (no quote found) across 6 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Dronkers2004 | cohort, lesion_mapping | 12 value(s) written, 0 not (no quote found) across 7 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @ElHachioui2013 | cohort | 1 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Fridriksson2010 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Fridriksson2013 | cohort, lesion_mapping | 6 value(s) written, 0 not (no quote found) across 5 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @GajardoVidal2021 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Glascher2012 | cohort, lesion_mapping | 2 value(s) written, 3 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Griffis2017 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Halai2017 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Han2013 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Henseler2014 | cohort, lesion_mapping | 10 value(s) written, 0 not (no quote found) across 8 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Hillis2004 | cohort, lesion_mapping | 2 value(s) written, 1 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Hillis2006 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Johnson2019 | cohort | 1 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Kristinsson2021 | cohort | 1 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Kummerer2013 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Lacey2017 | cohort, lesion_mapping | 6 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Laska2001 | cohort | 1 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Lazar2008 | cohort | 1 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Li2017 | cohort, lesion_mapping | 8 value(s) written, 0 not (no quote found) across 6 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Lukic2017 | cohort, lesion_mapping | 6 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Matchin2020 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Meinzer2010 | cohort | 1 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Oeckel2021 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Pedersen1995 | cohort | 1 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Rapcsak2009 | cohort, lesion_mapping | 10 value(s) written, 0 not (no quote found) across 8 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Rogalsky2018 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Schumacher2019 | cohort, lesion_mapping | 2 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Schwartz2009 | lesion_mapping | 2 value(s) written, 0 not (no quote found) across 5 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Schwartz2012 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILL-REAPPLIED | @Sheppard2020 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0

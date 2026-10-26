@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_extreme_capsule
 name: Left Extreme Capsule (Ventral Language Pathway)
 kind: tract
@@ -32,6 +32,7 @@ findings:
     handedness: 6 left-handed
     language: native German-speaking
     phase: acute
+    cohort: not_reported
   statistics:
     threshold: P = 0.01 (FDR corrected)
     effect_size: r = -0.49
@@ -111,4 +112,27 @@ findings:
     quote: Both cortical hypoperfusion as well as the previously described diaschisis might lead to a
       potential 'overestimation' of the structure-function relationship in acute lesion studies.
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: To increase statistical power, only voxels affected in at least 10 patients were considered
+      for analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Using lesion volume as a covariate of no interest, no signiﬁcant voxels were found for both
+      repetition and comprehension (not displayed).
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 100
+    min_lesion_overlap: 10 patients
+    lesion_volume_correction: covariate
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

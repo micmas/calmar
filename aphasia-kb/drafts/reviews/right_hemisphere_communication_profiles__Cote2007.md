@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: right_hemisphere_communication_profiles__Cote2007
 name: Right Hemisphere Communication Impairment Profiles
 kind: classical
@@ -27,6 +27,7 @@ findings:
     age_range: 26 to 90 years
     handedness: mostly right-handed
     language: French
+    cohort: not_reported
   statistics:
     threshold: z score < -1.5 and > 50% of cluster members below -2
     effect_size: not_reported
@@ -69,6 +70,12 @@ findings:
     quote: The main limitation of the present study is surely the small number of participants evaluated,
       restricting the generalisation of results to the population of RHD.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: right_hemisphere_damage
   target_kind: impairment
@@ -89,6 +96,7 @@ findings:
     age_range: 26 to 90 years
     handedness: mostly right-handed
     language: French
+    cohort: not_reported
   statistics:
     threshold: z scores within normal range
     effect_size: not_reported
@@ -119,6 +127,11 @@ findings:
     quote: The main limitation of the present study is surely the small number of participants evaluated,
       restricting the generalisation of results to the population of RHD.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 This study explored communication impairment profiles in individuals with right-hemisphere damage (RHD) using the Protocole MEC. The authors identified heterogeneous profiles of deficits across prosodic, lexical-semantic, discourse, and pragmatic domains, while also noting that some individuals with RHD maintain normal communication abilities.

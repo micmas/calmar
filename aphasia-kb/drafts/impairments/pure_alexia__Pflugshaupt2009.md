@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: pure_alexia
 name: Pure Alexia
 kind: impairment
@@ -30,6 +30,7 @@ findings:
     handedness: all right-handed
     language: German
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.05 (Kruskal-Wallis)
     cluster_extent: not_reported
@@ -69,6 +70,12 @@ findings:
     quote: due to relatively small sample sizes and thus limited statistical power, these comparisons
       are likely to underestimate visuo-motor deficits in patients
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Pure Alexia
 

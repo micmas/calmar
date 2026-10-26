@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_ifg_pars_opercularis
 name: Left IFG Pars Opercularis (Broca's area, dorsal stream hub)
 kind: classical
@@ -27,6 +27,7 @@ findings:
     handedness: not_reported
     language: Icelandic
     phase: acute
+    cohort: not_reported
   statistics:
     threshold: 1% false-discovery rate (FDR)
     effect_size: not_reported
@@ -108,4 +109,22 @@ findings:
       apraxia of speech, nonfluent aphasia, or auditory comprehension impairment rather than the primary
       repetition impairment seen in conduction aphasia.
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: The resulting statistical map from the VLBM analysis was corrected for multiple comparisons
+      using a 1% false-discovery rate (FDR) threshold (Rorden et al., 2009).
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 39
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

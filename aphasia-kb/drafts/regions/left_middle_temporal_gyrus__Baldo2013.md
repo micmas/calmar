@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_middle_temporal_gyrus
 name: Left Middle Temporal Gyrus (Ventral Stream Node)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     age_range: mean 60.0 years (SD 11.2, range 31-84)
     handedness: right-handed
     language: native English speaker
+    cohort: not_reported
   statistics:
     threshold: permutation testing (n = 1,000) with alpha set at .05
     effect_size: max t-value 6.06
@@ -119,4 +120,27 @@ findings:
       there is likely lesioned/dysfunctional tissue that is not registered with these techniques, especially
       in the case of patients with very large lesions
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: In VLSM, t-tests are run at every voxel, comparing performance on every measure in patients
+      with a lesion versus without a lesion involving that voxel.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: t-tests were conﬁned to those voxels in which there were at least ﬁve patients with a lesion
+      and ﬁve patients without a lesion
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 96
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

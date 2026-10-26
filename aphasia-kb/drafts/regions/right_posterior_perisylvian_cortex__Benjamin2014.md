@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: right_posterior_perisylvian_cortex
 name: Right Posterior Perisylvian Cortex
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: P < .01
     effect_size: r = -0.86
@@ -70,6 +71,12 @@ findings:
     quote: Hence, type of aphasia and lesion location may affect roles of left and right posterior perisylvian
       cortex in the Intention treatment.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Right Posterior Perisylvian Cortex
 

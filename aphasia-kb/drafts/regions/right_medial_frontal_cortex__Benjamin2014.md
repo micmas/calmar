@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: right_medial_frontal_cortex
 name: Right Medial Frontal Cortex
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: P < .05
     effect_size: t = -2.615
@@ -62,6 +63,12 @@ findings:
     page: 7
     quote: Medial frontal cortex also showed a laterality shift for IT, but only at 3-month follow-up.
     supports: claim
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Right Medial Frontal Cortex
 

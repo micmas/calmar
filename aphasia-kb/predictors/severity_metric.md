@@ -74,6 +74,8 @@ findings:
       data.
     exclusion_criteria: ineligible for MRI; comorbid neurological conditions; unable
       to perform MRI tasks; incomplete neuroimaging data.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: two-tailed Wilcoxon signed-rank tests comparing optimal vs single-modality
       models; α=0.05; primary metric RMSE
@@ -206,6 +208,18 @@ findings:
       and the greater number of male compared to female participants, which could
       bias the results
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: Participants were 30 individuals with chronic post-stroke aphasia (26 male,
+      4 female) due to a single left-hemisphere stroke.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: severity_metric
   target_kind: predictor
@@ -243,6 +257,8 @@ findings:
     inclusion_criteria: post-stroke aphasia; ages 35–80; complete multimodal imaging.
     exclusion_criteria: ineligible for MRI; comorbid neurological conditions; incomplete
       imaging.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'feature selection frequency: selected in all 11/11 outer folds = maximum
       consistency; SHAP value for rsFMRI-FC = 3.65 (highest of all 7 predictor classes)'
@@ -344,6 +360,18 @@ findings:
     quote: data from Cohort 1 and Cohort 2 were processed using different pipelines
       for both lesion segmentation and DTI preprocessing
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: Participants were 30 individuals with chronic post-stroke aphasia (26 male,
+      4 female) due to a single left-hemisphere stroke.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: severity_metric
   target_kind: predictor
@@ -902,6 +930,8 @@ findings:
     inclusion_criteria: chronic (≥12 months) left-hemisphere stroke; aphasia (WAB-AQ
       ≤93.8); all neuroimaging modalities available.
     exclusion_criteria: WAB-AQ >93.8 (no aphasia); missing any neuroimaging modality.
+    phase: chronic
+    cohort: POLAR
   statistics:
     threshold: VIP > 1.5 across ≥4 modality-specific PLSR models; LOOCV-validated
       Pearson r
@@ -1034,6 +1064,37 @@ findings:
     page: 16
     quote: which is a fairly coarse measure of language processing
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: A total of 86 participants with chronic (>12-month post-stroke) aphasia
+      after left hemisphere strokes were examined.
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: we employed a novel approach to multimodal lesion-symptom mapping using
+      multivariate partial least squares regression to delineate the latent structure
+      of lesion-behavioural mapping in aphasia
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: 'The participants evaluated in this study were part of the POLAR (Predicting
+      Outcomes of Language Rehabilitation in Aphasia) trial (clinicaltrials.gov identifier:
+      NCT03416738; for details on the study protocol, see Kristinsson et al.43).'
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 86
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f8
   target: left_perisylvian_network
   target_kind: region
@@ -1061,6 +1122,8 @@ findings:
     inclusion_criteria: chronic (≥12 months) left-hemisphere stroke; aphasia; complete
       multimodal neuroimaging.
     exclusion_criteria: WAB-AQ >93.8; missing neuroimaging modality.
+    phase: chronic
+    cohort: POLAR
   statistics:
     threshold: post-hoc linear regression; p=0.013 (naming, right putamen), p=0.021
       (repetition, right putamen), p=0.049 (auditory comprehension, left STL), p=0.045
@@ -1159,6 +1222,37 @@ findings:
     quote: '[...] of several key areas for language performance, they do not represent
       an exhaustive overview of regions that contribute to language functioning.'
     supports: limitation
+  - section: added by backfill
+    page: 12
+    quote: we predicted language outcomes based on proportional lesion in the four
+      shared regions—assuming that damage leads to poorer performance—and MD in regions
+      uniquely associated with specific subtest scores
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: A total of 86 participants with chronic (>12-month post-stroke) aphasia
+      after left hemisphere strokes were examined.
+    supports: sample
+  - section: added by backfill
+    page: 4
+    quote: 'The participants evaluated in this study were part of the POLAR (Predicting
+      Outcomes of Language Rehabilitation in Aphasia) trial (clinicaltrials.gov identifier:
+      NCT03416738; for details on the study protocol, see Kristinsson et al.43).'
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 86
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f9
   target: prognosis
   target_kind: prognosis
@@ -1181,6 +1275,7 @@ findings:
     age_range: not_reported
     handedness: not_reported
     language: Swedish
+    cohort: not_reported
   statistics:
     threshold: P < 0.001
     effect_size: not_reported
@@ -1223,6 +1318,12 @@ findings:
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f10
   target: anomic_aphasia
   target_kind: therapy
@@ -1246,6 +1347,7 @@ findings:
     age_range: mean 60.2 (SD 11.9)
     handedness: all right-handed
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < .008
     effect_size: T = 2.45
@@ -1302,6 +1404,12 @@ findings:
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 notes: "This is the umbrella entry for *any* finding about how aphasia severity predicts\
   \ an outcome. Different studies use different instruments (WAB-AQ, BDAE severity,\
   \ CAT, AAT, …); rather than fragmenting the literature into one predictor entry\

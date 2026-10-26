@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_arcuate_fasciculus
 name: Left arcuate fasciculus
 kind: tract
@@ -28,6 +28,7 @@ findings:
     age_range: 38–77 years
     handedness: all premorbidly right handed
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.017
     effect_size: F[1,18] = 10.64
@@ -105,6 +106,12 @@ findings:
       to FA decrease may be present other than injury to the tract, thus potentially rendering the FA
       decreases non-specific.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: form_to_meaning
   target_kind: impairment
@@ -125,6 +132,7 @@ findings:
     age_range: 38–77 years
     handedness: all premorbidly right handed
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.017
     effect_size: F[1,18] = 6.74
@@ -180,6 +188,11 @@ findings:
       stroke, comprehension deficits may be either mediated through or moderated by cortical damage to
       left temporal lobe language areas.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 Findings from Breier et al. (2008) using DTI to correlate FA values of the AF and SLF with WAB-R indices.

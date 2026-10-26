@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: rhythm_production
 name: Rhythm Production (Tapping)
 kind: impairment
@@ -30,6 +30,7 @@ findings:
     handedness: 27 R; 3 L; 3 Am
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: r = 0.41
@@ -57,4 +58,10 @@ findings:
     quote: In sum, this set of results—which must be considered exploratory—shows that some aspects of
       fluency... were highly correlated with tapping
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

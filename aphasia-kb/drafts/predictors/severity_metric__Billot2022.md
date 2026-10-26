@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -37,6 +37,7 @@ findings:
     age_range: mean 58.8 years
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.001
     effect_size: F1 = 0.842 (individual feature set model)
@@ -88,7 +89,25 @@ findings:
     quote: Although the sample size of this study was limited due to the availability of the multimodal
       MRI data...
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: Participants were 55 individuals (37 male) with chronic post-stroke aphasia due to a single
+      left-hemisphere stroke
+    supports: method
   imaging_details:
     reference_space: not_reported
     atlases_used: []
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 55
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
