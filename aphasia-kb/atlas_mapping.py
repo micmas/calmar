@@ -203,8 +203,10 @@ def region_damage(units_df: pd.DataFrame, directory: str = str(DIR)) -> pd.DataF
         for atlas in dict.fromkeys(p.atlas for p in parts):
             own = [p for p in parts if p.atlas == atlas]
             hit = [p for p in own if p.overlap_voxels]
-            sizes = [p.overlap_voxels / (p.region_pct / 100.0) for p in own if p.region_pct]
-            complete = all(p.region_pct is not None or not p.overlap_voxels for p in own)
+            # itertuples() reads None as NaN in the float column: test for a
+            # number, not for truth (NaN is truthy and would poison the sum).
+            sizes = [p.overlap_voxels / (p.region_pct / 100.0) for p in own if pd.notna(p.region_pct) and p.region_pct]
+            complete = all(pd.notna(p.region_pct) or not p.overlap_voxels for p in own)
             per_atlas.append(dict(
                 lesion_pct=sum(p.lesion_pct for p in own),
                 region_pct=(100.0 * sum(p.overlap_voxels for p in hit) / sum(sizes)) if hit and sizes and complete else None,
