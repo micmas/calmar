@@ -1,0 +1,74 @@
+# Tract units -> bundles of the ENIGMA Symmetric tractography atlas (v1.0.0,
+# Ba Gari et al. 2026, doi 10.5281/zenodo.19656193), the atlas the CALMaR
+# webapp queries through nii2tvx (the Disconnectome webapp's engine).
+#
+# The Python report measures disconnection on a BCBToolkit / DeepDisco
+# probability map overlapped with the JHU and XTRACT label atlases
+# (atlas_mapping.tract_disconnection). The webapp has no such map; it
+# intersects the warped lesion with ENIGMA streamlines and reports, per
+# bundle, the fraction of streamlines passing through the lesion. That
+# fraction (x 100) stands in for `region_pct` ("share of the tract
+# disconnected") so the same finding matching applies, and the report says so.
+#
+# Fields:
+#   units            unit id (units.yaml) -> ENIGMA bundle names per side.
+#                    A unit with several bundles is scored by its most
+#                    disconnected bundle (the atlases' segments overlap).
+#   extra_units      units that exist only for the disconnectome, because no
+#                    label atlas represents them (the extreme capsule).
+#   extra_regions    knowledge-base region names reachable only through
+#                    extra_units; they stay listed under `unmapped` in
+#                    kb_regions.yaml for the label-atlas report.
+#   basis            why these bundles.
+atlas: ENIGMA
+units:
+  arcuate_fasciculus:
+    labels: {left: [Association_ArcuateFasciculusL], right: [Association_ArcuateFasciculusR]}
+    basis: ENIGMA arcuate fasciculus (whole bundle; its segments are not separated).
+  slf:
+    labels:
+      left: [Association_SuperiorLongitudinalFasciculusL_2, Association_SuperiorLongitudinalFasciculusL_3]
+      right: [Association_SuperiorLongitudinalFasciculusR_2, Association_SuperiorLongitudinalFasciculusR_3]
+    basis: >-
+      ENIGMA separates SLF II and SLF III (its SLF I sits under the cingulum). Together they are the
+      fronto-parietal body of the SLF that JHU's single label covers.
+  slf_iii:
+    labels: {left: [Association_SuperiorLongitudinalFasciculusL_3], right: [Association_SuperiorLongitudinalFasciculusR_3]}
+    basis: ENIGMA SLF III, the same bundle XTRACT labels.
+  ilf:
+    labels: {left: [Association_InferiorLongitudinalFasciculusL], right: [Association_InferiorLongitudinalFasciculusR]}
+    basis: ENIGMA bundle of the same tract.
+  ifof:
+    labels: {left: [Association_InferiorFrontoOccipitalFasciculusL], right: [Association_InferiorFrontoOccipitalFasciculusR]}
+    basis: ENIGMA bundle of the same tract.
+  uncinate_fasciculus:
+    labels: {left: [Association_UncinateFasciculusL], right: [Association_UncinateFasciculusR]}
+    basis: ENIGMA bundle of the same tract.
+  frontal_aslant_tract:
+    labels: {left: [Association_FrontalAslantTractL], right: [Association_FrontalAslantTractR]}
+    basis: ENIGMA bundle of the same tract.
+  middle_longitudinal_fasciculus:
+    labels: {left: [Association_MiddleLongitudinalFasciculusL], right: [Association_MiddleLongitudinalFasciculusR]}
+    basis: ENIGMA bundle of the same tract.
+  optic_radiation:
+    labels: {left: [ProjectionBasalGanglia_OpticRadiationL], right: [ProjectionBasalGanglia_OpticRadiationR]}
+    basis: ENIGMA bundle of the same tract.
+  forceps:
+    labels: [Commissure_CorpusCallosum_ForcepsMajor, Commissure_CorpusCallosum_ForcepsMinor]
+    basis: >-
+      Midline bundles without a side, like JHU's forceps labels; the side is taken from the lesion
+      voxels. ENIGMA also has callosal body bundles, which JHU does not label, so they are not used
+      here to keep the unit's meaning the same in both reports.
+extra_units:
+  extreme_capsule:
+    name: Extreme capsule
+    kind: tract
+    labels: {left: [Association_ExtremeCapsuleL], right: [Association_ExtremeCapsuleR]}
+    basis: >-
+      ENIGMA has an extreme-capsule bundle; no label atlas used by the report does, so this unit
+      exists only for the disconnectome (EVIDENCE_GAPS.md, "extreme capsule ventral stream").
+extra_regions:
+  left_extreme_capsule:
+    units: [extreme_capsule]
+    side: left
+    basis: Same structure; reachable only through the disconnectome.
