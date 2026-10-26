@@ -70,6 +70,7 @@ class ReportInterfaceTests(unittest.TestCase):
         self.assertEqual(panel.evidence.value, 'all')                      # default: drafts included
         panel.source.value, panel.atlas.value, panel.decode.value = 'manual', 'Atlas B', True
         panel.evidence.value = 'approved'
+        panel.domains['naming'].value = 'moderate'
         self.assertIn('evidence: Approved entries only', panel.summary.value)
         self.assertTrue(panel.gate.paused)
         panel.navigation.request = Mock()
@@ -81,6 +82,22 @@ class ReportInterfaceTests(unittest.TestCase):
         self.assertFalse(panel.gate.paused)
         self.assertEqual((ns['INTERP_MASK_SOURCE'], ns['INTERP_DISPLAY_ATLAS'], ns['INTERP_RUN_DECODING'],
                           ns['INTERP_EVIDENCE']), ('manual','Atlas B',True,'approved'))
+        self.assertEqual(ns['INTERP_DOMAIN_LEVELS']['naming'], 'moderate')
+        self.assertEqual(ns['INTERP_DOMAIN_LEVELS']['reading'], 'not_assessed')
+
+    def test_domain_levels_are_kept_separate_when_switching_participants(self):
+        shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
+        ns = dict(SUBJECTS=[dict(subject='sub-a', session='ses-1'), dict(subject='sub-b', session='ses-2')],
+                  INTERP_KB_ATLASES=['Atlas A'], available_mni_sources=lambda entry: ['manual'])
+        panel = ReportInputs(ns, shell)
+        self.addCleanup(panel.close)
+        panel.domains['naming'].value = 'mild'
+        panel.subject.value = 1
+        self.assertEqual(panel.domains['naming'].value, 'not_assessed')
+        panel.domains['naming'].value = 'severe'
+        panel.subject.value = 0
+        self.assertEqual(panel.domains['naming'].value, 'mild')
+        self.assertEqual(ns['INTERP_DOMAIN_LEVELS_BY_PARTICIPANT']['sub-b|ses-2']['naming'], 'severe')
 
     def test_report_keeps_evidence_and_qc_notice_and_adds_decoding_once(self):
         body = '<main><h4>Regions (Atlas A)</h4><table><tr><td>ROI</td></tr></table><h4>Outcomes</h4><p>Citation X</p><hr><div class="legend"><h5>How to read the evidence</h5><p>Legend</p></div></main>'

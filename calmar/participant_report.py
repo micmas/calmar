@@ -23,9 +23,12 @@ How the numbers are computed
   about each damaged region with their direction, and the impairments they
   point to (:meth:`KnowledgeBase.location_findings` / ``interpret_damage``).
 * Measures (calmar.report_evidence.measures_section): WAB-AQ, age at stroke,
-  days to WAB, sex (``participants.tsv``) and lesion volume (mL; voxels > 0 in
-  the selected MNI mask x voxel volume), each with the direction the evidence
-  gives and its findings.
+  education, days to WAB, sex (``participants.tsv``), optional brain-health
+  measurements, and lesion volume (mL; voxels > 0 in the selected MNI mask x
+  voxel volume). Values without KB evidence remain visible as context.
+* Domain context: user-entered none/mild/moderate/severe levels across language
+  and cognitive domains; missing domains remain ``not_assessed`` and are never
+  inferred from WAB-AQ, aphasia type, language, or lesion location.
 * Therapies: :meth:`KnowledgeBase.interpret_therapies` from the impairments
   the lesion location points to, gated by impairments implied by the WAB type.
 * Provenance: mask QC rating from the participant's ``*.qc.json`` sidecar and
@@ -74,6 +77,20 @@ EVIDENCE_LEVELS = {"approved": ("approved",),
 EVIDENCE_LABELS = {"approved": "Approved entries only",
                    "in_review": "Approved + in review",
                    "all": "All, including unreviewed drafts"}
+
+DOMAIN_LEVELS = ("not_assessed", "none", "mild", "moderate", "severe")
+DOMAIN_LEVEL_LABELS = {
+    "not_assessed": "Not assessed", "none": "None observed", "mild": "Mild",
+    "moderate": "Moderate", "severe": "Severe",
+}
+DOMAIN_LABELS = {
+    "naming": "Naming / word finding", "comprehension": "Spoken comprehension",
+    "repetition": "Repetition", "fluency": "Speech fluency", "reading": "Reading",
+    "writing": "Writing", "speech_motor": "Speech motor / articulation",
+    "semantics": "Semantic processing", "syntax": "Syntactic processing",
+    "executive_function": "Executive function", "attention": "Attention", "memory": "Memory",
+    "praxis": "Praxis", "visuospatial_attention": "Visuospatial attention",
+}
 
 
 @dataclass
@@ -319,6 +336,50 @@ def row_to_predictors(row):
     if row.get("sex"):
         out["sex"] = row["sex"]
     return out
+
+
+def education_measure(row):
+    """Return education exactly as supplied, without guessing across fields."""
+    row = row or {}
+    for key in ("education_years", "years_of_education"):
+        value = row.get(key)
+        if value not in (None, ""):
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                return {"value": value, "units": "not recorded", "label": "Education", "kb_id": "education"}
+            return {"value": value, "units": "years", "label": "Education", "kb_id": "education"}
+    if row.get("education") not in (None, ""):
+        return {"value": row["education"], "units": "as recorded", "label": "Education", "kb_id": "education"}
+    return {"value": None, "units": "not recorded", "label": "Education", "kb_id": "education",
+            "missing_reason": "participants.tsv has no education value"}
+
+
+def normalise_domain_levels(values):
+    """Validate the report-only domain context without inferring missing levels."""
+    supplied = values or {}
+    unknown = sorted(set(supplied) - set(DOMAIN_LABELS))
+    if unknown:
+        raise ValueError("Unknown impairment domains: " + ", ".join(unknown))
+    out = {}
+    for domain in DOMAIN_LABELS:
+        level = supplied.get(domain, "not_assessed")
+        if level not in DOMAIN_LEVELS:
+            raise ValueError(f"Invalid level {level!r} for {domain}; choose one of {DOMAIN_LEVELS}")
+        out[domain] = level
+    return out
+
+
+def domain_levels_html(values):
+    """Participant-context table of explicitly entered domain levels."""
+    levels = normalise_domain_levels(values)
+    rows = "".join(
+        f"<tr><td><b>{escape(DOMAIN_LABELS[domain])}</b></td>"
+        f"<td>{escape(DOMAIN_LEVEL_LABELS[level])}</td></tr>"
+        for domain, level in levels.items())
+    return ("<p class='section-intro'>Domain levels were entered directly for this report. They are not inferred "
+            "from WAB-AQ, aphasia type, language, or lesion location; <b>not assessed</b> is not normal performance."
+            "</p><table class='behaviour-table'>" + rows + "</table>")
 
 
 def lesion_volume_ml(mask_path):
@@ -588,9 +649,14 @@ def behaviour_html(rules, row, predictors, volume_ml):
         return "<p style='color:#888'><em>No participants.tsv entry.</em></p>"
     row = row or {}
     wab_type = row.get("wab_type")
+    education = education_measure(row)
+    education_value = education.get("value")
+    if education_value is not None and education.get("units") == "years":
+        education_value = f"{education_value:g} years"
     items = [("WAB-AQ", row.get("wab_aq")),
              ("WAB type", (str(wab_type) + decompose_html(rules, wab_type)) if wab_type else None),
              ("Age at stroke", row.get("age_at_stroke")),
+             ("Education", education_value),
              ("Sex", row.get("sex")),
              ("Days to WAB", row.get("wab_days")),
              ("Lesion volume", f"{volume_ml:.1f} mL" if volume_ml is not None else "&#8212;")]
@@ -1006,6 +1072,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     dataset_dir = dataset_for(entry)
     row = participant_row(dataset_dir, entry["subject"])
     predictors = row_to_predictors(row)
+    predictors["education"] = education_measure(row)
     stage_id, stage_label = rules.classify_stage((row or {}).get("wab_days"))
     # STROKE_PHASE overrides; without onset data the acute (DWI) route is acute.
     from .study import modality
@@ -1074,11 +1141,14 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       </div>
     </header>
     '''
+    domain_levels = normalise_domain_levels(namespace.get("INTERP_DOMAIN_LEVELS"))
     context = f'''
       <h3>Behavioural / clinical data</h3>
       <p class="section-intro">These participant measures provide context before the lesion description. Missing
         values remain missing and are not inferred.</p>
       {behaviour_html(rules, row, predictors, volume)}
+      <h3>Domain-level impairment context</h3>
+      {domain_levels_html(domain_levels)}
       <h3>Damaged regions ({settings.display_atlas}, &ge;{settings.min_overlap_pct}%)</h3>
       <p class="section-intro">This table locates the lesion in the selected display atlas. It is an anatomical
         overview; the literature interpretation follows below.</p>
@@ -1090,10 +1160,18 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
         kb, rules, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id,
         map_name=map_path.name if map_path is not None else None, mask_label=label,
         lesion_rows=location_rows)
+    from .diffusion import direct_diffusion_section
+    direct_diffusion = direct_diffusion_section(dataset_dir, entry_config, entry)
+    from .brain_health import brain_health_measure_note, brain_health_measure_records
+    brain_health_records = brain_health_measure_records(dataset_dir, entry_config, entry)
+    for record in brain_health_records:
+        predictors[record["id"]] = record
+    brain_health_note = brain_health_measure_note(dataset_dir, entry_config, entry, stroke_phase=stage_id)
     measures = f'''
       <p class="section-intro">Findings about measures such as lesion volume or aphasia severity report
         associations in study groups (for example, larger lesions with more severe aphasia), not predictions for
         one person.</p>
+      {brain_health_note}
       {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None, phase=stage_id)}'''
     therapy = f'''
       <p class="section-intro">These are therapies with evidence targeting impairments represented above. They are
@@ -1106,7 +1184,9 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
             # (Brain Communications 2024 commentary, fcae364; Huygelier 2025).
             + report_section("This participant’s measures: what the evidence says", measures, open=True)
             + report_section("Lesion location: what the evidence says", location, open=True)
-            + report_section("White-matter disconnection: what the evidence says", white_matter)
+            + report_section("White-matter disconnection: normative lesion-based models", white_matter)
+            + (report_section("Direct diffusion measurements: participant dMRI", direct_diffusion)
+               if direct_diffusion is not None else "")
             + report_section(f"Therapy recommendations ({n_therapy} matched)", therapy)
             + report_section("How to read the evidence", LEGEND_HTML)
             + "</main>")

@@ -1,0 +1,134 @@
+id: brain_health_analysis
+version: "0.0.14"
+name: Optional stroke-aware structural brain-health features
+description: >
+  Opt-in, cross-sectional description of atrophy-sensitive structural volumes
+  and FLAIR white-matter-hyperintensity candidate burden. T1w SynthSeg
+  volumetry is kept descriptive because a single scan lacks age- and
+  acquisition-matched norms and a chronic stroke cavity can mimic tissue loss.
+  DeepWMH segments FLAIR hyperintensity; the selected native stroke lesion is
+  registered to FLAIR and excluded with an explicit margin before a non-stroke
+  WMH candidate burden is calculated. Acute infarct-related oedema can extend
+  beyond the exclusion zone, so no Fazekas grade or vascular aetiology is
+  inferred. Outputs remain provisional until their PNG overlays are reviewed.
+inputs:
+  - id: scheduler_request
+    type: data
+    source: reports/jobs/<job-id>/request.json
+    description: >
+      One selected participant/session with explicit T1w and/or same-session
+      FLAIR inputs, route, stroke phase, lesion-mask source and analysis choices.
+  - id: anatomical_mri
+    type: data
+    source: data/ds004884
+    description: >
+      The genuine T1w used for structural volumetry and/or the same-session
+      FLAIR used for hyperintensity segmentation. Acute FLAIR is not promoted
+      into an atrophy measurement.
+  - id: native_stroke_lesion
+    type: data
+    source: data/ds004884/derivatives
+    description: >
+      Selected native-space stroke lesion used to identify cavity-related
+      structural bias and to exclude focal stroke signal from the FLAIR burden.
+      Its exact path and source are recorded per participant.
+decisions:
+  synthseg_mode:
+    label: SynthSeg inference mode
+    rationale: >
+      Robust inference is slower but is preferred for heterogeneous scans with
+      focal pathology; standard inference remains a defensible sensitivity
+      analysis and can change regional volumes.
+    default: robust
+    options:
+      robust:
+        label: Robust inference (robust)
+      standard:
+        label: Standard inference (standard)
+  lesion_mask_source:
+    label: Native stroke lesion used for adjustment
+    rationale: >
+      Different lesion segmentations can change the cavity adjustment and the
+      FLAIR exclusion region, so the source must be explicit.
+    default: manual
+    options:
+      manual:
+        label: Manual/reference lesion (manual)
+      linda:
+        label: LINDA lesion (linda)
+      synthstroke:
+        label: SynthStroke lesion (synthstroke)
+      openads:
+        label: OpenADS acute lesion (openads)
+  lesion_exclusion_margin:
+    label: FLAIR stroke exclusion margin in millimetres
+    rationale: >
+      Registration uncertainty and peri-infarct signal make exact-mask
+      subtraction too brittle, while a larger margin can remove genuine
+      background WMH. The implemented values support sensitivity analysis.
+    default: margin_3mm
+    options:
+      margin_0mm:
+        label: Exact registered lesion (0)
+      margin_3mm:
+        label: Registered lesion plus 3 mm (3)
+      margin_5mm:
+        label: Registered lesion plus 5 mm (5)
+outputs:
+  - id: brain_health_anatomy
+    type: data
+    format: directory
+    description: >
+      Published scheduler receipt for robust or standard SynthSeg parcellation,
+      source volumes, descriptive parenchymal/ventricular metrics and a PNG QC
+      overlay. Cavity adjustment adds only lesion voxels classified as CSF or
+      background and does not reconstruct pre-stroke anatomy.
+    inputs: [scheduler_request, anatomical_mri, native_stroke_lesion]
+    decisions: [synthseg_mode, lesion_mask_source]
+    recipe:
+      command: CALMAR_BRAIN_HEALTH_SYNTHSEG_MODE={decisions.synthseg_mode} CALMAR_BRAIN_HEALTH_MASK_SOURCE={decisions.lesion_mask_source} bash src/analysis_48_brain_health_anatomy.sh {inputs.scheduler_request} {output}
+      container: synthseg:8.2.1
+      resources:
+        cpus: 8
+        memory: 32 GB
+        time_limit: "04:00:00"
+  - id: brain_health_wmh
+    type: data
+    format: directory
+    description: >
+      Published scheduler receipt for the raw DeepWMH FLAIR segmentation and
+      its PNG overlay. This raw mask can include focal stroke-related signal.
+    inputs: [scheduler_request, anatomical_mri]
+    recipe:
+      command: bash src/analysis_49_brain_health_wmh.sh {inputs.scheduler_request} {output}
+      container: deepwmh:1.0.1
+      resources:
+        cpus: 4
+        memory: 24 GB
+        time_limit: "03:00:00"
+  - id: brain_health_metrics
+    type: table
+    format: directory
+    description: >
+      Published scheduler receipt for JSON/TSV report features, the registered
+      lesion and exclusion zone when FLAIR is selected, the non-stroke WMH
+      candidate mask and combined PNG QC. Missing measurements remain missing.
+    inputs: [scheduler_request, native_stroke_lesion, brain_health_anatomy, brain_health_wmh]
+    decisions: [lesion_mask_source, lesion_exclusion_margin]
+    recipe:
+      command: CALMAR_BRAIN_HEALTH_MASK_SOURCE={decisions.lesion_mask_source} CALMAR_BRAIN_HEALTH_LESION_EXCLUSION_MM={decisions.lesion_exclusion_margin} bash src/analysis_50_brain_health_metrics.sh {inputs.scheduler_request} {output}
+      container: ants:2.6.5
+      resources:
+        cpus: 4
+        memory: 16 GB
+        time_limit: "02:00:00"
+  - id: participant_report_evidence
+    type: report
+    format: html
+    description: >
+      Brain-health cards in the participant measures section showing every
+      selected descriptive structural and WMH-candidate feature with units,
+      tool/version, QC status, stroke-phase caveats and explicit missing values.
+      Measures without a matching knowledge-base predictor remain visible as
+      participant context and are not converted into diagnoses.
+    inputs: [brain_health_metrics]

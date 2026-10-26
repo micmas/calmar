@@ -14,7 +14,9 @@ from .job_progress import JobProgress
 
 SCRIPTS = {name: f'analysis_{number}_{name}.sh' for number,name in
            [(22,'acquisition'),(23,'brain'),(24,'linda'),(25,'synthstroke'),
-            (29,'registration'),(43,'openads'),(26,'manual'),(27,'bcb'),(28,'deepdisco')]}
+            (29,'registration'),(43,'openads'),(26,'manual'),(27,'bcb'),(28,'deepdisco'),
+            (45,'dmri_preproc'),(46,'dmri_recon'),(47,'dmri_metrics'),
+            (48,'brain_health_anatomy'),(49,'brain_health_wmh'),(50,'brain_health_metrics')]}
 SCRIPTS['qc_operation'] = 'analysis_30_qc_operation.sh'
 SCRIPTS['reporting'] = 'analysis_35_reporting.sh'
 
@@ -65,7 +67,8 @@ def scheduled_operation(function):
 
 
 PROCESSING_STAGES = ('acquisition', 'brain', 'linda', 'synthstroke', 'registration', 'openads', 'manual', 'bcb',
-                     'deepdisco')
+                     'deepdisco', 'dmri_preproc', 'dmri_recon', 'dmri_metrics',
+                     'brain_health_anatomy', 'brain_health_wmh', 'brain_health_metrics')
 # Bump when saved QC evidence changes, so older receipts without it are refreshed.
 QC_VERSION = 7
 
@@ -142,6 +145,23 @@ def _result_stamps(result):
         paths.add(Path(entry['t1w']))
         if entry.get('adc'):
             paths.add(Path(entry['adc']))
+        if result.get('stage') in ('dmri_preproc', 'dmri_recon', 'dmri_metrics'):
+            for key in ('dwi', 'bval', 'bvec', 'json', 'anatomical_t1w'):
+                if entry.get(key):
+                    paths.add(Path(entry[key]))
+        if result.get('stage', '').startswith('brain_health_'):
+            for key in ('flair', 'anatomical_t1w'):
+                if entry.get(key):
+                    paths.add(Path(entry[key]))
+            try:
+                from .study import Study
+                source = request.get('config', {}).get('BRAIN_HEALTH_MASK_SOURCE', 'manual')
+                selected = (Study(request.get('config', {}), request.get('dataset', '.'), '.')
+                            .masks(entry).get(source, {}).get('T1w'))
+                if selected is not None:
+                    paths.add(Path(selected))
+            except (KeyError, TypeError, ValueError):
+                return None
         from .processing import manual_inputs
         mask, reference, _ = manual_inputs(request, entry)
         paths.update(p for p in (mask, reference) if p is not None)
@@ -153,8 +173,23 @@ def _result_stamps(result):
             path = Path(output['path'])
             if path.is_dir():
                 paths.update(path/name for name in output.get('images', {}))
+                for marker in ('calmar-selection.json', 'calmar-reconstruction.json'):
+                    if (path/marker).is_file():
+                        paths.add(path/marker)
+                selections = [path/'calmar-selection.json', path.parent/'qsiprep'/'calmar-selection.json']
+                selection = next((candidate for candidate in selections if candidate.is_file()), None)
+                if selection is not None:
+                    try:
+                        selected = json.loads(selection.read_text())
+                        paths.update(Path(selected[key]) for key in ('anatomical_t1w', 'lesion_mask')
+                                     if selected.get(key))
+                    except (OSError, ValueError):
+                        return None
             else:
                 paths.add(path)
+            provenance = Path(str(path) + '.prov.json')
+            if provenance.is_file():
+                paths.add(provenance)
             record = path/'calmar-cache.json' if path.is_dir() else Path(str(path)+'.cache.json')
             if record.is_file():
                 paths.add(record)
@@ -234,10 +269,17 @@ def _stage_payload(stage, payload):
     """
     payload = dict(payload)
     if stage != 'acquisition' and 'entries' in payload:
-        ignored = {'dwi_inventory', 'bval', 'bvec', 'json'}
+        ignored = {'dwi_inventory', 'bval', 'bvec', 'json', 'flair', 'anatomical_t1w',
+                   'brain_health_components'}
+        if stage in ('dmri_preproc', 'dmri_recon', 'dmri_metrics'):
+            ignored -= {'bval', 'bvec', 'json'}
+        if stage.startswith('brain_health_'):
+            ignored -= {'flair', 'anatomical_t1w', 'brain_health_components'}
         # The selected DWI session changes the downstream disconnectome mask,
         # but must not invalidate unrelated T1 processing caches.
-        if stage not in ('bcb', 'deepdisco'):
+        keep_dwi_link = (stage.startswith('brain_health_') and
+                         payload.get('config', {}).get('BRAIN_HEALTH_MASK_SOURCE') == 'openads')
+        if stage not in ('bcb', 'deepdisco') and not keep_dwi_link:
             ignored.add('dwi_analysis')
         payload['entries'] = [{k: v for k, v in entry.items() if k not in ignored}
                               for entry in payload['entries']]
@@ -250,10 +292,43 @@ def _identity_key(stage, payload):
     identity = _stage_payload(stage, payload)
     if 'config' in identity:
         from .processing import ALGORITHM_VERSIONS
-        identity['config'] = {k:v for k,v in identity['config'].items() if k not in (
+        presentation = {
             'PROJECT_DIR', 'REPORTS_SUBDIR', 'MASK_COLORS', 'TEST_SUBJECT_IDX', 'RUN_TEST',
             'NIIVUE_URL_BASE', 'VERBOSE', 'ANALYSE_DWI', '_DWI_ANALYSIS_SELECTED',
-            'ADDITIONAL_COHORTS')}
+            'ANALYSE_TRACT_DWI', '_TRACT_DWI_SELECTED',
+            'ANALYSE_BRAIN_HEALTH', '_BRAIN_HEALTH_SELECTED',
+            'ADDITIONAL_COHORTS', 'DMRI_OVERWRITE'}
+        config = identity['config']
+        if stage.startswith('dmri_'):
+            # Direct dMRI reads only its own method settings plus the derivative
+            # locations needed to resolve the selected native-T1 lesion mask.
+            relevant = {
+                'MODALITY', 'SEGMENTATION_METHODS', 'MANUAL_MASK_PATH', 'MANUAL_MASK_ROOT',
+                'MANUAL_MASK_SPACE', 'MANUAL_MASK_REF', 'DERIVATIVES_SUBDIR',
+                'SYNTHSTROKE_SUBDIR', 'REGISTRATION_SUBDIR', 'OPENADS_SUBDIR',
+            }
+            identity['config'] = {k: v for k, v in config.items()
+                                  if k not in presentation and (k.startswith('DMRI_') or k in relevant)}
+        elif stage.startswith('brain_health_'):
+            relevant = {
+                'MODALITY', 'STROKE_PHASE', 'SEGMENTATION_METHODS', 'MANUAL_MASK_PATH',
+                'MANUAL_MASK_ROOT', 'MANUAL_MASK_SPACE', 'MANUAL_MASK_REF',
+                'DERIVATIVES_SUBDIR', 'SYNTHSTROKE_SUBDIR', 'OPENADS_SUBDIR',
+                'REGISTRATION_SUBDIR',
+            }
+            stage_keys = {
+                'brain_health_anatomy': {'BRAIN_HEALTH_SUBDIR', 'BRAIN_HEALTH_SYNTHSEG_MODE',
+                                         'BRAIN_HEALTH_MASK_SOURCE'},
+                'brain_health_wmh': {'BRAIN_HEALTH_SUBDIR'},
+                'brain_health_metrics': {'BRAIN_HEALTH_SUBDIR', 'BRAIN_HEALTH_SYNTHSEG_MODE',
+                                         'BRAIN_HEALTH_MASK_SOURCE', 'BRAIN_HEALTH_LESION_EXCLUSION_MM',
+                                         'BRAIN_HEALTH_REGISTRATION_SEED'},
+            }[stage]
+            identity['config'] = {k: v for k, v in config.items()
+                                  if k not in presentation and (k in stage_keys or k in relevant)}
+        else:
+            identity['config'] = {k: v for k, v in config.items()
+                                  if k not in presentation and not k.startswith(('DMRI_', 'BRAIN_HEALTH_'))}
         identity['algorithms'] = ALGORITHM_VERSIONS
     return (stage, json.dumps(identity, default=str, sort_keys=True))
 
@@ -261,7 +336,9 @@ def _identity_key(stage, payload):
 def _reusable(stage, payload):
     config = payload.get('config', {})
     return stage not in ('qc_operation', 'reporting') and not (
-        config.get('OVERWRITE') or config.get('DEEPDISCO_OVERWRITE') or config.get('BCB_OVERWRITE'))
+        config.get('OVERWRITE') or config.get('DEEPDISCO_OVERWRITE') or config.get('BCB_OVERWRITE')
+        or (stage.startswith('dmri_') and config.get('DMRI_OVERWRITE'))
+        or (stage.startswith('brain_health_') and config.get('BRAIN_HEALTH_OVERWRITE')))
 
 
 _MEMORY_CACHE = {}

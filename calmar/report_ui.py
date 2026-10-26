@@ -79,6 +79,25 @@ class ReportInputs:
         self.decode = w.Checkbox(value=namespace.get("INTERP_RUN_DECODING", False),
             description="Include Neurosynth decoding (optional; takes longer)", indent=False,
             layout=w.Layout(width="auto"))
+        from .participant_report import DOMAIN_LABELS, DOMAIN_LEVELS, DOMAIN_LEVEL_LABELS, normalise_domain_levels
+        self._normalise_domain_levels = normalise_domain_levels
+        self._domain_by_entry = dict(namespace.get("INTERP_DOMAIN_LEVELS_BY_PARTICIPANT") or {})
+        initial_key = self._domain_key()
+        self._domain_by_entry.setdefault(initial_key, normalise_domain_levels(namespace.get("INTERP_DOMAIN_LEVELS")))
+        self.domains = {}
+        domain_options = [(DOMAIN_LEVEL_LABELS[level], level) for level in DOMAIN_LEVELS]
+        for domain, label in DOMAIN_LABELS.items():
+            control = w.Dropdown(options=domain_options, value="not_assessed", description=label + ":",
+                                 style={"description_width": "190px"}, layout=w.Layout(width="390px"))
+            control.observe(self.apply, names="value")
+            self.domains[domain] = control
+        domain_grid = w.GridBox(list(self.domains.values()),
+                                layout=w.Layout(grid_template_columns="repeat(auto-fit,minmax(390px,1fr))",
+                                                width="100%"))
+        self.domain_panel = w.Accordion(children=[w.VBox([
+            w.HTML("<p>Enter an impairment level only when it was assessed. Values are participant context and "
+                   "are not inferred from WAB-AQ or lesion location.</p>"), domain_grid])], selected_index=None)
+        self.domain_panel.set_title(0, "Domain-level impairment (optional)")
         self.summary, self.message, self.agreement = w.HTML(), w.HTML(), w.HTML()
         self.generate = w.Button(description="Generate participant report", button_style="success",
             icon="play", layout=w.Layout(width="270px", min_height="36px"))
@@ -96,14 +115,32 @@ class ReportInputs:
         self.compare.observe(self.show_comparison, names="selected_index")
         self.generate.on_click(lambda _: self.navigation.request("report-start", self.approve))
         self.widget = w.VBox([w.HTML("<h3>Choose the participant report</h3>"
-            "<p>Choose a participant, lesion mask and display atlas below. "
+            "<p>Choose a participant, lesion mask and display atlas, and optionally enter domain-level impairment. "
             "Generate creates the report and its downloadable HTML file.</p>"),
-            self.subject, self.source, self.atlas, self.evidence, self.decode, self.summary, self.agreement,
+            self.subject, self.source, self.atlas, self.evidence, self.decode, self.domain_panel,
+            self.summary, self.agreement,
             self.compare, self.generate, self.message, self.navigation])
         self.refresh()
 
-    def refresh(self, *_):
+    def _domain_key(self, index=None):
+        entry = self.entries[self.subject.value if index is None else index]
+        return f"{entry['subject']}|{entry.get('session') or ''}"
+
+    def _save_domains(self, index=None):
+        if not hasattr(self, "domains"):
+            return
+        self._domain_by_entry[self._domain_key(index)] = {key: control.value for key, control in self.domains.items()}
+
+    def _load_domains(self):
+        values = self._normalise_domain_levels(self._domain_by_entry.get(self._domain_key()))
+        for key, control in self.domains.items():
+            control.value = values[key]
+
+    def refresh(self, change=None):
+        if isinstance(change, dict) and change.get("name") == "value" and change.get("old") is not None:
+            self._save_domains(change["old"])
         self.busy = True
+        self._load_domains()
         sources = ordered_sources(self.ns["available_mni_sources"](self.entries[self.subject.value]))
         previous = self.source.value or self.ns.get("INTERP_MASK_SOURCE")
         self.source.options = [(MASK_LABELS[s], s) for s in sources]
@@ -126,9 +163,12 @@ class ReportInputs:
     def apply(self, *_):
         if self.busy:
             return
+        self._save_domains()
+        domain_levels = self._normalise_domain_levels(self._domain_by_entry.get(self._domain_key()))
         self.ns.update(INTERP_SUBJECT_IDX=self.subject.value, INTERP_MASK_SOURCE=self.source.value,
                        INTERP_DISPLAY_ATLAS=self.atlas.value, INTERP_RUN_DECODING=self.decode.value,
-                       INTERP_EVIDENCE=self.evidence.value)
+                       INTERP_EVIDENCE=self.evidence.value, INTERP_DOMAIN_LEVELS=domain_levels,
+                       INTERP_DOMAIN_LEVELS_BY_PARTICIPANT=dict(self._domain_by_entry))
         self.generate.disabled = self.source.value is None
         if self.source.value is None:
             self.summary.value = "<b>No available MNI lesion mask for this participant.</b> Complete its warp before generating a report."

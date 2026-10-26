@@ -94,7 +94,11 @@ def _saved_upstream_ids(shell, boundary_role=None):
 # Recovery commands a paused checkpoint accepts: the batch checkpoint can be
 # released towards batch processing or towards reporting (its two buttons).
 # The report form's checkpoint is released by "generate", its Generate button.
-RECOVERY_COMMANDS = {"batch": ("batch", "report"), "skip-qc": ("skip-qc",), "generate": ("generate",)}
+RECOVERY_COMMANDS = {
+    "batch": ("batch", "report"),
+    "skip-qc": ("skip-qc", "skip-qc-to-report"),
+    "generate": ("generate",),
+}
 _MISSING = object()
 
 
@@ -152,13 +156,23 @@ def _open_report_setup(shell, *, reset_selection=True):
     return index
 
 
+def _open_report_after_qc(shell):
+    """Open reporting after an explicit QC choice, releasing a batch gate too."""
+    batch = getattr(shell, "_calmar_batch_checkpoint", None)
+    if batch is not None and batch.paused:
+        if batch._report() is False:
+            raise RuntimeError(batch._report_error)
+    else:
+        _open_report_setup(shell)
+
+
 def _recovery_action(lines):
     """Recognize only a standalone recovery magic, after IPython transforms it."""
     try:
         tree = ast.parse("".join(lines))
     except SyntaxError:
         return None
-    for action in ("batch", "report", "skip-qc"):
+    for action in ("batch", "report", "skip-qc", "skip-qc-to-report"):
         expected = ast.parse(f"get_ipython().run_line_magic('calmar_continue', {action!r})")
         if ast.dump(tree) == ast.dump(expected):
             return action
@@ -226,16 +240,23 @@ def enable_checkpoint_recovery(shell=None):
             print(f"Report inputs accepted: {panel.subject.label} · {panel.source.label} mask · "
                   f"{panel.atlas.value} atlas · evidence: {panel.evidence.label}.\n"
                   "Now run the report cell ('Generate the interpretation report ...') with Shift+Enter.")
-        elif action == "skip-qc":
+        elif action in ("skip-qc", "skip-qc-to-report"):
             checkpoint = getattr(shell, "_calmar_qc_checkpoint", None)
             if checkpoint is None or not checkpoint.paused:
                 raise RuntimeError("There is no paused QC checkpoint.")
             if not checkpoint.choose("skipped"):
                 raise RuntimeError("Could not save the QC skip decision; execution remains paused.")
-            print("QC skipped by the user. The decision was saved for the final reports. "
-                  "Select the next stage to run and use the notebook Run menu.")
+            if action == "skip-qc-to-report":
+                _open_report_after_qc(shell)
+                print("QC was skipped and report selection was opened. The report itself was not "
+                      "skipped. Run the report settings and report form cells one by one.")
+            else:
+                print("QC skipped by the user. The decision was saved for the final reports. "
+                      "Select the next stage to run and use the notebook Run menu.")
         else:
-            raise ValueError("Use %calmar_continue batch, report, generate or skip-qc.")
+            raise ValueError(
+                "Use %calmar_continue batch, report, generate, skip-qc or skip-qc-to-report."
+            )
 
     register = getattr(shell, "register_magic_function", None)
     if callable(register):
@@ -272,7 +293,8 @@ def recovery_instructions(action):
            "(Shift+Enter)."
            if action == "generate" else
            "This explicitly skips QC and saves ‘QC skipped by user’ for the reports. "
-           "It does not start subsequent processing cells."))
+           "It does not start subsequent processing cells. To skip QC and open report selection "
+           "directly, use `%calmar_continue skip-qc-to-report` instead."))
 
 
 class ExecutionCheckpoint:
@@ -302,7 +324,15 @@ class ExecutionCheckpoint:
     def _reject_while_paused(self, lines):
         if self.paused:
             action = getattr(self, "recovery_action", None)
-            if action and _recovery_action(lines) in RECOVERY_COMMANDS.get(action, (action,)):
+            recovery = _recovery_action(lines)
+            if action and recovery in RECOVERY_COMMANDS.get(action, (action,)):
+                return lines
+            # Rerunning the single-subject checkpoint can put a new batch guard
+            # above an older paused QC gate. Permit only the explicit QC action
+            # while that gate really exists; otherwise retain the batch pause.
+            qc = getattr(self.shell, "_calmar_qc_checkpoint", None)
+            if (action == "batch" and recovery in RECOVERY_COMMANDS["skip-qc"]
+                    and qc is not None and qc.paused):
                 return lines
             # JupyterLab includes the executing cell's stable ID in each
             # request. Earlier cells can be edited/rerun without releasing

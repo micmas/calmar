@@ -678,13 +678,30 @@ def wab_band(aq):
 
 
 MEASURE_LABELS = {"lesion_volume": "Lesion volume", "severity_metric": "Aphasia severity",
-                  "age": "Age at stroke", "time_post_onset": "Time since stroke", "sex": "Sex"}
+                  "age": "Age at stroke", "education": "Education",
+                  "time_post_onset": "Time since stroke", "sex": "Sex"}
+MEASURE_ORDER = {"age": 10, "education": 20, "severity_metric": 30, "time_post_onset": 40,
+                 "sex": 50, "lesion_volume": 1000}
+
+
+def _measure_record(key, value):
+    """Normalise legacy scalar/instrument values and richer report records."""
+    if isinstance(value, dict) and any(field in value for field in
+                                       ("method", "units", "qc_status", "kb_id", "label", "brain_health")):
+        record = dict(value)
+        record.setdefault("id", key)
+        record.setdefault("kb_id", key)
+        return record
+    return {"id": key, "kb_id": key, "value": value}
 
 
 def _value_text(pid, value, days):
     if isinstance(value, dict):
         aq = value.get("value")
-        text = f"{value.get('instrument', '')} {aq:g}".strip()
+        if aq is None:
+            return "missing"
+        number = f"{aq:g}" if isinstance(aq, (int, float)) else str(aq)
+        text = f"{value.get('instrument', '')} {number}".strip()
         if value.get("instrument", "").upper().startswith("WAB") and aq is not None:
             text += f" ({wab_band(aq)}, Kertesz bands)"
         if days is not None:
@@ -696,11 +713,13 @@ def _value_text(pid, value, days):
         return f"{value:.0f} days"
     if pid == "age":
         return f"{value:.0f} years"
+    if value is None:
+        return "missing"
     return escape(str(value))
 
 
 def measures_section(kb, predictors, days=None, min_confidence=None, phase=None):
-    """HTML: one row per measure of the participant that the KB has findings about."""
+    """HTML: every supplied measure, with evidence where the KB has it."""
     f = kb.findings
     f = f[f["source_kind"] == "predictor"]
     if min_confidence:
@@ -713,18 +732,23 @@ def measures_section(kb, predictors, days=None, min_confidence=None, phase=None)
                 directions.setdefault(p["id"], p["direction_of_severity"])
     rows = []
     context = _evidence_context(kb)
-    for key, value in (predictors or {}).items():
-        pid = kb.resolve_aliases([key]).get(key) or key
+    supplied = [_measure_record(key, value) for key, value in (predictors or {}).items()]
+    supplied.sort(key=lambda item: (MEASURE_ORDER.get(item.get("kb_id") or item["id"], 100), item["id"]))
+    missing_entries = []
+    predictor_ids = set(kb.predictors["id"]) if not kb.predictors.empty and "id" in kb.predictors else set()
+    for record in supplied:
+        key, value = record["id"], record.get("value")
+        requested_pid = record.get("kb_id") or key
+        pid = kb.resolve_aliases([requested_pid]).get(requested_pid) or requested_pid
         # Findings whose target is the measure itself describe how it is
         # predicted (e.g. models estimating WAB-AQ), not what it implies.
         g = f[(f["source_id"] == pid) & (f["target"] != pid)]
-        if g.empty:
-            continue
-        g = g.assign(target_name=g["target"].map(lambda t: _name(kb, t)))
+        if not g.empty:
+            g = g.assign(target_name=g["target"].map(lambda t: _name(kb, t)))
         shown = _distinct_findings(g)
         polarity = {"higher_is_worse": "higher values go with worse language or recovery",
                     "lower_is_worse": "lower values go with worse language or recovery"}.get(directions.get(pid))
-        directions_shown = shown["direction"].fillna("not reported")
+        directions_shown = shown["direction"].fillna("not reported") if not shown.empty else pd.Series(dtype=str)
         counts = ", ".join(f"{n} {DIRECTION_TEXT.get(d, d)}" for d, n in directions_shown.value_counts().items())
         caution = ""
         if pid == "severity_metric" and days is not None and days > 180:
@@ -734,18 +758,51 @@ def measures_section(kb, predictors, days=None, min_confidence=None, phase=None)
                            f"padding-left:.5rem;margin-top:3px'><b>Timing note:</b> {len(early)} of these findings "
                            "concern severity measured early after the stroke (or recovery from it); this score was "
                            f"measured {days:.0f} days after the stroke, so they apply only loosely.</div>")
+        label = record.get("label") or MEASURE_LABELS.get(pid, _name(kb, pid))
+        value_text = _value_text(pid, value, days)
+        units = record.get("units")
+        if value is not None and units and units not in {"as recorded", "not recorded"}:
+            value_text += f" {units}" if units != "fraction" else " (fraction)"
+        provenance = []
+        if "method" in record:
+            provenance.append(f"How computed: {record.get('method') or 'missing'}")
+        if "units" in record:
+            provenance.append(f"Units: {record.get('units') or 'missing'}")
+        if "qc_status" in record:
+            provenance.append(f"QC: {str(record.get('qc_status') or 'missing').replace('_', ' ')}")
+        missing_reason = record.get("missing_reason")
+        if value is None and missing_reason:
+            provenance.append(f"Missing because: {missing_reason}")
+        provenance_html = (f"<p class='measure-provenance'>{escape(' · '.join(provenance))}</p>"
+                           if provenance else "")
+        if g.empty:
+            if pid not in predictor_ids:
+                missing_entries.append(pid)
+                evidence_html = ("<p><b>No matching knowledge-base predictor entry is available for this measure.</b> "
+                                 "The value is shown as participant context only.</p>")
+            else:
+                evidence_html = ("<p><b>No matching knowledge-base findings are available for this measure in the "
+                                 "selected evidence scope.</b></p>")
+            direction_html = evidence_html
+        else:
+            direction_html = (
+                f"<p>{escape(polarity.capitalize() + '.') if polarity else 'Direction: see each finding.'} "
+                f"<span class='secondary'>({len(shown)} distinct findings: {escape(counts)})</span></p>"
+                f"<details class='measure-findings' data-print-open><summary>Show {len(shown)} distinct finding"
+                f"{'s' if len(shown) != 1 else ''}</summary>"
+                f"{_claims(kb, g, target_column='target', dedupe_target=False, context=context, phase=phase)}</details>{caution}")
         rows.append(
             "<article class='measure-card'>"
-            f"<header><h3>{escape(MEASURE_LABELS.get(pid, _name(kb, pid)))}</h3>"
-            f"<p>{_value_text(pid, value, days)}</p></header>"
-            f"<p>{escape(polarity.capitalize() + '.') if polarity else 'Direction: see each finding.'} "
-            f"<span class='secondary'>({len(shown)} distinct findings: {escape(counts)})</span></p>"
-            f"<details class='measure-findings' data-print-open><summary>Show {len(shown)} distinct finding"
-            f"{'s' if len(shown) != 1 else ''}</summary>"
-            f"{_claims(kb, g, target_column='target', dedupe_target=False, context=context, phase=phase)}</details>{caution}</article>")
+            f"<header><h3>{escape(label)}</h3><p>{value_text}</p></header>"
+            f"{provenance_html}{direction_html}</article>")
     if not rows:
-        return "<p style='color:#666'><em>No knowledge-base findings concern this participant's measures.</em></p>"
-    return "<div class='measure-cards'>" + "".join(rows) + "</div>"
+        return "<p style='color:#666'><em>No participant measures were supplied.</em></p>"
+    needed = ""
+    if missing_entries:
+        ids = ", ".join(f"<code>{escape(item)}</code>" for item in dict.fromkeys(missing_entries))
+        needed = ("<p class='method-note'><b>Knowledge-base entries needed:</b> predictor entries for " + ids +
+                  " would be required before CALMaR could connect these measures to curated evidence.</p>")
+    return "<div class='measure-cards'>" + "".join(rows) + "</div>" + needed
 
 
 MAP_LABELS = {"bcb": "BCBToolkit", "deepdisco": "DeepDisco (whole-brain model)"}

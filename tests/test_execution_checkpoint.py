@@ -164,6 +164,58 @@ class ExecutionCheckpointTests(unittest.TestCase):
                 self.assertEqual(list(Path(temporary).glob("QC_decision.json")), [])
                 self.assertEqual(self.execute_cell(
                     "assert qc_gate.paused and batch_gate.paused", "calmar-step-39")["status"], "ok")
+                # The new upstream batch guard must not deadlock the explicit
+                # QC decision needed to proceed. This is the same two-command
+                # recovery sequence shown to notebook users.
+                skipped = self.execute_cell("%calmar_continue skip-qc", "calmar-step-23")
+                self.assertEqual(skipped["status"], "ok", skipped)
+                decision = json.loads((Path(temporary) / "QC_decision.json").read_text())
+                self.assertEqual(decision["events"][-1]["choice"], "skipped")
+                self.assertEqual(self.execute_cell(
+                    "assert not qc_gate.paused and batch_gate.paused",
+                    "calmar-step-39",
+                )["status"], "ok")
+                opened = self.execute_cell("%calmar_continue report", "calmar-step-23")
+                self.assertEqual(opened["status"], "ok", opened)
+                self.assertEqual(self.execute_cell(
+                    "assert not batch_gate.paused and INTERP_SUBJECT_IDX == TEST_SUBJECT_IDX",
+                    "calmar-step-77",
+                )["status"], "ok")
+            finally:
+                self.execute_cell("qc_gate.close(); batch_gate.close()", "calmar-step-39")
+
+    def test_skip_qc_to_report_releases_overlapping_qc_and_batch_gates(self):
+        setup = (f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
+                 "from calmar.execution import pause_before_batch, pause_for_qc\n"
+                 "from pathlib import Path\n"
+                 "TEST_SUBJECT_IDX = 0\n"
+                 "SUBJECTS = [dict(subject='sub-fixture', session='ses-1')]\n")
+        self.assertEqual(self.reply(self.client.execute(setup))["status"], "ok")
+        with tempfile.TemporaryDirectory() as temporary:
+            self.assertEqual(self.execute_cell(
+                "batch_gate = pause_before_batch()", "calmar-step-39"
+            )["status"], "ok")
+            self.assertEqual(self.reply(self.client.execute("%calmar_continue batch"))["status"], "ok")
+            self.assertEqual(self.execute_cell(
+                f"qc_root = Path({temporary!r})\n"
+                "qc_gate = pause_for_qc(SUBJECTS, lambda entry: qc_root)",
+                "calmar-step-51",
+            )["status"], "ok")
+            try:
+                self.assertEqual(self.execute_cell(
+                    "batch_gate = pause_before_batch()", "calmar-step-39"
+                )["status"], "ok")
+                recovered = self.execute_cell(
+                    "%calmar_continue skip-qc-to-report", "calmar-step-23"
+                )
+                self.assertEqual(recovered["status"], "ok", recovered)
+                decision = json.loads((Path(temporary) / "QC_decision.json").read_text())
+                self.assertEqual(decision["events"][-1]["choice"], "skipped")
+                self.assertEqual(self.execute_cell(
+                    "assert not qc_gate.paused and not batch_gate.paused\n"
+                    "assert INTERP_SUBJECT_IDX == TEST_SUBJECT_IDX",
+                    "calmar-step-77",
+                )["status"], "ok")
             finally:
                 self.execute_cell("qc_gate.close(); batch_gate.close()", "calmar-step-39")
 
@@ -397,7 +449,9 @@ class ExecutionCheckpointTests(unittest.TestCase):
     def test_widget_free_recovery_is_explicit_and_preserves_qc_decision(self):
         setup = (f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
                  "from calmar.execution import pause_before_batch, pause_for_qc\n"
-                 "from pathlib import Path\nran_without_permission = False\n")
+                 "from pathlib import Path\nran_without_permission = False\n"
+                 "TEST_SUBJECT_IDX = 0\n"
+                 "SUBJECTS = [dict(subject='sub-fixture', session='ses-1')]\n")
         self.assertEqual(self.reply(self.client.execute(setup))["status"], "ok")
         paused = self.client.execute("pause_before_batch()", stop_on_error=False)
         self.assertEqual(self.reply(paused)["status"], "ok")
@@ -421,6 +475,21 @@ class ExecutionCheckpointTests(unittest.TestCase):
             self.assertEqual(self.reply(self.client.execute("%calmar_continue skip-qc"))["status"], "ok")
             data = json.loads((Path(temporary)/"QC_decision.json").read_text())
             self.assertEqual(data["events"][-1]["choice"], "skipped")
+        with tempfile.TemporaryDirectory() as temporary:
+            paused = self.client.execute(
+                f"pause_for_qc(SUBJECTS, lambda e: Path({temporary!r}))"
+            )
+            self.assertEqual(self.reply(paused)["status"], "ok")
+            self.output_until_idle(paused)
+            self.assertEqual(
+                self.reply(self.client.execute("%calmar_continue skip-qc-to-report"))["status"], "ok"
+            )
+            data = json.loads((Path(temporary) / "QC_decision.json").read_text())
+            self.assertEqual(data["events"][-1]["choice"], "skipped")
+            self.assertEqual(
+                self.reply(self.client.execute("assert INTERP_SUBJECT_IDX == TEST_SUBJECT_IDX"))["status"],
+                "ok",
+            )
 
 
 if __name__ == "__main__":
