@@ -96,7 +96,6 @@ findings:
         page: 4
         quote: "DARTEL normalization to the template space (Template_1_IXI550_MNI152.nii)"
         supports: imaging_details
-    },
   - id: f2
     target: fluency
     target_kind: impairment

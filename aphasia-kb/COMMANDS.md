@@ -144,6 +144,27 @@ retries once with a larger budget if a genuine output overflows.
 | `--no-monitor` | No GPU/CPU monitor line. |
 | `--ollama-host URL` | Another Ollama server (default `http://localhost:11434`; a non-local host is warned about). |
 
+### `backfill.py` — bring older findings up to schema v2.7
+
+Asks the extraction model, once per paper, only for the fields a finding
+is missing (`lesion_mapping`, `sample.phase`, `sample.cohort`,
+`author_limitations`). Claims, quotes and reviews are untouched. A value
+is written only if its quote is found in the PDF (or it is
+`not_reported`); the quote is added to the finding's `source_passages`
+and the finding gets `filled: {by, date, tool, fields}`. Approved entries
+are written too; the report labels these values "filled in by a model".
+A file moves to `schema_version: 2.7` once all its findings are complete.
+
+| Option | Meaning |
+|---|---|
+| (none) | Dry run: papers and their missing fields. |
+| `--execute` | Ask the model and write the verified values. |
+| `--citation @Key` | Only these papers (repeatable). |
+| `--fields a,b` | Subset of `lesion_mapping,phase,cohort,author_limitations`. |
+| `--drafts-only` | Leave approved entries alone. |
+| `--limit N` | Stop after N papers. |
+| `--from-response FILE` | Apply a saved response (`_last_backfill_response_<Key>.txt`) for one `--citation`. |
+
 ### `reextract.py` — extract chosen papers again, on purpose
 
 Old drafts and sidecars move to `_compare/superseded/<date>/` (nothing

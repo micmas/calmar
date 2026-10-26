@@ -292,8 +292,9 @@ def _design_html(row, flat):
         parts.append(vol)
     html = ""
     if parts:
-        how = (" — read from the stated threshold and confounders"
-               if get("lm_source") == "inferred" else "")
+        how = {"inferred": " — read from the stated threshold and confounders",
+               "filled": " — filled in by a model from the paper (quote checked), not yet reviewed"
+               }.get(get("lm_source"), "")
         html += (f"<p class='finding-governance finding-design'>Design: {escape(' · '.join(parts))}"
                  f"{escape(how)}</p>")
     cautions = get("design_cautions")

@@ -55,3 +55,11 @@ def test_cohort_inference_and_grouping():
         {"citation": "@E"}])
     assert groups["@A"] == groups["@B"] == "ARC"
     assert groups["@C"] == groups["@D"] and groups["@E"] == "@E"
+
+
+def test_backfilled_design_is_labelled_filled():
+    lm, src = L.finding_lesion_mapping(_finding(
+        lesion_mapping={"analysis": "univariate", "n_analysed": 48},
+        filled={"by": "model:x", "fields": ["lesion_mapping", "phase"]}))
+    assert src == "filled" and lm["multiple_comparisons"] == "not_reported"
+    assert L.finding_cohort(_finding(sample={"cohort": "ARC"}, filled={"fields": ["cohort"]})) == ("ARC", "filled")
