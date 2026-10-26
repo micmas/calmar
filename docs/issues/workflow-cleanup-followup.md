@@ -86,7 +86,7 @@ October 8 verification:
   retained in the job history, not counted as successful stages.
 - Tractotron now uses the atlas's actual 1 mm grid rather than the incorrect
   2 mm assumption in module help. Its helper keeps the parent host Python
-  instead of selecting FSL's container wrapper. See SETUP.md for the bundled
+  instead of selecting FSL's container wrapper. See docs/SETUP.md for the bundled
   CLI's binary `probability.csv` limitation.
 - All 69 inspected images were finite and nonempty; all disconnectome ranges
   were within [0,1]. Six contact sheets and selected full-size images were

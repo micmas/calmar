@@ -38,7 +38,7 @@ How the numbers are computed
   how the mask was made (calmar.mask_method).
 
 The clinical rules (WAB type profile, recovery stage, display-signal bins) live in
-``stroke-aphasia-kb/aphasia_rules.py`` and are shown by :func:`rules_html`.
+``stroke-aphasia-kb/scripts/aphasia_rules.py`` and are shown by :func:`rules_html`.
 """
 from __future__ import annotations
 
@@ -49,9 +49,10 @@ from pathlib import Path
 import base64
 import itertools
 import re
-import sys
 
 import pandas as pd
+
+from .kb_paths import add_kb_to_path, kb_content_paths
 
 from . import colors as cc
 from .masks import MASK_LABELS
@@ -143,9 +144,7 @@ class ParticipantReportResult:
 
 def _kb_modules(kb_root):
     """Import ``aphasia_kb`` and ``aphasia_rules`` from ``kb_root`` (no reload)."""
-    root = str(Path(kb_root).resolve())
-    if root not in sys.path:
-        sys.path.insert(0, root)
+    add_kb_to_path(kb_root)
     import aphasia_kb
     import aphasia_rules
     return aphasia_kb, aphasia_rules
@@ -161,9 +160,6 @@ def load_kb(kb_root, settings):
     return kb
 
 
-# Files whose content the report's interpretation depends on.
-KB_CONTENT = ("regions", "impairments", "therapies", "predictors", "reviews", "ingredients",
-              "citations.md", "aphasia_kb.py", "aphasia_rules.py")
 
 
 def kb_version(kb_root, kb):
@@ -174,7 +170,7 @@ def kb_version(kb_root, kb):
     root = Path(kb_root)
     def git(*args):
         try:
-            done = subprocess.run(["git", "-C", str(root), *args, "--", *KB_CONTENT],
+            done = subprocess.run(["git", "-C", str(root), *args, "--", *kb_content_paths(root)],
                                   capture_output=True, text=True, timeout=20)
         except (OSError, subprocess.TimeoutExpired):
             return None
@@ -219,7 +215,7 @@ def rules_html(kb_root):
         parts.append(f"<h4 style='margin:10px 0 4px'>{escape(title)}</h4>"
                      + table.to_html(index=False, border=0, escape=True))
     return ("<div style='font-size:12px'>" + "".join(parts) +
-            "<p style='font-size:11px'>Defined in <code>stroke-aphasia-kb/aphasia_rules.py</code> "
+            "<p style='font-size:11px'>Defined in <code>stroke-aphasia-kb/scripts/aphasia_rules.py</code> "
             "(sources and caveats in its docstrings).</p></div>")
 
 
@@ -724,7 +720,7 @@ LEGEND_HTML = '''
         <b>Stage badge</b>:
         Acute &lt;7 d &middot; Subacute 7 d–6 mo &middot; Chronic &gt;6 mo. A therapy-stage warning identifies
         evidence from a different recovery stage; open it for detail.
-        Rules and their sources: <code>stroke-aphasia-kb/aphasia_rules.py</code>.
+        Rules and their sources: <code>stroke-aphasia-kb/scripts/aphasia_rules.py</code>.
       </div>'''
 
 

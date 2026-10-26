@@ -1,12 +1,12 @@
 """The curated atlas -> knowledge-base mapping (stroke-aphasia-kb/atlas_mapping/)."""
-import sys
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
 KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
-sys.path.insert(0, str(KB_ROOT))
+from calmar.kb_paths import add_kb_to_path  # noqa: E402
+add_kb_to_path(KB_ROOT)
 import atlas_mapping  # noqa: E402
 from aphasia_kb import KnowledgeBase  # noqa: E402
 
@@ -26,7 +26,7 @@ def test_every_location_finding_is_mapped_or_explained():
 
 def test_generated_table_is_up_to_date():
     assert (atlas_mapping.DIR / "MAPPING.md").read_text() == atlas_mapping.markdown_table(), \
-        "Run: python stroke-aphasia-kb/atlas_mapping.py --write-table"
+        "Run: python stroke-aphasia-kb/scripts/atlas_mapping.py --write-table"
 
 
 def overlap_rows(atlas, rows, total=1000):

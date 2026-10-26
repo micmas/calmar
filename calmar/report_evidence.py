@@ -74,7 +74,7 @@ def finding_phases(row):
     """Recovery stages (acute / subacute / chronic) a finding was studied in.
 
     From the KB's ``phase`` (``sample.phase``, stated or inferred from
-    ``time_post_onset`` by stroke-aphasia-kb/phase.py). When that is ``mixed``,
+    ``time_post_onset`` by stroke-aphasia-kb/scripts/phase.py). When that is ``mixed``,
     ``longitudinal`` or ``not_reported``, the stages named in the sample
     population text are used (aphasia_rules); empty = unknown.
     """

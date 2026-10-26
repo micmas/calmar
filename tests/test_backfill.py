@@ -1,8 +1,8 @@
 """backfill.py: which fields are missing, and what is written."""
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"))
+from calmar.kb_paths import add_kb_to_path  # noqa: E402
+add_kb_to_path(Path(__file__).resolve().parents[1] / "stroke-aphasia-kb")
 
 import backfill as B  # noqa: E402
 from quote_check import PaperText  # noqa: E402
