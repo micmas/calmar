@@ -13,7 +13,7 @@ from IPython.display import HTML
 from calmar.guided import source_cell
 from calmar import participant_report as pr
 
-KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
+KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
 
 
 def _mask(path, box):

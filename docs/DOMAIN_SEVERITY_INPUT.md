@@ -33,7 +33,7 @@ instruments use incompatible ranges, norms, cut-offs, and language versions.
 
 The first release uses domains that can be understood across instruments while
 retaining the processing constructs already represented in
-`aphasia-kb/impairments/`.
+`stroke-aphasia-kb/impairments/`.
 
 | Domain ID | Report label | Current KB relationship |
 |---|---|---|

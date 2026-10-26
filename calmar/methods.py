@@ -21,7 +21,7 @@ TOOLS = {
     "bcb": "BCBToolkit disconnectome (bcbtoolkit/0.0.0, run_disco.sh)",
     "deepdisco": "DeepDisco (deepdisco/20251008)",
     "atlas": "nilearn world-coordinate resampling",
-    "report": "CALMaR + aphasia-kb",
+    "report": "CALMaR + stroke-aphasia-kb",
 }
 
 def methods_table(config):
