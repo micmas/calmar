@@ -21,7 +21,7 @@ inputs:
     description: Existing cached atlas images and labels; no downloads.
   - id: cache
     type: data
-    source: aphasia-kb/_neurosynth_cache
+    source: stroke-aphasia-kb/_neurosynth_cache
     description: Existing Neurosynth v7 files and term maps used by the notebook decoder.
 outputs:
   - id: verification

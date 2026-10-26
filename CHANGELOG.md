@@ -7,14 +7,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Knowledge base moved to its own repository
+
+- The aphasia knowledge base now lives at
+  [micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb)
+  (moved from `aphasia-kb/` with its git history, October 2026). CALMaR
+  consumes it as the git submodule `stroke-aphasia-kb/`, pinned to one KB
+  commit; clone with `--recurse-submodules`. Entries and KB scripts are
+  edited and reviewed in that repository; CALMaR commits only the pointer.
+  The CALMaR webapp (neurodesk/webapps) ships an export of the same
+  repository.
+
 ### Knowledge base: local models, review governance, audit tooling
 
 - **Merged `ollama-local-models`**: extraction, the review second
   opinion and the RAG narrative run on a local Ollama model; the
   Anthropic-API path and `anthropic` dependency are gone. Model per role
-  in `aphasia-kb/models.yaml`; `aphasia-kb/MODELS.md` documents how to
+  in `stroke-aphasia-kb/models.yaml`; `stroke-aphasia-kb/MODELS.md` documents how to
   choose and benchmark one (`compare_extraction.py`).
-- **Review governance** (`aphasia-kb/GOVERNANCE.md`, schema v2.5):
+- **Review governance** (`stroke-aphasia-kb/GOVERNANCE.md`, schema v2.5):
   deterministic checks can reject or defer but never approve
   (`auto_review.py --all` now yields `checks_passed`, not
   `auto_approve`); drafts are classified into Tier A (an independent
@@ -112,7 +123,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - HTML report with Save / Print PDF button; standalone file saved to `reports/`
 - Neurosynth lesion decoding against language/cognitive term maps with HarvardOxford atlas overlap
 
-### Aphasia knowledge base (`aphasia-kb/`)
+### Aphasia knowledge base (`aphasia-kb/`, since October 2026 the separate repository micmas/stroke-aphasia-kb)
 
 - YAML/Markdown KB with findings, citations, RTSS ingredients, sample population metadata
 - Draft → review → promote workflow (`promote.py`)
