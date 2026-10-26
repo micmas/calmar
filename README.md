@@ -11,6 +11,16 @@ CALMaR is an open-source Jupyter notebook pipeline for automated stroke lesion s
 > `stroke-aphasia-kb/GOVERNANCE.md`. The CALMaR colour palette for figures and
 > UI is `docs/CALMAR_PALETTE.md`.
 
+> [!IMPORTANT]
+> **The knowledge base is a separate repository:
+> [micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb).**
+> CALMaR consumes it as a git submodule at `stroke-aphasia-kb/`, pinned to
+> one KB commit, so clone with `--recurse-submodules` (or run
+> `git submodule update --init` in an existing checkout). Entries, scripts
+> and governance documents are edited and reviewed in that repository, not
+> here; see [Aphasia knowledge base](#aphasia-knowledge-base) below for how
+> to update the pinned commit.
+
 Given a BIDS-formatted dataset, CALMaR will:
 
 1. **Segment lesions** using an HD-BET brain mask, LINDA and/or SynthStroke (`SEGMENTATION_METHODS`), and optionally BCBToolkit
@@ -51,7 +61,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 | `docs/CT_ROUTE.md` | CT lesion-segmentation and CT-to-MNI scope, reporting cautions, and minimum validation plan; no CT dependency is installed |
 | `docs/SAMPLE_APPLICABILITY_FIELDS.md` | Approval-gated proposal for stroke-history, laterality, modality, and age applicability fields |
 | `QC_RUBRIC.md` | Stage-aware QC rating reference (acute / subacute / chronic) |
-| `stroke-aphasia-kb/` | Aphasia literature knowledge base (see `stroke-aphasia-kb/README.md`) |
+| `stroke-aphasia-kb/` | **Git submodule** → [micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb), the aphasia literature knowledge base (its own repository; see its `README.md`) |
 | `container/` | In-container LINDA wrapper source (baked into the Neurodesk image) |
 | `requirements.txt` | Python dependencies |
 
@@ -350,14 +360,34 @@ overlay is reviewed, and appear in a separate report section.
 
 ## Aphasia knowledge base
 
-`stroke-aphasia-kb/` is a curated, source-traceable literature base: each
-finding links a brain region, predictor or therapy to an outcome, with
-the verbatim passages from the paper that support it. CALMaR's
-clinical-interpretation stage queries it to turn a lesion mask into a
-cited report. Extraction and review run on a local model via Ollama;
-approval follows the two-tier policy in `stroke-aphasia-kb/GOVERNANCE.md`
-(an independent model may approve routine findings after re-reading
-the PDF; a person approves the rest and audits).
+The knowledge base lives in its own repository,
+**[micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb)**
+(moved out of this repository's `aphasia-kb/` folder in October 2026 with
+its history). `stroke-aphasia-kb/` here is a git submodule: a checkout of
+that repository at the commit CALMaR was last tested with. It is a curated,
+source-traceable literature base: each finding links a brain region,
+predictor or therapy to an outcome, with the verbatim passages from the
+paper that support it. CALMaR's clinical-interpretation stage imports
+`aphasia_kb.py`, `aphasia_rules.py` and `atlas_mapping/` from it to turn a
+lesion mask into a cited report. Extraction and review run on a local model
+via Ollama; approval follows the two-tier policy in
+`stroke-aphasia-kb/GOVERNANCE.md` (an independent model may approve routine
+findings after re-reading the PDF; a person approves the rest and audits).
+
+Working with the submodule:
+
+```bash
+git clone --recurse-submodules https://github.com/micmas/calmar.git   # new checkout
+git submodule update --init                                           # existing checkout without the KB
+git submodule update --remote stroke-aphasia-kb && git add stroke-aphasia-kb \
+    && git commit -m "KB: track <commit>"                             # move CALMaR to the KB's latest main
+```
+
+KB entries are written, reviewed and committed in the KB repository.
+`stroke-aphasia-kb/` is a full clone of it, so a commit made there and
+pushed (`cd stroke-aphasia-kb && git push`) lands in the KB repository;
+then record the new commit in CALMaR with `git add stroke-aphasia-kb`.
+The commands below are the KB's own, run from the CALMaR root:
 
 ```bash
 python stroke-aphasia-kb/kb_status.py                                        # what is in it
