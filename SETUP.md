@@ -9,11 +9,10 @@ git clone --recurse-submodules https://github.com/micmas/calmar.git
 cd calmar
 ```
 
-For an existing checkout after pulling the KB relocation, run:
-
-```bash
-git submodule update --init --recursive
-```
+`--recurse-submodules` also fetches the aphasia knowledge base, which is a
+separate repository ([micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb))
+pinned here as the submodule `stroke-aphasia-kb/`. In a checkout cloned
+without it, run `git submodule update --init`.
 
 The source layout is described in [docs/REPOSITORY_LAYOUT.md](docs/REPOSITORY_LAYOUT.md).
 Python helpers live in the local `calmar/` package. No editable installation
@@ -158,10 +157,12 @@ checkout that still has the old history.
 
 ## Knowledge base
 
-KB data and tools live in the independently versioned
-[`micmas/stroke-aphasia-kb`](https://github.com/micmas/stroke-aphasia-kb)
-repository, consumed here as the `stroke-aphasia-kb/` Git submodule. From the
-CALMaR repository root:
+The knowledge base is its own repository,
+[micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb);
+`stroke-aphasia-kb/` is a git submodule checkout of it at the commit CALMaR
+was last tested with (`git submodule status` shows which). KB data and tools
+stay together in that checkout, and CALMaR's report code imports from it.
+From the repository root:
 
 ```bash
 python stroke-aphasia-kb/aphasia_kb.py
@@ -171,12 +172,20 @@ See [stroke-aphasia-kb/README.md](stroke-aphasia-kb/README.md) and
 [stroke-aphasia-kb/HOWTO.md](stroke-aphasia-kb/HOWTO.md) for extraction and review.
 Source PDFs under `stroke-aphasia-kb/papers/` are local files, not distributed via Git.
 
+Edits to KB entries or scripts are commits in the KB repository, not in
+CALMaR: commit and push inside `stroke-aphasia-kb/` (it is a full clone),
+then `git add stroke-aphasia-kb && git commit` here so CALMaR records the new
+commit. `git submodule update --remote stroke-aphasia-kb` moves the checkout
+to the KB's latest `main`. Pulling CALMaR does not move the submodule by
+itself; `git pull --recurse-submodules` (or `git submodule update` after a
+pull) does.
+
 ## What travels through Git
 
 | Content | In Git? |
 |---|---|
 | Notebooks, `calmar/`, retained source scripts, tests, documentation | Yes, when committed |
-| KB code, curated entries, and tracked review records | Yes |
+| KB code, curated entries, and tracked review records | Yes, in the KB repository ([micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb)); CALMaR tracks only the submodule commit |
 | Datasets and derivatives under `data/` | No |
 | QC sidecars stored alongside those derivatives | No |
 | Reports, QC summaries, cached atlases, and `qc_edits/` | No |

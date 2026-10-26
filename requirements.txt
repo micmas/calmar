@@ -37,6 +37,8 @@ pymupdf>=1.23           # for annotate_paper.py (PDF highlight annotations)
 #   All run locally via Ollama over plain HTTP. No SDK, no API key, no
 #   cloud provider dependency at all.
 #   Setup:  ollama serve  &&  ollama pull gemma4:26b
+#   (the KB is the submodule stroke-aphasia-kb/, github.com/micmas/stroke-aphasia-kb;
+#    its own requirements.txt is a subset of this file)
 #   Which model each step uses: stroke-aphasia-kb/models.yaml
 #   Check it:  python stroke-aphasia-kb/model_config.py
 
