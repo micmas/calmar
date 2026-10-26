@@ -23,6 +23,9 @@ __pycache__/
 # Archives — use versioned zips if needed (see CHANGELOG.md notes)
 *.zip
 
+# stroke-aphasia-kb/ is a git submodule (github.com/micmas/stroke-aphasia-kb);
+# its own .gitignore governs its contents. The rules below are kept so a
+# checkout that has not initialised the submodule stays clean.
 # Knowledge base raw papers (copyright — not redistributed; available on request)
 stroke-aphasia-kb/papers
 
