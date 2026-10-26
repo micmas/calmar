@@ -53,6 +53,8 @@ findings:
       English speaker.
     exclusion_criteria: MRI contraindications; pre-morbid left-handedness; >1 stroke;
       other significant neurological condition.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Pearson product-moment correlation, p<.0001 for all four behavioural
       measures
@@ -142,6 +144,34 @@ findings:
     quote: It must be noted that lesion-symptom mapping performed on a single noun
       or verb tests should be treated with some caution, due to their high correlation
       with lesion volume.
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Pearson product-moment correlation
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: fluency
   target_kind: impairment
@@ -161,6 +191,8 @@ findings:
     age_range: 44-87 years (mean 63.31, SD 11.8)
     handedness: right-handed
     language: native English speakers
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Pearson product-moment correlation, p<.0001
     effect_size: r = 0.59
@@ -218,6 +250,34 @@ findings:
     quote: by partialling out lesion volume there is a high risk for type II error.
       Hence, all VBCM analyses were performed and reported in this paper once with
       the behaviours of interest only and once with a correction for lesion volume.
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Pearson product-moment correlation
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f3
   target: phonological_production
   target_kind: impairment
@@ -237,6 +297,8 @@ findings:
     age_range: 44-87 years (mean 63.31, SD 11.8)
     handedness: right-handed
     language: native English speakers
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Pearson product-moment correlation; null finding at p=.12
     effect_size: r = 0.22
@@ -295,6 +357,34 @@ findings:
       method based on fuzzy clustering (Seghier et al., 2008). The default parameters
       were used aside from the lesion definition 'U-threshold', which was set to 0.5
       rather than 0.3 to create a binary lesion image.
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Pearson product-moment correlation
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f4
   target: severity_metric
   target_kind: predictor
@@ -327,6 +417,8 @@ findings:
       English speaker.
     exclusion_criteria: MRI contraindications; pre-morbid left-handedness; >1 stroke;
       other significant neurological condition.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Pearson product-moment correlation, p<.0001 for all four behavioural
       measures
@@ -416,6 +508,34 @@ findings:
     quote: It must be noted that lesion-symptom mapping performed on a single noun
       or verb tests should be treated with some caution, due to their high correlation
       with lesion volume.
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Pearson product-moment correlation
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f5
   target: fluency
   target_kind: impairment
@@ -435,6 +555,8 @@ findings:
     age_range: 44-87 years (mean 63.31, SD 11.8)
     handedness: right-handed
     language: native English speakers
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Pearson product-moment correlation, p<.0001
     effect_size: r = 0.59
@@ -492,6 +614,34 @@ findings:
     quote: by partialling out lesion volume there is a high risk for type II error.
       Hence, all VBCM analyses were performed and reported in this paper once with
       the behaviours of interest only and once with a correction for lesion volume.
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Pearson product-moment correlation
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f6
   target: phonological_production
   target_kind: impairment
@@ -511,6 +661,8 @@ findings:
     age_range: 44-87 years (mean 63.31, SD 11.8)
     handedness: right-handed
     language: native English speakers
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Pearson product-moment correlation; null finding at p=.12
     effect_size: r = 0.22
@@ -569,6 +721,34 @@ findings:
       method based on fuzzy clustering (Seghier et al., 2008). The default parameters
       were used aside from the lesion definition 'U-threshold', which was set to 0.5
       rather than 0.3 to create a binary lesion image.
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Pearson product-moment correlation
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f7
   target: severity_metric
   target_kind: predictor

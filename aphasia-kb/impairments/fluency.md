@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: fluency
 name: Fluency (speech fluency)
 kind: impairment
@@ -44,6 +44,8 @@ findings:
       English speaker.
     exclusion_criteria: MRI contraindications; pre-morbid left-handedness; >1 stroke;
       other significant neurological condition.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.001 voxel-level, FWE-corrected p<0.05 cluster-level (PCA-VBCM);
       did NOT survive lesion-volume covariate
@@ -155,6 +157,40 @@ findings:
       corresponding to the frontal aslant tract that connects the medial superior
       portion of the frontal lobe to the inferior-lateral frontal region (Rojkova
       et al., 2015).
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: each patient's lesion volume (proxy of neurological severity) obtained
+      from the output of the automated lesion identification procedure (Seghier et
+      al., 2008) was entered as a covariate in subsequent VBCM analyses
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: cluster corrected using FWE p < 0.05
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: cluster_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: left_central_opercular_cortex
   target_kind: region
@@ -174,6 +210,8 @@ findings:
     age_range: 44-87 years (mean 63.31, SD 11.8)
     handedness: right-handed
     language: native English speakers
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.001 voxel-level, FWE-corrected p<0.05 cluster-level; did NOT survive
       lesion-volume covariate
@@ -247,6 +285,40 @@ findings:
     quote: All anatomical results are described using labels based on the Harvard-Oxford
       atlas in MNI space (Desikan et al., 2006) and natbrainlab white matter connections
       atlas
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: each patient's lesion volume (proxy of neurological severity) obtained
+      from the output of the automated lesion identification procedure (Seghier et
+      al., 2008) was entered as a covariate in subsequent VBCM analyses
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: cluster corrected using FWE p < 0.05
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: cluster_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f3
   target: left_pre_central_gyrus
   target_kind: region
@@ -265,6 +337,8 @@ findings:
     age_range: 44-87 years (mean 63.31, SD 11.8)
     handedness: right-handed
     language: native English speakers
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.001 voxel-level, FWE-corrected p<0.05 cluster-level; did NOT survive
       lesion-volume covariate
@@ -324,6 +398,40 @@ findings:
     quote: All anatomical results are described using labels based on the Harvard-Oxford
       atlas in MNI space (Desikan et al., 2006) and natbrainlab white matter connections
       atlas
+  - section: added by backfill
+    page: 3
+    quote: Forty-eight stroke patients (single left ischaemic or haemorrhagic stroke)
+      with chronic aphasia participated in this study
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: each patient's lesion volume (proxy of neurological severity) obtained
+      from the output of the automated lesion identification procedure (Seghier et
+      al., 2008) was entered as a covariate in subsequent VBCM analyses
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: cluster corrected using FWE p < 0.05
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: They were recruited on the basis that they had a single left hemispheric
+      stroke and were at least 12 months post-stroke.
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 48
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: cluster_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 source: agent_draft
 last_reviewed: null
 notes: 'First-extraction draft from Alyahya et al. 2018 (NounVerb). The

@@ -387,6 +387,8 @@ findings:
       right-handed; >=9 months post-onset; able to comply with task instructions.
     exclusion_criteria: Prior neurologic injury; psychiatric illness; alcohol/drug
       abuse; <8 years education; age <40; unable to comply with task.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: uncorrected p<.05 at each voxel (t-test); minimum 8 patients per group
       per voxel
@@ -496,6 +498,41 @@ findings:
     quote: Because the present study was restricted to patients with left-hemisphere
       lesions, our findings do not speak to the relative contribution of the right
       hemisphere to verbal fluency.
+  - section: added by backfill
+    page: 3
+    quote: The VLSM analyses conducted t tests at every voxel to compare performance
+      in patients with and without a lesion in that voxel.
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: The t tests were confined to those voxels where there were at least eight
+      patients in each group (i.e., with and without a lesion), to maintain a reasonable
+      level of statistical power.
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: Colorized maps were then generated based on the resultant p values at each
+      voxel (where a = .05)
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: All patients were tested in the chronic phase of their CVA, at least 9
+      months post-onset (M = 62.8 months; SD = 59.7; range, 9–273 months).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 48
+    min_lesion_overlap: '>= 8 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f4
   target: category_fluency
   target_kind: impairment
@@ -521,6 +558,8 @@ findings:
       right-handed; >=9 months post-onset.
     exclusion_criteria: Prior neurologic injury; psychiatric illness; <8 years education;
       age <40; unable to comply.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: uncorrected p<.05 at each voxel; minimum 8 patients per group per voxel
     cluster_extent: not_reported
@@ -611,6 +650,41 @@ findings:
       depends on the semantic category tested. That is, certain semantic categories
       may engage frontal0strategic search processes if they are broader and require
       frequent switching between subcategories
+  - section: added by backfill
+    page: 3
+    quote: The VLSM analyses conducted t tests at every voxel to compare performance
+      in patients with and without a lesion in that voxel.
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: The t tests were confined to those voxels where there were at least eight
+      patients in each group (i.e., with and without a lesion), to maintain a reasonable
+      level of statistical power.
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: Colorized maps were then generated based on the resultant p values at each
+      voxel (where a = .05)
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: All patients were tested in the chronic phase of their CVA, at least 9
+      months post-onset (M = 62.8 months; SD = 59.7; range, 9–273 months).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 48
+    min_lesion_overlap: '>= 8 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f5
   target: fluency
   target_kind: impairment

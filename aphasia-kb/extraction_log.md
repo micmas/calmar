@@ -331,3 +331,6 @@ add an `EXTRACTED` line for every run.
 2026-10-23 | EXTRACTED | @SkipperKallal2017 | lesion_volume, right_motor_cortex | 2 drafts
 2026-10-23 | EXTRACTED | @Zhao2018 | left_angular_gyrus, left_middle_temporal_gyrus | SVR-LSM and SVR-ROI analysis of 410 stroke patients
 2026-10-23 | MODEL-APPROVED | @Schumacher2019 | lesion_volume | reviewer: model:gemma4:26b | extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0 | tier: A
+2026-10-26 | BACKFILLED | @Alyahya2018NounVerb | cohort, lesion_mapping, phase | 99 value(s) written, 0 not (no quote found) across 33 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Alyahya2020 | cohort, lesion_mapping | 8 value(s) written, 0 not (no quote found) across 4 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Baldo2006 | cohort, lesion_mapping, phase | 6 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
