@@ -62,6 +62,7 @@ logs/
 aphasia-kb/_extraction_dry_run.txt
 aphasia-kb/drafts/_review/
 aphasia-kb/_last_extraction_response_*.txt
+aphasia-kb/_last_backfill_response_*.txt
 aphasia-kb/_compare/
 .env
 

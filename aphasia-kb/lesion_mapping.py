@@ -29,7 +29,9 @@ patients are not counted as independent replications.
 Entries written before v2.7 have neither; `finding_lesion_mapping()`
 and `finding_cohort()` infer what the existing text supports (method,
 statistics.threshold, confounders_controlled, population) and say so
-(`source = "inferred"`). Nothing is guessed beyond that text: a field
+(`source = "inferred"`); values written by backfill.py from the paper
+(quote-checked, `filled.fields` on the finding) are `source = "filled"`.
+Nothing is guessed beyond that text: a field
 the text does not settle stays `not_reported`.
 """
 from __future__ import annotations
@@ -115,7 +117,8 @@ def finding_lesion_mapping(f: dict) -> tuple[dict | None, str]:
     stated = f.get("lesion_mapping")
     if isinstance(stated, dict) and stated:
         out = {k: stated.get(k, "not_reported") for k in FIELDS}
-        return out, "stated"
+        filled = (f.get("filled") or {}).get("fields") or []
+        return out, ("filled" if "lesion_mapping" in filled else "stated")
     thr = str((f.get("statistics") or {}).get("threshold") or "")
     conf = [str(c) for c in (f.get("confounders_controlled") or [])]
     n = (f.get("sample") or {}).get("n", "not_reported")
@@ -170,7 +173,8 @@ def finding_cohort(f: dict) -> tuple[str | None, str]:
     s = f.get("sample") or {}
     c = s.get("cohort")
     if c and str(c).strip().lower() not in ("not_reported", "none", ""):
-        return str(c).strip(), "stated"
+        filled = (f.get("filled") or {}).get("fields") or []
+        return str(c).strip(), ("filled" if "cohort" in filled else "stated")
     text = " ".join(str(s.get(k) or "") for k in ("population", "recruitment"))
     for pat, name in KNOWN_COHORTS:
         m = re.search(pat, text, re.I)
