@@ -14,6 +14,10 @@ TOOLS = {
     "manual": "SimpleITK rigid registration + the template registration",
     "registration": "ANTs (ants/2.6.5) antsRegistrationSyN.sh",
     "openads": "OpenADS (openadscpu/1.0.0)",
+    "dmri_preproc": "QSIPrep (qsiprep/26.1.1)",
+    "dmri_recon": "QSIRecon (qsirecon/26.0.1)",
+    "brain_health_anatomy": "SynthSeg (synthseg/8.2.1, robust parcellation)",
+    "brain_health_wmh": "DeepWMH (deepwmh/1.0.1); lesion-to-FLAIR registration with ANTs (ants/2.6.5)",
     "bcb": "BCBToolkit disconnectome (bcbtoolkit/0.0.0, run_disco.sh)",
     "deepdisco": "DeepDisco (deepdisco/20251008)",
     "atlas": "nilearn world-coordinate resampling",
@@ -27,6 +31,8 @@ def methods_table(config):
     methods = segmentation_methods(config)
     optional_dwi = route == "t1" and bool(c("_DWI_ANALYSIS_SELECTED") or c("ANALYSE_DWI") is True)
     dwi_policy = c("ANALYSE_DWI")
+    direct_dmri = bool(c("_TRACT_DWI_SELECTED") or c("ANALYSE_TRACT_DWI") is True)
+    brain_health = bool(c("_BRAIN_HEALTH_SELECTED"))
     if route == "dwi":
         openads_status = "Primary DWI route"
     elif optional_dwi:
@@ -79,6 +85,24 @@ def methods_table(config):
         ("Lesion segmentation (OpenADS)", TOOLS["openads"],
          openads_status, "DWI + exact sibling ADC; two passes with regenerated brain-extracted inputs",
          "Segments acute ischaemic lesions; another participant session is allowed and remains separately labelled/QC'd."),
+        ("Direct diffusion preprocessing", TOOLS["dmri_preproc"],
+         "Selected (opt-in)" if direct_dmri else "Optional; gradient-bearing 4-D dMRI only",
+         f"lesion mask={c('DMRI_MASK_SOURCE', 'manual')}; output resolution={c('DMRI_OUTPUT_RESOLUTION', 2.0)} mm; eddy HMC",
+         "Lesion-aware preprocessing, gradient rotation, motion/eddy correction and distortion correction when metadata permit."),
+        ("Direct tract reconstruction", TOOLS["dmri_recon"],
+         "Selected (experimental)" if direct_dmri else "Optional; not run by default",
+         f"reconstruction={c('DMRI_RECON_SPEC', 'ss3t_fod_autotrack')}",
+         "Participant-specific tractometry kept separate from BCB/DeepDisco; a missing bundle is not called a disconnection."),
+        ("Brain-health structural markers", TOOLS["brain_health_anatomy"],
+         "Selected (opt-in)" if brain_health else "Optional; not run by default",
+         f"mode={c('BRAIN_HEALTH_SYNTHSEG_MODE', 'robust')}; "
+         f"lesion mask={c('BRAIN_HEALTH_MASK_SOURCE', 'manual')}; visual QC required",
+         "Descriptive tissue and ventricular fractions; no age-adjusted atrophy diagnosis from a single scan."),
+        ("White-matter hyperintensity burden", TOOLS["brain_health_wmh"],
+         "Selected when same-session FLAIR exists" if brain_health else "Optional; requires FLAIR",
+         f"stroke exclusion margin={c('BRAIN_HEALTH_LESION_EXCLUSION_MM', 3.0)} mm; "
+         f"registration seed={c('BRAIN_HEALTH_REGISTRATION_SEED', 1729)}",
+         "Reports raw FLAIR hyperintensity and a non-stroke WMH candidate burden separately; no automated Fazekas grade."),
         ("Template registration", registration_tool, "Used", registration_parameters, registration_meaning),
         ("Manual mask", TOOLS["manual"], "Used when a mask is available",
          f"space={c('MANUAL_MASK_SPACE', 't1')}; path={c('MANUAL_MASK_PATH') or 'publisher derivatives (auto)'}; "

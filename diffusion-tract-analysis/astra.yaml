@@ -1,0 +1,103 @@
+id: diffusion_tract_analysis
+version: "0.0.14"
+name: Optional lesion-aware diffusion and tractometry
+description: >
+  Opt-in analysis of participant directional diffusion MRI, separate from the
+  trace-DWI/ADC OpenADS lesion route and from BCBToolkit/DeepDisco normative
+  disconnectomes. Discovery requires readable b-values, b-vectors and JSON
+  metadata, at least one b=0 volume and at least 30 distinct diffusion directions
+  before a series can contribute to a participant report. QSIPrep performs
+  lesion-aware preprocessing; QSIRecon produces experimental patient-specific
+  bundle tractometry. A missing or low-count bundle is treated as a tracking/QC
+  outcome, not proof of anatomical disconnection. This specification records
+  the implemented workflow; it contains no scientific findings because no new
+  dMRI processing has yet been executed and visually reviewed.
+inputs:
+  - id: scheduler_request
+    type: data
+    source: reports/jobs/<job-id>/request.json
+    description: >
+      Per-participant request created by calmar.scheduled from the explicit
+      reports/dmri-selection.json choice. It names the dataset, anatomical T1w,
+      selected DWI series and sidecars, lesion-mask source and method options.
+  - id: bids_dataset
+    type: data
+    source: data/ds004884
+    description: >
+      Pinned source dataset. The retained preprocessing job materializes only
+      the explicitly selected DWI/T1w inputs and stages a private BIDS subset;
+      it does not modify this dataset.
+  - id: selected_lesion_mask
+    type: data
+    source: data/ds004884/derivatives
+    description: >
+      Selected native-T1 manual, LINDA or SynthStroke lesion mask. It is staged as
+      *_label-lesion_roi.nii.gz so QSIPrep can exclude the focal lesion from
+      anatomical normalization. The exact file, source and sessions are recorded
+      per participant; downstream reporting retains a visual-QC warning.
+decisions:
+  reconstruction:
+    label: QSIRecon bundle reconstruction specification
+    rationale: >
+      The current acquisitions are mainly single-shell and 40-64 direction;
+      SS3T AutoTrack is offered as an experimental tractometry workflow, with
+      explicit stroke tracking-failure caveats.
+    default: ss3t_fod_autotrack
+    options:
+      ss3t_fod_autotrack:
+        label: SS3T FOD AutoTrack (ss3t_fod_autotrack)
+      dsi_studio_autotrack:
+        label: DSI Studio GQI AutoTrack (dsi_studio_autotrack)
+outputs:
+  - id: dmri_preproc
+    type: data
+    format: directory
+    description: >
+      Published scheduler receipt pointing to the separately atomic QSIPrep
+      derivative, with motion/eddy correction, susceptibility correction
+      when permitted by the phase-encoding inputs, rotated gradients, QC tables,
+      transforms and HTML report. Anatomical normalization uses the lesion ROI.
+    inputs: [scheduler_request, bids_dataset, selected_lesion_mask]
+    recipe:
+      command: bash src/analysis_45_dmri_preproc.sh {inputs.scheduler_request} {output}
+      container: qsiprep:26.1.1
+      resources:
+        cpus: 8
+        memory: 48 GB
+        time_limit: "12:00:00"
+  - id: dmri_recon
+    type: data
+    format: directory
+    description: >
+      Published scheduler receipt pointing to the separately atomic QSIRecon
+      bundle streamlines, tensor scalar summaries and HTML report.
+      Bundle absence remains an experimental tracking result requiring visual QC.
+    inputs: [scheduler_request, dmri_preproc]
+    decisions: [reconstruction]
+    recipe:
+      command: CALMAR_DMRI_RECON_SPEC={decisions.reconstruction} bash src/analysis_46_dmri_recon.sh {inputs.scheduler_request} {output}
+      container: qsirecon:26.0.1
+      resources:
+        cpus: 8
+        memory: 48 GB
+        time_limit: "12:00:00"
+  - id: dmri_metrics
+    type: table
+    format: directory
+    description: >
+      Published scheduler receipt pointing to the atomic directory containing
+      normalized per-bundle FA/MD TSV and metadata.
+      Lesion-overlap and valid-voxel fields remain explicitly missing until a
+      same-grid implementation has been validated; they are never imputed.
+    inputs: [scheduler_request, dmri_recon]
+    recipe:
+      command: bash src/analysis_47_dmri_metrics.sh {inputs.scheduler_request} {output}
+      container: python:3.13.15
+  - id: participant_report_evidence
+    type: report
+    format: html
+    description: >
+      Optional direct-dMRI section rendered by calmar.diffusion. It identifies
+      participant measurements, shows missing quantities explicitly, carries QC
+      warnings and remains separate from BCB/DeepDisco disconnection evidence.
+    inputs: [dmri_metrics]

@@ -1,0 +1,8 @@
+id: baseline
+description: >
+  Robust SynthSeg, the manual/reference lesion where available and a 3 mm
+  lesion-registration margin for the provisional WMH candidate burden.
+decisions:
+  synthseg_mode: robust
+  lesion_mask_source: manual
+  lesion_exclusion_margin: margin_3mm

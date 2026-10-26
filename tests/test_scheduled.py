@@ -226,6 +226,40 @@ def test_optional_dwi_selection_only_changes_downstream_disconnectome_identity()
     assert _identity_key('brain', base) == _identity_key('brain', toggled)
 
 
+def test_direct_dmri_settings_are_scoped_to_direct_dmri_stages():
+    from calmar.scheduled import _identity_key, _reusable
+    entry = {'subject': 'sub-one', 'session': 'ses-dwi', 't1w': '/data/T1w.nii.gz',
+             'dwi': '/data/DWI.nii.gz', 'bval': '/data/DWI.bval',
+             'bvec': '/data/DWI.bvec', 'json': '/data/DWI.json'}
+    base = {'dataset': '/data', 'entries': [entry],
+            'config': {'MODALITY': 't1', 'DMRI_RECON_SPEC': 'ss3t_fod_autotrack'}}
+    changed = {**base, 'config': {**base['config'], 'DMRI_RECON_SPEC': 'dsi_studio_autotrack'}}
+    assert _identity_key('brain', base) == _identity_key('brain', changed)
+    assert _identity_key('dmri_recon', base) != _identity_key('dmri_recon', changed)
+    overwrite = {**base, 'config': {**base['config'], 'DMRI_OVERWRITE': True}}
+    assert _reusable('brain', overwrite)
+    assert not _reusable('dmri_preproc', overwrite)
+
+
+def test_brain_health_settings_are_scoped_to_the_stage_that_uses_them():
+    from calmar.scheduled import _identity_key, _reusable
+    entry = {'subject': 'sub-one', 'session': 'ses-one', 't1w': '/data/T1w.nii.gz',
+             'flair': '/data/FLAIR.nii.gz', 'anatomical_t1w': '/data/T1w.nii.gz',
+             'brain_health_components': ['atrophy', 'wmh']}
+    base = {'dataset': '/data', 'entries': [entry],
+            'config': {'MODALITY': 't1', 'BRAIN_HEALTH_MASK_SOURCE': 'manual',
+                       'BRAIN_HEALTH_SYNTHSEG_MODE': 'robust',
+                       'BRAIN_HEALTH_LESION_EXCLUSION_MM': 3.0}}
+    margin = {**base, 'config': {**base['config'], 'BRAIN_HEALTH_LESION_EXCLUSION_MM': 5.0}}
+    assert _identity_key('brain', base) == _identity_key('brain', margin)
+    assert _identity_key('brain_health_anatomy', base) == _identity_key('brain_health_anatomy', margin)
+    assert _identity_key('brain_health_wmh', base) == _identity_key('brain_health_wmh', margin)
+    assert _identity_key('brain_health_metrics', base) != _identity_key('brain_health_metrics', margin)
+    overwrite = {**base, 'config': {**base['config'], 'BRAIN_HEALTH_OVERWRITE': True}}
+    assert _reusable('brain', overwrite)
+    assert not _reusable('brain_health_metrics', overwrite)
+
+
 def test_inventory_does_not_hide_a_pre_inventory_running_job(tmp_path):
     from calmar.scheduled import _attach_running
     old = {'dataset': str(tmp_path), 'config': {},
