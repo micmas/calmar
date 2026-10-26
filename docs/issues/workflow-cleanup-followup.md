@@ -52,7 +52,7 @@ The current configured cohort is sub-M2001/ses-1076, sub-M2075/ses-602 and
 sub-M2077/ses-250. Processing state depends on the local outputs.
 The September 30 verification used sub-M2066/ses-235, sub-M2075/ses-602 and
 sub-M2176/ses-1237, refreshed overlap tables for those participants and exercised
-cached Neurosynth decoding; see `workflow-validation/astra.yaml`. Browser
+cached Neurosynth decoding; see `analyses/workflow-validation/astra.yaml`. Browser
 fixtures exercised model switching, layer reuse and preserved slice position.
 These checks do not certify scientific QC or a fresh end-to-end processing run.
 
@@ -99,11 +99,11 @@ October 8 verification:
   These are QC flags, not automatic edits or accepted masks. The older two
   participants remain legacy outputs with incompletely established model
   identity; do not infer a cohort-wide model ranking from these numbers.
-- `workflow-acceptance/astra.yaml` validates with three evidence-backed
+- `analyses/workflow-acceptance/astra.yaml` validates with three evidence-backed
   findings, and all 12 declared outputs pass the provenance check. Execution
   used plain sbatch and sidecars; no recognised ASTRA run manifest was created.
   Evidence: `notes/interpretation-update-20261008-ARaRpr/`; images and numerical
-  results: `workflow-acceptance/inspection/`.
+  results: `analyses/workflow-acceptance/inspection/`.
 
 Further work:
 

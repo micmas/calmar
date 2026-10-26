@@ -46,30 +46,33 @@ troubleshooting: [docs/SETUP.md](docs/SETUP.md).
 | [docs/QC_RUBRIC.md](docs/QC_RUBRIC.md) | the stage-aware rating scale and issue tags used in QC |
 | [docs/REPOSITORY_LAYOUT.md](docs/REPOSITORY_LAYOUT.md) | what is where, the module map, layout history |
 | [docs/CT_ROUTE.md](docs/CT_ROUTE.md), [docs/DOMAIN_SEVERITY_INPUT.md](docs/DOMAIN_SEVERITY_INPUT.md), [docs/SAMPLE_APPLICABILITY_FIELDS.md](docs/SAMPLE_APPLICABILITY_FIELDS.md) | design proposals not yet implemented |
-| [CHANGELOG.md](CHANGELOG.md) | what changed |
+| [docs/CHANGELOG.md](docs/CHANGELOG.md) | what changed |
 
 ## Repository layout
 
 ```
 calmar-guided.ipynb                   form-based workflow
 lesion-interpretation-pipeline.ipynb  the detailed notebook (canonical implementation)
-lesion-segmentation-benchmark.ipynb   segmentation benchmark
+lesion-segmentation-benchmark.ipynb   segmentation benchmark (a separate study, see below)
 calmar/                               Python package used by the notebooks
 src/                                  Slurm entry points (analysis_NN_*.sh) and their Python/R
 tests/                                pytest suite, no imaging jobs
+analyses/                             ASTRA scientific records, one folder per analysis
 docs/                                 documentation (index above)
 container/                            in-container LINDA wrapper
 stroke-aphasia-kb/                    git submodule: the aphasia knowledge base
-*/astra.yaml                          scientific records of individual analyses (see below)
 ```
 
-The six folders `alignment-repair/`, `brain-health-analysis/`,
-`diffusion-tract-analysis/`, `segmentation-benchmark/`,
-`workflow-acceptance/` and `workflow-validation/` are ASTRA records: the
-inputs, decisions, outputs and findings of one analysis each, kept as
-the scientific record and validated with `astra validate`. Runtime data
-(`data/`, `atlases/`, `reports/`, `qc_edits/`, `logs/`) is created on
-first use and never committed.
+`analyses/` holds one folder per analysis (`alignment-repair`,
+`brain-health-analysis`, `diffusion-tract-analysis`,
+`segmentation-benchmark`, `workflow-acceptance`, `workflow-validation`),
+each an ASTRA record of its inputs, decisions, outputs and findings,
+validated with `astra validate`. The segmentation benchmark is a
+separate study from the participant workflow: its notebook, the scripts
+`src/analysis_00`–`12` and `calmar/synthetic.py` are never called by the
+guided or detailed notebook. Runtime data (`data/`, `atlases/`,
+`reports/`, `qc_edits/`, `logs/`) is created on first use and never
+committed.
 
 ## The aphasia knowledge base
 

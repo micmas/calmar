@@ -20,7 +20,7 @@ __pycache__/
 # R
 *.RData
 
-# Archives — use versioned zips if needed (see CHANGELOG.md notes)
+# Archives — use versioned zips if needed (see docs/CHANGELOG.md notes)
 *.zip
 
 # stroke-aphasia-kb/ is a git submodule (github.com/micmas/stroke-aphasia-kb);
@@ -39,23 +39,23 @@ notes/
 
 # Local execution logs and verification artifacts; retain scripts/specifications.
 logs/
-/alignment-repair/alignment_qc
-/alignment-repair/corrected_disconnectomes
-/alignment-repair/control_mask.nii.gz
-/alignment-repair/*.prov.json
-/workflow-validation/verification
-/workflow-validation/*.prov.json
+/analyses/alignment-repair/alignment_qc
+/analyses/alignment-repair/corrected_disconnectomes
+/analyses/alignment-repair/control_mask.nii.gz
+/analyses/alignment-repair/*.prov.json
+/analyses/workflow-validation/verification
+/analyses/workflow-validation/*.prov.json
 
 # Acceptance products are runtime data; retain only the plan and requests.
-/workflow-acceptance/*
-!/workflow-acceptance/astra.yaml
-!/workflow-acceptance/request.json
-!/workflow-acceptance/inspection-request.json
-!/workflow-acceptance/atlas-request.json
-!/workflow-acceptance/overlap-request.json
-!/workflow-acceptance/decode-request.json
-!/workflow-acceptance/preview-request.json
-!/workflow-acceptance/bcb-request.json
+/analyses/workflow-acceptance/*
+!/analyses/workflow-acceptance/astra.yaml
+!/analyses/workflow-acceptance/request.json
+!/analyses/workflow-acceptance/inspection-request.json
+!/analyses/workflow-acceptance/atlas-request.json
+!/analyses/workflow-acceptance/overlap-request.json
+!/analyses/workflow-acceptance/decode-request.json
+!/analyses/workflow-acceptance/preview-request.json
+!/analyses/workflow-acceptance/bcb-request.json
 
 # Notebook edit locks
 /.*.edit-lock

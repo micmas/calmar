@@ -18,7 +18,7 @@ description: >
 inputs:
   - id: bcb_request
     type: data
-    source: workflow-acceptance/bcb-request.json
+    source: analyses/workflow-acceptance/bcb-request.json
     description: >
       BCB-only retry after correcting Tractotron to the actual bundled atlas
       grid (157x189x136, 1 mm), rather than assuming the module help's 2 mm.
@@ -26,27 +26,27 @@ inputs:
       its sidecars; segmentation masks and legacy participants are unchanged.
   - id: decode_request
     type: data
-    source: workflow-acceptance/decode-request.json
+    source: analyses/workflow-acceptance/decode-request.json
     description: Neurosynth decoding of the fresh participant's SynthStroke MNI mask, using the existing local knowledge base and cache.
   - id: preview_request
     type: data
-    source: workflow-acceptance/preview-request.json
+    source: analyses/workflow-acceptance/preview-request.json
     description: Static report overlay for the same participant and SynthStroke mask.
   - id: overlap_request
     type: data
-    source: workflow-acceptance/overlap-request.json
+    source: analyses/workflow-acceptance/overlap-request.json
     description: Three-participant, three-mask atlas-overlap request using the published atlas descriptors.
   - id: atlas_request
     type: data
-    source: workflow-acceptance/atlas-request.json
+    source: analyses/workflow-acceptance/atlas-request.json
     description: Existing five-atlas selection; acquire through the retained reporting job and preserve the atlas cache.
   - id: inspection_request
     type: data
-    source: workflow-acceptance/inspection-request.json
+    source: analyses/workflow-acceptance/inspection-request.json
     description: Portable three-participant inspection request; existing products retain their historical provenance.
   - id: request
     type: data
-    source: workflow-acceptance/request.json
+    source: analyses/workflow-acceptance/request.json
     description: Explicit dataset, participant/session/T1 and processing configuration.
 decisions:
   lesion_threshold:
@@ -209,13 +209,13 @@ findings:
     evidence:
       - id: integrity_metrics
         artifact: inspection
-        snapshot: workflow-acceptance/inspection/metrics.json
+        snapshot: analyses/workflow-acceptance/inspection/metrics.json
       - id: fresh_mask_sheet
         artifact: inspection
-        snapshot: workflow-acceptance/inspection/sub-M2077_ses-250_masks_contact.png
+        snapshot: analyses/workflow-acceptance/inspection/sub-M2077_ses-250_masks_contact.png
       - id: fresh_disconnectome_sheet
         artifact: inspection
-        snapshot: workflow-acceptance/inspection/sub-M2077_ses-250_disconnectomes_contact.png
+        snapshot: analyses/workflow-acceptance/inspection/sub-M2077_ses-250_disconnectomes_contact.png
   fresh_mask_agreement:
     label: Fresh masks require review
     claim: >
@@ -232,10 +232,10 @@ findings:
     evidence:
       - id: fresh_agreement_scores
         artifact: inspection
-        snapshot: workflow-acceptance/inspection/sub-M2077_ses-250_agreement/metrics.json
+        snapshot: analyses/workflow-acceptance/inspection/sub-M2077_ses-250_agreement/metrics.json
       - id: fresh_linda_regions
         artifact: inspection
-        snapshot: workflow-acceptance/inspection/sub-M2077_ses-250_linda_native.png
+        snapshot: analyses/workflow-acceptance/inspection/sub-M2077_ses-250_linda_native.png
   legacy_linda_disagreement:
     label: Legacy M2075 LINDA QC flag
     claim: >
@@ -251,7 +251,7 @@ findings:
     evidence:
       - id: legacy_agreement_scores
         artifact: inspection
-        snapshot: workflow-acceptance/inspection/sub-M2075_ses-602_agreement/metrics.json
+        snapshot: analyses/workflow-acceptance/inspection/sub-M2075_ses-602_agreement/metrics.json
       - id: legacy_masks
         artifact: inspection
-        snapshot: workflow-acceptance/inspection/sub-M2075_ses-602_masks_contact.png
+        snapshot: analyses/workflow-acceptance/inspection/sub-M2075_ses-602_masks_contact.png
