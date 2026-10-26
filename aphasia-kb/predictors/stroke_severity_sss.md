@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: stroke_severity_sss
 name: Neurological stroke severity (Scandinavian Stroke Scale)
 aliases:
@@ -52,6 +52,8 @@ findings:
       stroke diagnosis confirmed
     exclusion_criteria: impaired consciousness; pure dysarthria; unable to cooperate;
       severe somatic condition; refused participation
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: multiple linear regression, backward elimination of non-significant
       variables; significance level p<0.05
@@ -148,6 +150,21 @@ findings:
     supports: claim
     quote: the inclusion of neurological stroke severity on admission improved the
       accuracy of the prognosis of aphasia
+  - section: added by backfill
+    page: 2
+    quote: The initial assessment was carried out on the ward as soon as possible
+      after admission, in most cases within the first week after stroke onset (median
+      4 days, mean 7.3 days, SD 11.2). Those patients who had aphasia on admission
+      were contacted about 1 year later if they were still alive and residing in the
+      vicinity of Copenhagen.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: initial_aphasia_severity
   target_kind: predictor
@@ -175,6 +192,8 @@ findings:
       Copenhagen area at 1 year
     exclusion_criteria: died within 1 year; new stroke; moved away; refused; unable
       to cooperate
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: Pearson r (simple regression); multiple linear regression with backward
       elimination; p<0.05
@@ -238,6 +257,21 @@ findings:
     supports: claim
     quote: the initial type of aphasia does not predict the degree of recovery beyond
       its association with aphasia severity
+  - section: added by backfill
+    page: 2
+    quote: The initial assessment was carried out on the ward as soon as possible
+      after admission, in most cases within the first week after stroke onset (median
+      4 days, mean 7.3 days, SD 11.2). Those patients who had aphasia on admission
+      were contacted about 1 year later if they were still alive and residing in the
+      vicinity of Copenhagen.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: prognosis
   target_kind: prognosis
@@ -266,6 +300,8 @@ findings:
       stroke diagnosis confirmed
     exclusion_criteria: impaired consciousness; pure dysarthria; unable to cooperate;
       severe somatic condition; refused participation
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: multiple linear regression, backward elimination of non-significant
       variables; significance level p<0.05
@@ -362,6 +398,21 @@ findings:
     supports: claim
     quote: the inclusion of neurological stroke severity on admission improved the
       accuracy of the prognosis of aphasia
+  - section: added by backfill
+    page: 2
+    quote: The initial assessment was carried out on the ward as soon as possible
+      after admission, in most cases within the first week after stroke onset (median
+      4 days, mean 7.3 days, SD 11.2). Those patients who had aphasia on admission
+      were contacted about 1 year later if they were still alive and residing in the
+      vicinity of Copenhagen.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f4
   target: initial_aphasia_severity
   target_kind: predictor
@@ -389,6 +440,8 @@ findings:
       Copenhagen area at 1 year
     exclusion_criteria: died within 1 year; new stroke; moved away; refused; unable
       to cooperate
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: Pearson r (simple regression); multiple linear regression with backward
       elimination; p<0.05
@@ -452,6 +505,21 @@ findings:
     supports: claim
     quote: the initial type of aphasia does not predict the degree of recovery beyond
       its association with aphasia severity
+  - section: added by backfill
+    page: 2
+    quote: The initial assessment was carried out on the ward as soon as possible
+      after admission, in most cases within the first week after stroke onset (median
+      4 days, mean 7.3 days, SD 11.2). Those patients who had aphasia on admission
+      were contacted about 1 year later if they were still alive and residing in the
+      vicinity of Copenhagen.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 source: curated
 last_reviewed: '2026-05-07'
 notes: "Pedersen et al. 2004 (Cerebrovasc Dis) is the Copenhagen Aphasia Study, a\

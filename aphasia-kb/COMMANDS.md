@@ -164,6 +164,8 @@ A file moves to `schema_version: 2.7` once all its findings are complete.
 | `--drafts-only` | Leave approved entries alone. |
 | `--limit N` | Stop after N papers. |
 | `--from-response FILE` | Apply a saved response (`_last_backfill_response_<Key>.txt`) for one `--citation`. |
+| `--reapply` | No model: apply every saved response again to the fields still missing. |
+| `--retry` | Ask again for fields already answered without a verifiable quote (`filled.unresolved`). |
 
 ### `reextract.py` — extract chosen papers again, on purpose
 

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: auditory_temporal_processing
 name: Rapid auditory temporal processing (40-Hz FM detection)
 kind: predictor
@@ -43,6 +43,8 @@ findings:
     recruitment: NHS referral; prospective longitudinal design.
     inclusion_criteria: WA diagnosis; monolingual English speaker.
     exclusion_criteria: Previous neurological disorder.
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: p ≤ .001
     cluster_extent: null
@@ -112,6 +114,18 @@ findings:
     quote: The current study recruited 12 participants with WA. This sample size reflected
       an a priori power calculation; however, this calculation was conducted on chronic
       WA data, and the sample remains small.
+  - section: added by backfill
+    page: 2
+    quote: Longitudinal neuropsychological assessments were undertaken 3 times at
+      2.5, 5, and 9 MPO.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: auditory_comprehension
   target_kind: impairment
@@ -134,6 +148,8 @@ findings:
     recruitment: NHS referral; prospective longitudinal design.
     inclusion_criteria: WA diagnosis.
     exclusion_criteria: Previous neurological disorder.
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: p = .002
     cluster_extent: null
@@ -181,6 +197,18 @@ findings:
     quote: these results indicate that individuals with significant impairments in
       auditory and phonological abilities at 2.5 to 5 MPO are at risk for poor language
       comprehension outcomes.
+  - section: added by backfill
+    page: 2
+    quote: Longitudinal neuropsychological assessments were undertaken 3 times at
+      2.5, 5, and 9 MPO.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: auditory_comprehension
   target_kind: impairment
@@ -204,6 +232,8 @@ findings:
     recruitment: NHS referral; prospective longitudinal design.
     inclusion_criteria: WA diagnosis; monolingual English speaker.
     exclusion_criteria: Previous neurological disorder.
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: p ≤ .001
     cluster_extent: null
@@ -273,6 +303,18 @@ findings:
     quote: The current study recruited 12 participants with WA. This sample size reflected
       an a priori power calculation; however, this calculation was conducted on chronic
       WA data, and the sample remains small.
+  - section: added by backfill
+    page: 2
+    quote: Longitudinal neuropsychological assessments were undertaken 3 times at
+      2.5, 5, and 9 MPO.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f4
   target: auditory_comprehension
   target_kind: impairment
@@ -295,6 +337,8 @@ findings:
     recruitment: NHS referral; prospective longitudinal design.
     inclusion_criteria: WA diagnosis.
     exclusion_criteria: Previous neurological disorder.
+    phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: p = .002
     cluster_extent: null
@@ -342,6 +386,18 @@ findings:
     quote: these results indicate that individuals with significant impairments in
       auditory and phonological abilities at 2.5 to 5 MPO are at risk for poor language
       comprehension outcomes.
+  - section: added by backfill
+    page: 2
+    quote: Longitudinal neuropsychological assessments were undertaken 3 times at
+      2.5, 5, and 9 MPO.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 source: curated
 last_reviewed: '2026-05-06'
 notes: "This predictor entry captures two cross-lagged behavioral predictors from\n\

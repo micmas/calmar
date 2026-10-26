@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: melodic_intonation_therapy
 name: Melodic Intonation Therapy (MIT)
 kind: therapy
@@ -32,6 +32,7 @@ findings:
     age_range: 47-58 years
     handedness: all right-handed
     language: English
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: Patient 1 (MIT) CIUs/min increased from 4.40 to 13.90 (315.9% change); Patient 2 (SRT)
@@ -75,6 +76,12 @@ findings:
     quote: Although caution should be exercised when making generalizations from results in two prototypical
       patients...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: right_inferior_frontal_gyrus
   target_kind: region
@@ -95,6 +102,7 @@ findings:
     age_range: 47-58 years
     handedness: all right-handed
     language: English
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: not_reported
@@ -146,7 +154,12 @@ findings:
     quote: Although caution should be exercised when making generalizations from results in two prototypical
       patients...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 # Notes
 This is a case-series study (n=2) comparing MIT to a control Speech Repetition Therapy (SRT). The findings suggest that while both are effective, MIT's efficacy is linked to right-hemisphere recruitment.

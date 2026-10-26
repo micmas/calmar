@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -35,6 +35,7 @@ findings:
     age_range: mean 54.7 (SD 9.8)
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: p < .05
     effect_size: 0.07 points (WAB-AQ increase per hour)
@@ -88,6 +89,11 @@ findings:
     quote: the factor 'therapy hours' only reflected the number of treatment hours a participant received
       while participating in a research study in our laboratory.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 Johnson et al. (2019) found that cumulative treatment hours in the chronic phase are positively associated with improvements in WAB-AQ.

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_precentral_gyrus_insula
 name: Left precentral gyrus of the insula
 aliases:
@@ -42,6 +42,8 @@ findings:
       normal hearing
     exclusion_criteria: disagreement between at least two certified SLPs on apraxia
       diagnosis excluded the patient
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 100% lesion overlap criterion (all 25 apraxia patients share one region);
       0% overlap in 19 controls — perfect double dissociation
@@ -139,6 +141,30 @@ findings:
     supports: limitation
     quote: the association of a lesion site with a behavioural deficit is not conclusive
       proof that the site actually carries out that function
+  - section: added by backfill
+    page: 1
+    quote: This area of 100% lesion overlap is shown in yellow and signifies the involvement
+      of that region in each patient.
+    supports: method
+  - section: added by backfill
+    page: 3
+    quote: The injuries had occurred at least one year before inclusion in the study
+      to ensure that the observed speech and language deficits had stabilized.
+    supports: sample
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 44
+    min_lesion_overlap: 100%
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: form_to_articulation
   target_kind: impairment
@@ -159,6 +185,7 @@ findings:
     handedness: all right-handed
     language: native German
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR p < 0.01
     effect_size: not_reported
@@ -199,11 +226,34 @@ findings:
       and the network affording linguistic processing will show partial functional
       adaptation to the lesion
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: To grant reasonable levels of statistical power, statistical analyses were
+      restricted to those voxels where at least 10% of the patients were lesioned.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The resulting maps were corrected for multiple comparisons using a 1% false
+      discovery rate (FDR corrected P 5 0.01) for the AAT subtests.
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 102
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 source: curated
 last_reviewed: '2026-10-22'
 notes: 'Classic 3-page Nature paper. Key finding is a perfect double dissociation

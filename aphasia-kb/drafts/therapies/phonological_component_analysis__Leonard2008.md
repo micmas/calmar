@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: phonological_component_analysis
 name: Phonological Component Analysis (PCA)
 kind: therapy
@@ -32,6 +32,7 @@ findings:
     handedness: all right-handed
     language: English-speaking
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: two standard deviation band method
     effect_size: all averaged effect sizes for all patients were found to be large (Busk and Serlin criteria)
@@ -96,5 +97,11 @@ findings:
     page: 14
     quote: it is acknowledged that due to the small sample size, the power of this analysis is limited.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 This study establishes the efficacy of PCA, a phonological analogue to SFA, for treating anomia across various aphasia types.

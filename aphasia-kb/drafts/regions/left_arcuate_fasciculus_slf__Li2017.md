@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_arcuate_fasciculus_slf
 name: Left Arcuate Fasciculus and Superior Longitudinal Fascicle (Dorsal Language Pathway)
 kind: tract
@@ -30,6 +30,7 @@ findings:
     age_range: mean 46.8 years
     handedness: all right-handed
     language: native Chinese speakers
+    cohort: not_reported
   statistics:
     threshold: Bonferroni corrected (p < 0.0026 for lesion; p < 0.0023 for FA)
     effect_size: lesion r=-0.48 to -0.59; FA r=0.51 to 0.62
@@ -86,4 +87,33 @@ findings:
       with the lesion percentages of four tracts: [...] left SLF (r=-0.59 to -0.53, corrected p-values
       < 0.01) [and phonological fluency].'
     supports: statistics
+  - section: added by backfill
+    page: 4
+    quote: the lesion percentage (number of voxels with lesion divided by total number of voxels on the
+      tract) was correlated with the corrected t scores of each cue of semantic (and phonological) fluency
+      tasks across 51 patients.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The results for each cue were adjusted for the 19 tracts with the Bonferroni correction method
+      (p < 0.0026, corrected p < 0.05).
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: When the values were treated as covariate, the lesion percentages of the above ﬁve tracts were
+      signiﬁcantly correlated with semantic or phonological ﬂuency composite scores
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 51
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: bonferroni
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: form_to_meaning
 name: Form-to-meaning processing (ventral stream)
 aliases:
@@ -47,6 +47,8 @@ findings:
     inclusion_criteria: unilateral left-hemisphere stroke; ≥6 months post-stroke;
       behavioural testing + MRI.
     exclusion_criteria: not_reported beyond imaging-quality and lesion-mask review.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: univariate VLSM with voxel-based permutation thresholding (1000 permutations)
       and FWE correction; voxels included only if ≥5 patients had damage. Component
@@ -185,6 +187,42 @@ findings:
     supports: limitation
     quote: lesion studies that rely on stroke data are limited to studying cortical
       areas where stroke is likely to occur (e.g., middle cerebral artery distribution)
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: left_posterior_superior_temporal_gyrus
   target_kind: region
@@ -204,6 +242,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; PCA Component 2 positive loadings
     effect_size: voxelwise PCA loading; one of the two greatest-expression regions
@@ -272,6 +312,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f3
   target: left_uncinate_fasciculus
   target_kind: region
@@ -292,6 +368,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; PCA Component 2 positive loadings
     effect_size: '>85% of uncinate-fasciculus voxels carry positive Component 2 loadings'
@@ -366,6 +444,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f4
   target: left_posterior_supramarginal_gyrus
   target_kind: region
@@ -385,6 +499,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; PCA Component 2 positive loadings
     effect_size: voxelwise PCA loading
@@ -452,6 +568,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f5
   target: left_angular_gyrus
   target_kind: region
@@ -470,6 +622,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; Component 2 positive loadings
     effect_size: voxelwise PCA loading
@@ -532,6 +686,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f6
   target: left_ifg_pars_orbitalis
   target_kind: region
@@ -551,6 +741,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; Component 2 positive loadings
     effect_size: voxelwise PCA loading
@@ -622,6 +814,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f7
   target: left_anterior_middle_temporal_gyrus
   target_kind: region
@@ -640,6 +868,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; Component 2 positive loadings
     effect_size: voxelwise PCA loading
@@ -701,6 +931,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f8
   target: left_posterior_middle_temporal_gyrus
   target_kind: region
@@ -726,6 +992,8 @@ findings:
     inclusion_criteria: unilateral left-hemisphere stroke; ≥6 months post-stroke;
       behavioural testing + MRI.
     exclusion_criteria: not_reported beyond imaging-quality and lesion-mask review.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: univariate VLSM with voxel-based permutation thresholding (1000 permutations)
       and FWE correction; voxels included only if ≥5 patients had damage. Component
@@ -864,6 +1132,42 @@ findings:
     supports: limitation
     quote: lesion studies that rely on stroke data are limited to studying cortical
       areas where stroke is likely to occur (e.g., middle cerebral artery distribution)
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f9
   target: left_posterior_superior_temporal_gyrus
   target_kind: region
@@ -883,6 +1187,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; PCA Component 2 positive loadings
     effect_size: voxelwise PCA loading; one of the two greatest-expression regions
@@ -951,6 +1257,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f10
   target: left_uncinate_fasciculus
   target_kind: region
@@ -971,6 +1313,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; PCA Component 2 positive loadings
     effect_size: '>85% of uncinate-fasciculus voxels carry positive Component 2 loadings'
@@ -1045,6 +1389,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f11
   target: left_posterior_supramarginal_gyrus
   target_kind: region
@@ -1064,6 +1444,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; PCA Component 2 positive loadings
     effect_size: voxelwise PCA loading
@@ -1131,6 +1513,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f12
   target: left_angular_gyrus
   target_kind: region
@@ -1149,6 +1567,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; Component 2 positive loadings
     effect_size: voxelwise PCA loading
@@ -1211,6 +1631,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f13
   target: left_ifg_pars_orbitalis
   target_kind: region
@@ -1230,6 +1686,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; Component 2 positive loadings
     effect_size: voxelwise PCA loading
@@ -1301,6 +1759,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f14
   target: left_anterior_middle_temporal_gyrus
   target_kind: region
@@ -1319,6 +1813,8 @@ findings:
     age_range: mean age at stroke 57.31 years
     handedness: not_reported
     language: English
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: VLSM permutation + FWE; Component 2 positive loadings
     effect_size: voxelwise PCA loading
@@ -1380,6 +1876,42 @@ findings:
     supports: imaging_details
     quote: MRI data were acquired using a Siemens 3T Trio System with a 12-channel
       head coil.
+  - section: added by backfill
+    page: 5
+    quote: For each analysis, voxelwise statistical significance was determined by
+      voxel-based permutation thresholding (1,000 permutations) and multiple comparison
+      correction (controlling for familywise error).
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Only voxels where at least five patients had damage were included in each
+      analysis.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Among these 165 persons, 138 (63 females) had both behavioral testing and
+      MRI data.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: At the time of study inclusion, all participants were at least 6 mo poststroke,
+      with a mean age at the time of stroke of 57.31 y old (SD = 11.49) and a mean
+      time post-stroke of 36.3 mo (SD = 43.6).
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 138
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 source: agent_draft
 last_reviewed: '2026-05-06'
 notes: 'First-extraction draft from Fridriksson et al. 2018 (PNAS). The

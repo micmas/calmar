@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_fusiform_gyrus
 name: Left Fusiform Gyrus
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: German
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: not_reported
     cluster_extent: not_reported
@@ -89,6 +90,33 @@ findings:
     quote: due to relatively small sample sizes and thus limited statistical power, these comparisons
       are likely to underestimate visuo-motor deficits in patients
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: six patients with pure alexia were identiﬁed from the population of in-patients at our unit
+      of cognitive and restorative neurology.
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: six patients with hemianopic dyslexia due to right-sided visual ﬁeld loss participated as a
+      clinical control group.
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: the lesions of hemianopic dyslexia patients were subtracted from those of pure alexia patients.
+    supports: method
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 12
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 # Left Fusiform Gyrus
 

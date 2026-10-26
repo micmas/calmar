@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_arcuate_fasciculus
 name: Left arcuate fasciculus
 aliases:
@@ -53,6 +53,8 @@ findings:
       hemorrhages; previous or subsequent strokes; concomitant neurological diseases/disorders;
       pure anomia; aphasia syndromes with severe comprehension deficits (<45th percentile
       BDAE); cognitive impairment (<50th percentile Raven's CPM).
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression with all 4 predictors (lesion size, AF lesion load,
       EmC lesion load, UF lesion load); p<0.05 for partial R² of individual predictor.
@@ -204,6 +206,19 @@ findings:
       particular voxel would be part of the tract was calculated as one tenth of the
       voxel's intensity.
     supports: method
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: speech_informativeness
   target_kind: impairment
@@ -234,6 +249,8 @@ findings:
     exclusion_criteria: bihemispheric or brain stem infarcts; primary intracerebral
       hemorrhages; previous or subsequent strokes; concomitant neurological diseases/disorders;
       pure anomia; severe comprehension deficits; cognitive impairment.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression with all 4 predictors; p<0.05 for partial R².
     cluster_extent: null
@@ -327,6 +344,19 @@ findings:
       utterances, exclamations, inappropriate information, and perseverations were
       counted as words but not as CIUs.
     supports: method
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: speech_efficiency
   target_kind: impairment
@@ -355,6 +385,8 @@ findings:
     exclusion_criteria: bihemispheric or brain stem infarcts; primary intracerebral
       hemorrhages; previous or subsequent strokes; concomitant neurological diseases/disorders;
       pure anomia; severe comprehension deficits; cognitive impairment.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression with all 4 predictors; p<0.05 for partial R².
     cluster_extent: null
@@ -439,6 +471,19 @@ findings:
       predicted rate, informativeness, and overall efficiency of speech as well as
       naming ability.
     supports: claim
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f4
   target: confrontation_naming
   target_kind: impairment
@@ -467,6 +512,8 @@ findings:
     exclusion_criteria: bihemispheric or brain stem infarcts; intracerebral hemorrhages;
       prior or subsequent strokes; concomitant neurological diseases; pure anomia;
       severe comprehension deficits; cognitive impairment.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression with all 4 predictors; p<0.05 for R².
     cluster_extent: null
@@ -562,6 +609,19 @@ findings:
       items they could identify by choosing the correct written word (from a set of
       4 words presented in conjunction with the picture stimulus).
     supports: method
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f5
   target: left_extreme_capsule
   target_kind: region
@@ -587,6 +647,8 @@ findings:
     inclusion_criteria: right-handed; left-hemispheric MCA stroke; >=11 months post-stroke;
       adequate comprehension and cognition.
     exclusion_criteria: as per f1.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression; p>0.05 for all EmC partial R² values.
     cluster_extent: null
@@ -672,6 +734,19 @@ findings:
       supplied by the superior division of the middle cerebral artery is the area
       most frequently affected by a stroke.
     supports: confounders
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f6
   target: speech_production_rate
   target_kind: impairment
@@ -703,6 +778,8 @@ findings:
       hemorrhages; previous or subsequent strokes; concomitant neurological diseases/disorders;
       pure anomia; aphasia syndromes with severe comprehension deficits (<45th percentile
       BDAE); cognitive impairment (<50th percentile Raven's CPM).
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression with all 4 predictors (lesion size, AF lesion load,
       EmC lesion load, UF lesion load); p<0.05 for partial R² of individual predictor.
@@ -854,6 +931,19 @@ findings:
       particular voxel would be part of the tract was calculated as one tenth of the
       voxel's intensity.
     supports: method
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f7
   target: speech_informativeness
   target_kind: impairment
@@ -884,6 +974,8 @@ findings:
     exclusion_criteria: bihemispheric or brain stem infarcts; primary intracerebral
       hemorrhages; previous or subsequent strokes; concomitant neurological diseases/disorders;
       pure anomia; severe comprehension deficits; cognitive impairment.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression with all 4 predictors; p<0.05 for partial R².
     cluster_extent: null
@@ -977,6 +1069,19 @@ findings:
       utterances, exclamations, inappropriate information, and perseverations were
       counted as words but not as CIUs.
     supports: method
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f8
   target: speech_efficiency
   target_kind: impairment
@@ -1005,6 +1110,8 @@ findings:
     exclusion_criteria: bihemispheric or brain stem infarcts; primary intracerebral
       hemorrhages; previous or subsequent strokes; concomitant neurological diseases/disorders;
       pure anomia; severe comprehension deficits; cognitive impairment.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression with all 4 predictors; p<0.05 for partial R².
     cluster_extent: null
@@ -1089,6 +1196,19 @@ findings:
       predicted rate, informativeness, and overall efficiency of speech as well as
       naming ability.
     supports: claim
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f9
   target: confrontation_naming
   target_kind: impairment
@@ -1117,6 +1237,8 @@ findings:
     exclusion_criteria: bihemispheric or brain stem infarcts; intracerebral hemorrhages;
       prior or subsequent strokes; concomitant neurological diseases; pure anomia;
       severe comprehension deficits; cognitive impairment.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression with all 4 predictors; p<0.05 for R².
     cluster_extent: null
@@ -1212,6 +1334,19 @@ findings:
       items they could identify by choosing the correct written word (from a set of
       4 words presented in conjunction with the picture stimulus).
     supports: method
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f10
   target: left_extreme_capsule
   target_kind: region
@@ -1237,6 +1372,8 @@ findings:
     inclusion_criteria: right-handed; left-hemispheric MCA stroke; >=11 months post-stroke;
       adequate comprehension and cognition.
     exclusion_criteria: as per f1.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: multiple regression; p>0.05 for all EmC partial R² values.
     cluster_extent: null
@@ -1322,6 +1459,19 @@ findings:
       supplied by the superior division of the middle cerebral artery is the area
       most frequently affected by a stroke.
     supports: confounders
+  - section: added by backfill
+    page: 1
+    quote: Thirty patients with chronic stroke with residual impairments in speech
+      production underwent high-resolution anatomic MRI and a battery of cognitive
+      and language tests.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 notes: "This draft covers all primary findings from Marchina et al. 2011 (Stroke 42:2251-2256).\n\
   \nThe paper's central contribution is quantifying left AF lesion load (volume of\
   \ tract\ndamaged) using probabilistic DTI maps from healthy controls overlaid onto\

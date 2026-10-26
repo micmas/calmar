@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: right_arcuate_fasciculus
 name: Right Arcuate Fasciculus
 kind: tract
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: native English speaker
     phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: P = 0.020
     effect_size: beta = 0.730
@@ -102,6 +103,12 @@ findings:
     quote: our observations reflect results derived from a selected group of patients that were able to
       tolerate a 45-min MRI scanning session in the acute stage of stroke.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Right Arcuate Fasciculus
 

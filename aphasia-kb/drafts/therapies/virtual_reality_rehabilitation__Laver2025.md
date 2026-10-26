@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: virtual_reality_rehabilitation
 name: Virtual Reality Rehabilitation
 kind: therapy
@@ -36,6 +36,7 @@ findings:
     handedness: not_reported
     language: mostly English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: fixed-effect model
     effect_size: SMD 0.20
@@ -86,6 +87,12 @@ findings:
     supports: limitation
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: upper_limb_function
   target_kind: impairment
@@ -106,6 +113,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: fixed-effect model
     effect_size: SMD 0.42
@@ -137,6 +145,12 @@ findings:
     supports: statistics
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f3
   target: balance
   target_kind: impairment
@@ -156,6 +170,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: fixed-effect model
     effect_size: SMD 0.26
@@ -180,6 +195,12 @@ findings:
     supports: claim
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f4
   target: activity_limitation
   target_kind: impairment
@@ -200,6 +221,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: fixed-effect model
     effect_size: SMD 0.21
@@ -224,6 +246,12 @@ findings:
     supports: claim
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f5
   target: cognitive_function
   target_kind: impairment
@@ -243,6 +271,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: fixed-effect model
     effect_size: SMD 0.32
@@ -267,4 +296,10 @@ findings:
     supports: claim
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_superior_temporal_gyrus
 name: Left Superior Temporal Gyrus (Dorsal Stream Node)
 kind: classical
@@ -45,6 +45,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.001 uncorrected (t > 3.1)
     cluster_extent: null
@@ -167,6 +169,13 @@ findings:
 
       '
     supports: region_definition
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: form_to_meaning
   target_kind: impairment
@@ -187,6 +196,7 @@ findings:
     handedness: all right-handed
     language: native German
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR p < 0.01
     effect_size: not_reported
@@ -225,11 +235,34 @@ findings:
     quote: The rather coarse rating of syntactic abilities in the AAT certainly does
       not allow us to disentangle differential contributions
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: To grant reasonable levels of statistical power, statistical analyses were
+      restricted to those voxels where at least 10% of the patients were lesioned.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The resulting maps were corrected for multiple comparisons using a 1% false
+      discovery rate (FDR corrected P 5 0.01) for the AAT subtests.
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 102
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 notes: 'The left STG findings here are specifically the fMRI activation seeds for
   the dorsal stream
 

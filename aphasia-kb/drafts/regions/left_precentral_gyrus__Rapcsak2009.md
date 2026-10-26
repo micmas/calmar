@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_precentral_gyrus
 name: Left Precentral Gyrus
 kind: classical
@@ -27,6 +27,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: chi-square design
     effect_size: not_reported
@@ -80,6 +81,28 @@ findings:
     quote: we relied on a mix of clinical and research scans which introduced some variability in terms
       of image quality and detail.
     supports: limitation
+  - section: added by backfill
+    page: not_reported
+    quote: Using these dual criteria, we were able to identify 31 participants for the study
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: To determine whether lesions involving speciﬁc perisylvian cortical subdivisions had a unique
+      association with phonological dyslexia and dysgraphia, we used a 2 ⁃ 2 chi-square design
+    supports: method
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 31
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: phonological_dyslexia
   target_kind: impairment
@@ -99,6 +122,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: point-biserial correlation
     effect_size: r = .451
@@ -144,4 +168,31 @@ findings:
       size of the lexicality effect in reading correlated with damage to posterior inferior frontal gyrus/Broca's
       area... and precentral gyrus
     supports: statistics
+  - section: added by backfill
+    page: not_reported
+    quote: Using these dual criteria, we were able to identify 31 participants for the study
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Point-biserial correlation tests did not indicate a signiﬁcant association between damage to
+      any perisylvian ROI and the magnitude of the lexicality effect in spelling
+    supports: method
+  - section: added by backfill
+    page: 11
+    quote: By contrast, the size of the lexicality effect in reading correlated with damage to posterior
+      inferior frontal gyrus/Broca’s area (r = .398, p = .0393) and precentral gyrus (r = .451, p = .0173)
+    supports: method
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 31
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

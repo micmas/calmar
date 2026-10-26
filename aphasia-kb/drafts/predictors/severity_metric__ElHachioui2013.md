@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -38,6 +38,7 @@ findings:
     age_range: 19-96 years
     handedness: 86% right-handed
     language: Dutch
+    cohort: SPEAK
   statistics:
     threshold: p=0.003
     effect_size: OR 1.31 (95% CI 1.15 to 1.51)
@@ -90,4 +91,16 @@ findings:
     quote: Second, the three core linguistic components were not examined extensively but with a screening
       tool.
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: Between June 2007 and June 2009, a consecutive series of patients with aphasia due to a ﬁrst-ever
+      stroke were recruited from the stroke units of 17 hospitals in The Netherlands for the Sequential
+      Prognostic Evaluation of Aphasia after stroKe (SPEAK) study.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

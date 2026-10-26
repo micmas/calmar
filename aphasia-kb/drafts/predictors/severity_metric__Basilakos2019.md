@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -34,6 +34,7 @@ findings:
     handedness: premorbidly right-handed
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: P < .05
     effect_size: t = -2.6, P = .014
@@ -89,5 +90,11 @@ findings:
     page: 10
     quote: First, the sample size was relatively small
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Findings on the predictive value of initial aphasia severity for long-term decline.

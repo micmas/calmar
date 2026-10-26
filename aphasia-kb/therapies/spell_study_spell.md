@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: spell_study_spell
 name: Spell-study-spell training
 aliases:
@@ -23,59 +23,51 @@ atf_id: null
 atf_evidence_level: null
 evidence_level: level_II
 atf_aliases:
-  - SSS
-  - spell-study-spell procedure
+- SSS
+- spell-study-spell procedure
 icf_domain:
-  - body_function
+- body_function
 tidier:
   brief_name: Spell-Study-Spell (SSS)
-  rationale: |-
-    Acquired dysgraphia/agraphia involves impaired access to graphemic output
-        representations. SSS applies the test-study-test (retrieval practice) paradigm:
-        initial retrieval attempts create desirable difficulty that enhances encoding;
-        studying the correct form after a retrieval failure reinforces the orthographic
-        representation; re-testing consolidates it. Spaced practice across sessions
-        further potentiates retention.
-  materials: |-
-    Target word list (tailored to patient's orthographic error profile); letter tiles,
-        anagram boards, or keyboard; SSS protocol card; Barbieri 2023 supplementary
-        protocol materials.
-  procedures: |-
-    Three-phase trial per item: (1) Spell — patient attempts to spell target word from
-        picture/spoken cue; (2) Study — patient views and copies correct spelling with
-        feedback; (3) Spell — patient attempts target word again after a brief interval.
-        Session ends with delayed probe on all items. Items meeting >80% accuracy
-        criterion are retired and replaced.
-  who_provides: |-
-    Speech-language pathologist or trained clinician assistant (individual sessions).
+  rationale: "Acquired dysgraphia/agraphia involves impaired access to graphemic output\n\
+    \    representations. SSS applies the test-study-test (retrieval practice) paradigm:\n\
+    \    initial retrieval attempts create desirable difficulty that enhances encoding;\n\
+    \    studying the correct form after a retrieval failure reinforces the orthographic\n\
+    \    representation; re-testing consolidates it. Spaced practice across sessions\n\
+    \    further potentiates retention."
+  materials: "Target word list (tailored to patient's orthographic error profile);\
+    \ letter tiles,\n    anagram boards, or keyboard; SSS protocol card; Barbieri\
+    \ 2023 supplementary\n    protocol materials."
+  procedures: "Three-phase trial per item: (1) Spell — patient attempts to spell target\
+    \ word from\n    picture/spoken cue; (2) Study — patient views and copies correct\
+    \ spelling with\n    feedback; (3) Spell — patient attempts target word again\
+    \ after a brief interval.\n    Session ends with delayed probe on all items. Items\
+    \ meeting >80% accuracy\n    criterion are retired and replaced."
+  who_provides: Speech-language pathologist or trained clinician assistant (individual
+    sessions).
   delivery_mode: face_to_face or computer-assisted
   setting: Outpatient clinic or home (with computer delivery).
-  dosage: |-
-    Barbieri 2023: 2 sessions/week × 8 weeks; approximately 45 min per session
-        (approximately 12 hours total treatment).
-  tailoring: |-
-    Target word list individualised to patient's orthographic error profile from
-        standardised spelling assessment. Item set refreshed when >80% mastery criterion
-        reached. Spacing intervals between study and re-test adjusted by patient learning
-        rate.
-  modifications: |-
-    Tablet-delivered SSS validated for home practice. Spaced-retrieval variant increases
-        inter-trial intervals progressively. Related procedures: Copy-and-Recall Treatment
-        (CART), Anagram and Copy Treatment (ACT).
-  fidelity_planned: |-
-    Per-session accuracy logs; 80% mastery criterion operationalised and logged. Session
-        completion tracking.
-  fidelity_actual: |-
-    Barbieri 2023: item-level completion rates and probe trajectories reported per
-        participant; formal fidelity coding NR.
+  dosage: "Barbieri 2023: 2 sessions/week × 8 weeks; approximately 45 min per session\n\
+    \    (approximately 12 hours total treatment)."
+  tailoring: "Target word list individualised to patient's orthographic error profile\
+    \ from\n    standardised spelling assessment. Item set refreshed when >80% mastery\
+    \ criterion\n    reached. Spacing intervals between study and re-test adjusted\
+    \ by patient learning\n    rate."
+  modifications: "Tablet-delivered SSS validated for home practice. Spaced-retrieval\
+    \ variant increases\n    inter-trial intervals progressively. Related procedures:\
+    \ Copy-and-Recall Treatment\n    (CART), Anagram and Copy Treatment (ACT)."
+  fidelity_planned: "Per-session accuracy logs; 80% mastery criterion operationalised\
+    \ and logged. Session\n    completion tracking."
+  fidelity_actual: "Barbieri 2023: item-level completion rates and probe trajectories\
+    \ reported per\n    participant; formal fidelity coding NR."
   confidence: medium
   flags:
-    - Barbieri 2023 is an RCT with a dysgraphia arm — SSS is one arm, not the full trial.
-        Not formally extracted from papers/.
+  - Barbieri 2023 is an RCT with a dysgraphia arm — SSS is one arm, not the full trial.
+    Not formally extracted from papers/.
 rtss_ingredients:
-  - listen_repeat_cycle
-  - retrieval_practice
-  - massed_practice
+- listen_repeat_cycle
+- retrieval_practice
+- massed_practice
 findings:
 - id: f1
   target: dysgraphia
@@ -106,6 +98,8 @@ findings:
       and on PALPA subtests #40 and #54.'
     exclusion_criteria: exclusively subcortical lesions; non-monolingual; developmental/psychiatric/other
       neurological history; MRI contraindications.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: mixed-effects regression with FDR correction; p<0.0001 for the Time
       effect within the spelling treatment group
@@ -198,6 +192,18 @@ findings:
     quote: participants were recruited from different research centers because they
       met criteria for different language deﬁcits, which resulted in pre-treatment
       heterogeneities across groups in terms of language proﬁles.
+  - section: added by backfill
+    page: 4
+    quote: presence of a single left-hemisphere stroke at least 12 months prior entering
+      the study
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: right_anterior_superior_temporal_gyrus
   target_kind: region
@@ -222,6 +228,8 @@ findings:
     age_range: mean 60.2 years (SD 10.2)
     handedness: 10 right-handed, 2 left-handed, 1 ambidextrous
     language: monolingual native English speakers
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'voxel-level p<0.001, FWE-corrected p<0.05 cluster-level (k≥57 voxels
       for spelling-treatment group post-treatment); ROI analysis: mixed-effects regression
@@ -391,6 +399,18 @@ findings:
     quote: '70 met the inclusion criteria for the study: (1) presence of a single
       left-hemisphere stroke at least 12 months prior entering the study and affecting
       at least .1% of the cortical surface in the left hemisphere'
+  - section: added by backfill
+    page: 4
+    quote: presence of a single left-hemisphere stroke at least 12 months prior entering
+      the study
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: dysgraphia
   target_kind: impairment
@@ -420,6 +440,8 @@ findings:
       and on PALPA subtests #40 and #54.'
     exclusion_criteria: exclusively subcortical lesions; non-monolingual; developmental/psychiatric/other
       neurological history; MRI contraindications.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: mixed-effects regression with FDR correction; p<0.0001 for the Time
       effect within the spelling treatment group
@@ -512,6 +534,18 @@ findings:
     quote: participants were recruited from different research centers because they
       met criteria for different language deﬁcits, which resulted in pre-treatment
       heterogeneities across groups in terms of language proﬁles.
+  - section: added by backfill
+    page: 4
+    quote: presence of a single left-hemisphere stroke at least 12 months prior entering
+      the study
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f4
   target: right_anterior_superior_temporal_gyrus
   target_kind: region
@@ -536,6 +570,8 @@ findings:
     age_range: mean 60.2 years (SD 10.2)
     handedness: 10 right-handed, 2 left-handed, 1 ambidextrous
     language: monolingual native English speakers
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 'voxel-level p<0.001, FWE-corrected p<0.05 cluster-level (k≥57 voxels
       for spelling-treatment group post-treatment); ROI analysis: mixed-effects regression
@@ -705,6 +741,18 @@ findings:
     quote: '70 met the inclusion criteria for the study: (1) presence of a single
       left-hemisphere stroke at least 12 months prior entering the study and affecting
       at least .1% of the cortical surface in the left hemisphere'
+  - section: added by backfill
+    page: 4
+    quote: presence of a single left-hemisphere stroke at least 12 months prior entering
+      the study
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 source: agent_draft
 last_reviewed: '2026-05-06'
 notes: "First-extraction draft from Barbieri et al. 2023. Spell-study-spell\nis an\

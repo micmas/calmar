@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_supramarginal_gyrus_premotor
 name: Left Supramarginal Gyrus and Premotor Cortex (supra-Sylvian)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Z = 2.3, p < 0.05 (corrected)
     effect_size: Z = 3.01
@@ -104,5 +105,11 @@ findings:
     quote: the current fMRI analysis did not deduce which of these areas is more important than others
       or the dynamics of change needed to support recovery.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 Finding f1 links increased activation in the left inferior parietal lobule to improved naming outcomes following intensive treatment.

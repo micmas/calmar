@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: initial_aphasia_severity
 name: Initial aphasia severity (acute WAB composite)
 aliases:
@@ -55,6 +55,8 @@ findings:
       WABinitial ≤28 (aphasia criterion)
     exclusion_criteria: severe comprehension deficits (unable to consent); non-first
       stroke; no image verification
+    phase: acute
+    cohort: PARIS
   statistics:
     threshold: linear regression, two-tailed; p<0.001 criterion for significance
     cluster_extent: null
@@ -139,6 +141,24 @@ findings:
     supports: limitation
     quote: We were unable to address the question regarding recovery from severe aphasia
       because of consent restrictions imposed by local law
+  - section: added by backfill
+    page: 1
+    quote: Initial assessment occurred 24 to 72 hours after stroke onset (meanσ2.1
+      days; SDσ1.3)
+    supports: sample
+  - section: added by backfill
+    page: 1
+    quote: We used the Performance and Recovery in Stroke (PARIS) database of patients
+      with image-verified, first-time ischemic strokes who underwent serial assessment
+      with impairment measures for hemiparesis, aphasia, and visual neglect.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 source: curated
 last_reviewed: 2026-05-06
 notes: 'Lazar et al. 2010 (Stroke) is a 4-page paper using n=21 mild-to-moderate aphasic

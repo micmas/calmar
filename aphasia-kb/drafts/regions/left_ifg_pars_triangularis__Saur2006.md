@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_ifg_pars_triangularis
 name: Left IFG Pars Triangularis (BA 45)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: mixed
     language: German
     phase: acute
+    cohort: not_reported
   statistics:
     threshold: P < 0.001 uncorrected
     effect_size: r = 0.93
@@ -83,4 +84,10 @@ findings:
     quote: the results are limited to somewhat less severely impaired patients who were clearly aphasic
       at the first exam but were able to understand the task.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

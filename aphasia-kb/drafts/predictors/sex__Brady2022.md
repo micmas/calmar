@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: sex
 name: Patient sex
 kind: predictor
@@ -32,6 +32,7 @@ findings:
     handedness: not_reported
     language: English predominant
     phase: not_reported
+    cohort: RELEASE
   statistics:
     threshold: 95% CI
     effect_size: not_reported
@@ -64,6 +65,17 @@ findings:
     quote: Our statistical inferencing, hypothesis generating approach carries a risk of false nega-tive
       and positive findings.
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: We created the international RELEASE IPD database of aphasia research to support several planned
+      analyses
+    supports: sample
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

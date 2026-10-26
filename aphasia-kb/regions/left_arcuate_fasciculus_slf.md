@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_arcuate_fasciculus_slf
 name: Left Arcuate Fasciculus and Superior Longitudinal Fascicle (Dorsal Language
   Pathway)
@@ -52,6 +52,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers with no neurological history.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.001 uncorrected (fMRI seed definition); PIBI threshold 0.0148
       (excludes 95% of voxels with PIBI < 10^-6)
@@ -198,6 +200,13 @@ findings:
 
       '
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f2
   target: speech_repetition
   target_kind: impairment
@@ -225,6 +234,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.001 uncorrected (fMRI); PIBI > 0.0148 (DTI)
     cluster_extent: null
@@ -332,6 +343,13 @@ findings:
 
       '
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f3
   target: left_posterior_superior_temporal_gyrus
   target_kind: region
@@ -360,6 +378,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers with no neurological history.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.001 uncorrected (fMRI seed definition); PIBI threshold 0.0148
       (excludes 95% of voxels with PIBI < 10^-6)
@@ -506,6 +526,13 @@ findings:
 
       '
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 - id: f4
   target: speech_repetition
   target_kind: impairment
@@ -533,6 +560,8 @@ findings:
     recruitment: Recruited from the database of the Freiburg Brain Imaging Centre.
     inclusion_criteria: Healthy volunteers.
     exclusion_criteria: not_reported
+    phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.001 uncorrected (fMRI); PIBI > 0.0148 (DTI)
     cluster_extent: null
@@ -640,6 +669,13 @@ findings:
 
       '
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - phase
 reviewer: claude-cowork
 reviewed_on: '2026-05-06'
 last_reviewed: '2026-05-06'

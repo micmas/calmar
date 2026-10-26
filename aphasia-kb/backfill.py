@@ -76,9 +76,14 @@ def _flagged(f: dict, prefixes) -> bool:
     return any(str(x).startswith(p) for x in flags for p in prefixes)
 
 
-def missing_fields(f: dict, wanted=ALL_FIELDS) -> list[str]:
+def missing_fields(f: dict, wanted=ALL_FIELDS, retry: bool = False) -> list[str]:
+    """Fields still to fill. A field the model already answered without a
+    verifiable quote is listed in `filled.unresolved` and not asked again
+    unless `retry`."""
     if not isinstance(f, dict):
         return []
+    if not retry:
+        wanted = tuple(w for w in wanted if w not in ((f.get("filled") or {}).get("unresolved") or []))
     methods = f.get("method") if isinstance(f.get("method"), list) else [f.get("method")]
     if "narrative_review" in methods or f.get("relationship") == "synthesis":
         return []
@@ -96,8 +101,13 @@ def missing_fields(f: dict, wanted=ALL_FIELDS) -> list[str]:
     return out
 
 
-def collect(kb_root: Path, wanted, only=None, include_canonical=True) -> dict[str, list[dict]]:
-    """citation → [{path, canonical, fid, finding, missing}]"""
+def collect(kb_root: Path, wanted, only=None, include_canonical=True,
+            retry: bool = False, include_filled: bool = False) -> dict[str, list[dict]]:
+    """citation → [{path, canonical, fid, finding, missing}]
+
+    include_filled also lists findings backfill.py already touched (with
+    nothing left to fill), which rebuilds the K1…Kn order a saved response
+    was written for (--reapply)."""
     papers: dict[str, list[dict]] = {}
     folders = [(kb_root / "drafts" / b, False) for b in BUCKETS]
     if include_canonical:
@@ -110,8 +120,8 @@ def collect(kb_root: Path, wanted, only=None, include_canonical=True) -> dict[st
                 print(f"  ⚠ {path.relative_to(kb_root)}: unreadable, skipped ({str(e).splitlines()[0]})")
                 continue
             for f in fm.get("findings") or []:
-                miss = missing_fields(f, wanted)
-                if not miss:
+                miss = missing_fields(f, wanted, retry)
+                if not miss and not (include_filled and isinstance(f, dict) and f.get("filled")):
                     continue
                 cit = _citation(f)
                 if only and cit.lower() not in only:
@@ -277,6 +287,14 @@ def check(field: str, item, paper: PaperText):
     return None, [], "unknown field"
 
 
+def _resolve(by_key: dict, a: dict, depth: int = 0) -> dict:
+    """Follow {"same_as": "K3"} (the model's shortcut) up to 3 steps."""
+    while isinstance(a, dict) and a.get("same_as") and depth < 3:
+        a = by_key.get(str(a["same_as"]), {})
+        depth += 1
+    return a if isinstance(a, dict) else {}
+
+
 # ----------------------------------------------------------------- write
 def _page_of(doc, quote: str):
     try:
@@ -335,6 +353,7 @@ def apply(targets_by_key: dict, answer: dict, paper: PaperText, pdf: Path,
     by_key = {str(a.get("key")): a for a in (answer.get("findings") or []) if isinstance(a, dict)}
     today = dt.date.today().isoformat()
     files: dict[Path, tuple[dict, str, bool]] = {}
+    changed: set[Path] = set()
     written = skipped = 0
     notes: list[str] = []
     for key, t in targets_by_key.items():
@@ -346,16 +365,18 @@ def apply(targets_by_key: dict, answer: dict, paper: PaperText, pdf: Path,
         f = next((x for x in fm.get("findings") or [] if isinstance(x, dict) and x.get("id") == t["fid"]), None)
         if f is None:
             continue
-        a = by_key.get(key, {})
-        if a.get("same_as"):            # "identical to an earlier finding"
-            a = by_key.get(str(a["same_as"]), {})
-        filled = []
+        a = _resolve(by_key, by_key.get(key, {}))
+        filled, unresolved = [], []
         for field in t["missing"]:
-            val, quotes, why = check(field, a.get(field), paper)
+            item = a.get(field)
+            if isinstance(item, dict) and item.get("same_as"):   # field-level "same as K1"
+                item = _resolve(by_key, by_key.get(str(item["same_as"]), {})).get(field)
+            val, quotes, why = check(field, item, paper)
             if why and val is not None:
                 notes.append(f"{path.name} {t['fid']} {field}: {why}")
             if val is None:
                 skipped += 1
+                unresolved.append(field)
                 notes.append(f"{path.name} {t['fid']} {field}: not written ({why})")
                 if field == "phase":   # same deterministic fallback as normalize_drafts
                     s = f.setdefault("sample", {}) if isinstance(f.get("sample"), dict) or f.get("sample") is None else None
@@ -387,12 +408,19 @@ def apply(targets_by_key: dict, answer: dict, paper: PaperText, pdf: Path,
                     have.add(q)
             filled.append(field)
             written += 1
-        if filled:
+        if filled or unresolved:
             prev = f.get("filled") or {}
-            f["filled"] = {"by": f"model:{model}", "date": today, "tool": "backfill.py",
-                           "fields": sorted(set(prev.get("fields") or []) | set(filled))}
+            block = {"by": f"model:{model}", "date": today, "tool": "backfill.py",
+                     "fields": sorted(set(prev.get("fields") or []) | set(filled))}
+            left = sorted((set(prev.get("unresolved") or []) | set(unresolved)) - set(filled))
+            if left:
+                block["unresolved"] = left
+            f["filled"] = block
+            changed.add(path)
     doc.close()
     for path, (fm, body, canonical) in files.items():
+        if path not in changed:
+            continue
         if _maybe_bump(fm, path):
             notes.append(f"{path.name}: schema_version → 2.7")
         if execute:
@@ -407,7 +435,8 @@ def _paper_text(pdf: Path) -> str:
 
 
 def run_paper(citation: str, targets: list[dict], papers_dir: Path, model: str,
-              host: str, execute: bool, response_file: Path | None) -> tuple[int, int]:
+              host: str, execute: bool, response_file: Path | None,
+              label: str = "BACKFILLED") -> tuple[int, int]:
     pdf = find_paper(citation, papers_dir)
     if pdf is None or pdf.suffix.lower() != ".pdf":
         print(f"  ✗ no PDF for {citation} in {papers_dir}")
@@ -433,10 +462,32 @@ def run_paper(citation: str, targets: list[dict], papers_dir: Path, model: str,
     if execute and written:
         fields = sorted({m for t in targets for m in t["missing"]})
         with (ROOT / "extraction_log.md").open("a", encoding="utf-8") as fh:
-            fh.write(f"{dt.date.today().isoformat()} | BACKFILLED | {citation} | "
+            fh.write(f"{dt.date.today().isoformat()} | {label} | {citation} | "
                      f"{', '.join(fields)} | {written} value(s) written, {skipped} not "
                      f"(no quote found) across {len(keys)} finding(s) | model: {model}\n")
     return written, skipped
+
+
+def _reapply(wanted, only, args) -> int:
+    from model_config import resolve
+    model = resolve("extract", args.model)["model"]
+    tot_w = tot_s = 0
+    for resp in sorted(ROOT.glob("_last_backfill_response_*.txt")):
+        cit = "@" + resp.stem[len("_last_backfill_response_"):]
+        if only and cit.lower() not in only:
+            continue
+        targets = collect(ROOT, wanted, {cit.lower()}, include_canonical=not args.drafts_only,
+                          retry=True, include_filled=True).get(cit, [])
+        if not any(t["missing"] for t in targets):
+            continue
+        print(f"\n=== {cit}: re-reading {resp.name}")
+        w, s = run_paper(cit, targets, args.papers_dir, model, None, execute=True,
+                         response_file=resp, label="BACKFILL-REAPPLIED")
+        print(f"  ✓ {w} value(s) written, {s} not written")
+        tot_w += w
+        tot_s += s
+    print(f"\nReapplied: {tot_w} value(s) written, {tot_s} still without a verified answer.")
+    return 0
 
 
 def _cli(argv=None) -> int:
@@ -451,6 +502,11 @@ def _cli(argv=None) -> int:
     ap.add_argument("--model", default=None, help="default: the extract role in models.yaml")
     ap.add_argument("--from-response", type=Path, default=None,
                     help="apply a saved model response (one --citation) instead of calling the model")
+    ap.add_argument("--reapply", action="store_true",
+                    help="no model: apply every saved _last_backfill_response_<Key>.txt again to the "
+                         "fields still missing (recovers answers an older version could not read)")
+    ap.add_argument("--retry", action="store_true",
+                    help="ask again for fields the model already answered without a verifiable quote")
     args = ap.parse_args(argv)
 
     wanted = tuple(x.strip() for x in args.fields.split(",") if x.strip())
@@ -458,7 +514,9 @@ def _cli(argv=None) -> int:
     if bad:
         ap.error(f"unknown field(s): {bad}")
     only = {("@" + c.lstrip("@")).lower() for c in args.citation} if args.citation else None
-    papers = collect(ROOT, wanted, only, include_canonical=not args.drafts_only)
+    if args.reapply:
+        return _reapply(wanted, only, args)
+    papers = collect(ROOT, wanted, only, include_canonical=not args.drafts_only, retry=args.retry)
     order = sorted(papers, key=lambda c: c.lower())
     if args.limit:
         order = order[: args.limit]

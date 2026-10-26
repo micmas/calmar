@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_ifg_pars_triangularis
 name: Left IFG Pars Triangularis (BA 45)
 kind: classical
@@ -24,6 +24,7 @@ findings:
     n: 64
     population: post-stroke aphasia
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.01
   confounders_controlled: []
@@ -60,6 +61,34 @@ findings:
     quote: That is, it could be that damage to middle frontal gyrus generates semantic errors in naming
       by compromising mental search for the precise lexical concept, a process that is shared with NVcomp.
     supports: claim
+  - section: added by backfill
+    page: 5
+    quote: Voxels in which fewer than ﬁve patients were lesioned were excluded from the voxel-based lesion-symptom
+      mapping analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: A simple t-test comparing the scores between patients with and without lesions was performed
+      at each voxel using the VoxBo brain imaging package
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: The resulting t-map was thresholded to control the false discovery rate (Genovese et al., 2002)
+      at q = 0.01
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 64
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 # Left Inferior Frontal Gyrus Pars Triangularis
 

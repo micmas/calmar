@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_arcuate_fasciculus
 name: Left arcuate fasciculus
 kind: tract
@@ -28,6 +28,7 @@ findings:
     handedness: right-handed
     language: not_reported
     phase: acute
+    cohort: not_reported
   statistics:
     threshold: P < 0.05
     effect_size: sensitivity of 0.83 and specificity of 0.86
@@ -99,6 +100,12 @@ findings:
     quote: First, the number of patients was somewhat limited. More subjects must be included in further
       analyses. Second, this study was performed in retrospective fashion.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Findings from Hosomi et al. (2009)
 

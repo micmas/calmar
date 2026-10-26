@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_ifg_pars_opercularis
 name: Left IFG Pars Opercularis (Broca's area, dorsal stream hub)
 kind: classical
@@ -30,6 +30,7 @@ findings:
     handedness: vast majority strongly right-handed
     language: native speakers of English
     phase: chronic
+    cohort: Multisite Aphasia Research Consortium
   statistics:
     threshold: p < .001, corrected
     effect_size: not_reported
@@ -74,4 +75,38 @@ findings:
     quote: The finding that damage to Broca's area is not reliably associated with agrammatic comprehension
       coincides with previous lesion work
     supports: claim
+  - section: added by backfill
+    page: not_reported
+    quote: Using voxel-based lesion–symptom mapping, we find that lower per-formances on canonical and
+      noncanonical sentences in each task are both associated with damage to a large left superior temporal–inferior
+      parietal network including portions of the ATL, but not Broca–s area.
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: Variance due to lesion size (i.e., number of voxels marked as lesion on the template brain)
+      was regressed out of all VLSM analyses via an ANCOVA.
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: Only voxels in which a minimum of 10% of patients (n = 7) had damage were included in the VLSM
+      analyses.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: One hundred forty-one patients were recruited via the Multisite Aphasia Research Consortium
+      as part of an on-going research program.
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 66
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

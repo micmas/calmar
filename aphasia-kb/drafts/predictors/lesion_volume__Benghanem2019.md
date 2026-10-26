@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: lesion_volume
 name: Total lesion volume
 kind: predictor
@@ -32,6 +32,7 @@ findings:
     age_range: median 63.7 (IQR 52.3-78)
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: p = 0.001
     effect_size: explained 19.7% of the variance
@@ -63,6 +64,10 @@ findings:
     quote: Finally, we may have underestimated the stroke volume in the MNI normalised images since we
       did not use lesion masking in the process.
     supports: limitation
+  - section: added by backfill
+    page: 3
+    quote: Seventy-three patients were included in the study.
+    supports: method
   imaging_details:
     field_strength: 3T
     acquisition:
@@ -77,4 +82,17 @@ findings:
     atlases_used: []
   region_definition:
     kind: not_reported
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 73
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

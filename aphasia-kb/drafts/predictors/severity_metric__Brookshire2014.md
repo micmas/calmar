@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -34,6 +34,7 @@ findings:
     handedness: 91 R, 6 L, 2 A
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .001
     effect_size: beta = 0.76 (total), 0.76 (lexical), 0.56 (sublexical)
@@ -69,6 +70,12 @@ findings:
     quote: We employed a retrospective analysis of a convenience sample of individuals with chronic aphasia
       that may not have been fully representative of the population...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 units: varies by instrument — see `instrument` field on each finding
 direction_of_severity: lower_is_worse
 ---

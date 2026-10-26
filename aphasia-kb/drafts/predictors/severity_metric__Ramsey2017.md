@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -34,6 +34,7 @@ findings:
     age_range: mean 54 (s.d. 11)
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < 0.001
     effect_size: r ≈ 0.5–0.9
@@ -66,4 +67,10 @@ findings:
     quote: Another limitation is that the behavioural battery was a trade-off between completeness and
       feasibility.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: lesion_volume
 name: Total lesion volume
 kind: predictor
@@ -32,6 +32,7 @@ findings:
     age_range: median 54
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: < 20% variance
@@ -70,7 +71,29 @@ findings:
     page: 937
     quote: First, some important cognitive domains... were either not tested or only coarsely evaluated.
     supports: limitation
+  - section: added by backfill
+    page: 3
+    quote: n = 132 meeting post-enrollment inclusion criteria
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: To map lesion-behavior relationships, we applied ridge regression models separately for each
+      factor. Ridge regression is a multivariate machine-learning method.
+    supports: method
   imaging_details:
     reference_space: not_reported
     atlases_used: []
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 132
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

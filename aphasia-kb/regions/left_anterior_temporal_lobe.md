@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_anterior_temporal_lobe
 name: Left Anterior Temporal Lobe
 kind: classical
@@ -60,6 +60,8 @@ findings:
       CT or MRI-confirmed left hemisphere cortical lesion; completed all 17 tests.
     exclusion_criteria: left-handed premorbidly; right hemisphere or bilateral lesions;
       did not complete full battery.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.05 (two-tailed); isolated clusters ≤50 voxels removed after
       thresholding
@@ -212,6 +214,33 @@ findings:
       across individuals.
 
       '
+  - section: added by backfill
+    page: 7
+    quote: VLSM analysis was performed by running a simple regression analysis at
+      each voxel, with the lesion status as the independent variable and the factor
+      score as the dependent variable.
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: Only voxels lesioned in at least 10 participants were included in analysis
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: We call this approach ‘direct total lesion volume control’.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 99
+    min_lesion_overlap: 10 participants
+    lesion_volume_correction: direct
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: syntactic_processing
   target_kind: impairment
@@ -234,6 +263,7 @@ findings:
     handedness: vast majority strongly right-handed
     language: native speakers of English
     phase: chronic
+    cohort: Multisite Aphasia Research Consortium
   statistics:
     threshold: p < .001, corrected
     effect_size: not_reported
@@ -276,11 +306,46 @@ findings:
     quote: left ATL, defined as any damage within any left temporal lobe gray and
       white matter anterior to the anterior edge of Heschl's gyrus.
     supports: region_definition
+  - section: added by backfill
+    page: not_reported
+    quote: Using voxel-based lesion–symptom mapping, we find that lower per-formances
+      on canonical and noncanonical sentences in each task are both associated with
+      damage to a large left superior temporal–inferior parietal network including
+      portions of the ATL, but not Broca–s area.
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: Variance due to lesion size (i.e., number of voxels marked as lesion on
+      the template brain) was regressed out of all VLSM analyses via an ANCOVA.
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: Only voxels in which a minimum of 10% of patients (n = 7) had damage were
+      included in the VLSM analyses.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: One hundred forty-one patients were recruited via the Multisite Aphasia
+      Research Consortium as part of an on-going research program.
+    supports: sample
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 66
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 source: draft
 last_reviewed: '2026-10-22'
 reviewer: auto-reviewer

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_superior_temporal_gyrus
 name: Left Superior Temporal Gyrus (Dorsal Stream Node)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     age_range: not_reported
     handedness: all right-handed
     language: native English speakers
+    cohort: not_reported
   statistics:
     threshold: p < .005 voxel-level, p <= .001 family-wise error (FWE)-corrected cluster-level
     effect_size: not_reported
@@ -97,4 +98,28 @@ findings:
     page: 5
     quote: High-resolution structural T1-weighted MRI scans were acquired on a 3.0 T Philips Achieva scanner
     supports: imaging_details
+  - section: added by backfill
+    page: 6
+    quote: the participants' factor scores from the omnibus PCA of the entire neuropsychological test
+      battery and speech measures were entered into a VBCM analysis.
+    supports: method
+  - section: added by backfill
+    page: 6
+    quote: In order to ensure that the results were not merely attributable to lesion size, each participants'
+      lesion volume was calculated from the lesion identiﬁed by the automated lesion identiﬁcation method
+      (Seghier et al., 2008) and this was entered as a covariate in each VBCM.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 31
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

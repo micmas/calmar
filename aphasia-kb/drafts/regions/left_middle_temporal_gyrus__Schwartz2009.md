@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_middle_temporal_gyrus
 name: Left Middle Temporal Gyrus (Ventral Stream Node)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: right-handed
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.01
     effect_size: r = 0.34
@@ -69,6 +70,34 @@ findings:
     quote: It must be emphasized that the region within the left anterior temporal lobe that our analysis
       picked out almost certainly underestimates the extent of the temporal lobe involvement.
     supports: limitation
+  - section: added by backfill
+    page: 5
+    quote: Voxels in which fewer than ﬁve patients were lesioned were excluded from the voxel-based lesion-symptom
+      mapping analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: A simple t-test comparing the scores between patients with and without lesions was performed
+      at each voxel using the VoxBo brain imaging package
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: The resulting t-map was thresholded to control the false discovery rate (Genovese et al., 2002)
+      at q = 0.01
+    supports: method
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 64
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
 ---
 # Left Middle Temporal Gyrus
 

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_posterior_stg
 name: Left Posterior Superior Temporal Gyrus
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: 27 R; 3 L; 3 Am
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: cluster-based permutation testing with 10,000 iterations; corrected p < 0.05
     effect_size: r = -0.48
@@ -99,4 +100,35 @@ findings:
     quote: First and foremost, we cannot conclude anything about the role of the right hemisphere in rhythm
       processing directly from this study; only individuals with left hemisphere damage were recruited.
     supports: limitation
+  - section: added by backfill
+    page: 10
+    quote: Voxel-based LSM (VLSM) analyses were conducted with the vlsm2 function in MATLAB (Bates et
+      al., 2003; Wilson et al., 2010).
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: analyses were conducted in voxels that were lesioned in at least five patients.
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: Total lesion volume was always included as a covariate.
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: Cluster-based permutation testing with 10,000 iterations was used to correct for multiple comparisons
+      and only clusters with corrected p < 0.05 (right-tailed) were considered significant.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 33
+    min_lesion_overlap: '>= 5 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

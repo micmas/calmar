@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: syntactic_processing
 name: Syntactic Processing Deficits in Aphasia
 kind: classical
@@ -59,6 +59,8 @@ findings:
       stroke; no premorbid neurological or psychiatric disorder.
     exclusion_criteria: Right-hemisphere lesion; cerebellar-only lesion; CT scan only
       (no MRI); excluded 3 participants from LSM for these reasons.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 permutation-corrected (5000 permutations, one-tailed)
     cluster_extent: voxels with at least 6 participants having lesions
@@ -130,6 +132,39 @@ findings:
       1
     page: 8
     supports: method
+  - section: added by backfill
+    page: 8
+    quote: Only voxels in which six or more participants had lesions were included
+      in the analyses
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: for our primary analyses we regressed out overall lesion size from the
+      binary classifications in Analysis 1
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: All analyses were corrected for multiple comparisons through permutation
+      testing (5,000 permutations).
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: mean number of months since first stroke 52.8, SD 52.5, range 8–290 months
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 68
+    min_lesion_overlap: '>= 6 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: verb_argument_structure_production
   target_kind: impairment
@@ -153,6 +188,8 @@ findings:
     inclusion_criteria: Right-handed; native English speakers; left-hemisphere ischemic
       stroke; no premorbid neurological or psychiatric disorder.
     exclusion_criteria: Right-hemisphere lesion; cerebellar-only lesion; CT scan only.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 permutation-corrected (5000 permutations, one-tailed)
     cluster_extent: k=47 voxels (ASPT-A cluster includes STG BA41 + angular gyrus
@@ -212,6 +249,39 @@ findings:
       is not exclusively a function of the dorsal stream
     page: 18
     supports: claim
+  - section: added by backfill
+    page: 8
+    quote: Only voxels in which six or more participants had lesions were included
+      in the analyses
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: for our primary analyses we regressed out overall lesion size from the
+      binary classifications in Analysis 1
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: All analyses were corrected for multiple comparisons through permutation
+      testing (5,000 permutations).
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: mean number of months since first stroke 52.8, SD 52.5, range 8–290 months
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 68
+    min_lesion_overlap: '>= 6 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f3
   target: sentence_comprehension_production
   target_kind: impairment
@@ -236,6 +306,8 @@ findings:
     inclusion_criteria: Right-handed; native English speakers; left-hemisphere ischemic
       stroke.
     exclusion_criteria: Right-hemisphere lesion; cerebellar-only lesion; CT scan only.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 permutation-corrected (5000 permutations, one-tailed) — CLSM
       analyses
@@ -304,6 +376,36 @@ findings:
       size
     page: 17
     supports: limitation
+  - section: added by backfill
+    page: 9
+    quote: As for VLSM, all analyses were univariate and corrected for multiple comparisons
+      through permutation testing (5,000 permutations).
+    supports: method
+  - section: added by backfill
+    page: 9
+    quote: the regression of overall lesion size, as well as the regression of lesion
+      size restricted to white matter from the behavioral data, did not leave results
+      that survived the statistical threshold, so we only report the results based
+      on the “raw” behavioral data.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: mean number of months since first stroke 52.8, SD 52.5, range 8–290 months
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 68
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f4
   target: morphosyntactic_production_deficit
   target_kind: impairment
@@ -328,6 +430,8 @@ findings:
       stroke; no premorbid neurological or psychiatric disorder.
     exclusion_criteria: Right-hemisphere lesion; cerebellar-only lesion; CT scan only
       (no MRI); excluded 3 participants from LSM for these reasons.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 permutation-corrected (5000 permutations, one-tailed)
     cluster_extent: voxels with at least 6 participants having lesions
@@ -399,6 +503,39 @@ findings:
       1
     page: 8
     supports: method
+  - section: added by backfill
+    page: 8
+    quote: Only voxels in which six or more participants had lesions were included
+      in the analyses
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: for our primary analyses we regressed out overall lesion size from the
+      binary classifications in Analysis 1
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: All analyses were corrected for multiple comparisons through permutation
+      testing (5,000 permutations).
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: mean number of months since first stroke 52.8, SD 52.5, range 8–290 months
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 68
+    min_lesion_overlap: '>= 6 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f5
   target: verb_argument_structure_production
   target_kind: impairment
@@ -422,6 +559,8 @@ findings:
     inclusion_criteria: Right-handed; native English speakers; left-hemisphere ischemic
       stroke; no premorbid neurological or psychiatric disorder.
     exclusion_criteria: Right-hemisphere lesion; cerebellar-only lesion; CT scan only.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 permutation-corrected (5000 permutations, one-tailed)
     cluster_extent: k=47 voxels (ASPT-A cluster includes STG BA41 + angular gyrus
@@ -481,6 +620,39 @@ findings:
       is not exclusively a function of the dorsal stream
     page: 18
     supports: claim
+  - section: added by backfill
+    page: 8
+    quote: Only voxels in which six or more participants had lesions were included
+      in the analyses
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: for our primary analyses we regressed out overall lesion size from the
+      binary classifications in Analysis 1
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: All analyses were corrected for multiple comparisons through permutation
+      testing (5,000 permutations).
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: mean number of months since first stroke 52.8, SD 52.5, range 8–290 months
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 68
+    min_lesion_overlap: '>= 6 patients'
+    lesion_volume_correction: covariate
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f6
   target: sentence_comprehension_production
   target_kind: impairment
@@ -505,6 +677,8 @@ findings:
     inclusion_criteria: Right-handed; native English speakers; left-hemisphere ischemic
       stroke.
     exclusion_criteria: Right-hemisphere lesion; cerebellar-only lesion; CT scan only.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 permutation-corrected (5000 permutations, one-tailed) — CLSM
       analyses
@@ -573,6 +747,36 @@ findings:
       size
     page: 17
     supports: limitation
+  - section: added by backfill
+    page: 9
+    quote: As for VLSM, all analyses were univariate and corrected for multiple comparisons
+      through permutation testing (5,000 permutations).
+    supports: method
+  - section: added by backfill
+    page: 9
+    quote: the regression of overall lesion size, as well as the regression of lesion
+      size restricted to white matter from the behavioral data, did not leave results
+      that survived the statistical threshold, so we only report the results based
+      on the “raw” behavioral data.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: mean number of months since first stroke 52.8, SD 52.5, range 8–290 months
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 68
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 reviewer: claude-cowork
 reviewed_on: '2026-05-06'
 last_reviewed: '2026-05-07'

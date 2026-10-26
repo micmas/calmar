@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: age
 name: Age at stroke
 kind: predictor
@@ -32,6 +32,7 @@ findings:
     age_range: 19-96 years
     handedness: 86% right-handed
     language: Dutch
+    cohort: SPEAK
   statistics:
     threshold: p <= 0.20 (univariable)
     effect_size: OR 0.94 (0.89 to 0.99)
@@ -73,4 +74,16 @@ findings:
     quote: First, we had to dichotomise our outcome variable because in the more severe categories of
       the ASRS we lacked adequate numbers of patients...
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: Between June 2007 and June 2009, a consecutive series of patients with aphasia due to a ﬁrst-ever
+      stroke were recruited from the stroke units of 17 hospitals in The Netherlands for the Sequential
+      Prognostic Evaluation of Aphasia after stroKe (SPEAK) study.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

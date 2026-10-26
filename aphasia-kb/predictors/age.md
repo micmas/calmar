@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: age
 name: Age at stroke
 aliases:
@@ -40,6 +40,7 @@ findings:
     age_range: mean 54.7 (SD 9.8)
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: p < .05
     effect_size: -1.51 points (WAB-AQ decrease per year)
@@ -97,6 +98,12 @@ findings:
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 notes: Starter entry for schema v2.3. Age is one of the most consistent predictors
   of recovery, with younger patients typically showing better spontaneous recovery
   and stronger therapy response. The relationship is not strictly linear — children

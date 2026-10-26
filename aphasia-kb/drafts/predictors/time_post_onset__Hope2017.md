@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: time_post_onset
 name: Time post-stroke onset
 kind: predictor
@@ -30,6 +30,7 @@ findings:
     handedness: all right-handed
     language: English
     phase: chronic
+    cohort: PLORAS
   statistics:
     threshold: P < 0.05
     effect_size: t = 0.48
@@ -69,6 +70,16 @@ findings:
     quote: The distinction between improvers and decliners might reflect some more subtle (e.g. more multivariate)
       distinction between the patients...
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: Our patient data were extracted from our PLORAS database (Seghier et al., 2016)
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 direction_of_severity: not_applicable
 ---
 # Time Post Onset

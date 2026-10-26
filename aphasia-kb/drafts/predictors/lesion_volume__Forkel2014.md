@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: lesion_volume
 name: Total lesion volume
 kind: predictor
@@ -30,6 +30,7 @@ findings:
     handedness: all right-handed
     language: native English speaker
     phase: longitudinal
+    cohort: not_reported
   statistics:
     threshold: P = 0.011
     effect_size: beta = -0.630
@@ -71,6 +72,12 @@ findings:
   imaging_details:
     reference_space: not_reported
     atlases_used: []
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 direction_of_severity: higher_is_worse
 ---
 # Lesion Volume

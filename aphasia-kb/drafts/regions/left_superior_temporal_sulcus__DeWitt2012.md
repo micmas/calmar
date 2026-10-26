@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_superior_temporal_sulcus
 name: Left Superior Temporal Sulcus
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: FDR < 10^-3, k > 150cm3
     cluster_extent: not_reported
@@ -74,5 +75,11 @@ findings:
     quote: Intensity represents activation likelihood estimation statistic value (P value for false discovery
       rate < 10^-3, k > 150cm3).
     supports: statistics
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 This entry describes the recruitment of the left anterior STS for phrase-level auditory processing as part of a hierarchical ventral stream.

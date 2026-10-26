@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: constraint_induced_aphasia_therapy
 name: Constraint-Induced Aphasia Therapy (CIAT / CILT)
 kind: therapy
@@ -32,6 +32,7 @@ findings:
     age_range: mean 48 (SD not reported)
     handedness: right-handed
     language: English
+    cohort: not_reported
   statistics:
     threshold: p = .004
     effect_size: f = 17.58
@@ -75,6 +76,12 @@ findings:
     page: 849
     quote: First, this was a sample of convenience, not a randomized clinical trial.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 - id: f2
   target: fluency
   target_kind: impairment
@@ -95,6 +102,7 @@ findings:
     age_range: mean 48
     handedness: right-handed
     language: English
+    cohort: not_reported
   statistics:
     threshold: subjective assessment by blinded raters
     effect_size: not_reported
@@ -131,8 +139,13 @@ findings:
     quote: Because firm conclusions cannot be made on such a limited sample, and it is not clear upon
       what the blinded experts were basing their judgments...
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 # Draft Entry for Constraint Induced Aphasia Therapy
 
 This pilot study investigated the efficacy of Constraint Induced Language Therapy (CILT) in chronic aphasia, specifically testing whether restricting communication to the spoken modality (forced use) provides an advantage over a modified PACE approach that allows multiple modalities, while keeping intensity and task nature constant.

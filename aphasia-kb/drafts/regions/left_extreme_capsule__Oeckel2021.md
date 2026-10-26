@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_extreme_capsule
 name: Left Extreme Capsule (Ventral Language Pathway)
 kind: tract
@@ -28,6 +28,7 @@ findings:
     age_range: < 90 years
     handedness: not_reported
     language: German native speaker
+    cohort: not_reported
   statistics:
     threshold: P < 0.01
     effect_size: OR 16.37
@@ -109,4 +110,30 @@ findings:
     quote: The size of the study cohort of 123 stroke patients including 18 (14.6%) with aphasia may be
       considered as a study limitation.
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: The study cohort consisted of 123 patients with acute left-hemispheric stroke without a lesion
+      of language-related cortical areas of the Stanford atlas of functional regions of interest.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Stroke volume, age and gender were covariates.
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: In contrast, stroke lesions of >15% in the arcuate fascicle were not associated with aphasia.
+    supports: method
+  lesion_mapping:
+    analysis: region_based
+    n_analysed: 123
+    min_lesion_overlap: '>15%'
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

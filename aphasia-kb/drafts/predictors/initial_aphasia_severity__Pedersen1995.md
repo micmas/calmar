@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: initial_aphasia_severity
 name: Initial aphasia severity (acute WAB composite)
 kind: predictor
@@ -34,6 +34,7 @@ findings:
     age_range: mean 74.5 (SD 10.9)
     handedness: not_reported
     language: not_reported
+    cohort: Copenhagen Stroke Study
   statistics:
     threshold: p < 0.05
     effect_size: explained 50% of the total variance
@@ -81,8 +82,17 @@ findings:
     quote: The aphasia assessment employed in this study rates spoken language, but does not assess auditory
       impressive function.
     supports: limitation
+  - section: added by backfill
+    page: 1
+    quote: This study is part of the Copenhagen Stroke Study described in detail elsewhere {73.
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 # Findings from Pedersen 1995
 
 This study of a large community-based cohort establishes that initial aphasia severity is the primary determinant of recovery outcome, outweighing demographics like age and sex.

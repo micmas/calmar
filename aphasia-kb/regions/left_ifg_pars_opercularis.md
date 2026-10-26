@@ -50,6 +50,8 @@ findings:
       speaker; no history of dementia or other neurological problems.
     exclusion_criteria: History of dementia or other neurological problems (self/caregiver
       or medical report).
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed (univariate);
       stepwise regression p<0.05 for entry, p>0.10 for removal (multivariate)
@@ -246,6 +248,39 @@ findings:
     quote: Unfortunately, our dataset did not include a comprehensive measure of phonological
       input, something that is clearly a focus of Hickok and Poeppel's dual stream
       model.
+  - section: added by backfill
+    page: 3
+    quote: The total sample size was 159 chronic stroke survivors
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: For this reason, steps to control for the overall lesion size were not
+      included in subsequent statistical analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Unlike the univariate analyses, the multivariate analyses did not rely
+      on permutation thresholding.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Participants had sustained a single-event stroke to the left hemisphere
+      at least 6 months prior to study inclusion
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 159
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: aphasia_quotient
   target_kind: predictor
@@ -267,6 +302,8 @@ findings:
     handedness: not_reported
     language: English (native speakers)
     recruitment: USC/MUSC Aphasia Lab archival database.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed
     cluster_extent: not_reported
@@ -363,6 +400,36 @@ findings:
       when damaged, are very likely to cause impairment. In contrast, the multivariate
       analyses reveal smaller overall damage but more distal modules as being independent
       predictors
+  - section: added by backfill
+    page: 5
+    quote: For this reason, steps to control for the overall lesion size were not
+      included in subsequent statistical analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: 'The univariate lesion analyses relied on conventional lesion symptom mapping:
+      General Linear Model (GLM) (pooled variance t-test) with P 5 0.05 (one-tailed)
+      and control for multiple comparisons used permutation threshholding (4000 permutations).'
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Participants had sustained a single-event stroke to the left hemisphere
+      at least 6 months prior to study inclusion
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 159
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f3
   target: letter_fluency
   target_kind: impairment
@@ -705,6 +772,7 @@ findings:
     handedness: not_reported
     language: native English speakers
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: not_reported
@@ -733,11 +801,35 @@ findings:
     quote: Broca's area is not especially important for fluency once lesions to the
       insula have been accounted for
     supports: claim
+  - section: added by backfill
+    page: 3
+    quote: We constructed four maps factoring out the effects of these voxels by carrying
+      out analyses of covariance (ANCOVAs) at all other voxels using the state (intact
+      or lesioned) of each voxel of interest as the covariates
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: We analyzed data on speech fluency and language comprehension for 101 left-hemisphere-injured
+      stroke patients
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 101
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f6
   target: phonological_production
   target_kind: impairment
@@ -759,6 +851,7 @@ findings:
     handedness: all right-handed
     language: English first language
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: lower than P = 0.001 voxel-level
     effect_size: not_reported
@@ -807,11 +900,40 @@ findings:
       in patients with large lesions, and hence is used with the caveat that periventricular
       results are treated with caution (Geva et al., 2012).
     supports: limitation
+  - section: added by backfill
+    page: not_reported
+    quote: The first analysis used the three continuous multidimensional predictors
+      of the PCA factor scores, which are necessarily uncorrelated (orthogonal) with
+      one another.
+    supports: method
+  - section: added by backfill
+    page: 10
+    quote: including lesion volume in the VBCM model with the independent PCA factor
+      scores did not alter the pattern of results obtained
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: A second cluster in the left inferior prefrontal region was also identified
+      at a slightly lower statistical threshold
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 31
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: uncorrected
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f7
   target: brocas_aphasia
   target_kind: impairment
@@ -832,6 +954,7 @@ findings:
     handedness: all right-handed
     language: native German
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR p < 0.05
     effect_size: not_reported
@@ -874,11 +997,34 @@ findings:
       to contribute to the overall results and may sharpen the distinction between
       the large Broca- vesus Wernicke-related lesion areas.
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: To grant reasonable levels of statistical power, statistical analyses were
+      restricted to those voxels where at least 10% of the patients were lesioned.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The resulting maps were corrected for multiple comparisons using a 1% false
+      discovery rate (FDR corrected P 5 0.01) for the AAT subtests.
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 102
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f8
   target: fluency
   target_kind: impairment

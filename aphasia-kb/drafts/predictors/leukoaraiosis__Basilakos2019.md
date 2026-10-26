@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: leukoaraiosis
 name: Leukoaraiosis
 kind: predictor
@@ -35,6 +35,7 @@ findings:
     handedness: premorbidly right-handed
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: P < .05
     effect_size: t = -2.3, P = .028; odds of decline 4.3 (95% CI = 1.2-14.7, P = .017)
@@ -128,5 +129,27 @@ findings:
     page: 10
     quote: First, the sample size was relatively small
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: This is a retrospective study including multi–time point assessment of N = 35 participants
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Again, lesion volume and leukoaraiosis severity were entered as predictors, this time predicting
+      the raw change in AQ from initial to follow-up assessment.
+    supports: method
+  lesion_mapping:
+    analysis: not_reported
+    n_analysed: 35
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 # Findings on the role of leukoaraiosis in chronic aphasia prognosis.

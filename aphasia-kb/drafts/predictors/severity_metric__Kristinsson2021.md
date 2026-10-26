@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -36,6 +36,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p < .05
     effect_size: r = .67 (multimodal) vs .20–.58 (single-modality)
@@ -101,4 +102,31 @@ findings:
     quote: Last, we did not validate the prediction accuracy of our models in an independent sample of
       persons with aphasia.
     supports: limitation
+  - section: added by backfill
+    page: not_reported
+    quote: we constructed data-driven multivariate prediction models for language measures.
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: As our preliminary data analysis (see Section 2.4.1. and Results) found that lesion volume
+      differed depending on sex, we included sex as a covariate in the preselection analyses
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: Features were retained if they had a p-value <.05 after applying the Benjamini–Hochberg correction
+      for multiple comparisons
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 116
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

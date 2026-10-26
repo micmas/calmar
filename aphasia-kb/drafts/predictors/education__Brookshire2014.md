@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: education
 name: Education
 kind: predictor
@@ -30,6 +30,7 @@ findings:
     handedness: 91 R, 6 L, 2 A
     language: English
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p > .05
     effect_size: p = .07 (total), .14 (lexical), .06 (sublexical)
@@ -68,5 +69,11 @@ findings:
     quote: it is possible that our group of PWA and alexia did not have enough variability in their years
       of education for this variable to significantly predict reading.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 Finding from Brookshire et al. (2014) that education does not predict reading performance in this specific cohort.

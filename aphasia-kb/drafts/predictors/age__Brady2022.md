@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: age
 name: Age at stroke
 kind: predictor
@@ -33,6 +33,7 @@ findings:
     handedness: not_reported
     language: English predominant (26.6%)
     phase: not_reported
+    cohort: RELEASE
   statistics:
     threshold: 95% CI
     effect_size: not_reported
@@ -70,6 +71,17 @@ findings:
     page: 9
     quote: We acknowledge that spontaneous recovery may also impact on treatment gains observed...
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: We created the international RELEASE IPD database of aphasia research to support several planned
+      analyses
+    supports: sample
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

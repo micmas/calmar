@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_posterior_stg
 name: Left Posterior Superior Temporal Gyrus
 kind: classical
@@ -50,6 +50,8 @@ findings:
     inclusion_criteria: Single left-hemisphere stroke >=6 months prior; native English
       speaker; completed sentence comprehension battery.
     exclusion_criteria: History of dementia or other neurological problems.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed (univariate);
       stepwise regression p<0.05 for entry (multivariate)
@@ -194,6 +196,43 @@ findings:
     supports: limitation
     quote: the number of participants who completed each test or task varied. Therefore,
       statistical power was not equal across all univariate analyses.
+  - section: added by backfill
+    page: 3
+    quote: 'Sentence Comprehension
+
+      Grammatical processing (all sentence types)
+
+      57'
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: For this reason, steps to control for the overall lesion size were not
+      included in subsequent statistical analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Unlike the univariate analyses, the multivariate analyses did not rely
+      on permutation thresholding.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Participants had sustained a single-event stroke to the left hemisphere
+      at least 6 months prior to study inclusion
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 57
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: auditory_word_recognition
   target_kind: impairment
@@ -214,6 +253,8 @@ findings:
     handedness: not_reported
     language: English (native speakers)
     recruitment: USC/MUSC Aphasia Lab archival database.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed
     cluster_extent: not_reported
@@ -316,6 +357,36 @@ findings:
     supports: limitation
     quote: The reading and writing subtests on the Western Aphasia Battery provide
       a somewhat shallow picture of alexia and agraphia, respectively.
+  - section: added by backfill
+    page: 5
+    quote: For this reason, steps to control for the overall lesion size were not
+      included in subsequent statistical analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: 'The univariate lesion analyses relied on conventional lesion symptom mapping:
+      General Linear Model (GLM) (pooled variance t-test) with P 5 0.05 (one-tailed)
+      and control for multiple comparisons used permutation threshholding (4000 permutations).'
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Participants had sustained a single-event stroke to the left hemisphere
+      at least 6 months prior to study inclusion
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 159
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f3
   target: naming
   target_kind: impairment
@@ -338,6 +409,8 @@ findings:
     handedness: not_reported
     language: English (native speakers)
     recruitment: USC/MUSC Aphasia Lab archival database.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed
     cluster_extent: not_reported
@@ -458,6 +531,44 @@ findings:
     supports: limitation
     quote: It is also possible that error responses on individual tasks reflected
       impaired processes rooted in different cortical locations.
+  - section: added by backfill
+    page: 3
+    quote: 'PNT Correct
+
+      Verbal naming
+
+      105'
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: For this reason, steps to control for the overall lesion size were not
+      included in subsequent statistical analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: 'The univariate lesion analyses relied on conventional lesion symptom mapping:
+      General Linear Model (GLM) (pooled variance t-test) with P 5 0.05 (one-tailed)
+      and control for multiple comparisons used permutation threshholding (4000 permutations).'
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Participants had sustained a single-event stroke to the left hemisphere
+      at least 6 months prior to study inclusion
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 105
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f4
   target: auditory_comprehension
   target_kind: impairment
@@ -479,6 +590,8 @@ findings:
     handedness: all right-handed
     language: not_reported
     recruitment: MUSC and USC local community.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 Bonferroni-corrected
     cluster_extent: not_reported
@@ -565,6 +678,35 @@ findings:
     supports: limitation
     quote: cortical disconnection is an independent form of damage, which may not
       be readily appreciated by measurement of cortical necrosis
+  - section: added by backfill
+    page: 4
+    quote: The level of statistical significance was set at p<0.05, adjusted through
+      Bonferroni correction based on the number of regressions investigated.
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: Thirty-nine patients with chronic aphasia underwent language assessment
+      and MRI scanning.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: who suffered a left hemisphere ischemic stroke at least six months prior
+      to enrolling in this study
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 39
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: bonferroni
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f5
   target: sentence_comprehension
   target_kind: impairment
@@ -590,6 +732,8 @@ findings:
     inclusion_criteria: Single left-hemisphere stroke >=6 months prior; native English
       speaker; completed sentence comprehension battery.
     exclusion_criteria: History of dementia or other neurological problems.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed (univariate);
       stepwise regression p<0.05 for entry (multivariate)
@@ -734,6 +878,43 @@ findings:
     supports: limitation
     quote: the number of participants who completed each test or task varied. Therefore,
       statistical power was not equal across all univariate analyses.
+  - section: added by backfill
+    page: 3
+    quote: 'Sentence Comprehension
+
+      Grammatical processing (all sentence types)
+
+      57'
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: For this reason, steps to control for the overall lesion size were not
+      included in subsequent statistical analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: Unlike the univariate analyses, the multivariate analyses did not rely
+      on permutation thresholding.
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Participants had sustained a single-event stroke to the left hemisphere
+      at least 6 months prior to study inclusion
+    supports: sample
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 57
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f6
   target: auditory_word_recognition
   target_kind: impairment
@@ -754,6 +935,8 @@ findings:
     handedness: not_reported
     language: English (native speakers)
     recruitment: USC/MUSC Aphasia Lab archival database.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed
     cluster_extent: not_reported
@@ -856,6 +1039,36 @@ findings:
     supports: limitation
     quote: The reading and writing subtests on the Western Aphasia Battery provide
       a somewhat shallow picture of alexia and agraphia, respectively.
+  - section: added by backfill
+    page: 5
+    quote: For this reason, steps to control for the overall lesion size were not
+      included in subsequent statistical analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: 'The univariate lesion analyses relied on conventional lesion symptom mapping:
+      General Linear Model (GLM) (pooled variance t-test) with P 5 0.05 (one-tailed)
+      and control for multiple comparisons used permutation threshholding (4000 permutations).'
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Participants had sustained a single-event stroke to the left hemisphere
+      at least 6 months prior to study inclusion
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 159
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f7
   target: naming
   target_kind: impairment
@@ -878,6 +1091,8 @@ findings:
     handedness: not_reported
     language: English (native speakers)
     recruitment: USC/MUSC Aphasia Lab archival database.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation thresholding (4000 permutations), p<0.05 one-tailed
     cluster_extent: not_reported
@@ -998,6 +1213,44 @@ findings:
     supports: limitation
     quote: It is also possible that error responses on individual tasks reflected
       impaired processes rooted in different cortical locations.
+  - section: added by backfill
+    page: 3
+    quote: 'PNT Correct
+
+      Verbal naming
+
+      105'
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: For this reason, steps to control for the overall lesion size were not
+      included in subsequent statistical analyses.
+    supports: method
+  - section: added by backfill
+    page: 5
+    quote: 'The univariate lesion analyses relied on conventional lesion symptom mapping:
+      General Linear Model (GLM) (pooled variance t-test) with P 5 0.05 (one-tailed)
+      and control for multiple comparisons used permutation threshholding (4000 permutations).'
+    supports: method
+  - section: added by backfill
+    page: not_reported
+    quote: Participants had sustained a single-event stroke to the left hemisphere
+      at least 6 months prior to study inclusion
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 105
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: none
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 source: draft
 reviewer: claude-cowork
 reviewed_on: '2026-05-06'

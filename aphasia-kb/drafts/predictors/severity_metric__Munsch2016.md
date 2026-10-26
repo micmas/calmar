@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -40,6 +40,7 @@ findings:
     age_range: older than 18 years
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: beta = -0.320
@@ -80,9 +81,32 @@ findings:
     quote: Our cohort contained mild ischemic stroke patients. This might be because of the fact that
       severe stroke patients are less tolerant of the MRI procedure.
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: The 289 patients with complete data set were divided into 2 samples
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: We used multivariate logistic regression models to study the influence of stroke location (number
+      of eloquent voxels from voxel-based lesion-symptom mapping maps), age, initial National Institutes
+      of Health Stroke Scale and stroke volume on modified Rankin Scale and MoCA.
+    supports: method
   imaging_details:
     reference_space: not_reported
     atlases_used: []
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 289
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: prognosis
   target_kind: prognosis
@@ -106,6 +130,7 @@ findings:
     age_range: older than 18 years
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: not_reported
     effect_size: beta = -0.158
@@ -145,7 +170,30 @@ findings:
     quote: Our cohort contained mild ischemic stroke patients. This might be because of the fact that
       severe stroke patients are less tolerant of the MRI procedure.
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: The 289 patients with complete data set were divided into 2 samples
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: We used multivariate logistic regression models to study the influence of stroke location (number
+      of eloquent voxels from voxel-based lesion-symptom mapping maps), age, initial National Institutes
+      of Health Stroke Scale and stroke volume on modified Rankin Scale and MoCA.
+    supports: method
   imaging_details:
     reference_space: not_reported
     atlases_used: []
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 289
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

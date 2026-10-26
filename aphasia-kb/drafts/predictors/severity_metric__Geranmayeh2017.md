@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -38,6 +38,7 @@ findings:
     age_range: 59 ± 11 years
     handedness: not_reported
     language: English
+    cohort: not_reported
   statistics:
     threshold: P < 0.05
     effect_size: beta = 0.767 (outcome), beta = -0.813 (recovery)
@@ -73,6 +74,11 @@ findings:
     supports: sample
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
-
 Initial language performance is a robust predictor of both final outcome and the amount of recovery over time.

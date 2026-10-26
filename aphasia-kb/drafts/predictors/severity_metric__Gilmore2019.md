@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: severity_metric
 name: Aphasia severity metric (instrument-agnostic)
 kind: predictor
@@ -34,6 +34,7 @@ findings:
     age_range: mean 60.90 (SD 12.55)
     handedness: not_reported
     language: not_reported
+    cohort: not_reported
   statistics:
     threshold: P < .01
     effect_size: b = .49
@@ -70,6 +71,12 @@ findings:
     quote: backward elimination linear regression with age and treatment type (ie, naming or sentence
       comprehension).
     supports: confounders
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 units: varies by instrument — see `instrument` field on each finding
 direction_of_severity: lower_is_worse
 ---

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: tdcs_aphasia_treatment
 name: Transcranial Direct Current Stimulation (tDCS) during aphasia treatment
 kind: therapy
@@ -31,6 +31,7 @@ findings:
     handedness: previously right-handed
     language: not_reported
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: 1-sided significance level of .10 (futility design)
     effect_size: mean difference of 5.7 (3.3) words (95% CI, -0.9 to 12.3)
@@ -95,4 +96,10 @@ findings:
     page: 6
     quote: The current study was not powered for superiority analyses to compare A-tDCS with S-tDCS.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

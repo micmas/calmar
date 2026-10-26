@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: English
     phase: hyperacute
+    cohort: not_reported
   statistics:
     threshold: visual inspection of DWI/PWI
     effect_size: 5/5 patients
@@ -88,5 +89,13 @@ findings:
       of that region ('diaschisis') without causing hypoperfusion apparent on PWI or bioenergetic failure
       apparent on DWI.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    unresolved:
+    - lesion_mapping
 ---
 This finding suggests that speech articulation may depend on a network including sensory cortex, rather than being localized to a single region.

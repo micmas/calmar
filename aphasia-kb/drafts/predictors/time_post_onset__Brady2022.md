@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: time_post_onset
 name: Time post-stroke onset
 kind: predictor
@@ -33,6 +33,7 @@ findings:
     handedness: not_reported
     language: English predominant
     phase: early_subacute
+    cohort: RELEASE
   statistics:
     threshold: 95% CI
     effect_size: not_reported
@@ -68,6 +69,17 @@ findings:
       median overall-language gains higher for the early-rehabilitation subgroup than the late-rehabilitation
       group.
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: We created the international RELEASE IPD database of aphasia research to support several planned
+      analyses
+    supports: sample
   region_definition:
     kind: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

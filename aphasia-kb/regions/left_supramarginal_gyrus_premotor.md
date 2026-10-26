@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_supramarginal_gyrus_premotor
 name: Left Supramarginal Gyrus and Premotor Cortex (supra-Sylvian)
 kind: classical
@@ -64,6 +64,8 @@ findings:
       completed all 17 tests.
     exclusion_criteria: left-handed premorbidly; right hemisphere or bilateral lesions;
       did not complete full battery.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.05; isolated clusters ≤50 voxels removed
     cluster_extent: null
@@ -215,6 +217,33 @@ findings:
       across individuals.
 
       '
+  - section: added by backfill
+    page: 7
+    quote: VLSM analysis was performed by running a simple regression analysis at
+      each voxel, with the lesion status as the independent variable and the factor
+      score as the dependent variable.
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: Only voxels lesioned in at least 10 participants were included in analysis
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: We call this approach ‘direct total lesion volume control’.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 99
+    min_lesion_overlap: 10 participants
+    lesion_volume_correction: direct
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: speech_production_phonological
   target_kind: impairment
@@ -246,6 +275,8 @@ findings:
       completed all 17 tests.
     exclusion_criteria: left-handed premorbidly; right hemisphere or bilateral lesions;
       did not complete full battery.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR q = 0.05; isolated clusters ≤50 voxels removed
     cluster_extent: null
@@ -397,6 +428,33 @@ findings:
       across individuals.
 
       '
+  - section: added by backfill
+    page: 7
+    quote: VLSM analysis was performed by running a simple regression analysis at
+      each voxel, with the lesion status as the independent variable and the factor
+      score as the dependent variable.
+    supports: method
+  - section: added by backfill
+    page: 7
+    quote: Only voxels lesioned in at least 10 participants were included in analysis
+    supports: method
+  - section: added by backfill
+    page: 8
+    quote: We call this approach ‘direct total lesion volume control’.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 99
+    min_lesion_overlap: 10 participants
+    lesion_volume_correction: direct
+    multiple_comparisons: not_reported
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f3
   target: phonological_production
   target_kind: impairment
@@ -417,6 +475,7 @@ findings:
     handedness: all right-handed
     language: native German
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: FDR p < 0.01
     effect_size: not_reported
@@ -458,11 +517,34 @@ findings:
       superior temporal gyrus/supramarginal gyrus lesions may also be inﬂuenced by
       their impaired verbal working memory capacity.
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: To grant reasonable levels of statistical power, statistical analyses were
+      restricted to those voxels where at least 10% of the patients were lesioned.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The resulting maps were corrected for multiple comparisons using a 1% false
+      discovery rate (FDR corrected P 5 0.01) for the AAT subtests.
+    supports: method
   review:
     reviewer: model:gemma4:26b
     reviewed_on: '2026-10-22'
     tier: A
     extractor: agent:ollama-extract-cli/gemma4:31b-it-q8_0
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 102
+    min_lesion_overlap: 10% of the sample
+    lesion_volume_correction: not_reported
+    multiple_comparisons: fdr
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 source: draft
 last_reviewed: '2026-10-22'
 reviewer: claude-cowork

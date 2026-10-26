@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_superior_temporal_gyrus_wernickes
 name: Left Superior Temporal Gyrus (Wernicke's region, mid-posterior)
 kind: classical
@@ -30,6 +30,7 @@ findings:
     age_range: 23 to 86 years (mean 61.0, SD 14.8)
     handedness: right-handed
     language: English
+    cohort: not_reported
   statistics:
     threshold: p < 0.00001
     effect_size: r = 0.84
@@ -106,4 +107,10 @@ findings:
       due to diaschesis, or arterial stenosis) would lead to underestimation of the degree of hypoperfusion
       in the homologous region on the left.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

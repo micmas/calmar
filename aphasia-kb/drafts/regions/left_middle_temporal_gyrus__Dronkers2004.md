@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_middle_temporal_gyrus
 name: Left Middle Temporal Gyrus (Ventral Stream Node)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: monolingual, native English speakers
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: Bonferroni correction (t > 4.7)
     effect_size: not_reported
@@ -94,4 +95,27 @@ findings:
     quote: Furthermore, lesion studies may suffer from the possibility of diaschitic effects such that
       injuries to one area can cause dysfunction in remote, non-lesioned areas.
     supports: limitation
+  - section: added by backfill
+    page: 14
+    quote: T-tests were performed at each voxel containing at least eight patients in each lesioned and
+      non-lesioned group
+    supports: method
+  - section: added by backfill
+    page: 14
+    quote: T-values ranged from 21.4 to 6.3 (one-tailed), with those over 4.7 (depicted in orange through
+      red) being statistically signiﬁcant after Bonferroni correction
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 64
+    min_lesion_overlap: '>= 8 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: bonferroni
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---

@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_ifg_pars_triangularis
 name: Left IFG Pars Triangularis (BA 45)
 kind: classical
@@ -60,6 +60,8 @@ findings:
       able to ambulate; no history of other neurological illness or learning disability.
     exclusion_criteria: History of learning disability; uncontrolled seizures; severe
       motor impairment (unable to ambulate).
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 Bonferroni-corrected for number of regressions
     cluster_extent: not_reported
@@ -176,6 +178,30 @@ findings:
     supports: limitation
     quote: Although MRI tractography has the advantage of providing in-vivo information
       about structural brain integrity, it is not without technical limitations.
+  - section: added by backfill
+    page: 1
+    quote: Thirty-nine patients with chronic aphasia underwent language assessment
+      and MRI scanning.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: who suffered a left hemisphere ischemic stroke at least six months prior
+      to enrolling in this study
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 39
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: bonferroni
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 - id: f2
   target: fluency
   target_kind: impairment
@@ -197,6 +223,8 @@ findings:
     handedness: all right-handed
     language: not_reported
     recruitment: MUSC and USC local community.
+    phase: chronic
+    cohort: not_reported
   statistics:
     threshold: p<0.05 Bonferroni-corrected
     cluster_extent: not_reported
@@ -281,6 +309,35 @@ findings:
     supports: limitation
     quote: our study focused on a small set of cortical regions, including BA 45,
       to clearly demonstrate how disconnection contributes to behavioral impairment.
+  - section: added by backfill
+    page: 4
+    quote: The level of statistical significance was set at p<0.05, adjusted through
+      Bonferroni correction based on the number of regressions investigated.
+    supports: method
+  - section: added by backfill
+    page: 1
+    quote: Thirty-nine patients with chronic aphasia underwent language assessment
+      and MRI scanning.
+    supports: method
+  - section: added by backfill
+    page: 2
+    quote: who suffered a left hemisphere ischemic stroke at least six months prior
+      to enrolling in this study
+    supports: sample
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 39
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: not_reported
+    multiple_comparisons: bonferroni
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
+    - phase
 source: draft
 reviewer: michele
 reviewed_on: '2026-05-06'

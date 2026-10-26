@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_precentral_gyrus_insula
 name: Left precentral gyrus of the insula
 kind: classical
@@ -29,6 +29,7 @@ findings:
     handedness: all right-handed
     language: native English speakers
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation p < .05
     effect_size: not_reported
@@ -107,6 +108,24 @@ findings:
     quote: Limitations of the current study include the fact that we were not able to fully sample the
       left hemisphere in the VLSM analyses.
     supports: limitation
+  - section: added by backfill
+    page: 4
+    quote: Only voxels containing at least 10 patients with and without a lesion were included in the
+      analysis, in order to avoid spurious results.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 33
+    min_lesion_overlap: '>= 10 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: apraxia_of_speech
   target_kind: impairment
@@ -128,6 +147,7 @@ findings:
     handedness: all right-handed
     language: native English speakers
     phase: chronic
+    cohort: not_reported
   statistics:
     threshold: permutation p < .05
     effect_size: not_reported
@@ -177,5 +197,32 @@ findings:
     quote: whereas when articulatory complexity was minimal, the SPGI showed almost no involvement (50%
       vs 2% of SPGI, respectively).
     supports: statistics
+  - section: added by backfill
+    page: 2
+    quote: The study included 33 patients (27 males) who had a history of a single, left hemisphere stroke.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Only voxels containing at least 10 patients with and without a lesion were included in the
+      analysis, in order to avoid spurious results.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The VLSM analysis was subjected to permutation testing using Matlab, in order to determine
+      a critical t cut-off (at p < .05), based on 1000 random permutations of the data.
+    supports: method
+  lesion_mapping:
+    analysis: univariate
+    n_analysed: 33
+    min_lesion_overlap: '>= 10 patients'
+    lesion_volume_correction: not_reported
+    multiple_comparisons: permutation_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
 This paper uses VLSM to demonstrate that the left superior precentral gyrus of the insula (SPGI) is specifically critical for complex articulatory movements (multi-syllabic, high travel, initial clusters) but not for simple articulation.

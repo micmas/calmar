@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: left_superior_temporal_sulcus
 name: Left Superior Temporal Sulcus
 kind: classical
@@ -28,6 +28,7 @@ findings:
     handedness: not_reported
     language: not_reported
     phase: not_reported
+    cohort: not_reported
   statistics:
     threshold: corrected mapwise a < 0.05
     cluster_extent: not_reported
@@ -69,4 +70,10 @@ findings:
       processing or overall difficulty, these screening efforts were likely imperfect due to the absence
       of appropriate behavioral data in many published studies.
     supports: limitation
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---

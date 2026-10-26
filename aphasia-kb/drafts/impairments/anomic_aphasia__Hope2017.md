@@ -1,5 +1,5 @@
 ---
-schema_version: 2.3
+schema_version: 2.7
 id: anomic_aphasia
 name: Anomic aphasia
 kind: impairment
@@ -28,6 +28,7 @@ findings:
     handedness: all right-handed
     language: English first language
     phase: longitudinal
+    cohort: PLORAS
   statistics:
     threshold: P < 0.05
     effect_size: r = 0.71 (spoken object vs written object naming)
@@ -71,6 +72,16 @@ findings:
     quote: the relationship between our impairment-based measures of language skill, and the patients'
       day-to-day experiences of language use, might be complex.
     supports: limitation
+  - section: added by backfill
+    page: 2
+    quote: Our patient data were extracted from our PLORAS database (Seghier et al., 2016)
+    supports: sample
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
 ---
 # Anomic Aphasia
 
