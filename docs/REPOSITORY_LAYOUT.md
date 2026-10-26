@@ -32,7 +32,7 @@ calmar/
   qc_panel.py           # QC review, saved-rating reuse and continuation
   report_ui.py          # report selection, preview and decoding presentation
   viewer_transport.py   # deferred image transport and compact widget state
-  synthetic.py          # benchmark phantom generation
+  synthetic.py          # benchmark phantom and edge-case battery generation
 src/
   analysis_*.sh         # retained analytical entry points, including dMRI 45–47 and brain health 48–50
   python/               # implementations called by those entry points
@@ -42,6 +42,7 @@ container/              # in-container wrapper source and build instructions
 stroke-aphasia-kb/       # Git submodule: knowledge base, extraction, review, interpretation
 diffusion-tract-analysis/ # ASTRA specification for the optional direct-dMRI route
 brain-health-analysis/  # ASTRA specification for optional atrophy/WMH features
+segmentation-benchmark/ # ASTRA record for ISLES, cross-tool and edge-case benchmarks
 ```
 
 ## Updated imports and entry points
@@ -104,6 +105,7 @@ snapshots and checkpoints with recovery value are archived under the ignored
 SHA-256 hashes in `manifest.json`. They are not scientific results and are not
 published as source files.
 
-Preserve the separate, unfinished synthetic-benchmark work and existing ASTRA
-records. Absence of a caller in the main notebook does not make benchmark, KB,
-container, or provenance files obsolete.
+The segmentation benchmark's retained scripts and ASTRA record live in this
+repository even when the participant workflow does not call them. Absence of a
+caller in the main notebook does not make benchmark, KB, container, or
+provenance files obsolete.
