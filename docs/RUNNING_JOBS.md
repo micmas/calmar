@@ -69,14 +69,14 @@ python -m pytest -q tests
 These tests exercise discovery, imports, widget callbacks and script
 dispatch without launching imaging jobs or downloads. They do not
 replace the three-participant end-to-end run or browser QC. Optional
-browser checks need `tests/requirements-browser.txt` and a Playwright
-browser installation.
+browser checks need Playwright (listed in `requirements-dev.txt`) and
+`python -m playwright install chromium`.
 
 ## Validating a checkout
 
 The retained `src/analysis_19_verify_interpretation.sh` verifies overlap
 laterality and cached Neurosynth decoding on existing outputs through
-Slurm; `workflow-validation/astra.yaml` records its inputs and
+Slurm; `analyses/workflow-validation/astra.yaml` records its inputs and
 verification scope.
 
 To validate the software and browser fixtures using an owned Jupyter
@@ -91,7 +91,7 @@ The browser suite uses disposable notebooks and includes a small
 group-map job. It does not establish scientific mask quality.
 Fresh-cohort inspection uses `src/analysis_32_inspect_acceptance.sh`;
 review the PNGs and agreement metrics before recording findings in
-`workflow-acceptance/astra.yaml`.
+`analyses/workflow-acceptance/astra.yaml`.
 
 The real notebook-cell smoke check (requires the existing acceptance
 cohort) uses an isolated kernel, deliberately loads FSL first to

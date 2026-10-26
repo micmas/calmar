@@ -70,7 +70,7 @@ native→Penn→ch2 transform chain (including the inverse subject affine
 and bundled Penn→ch2 transforms), continued ch2→MNI152 in the same
 resampling. The final reference is `Subject_in_MNI.nii.gz`; the
 intermediate `Reg3_registered_to_template.nii.gz` is not MNI. Alignment
-verification and repair records live in `alignment-repair/astra.yaml`.
+verification and repair records live in `analyses/alignment-repair/astra.yaml`.
 
 ## Segmentation methods and registration
 
@@ -150,7 +150,7 @@ combine them with BCB/DeepDisco probabilities. Because stroke pathology
 can cause registration or tracking failure, a missing bundle is never
 called proof of disconnection. Failed tool output appears in the
 notebook/job error rather than disappearing with the temporary attempt
-directory. The scientific record is `diffusion-tract-analysis/astra.yaml`.
+directory. The scientific record is `analyses/diffusion-tract-analysis/astra.yaml`.
 
 ## Optional brain-health interpretation
 
@@ -173,7 +173,7 @@ infarct-related oedema can extend beyond the exclusion zone. CALMaR
 does not infer a Fazekas grade from volume. Results live under
 `derivatives/calmar-brain-health/<sub>/<ses>/anat/`, remain provisional
 until the saved PNG overlay is reviewed, and appear in a separate report
-section. The scientific record is `brain-health-analysis/astra.yaml`.
+section. The scientific record is `analyses/brain-health-analysis/astra.yaml`.
 
 ## Disconnectomes
 

@@ -1,6 +1,13 @@
+# Extra packages for running the test suite and notebook tooling.
+# pip install -r requirements-dev.txt   (pulls in requirements.txt too)
 -r requirements.txt
 
 pytest>=8
+pytest-subtests>=0.14
 beautifulsoup4>=4.12
 jupyter_client>=8
 nbstripout>=0.9
+
+# Optional UI regression check (python tests/browser_workflow.py);
+# needs `python -m playwright install chromium` afterwards.
+playwright==1.63.0

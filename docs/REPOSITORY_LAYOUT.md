@@ -7,26 +7,32 @@ initialiser does not start processing or build UI.
 ```text
 calmar-guided.ipynb                   form-based workflow (reuses the detailed notebook's cells)
 lesion-interpretation-pipeline.ipynb  the detailed notebook and canonical implementation
-lesion-segmentation-benchmark.ipynb   LINDA / SynthStroke / OpenADS benchmark
+lesion-segmentation-benchmark.ipynb   LINDA / SynthStroke / OpenADS benchmark (see below)
 
 calmar/                               the Python package (module map below)
 src/
-  analysis_NN_*.sh                    retained Slurm entry points, numbered in pipeline order
+  analysis_NN_*.sh                    retained Slurm entry points, numbered in pipeline order;
+                                      00–12 belong to the segmentation benchmark
   python/  r/                         implementations those scripts call
+  constraints-neurodesk.txt           version pins the two environment-restore scripts apply
 tests/                                pytest suite (no imaging jobs); images/ holds a sample T1
 container/                            in-container LINDA wrapper source and build notes
 stroke-aphasia-kb/                    SUBMODULE: the aphasia knowledge base (github.com/micmas/stroke-aphasia-kb)
 
-docs/                                 SETUP, NOTEBOOK_GUIDE, PIPELINE, RUNNING_JOBS, QC_RUBRIC,
-                                      design proposals, palette, validation evidence, issues/, images/
-AGENTS.md                             operating contract for agents working in Neurodesk
-CHANGELOG.md  CITATION.cff  LICENSE
-requirements.txt  requirements-dev.txt  constraints-neurodesk.txt
+analyses/                             ASTRA scientific records, one folder per analysis
+  alignment-repair/                   (astra.yaml, universes/, request fixtures): the inputs,
+  brain-health-analysis/              decisions, outputs and findings, validated with
+  diffusion-tract-analysis/           `astra validate`; their runtime products land beside
+  segmentation-benchmark/             them and are git-ignored
+  workflow-acceptance/
+  workflow-validation/
 
-alignment-repair/      brain-health-analysis/   diffusion-tract-analysis/
-segmentation-benchmark/  workflow-acceptance/   workflow-validation/
-                                      ASTRA scientific records (astra.yaml + universes/, request fixtures):
-                                      the inputs, decisions, outputs and findings of each analysis
+docs/                                 SETUP, NOTEBOOK_GUIDE, PIPELINE, RUNNING_JOBS, QC_RUBRIC,
+                                      CHANGELOG, design proposals, palette, validation evidence,
+                                      issues/, images/
+AGENTS.md                             operating contract for agents working in Neurodesk
+CITATION.cff  LICENSE
+requirements.txt  requirements-dev.txt
 ```
 
 Runtime directories, created on first use and git-ignored: `data/`
@@ -52,6 +58,11 @@ Each module starts with a docstring saying what it is for.
 
 ## Conventions
 
+- The segmentation benchmark is a separate study that shares the
+  package: `lesion-segmentation-benchmark.ipynb`, `src/analysis_00`–`12`,
+  `calmar/synthetic.py` and `analyses/segmentation-benchmark/`. The
+  participant workflow (`calmar-guided.ipynb`, the detailed notebook,
+  `src/analysis_13` onwards) never calls them.
 - `calmar.qc` resolves repository resources relative to its own source
   location and passes `CALMAR_SOURCE_DIR` to the wrappers. Standalone
   scripts resolve `PROJECT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"` and must not
@@ -70,7 +81,10 @@ Each module starts with a docstring saying what it is for.
 
 ## History
 
-**October 2026.** `SETUP.md` and `QC_RUBRIC.md` moved into `docs/`, the
+**October 2026.** The six ASTRA record folders moved under `analyses/`,
+`CHANGELOG.md`, `SETUP.md` and `QC_RUBRIC.md` into `docs/`,
+`constraints-neurodesk.txt` into `src/`, and `tests/requirements*.txt`
+were folded into `requirements-dev.txt`; the
 README was split into `docs/NOTEBOOK_GUIDE.md`, `docs/PIPELINE.md` and
 `docs/RUNNING_JOBS.md`, report screenshots moved to `docs/images/` and
 the sample image to `tests/images/`. The knowledge base moved its
@@ -100,7 +114,7 @@ their replacements:
 Both were source layout changes: data, derivatives, QC sidecars, report
 locations, scientific parameters and saved provenance stayed in place.
 Historical scripts are recoverable from the pre-migration commit
-recorded in `alignment-repair/astra.yaml`. Old notebook snapshots with
+recorded in `analyses/alignment-repair/astra.yaml`. Old notebook snapshots with
 recovery value were archived under the ignored
 `notes/archive/repository-layout-2026-09-24/` with a `manifest.json` of
 SHA-256 hashes; they are not scientific results. The knowledge base

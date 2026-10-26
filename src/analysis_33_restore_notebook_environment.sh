@@ -15,6 +15,6 @@ CALMAR_PYTHON="${CALMAR_PYTHON:-$(command -v python)}"
 # after installation. Scientific processing continues to require Slurm.
 # requirements.txt lists the notebook packages; constraints preserve the
 # project's numerical stack and setuptools compatibility with PyTorch.
-"$CALMAR_PYTHON" -m pip install -c constraints-neurodesk.txt -r requirements.txt 'setuptools<82'
+"$CALMAR_PYTHON" -m pip install -c src/constraints-neurodesk.txt -r requirements.txt 'setuptools<82'
 "$CALMAR_PYTHON" -m pip check
 "$CALMAR_PYTHON" -c 'import nilearn, ipylab, SimpleITK; print("Required notebook imports passed.")'
