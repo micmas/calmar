@@ -27,8 +27,11 @@ How the numbers are computed
   measurements, and lesion volume (mL; voxels > 0 in the selected MNI mask x
   voxel volume). Values without KB evidence remain visible as context.
 * Domain context: user-entered none/mild/moderate/severe levels across language
-  and cognitive domains; missing domains remain ``not_assessed`` and are never
-  inferred from WAB-AQ, aphasia type, language, or lesion location.
+  and cognitive domains. When a WAB/WAB-R aphasia type is present, its published
+  +/- profile seeds fluency, comprehension and repetition conservatively
+  (impaired -> a mild profile floor; relatively preserved -> severity not
+  assigned). User entries take precedence, and every other missing domain
+  remains ``not_assessed``.
 * Therapies: :meth:`KnowledgeBase.interpret_therapies` from the impairments
   the lesion location points to, gated by impairments implied by the WAB type.
 * Provenance: mask QC rating from the participant's ``*.qc.json`` sidecar and
@@ -220,22 +223,6 @@ def rules_html(kb_root):
             "(sources and caveats in its docstrings).</p></div>")
 
 
-def decompose_html(rules, name, color="#666"):
-    """WAB flu/comp/rep annotation for a type name ('' if not a WAB type)."""
-    pattern = rules.decompose_aphasia(name)
-    if not pattern:
-        return ""
-    def sym(v):
-        if v == "+":
-            return "<span style='color:#2e7d32'>+</span>"
-        if v == "-":
-            return "<span style='color:#c62828'>&#8722;</span>"
-        return "<span style='color:#888'>~</span>"
-    f, c, r = pattern
-    return (f" <small style='color:{color};font-family:monospace'>"
-            f"[flu {sym(f)} &middot; comp {sym(c)} &middot; rep {sym(r)}]</small>")
-
-
 # ============================================================
 # Inputs: overlap tables, participants.tsv, lesion volume
 # ============================================================
@@ -370,16 +357,59 @@ def normalise_domain_levels(values):
     return out
 
 
-def domain_levels_html(values):
-    """Participant-context table of explicitly entered domain levels."""
+def wab_profile_domain_levels(rules, wab_type):
+    """Domain defaults from the Kertesz WAB/WAB-R +/- type profile.
+
+    The qualitative type profile does not measure domain severity. CALMaR uses
+    the least non-zero impairment category for ``-``. A ``+`` is only relative
+    preservation within that type's range, so its severity remains unassessed.
+    Only the three axes encoded by the WAB taxonomy receive source annotations;
+    an unknown or missing type populates nothing.
+    """
+    levels = normalise_domain_levels(None)
+    sources = {}
+    profile = rules.decompose_aphasia(wab_type)
+    if not profile:
+        return levels, sources
+    for domain, status in zip(rules.WAB_AXES, profile):
+        if status == "-":
+            levels[domain] = "mild"
+            sources[domain] = "wab_profile_impaired"
+        else:
+            sources[domain] = "wab_profile_preserved"
+    return levels, sources
+
+
+def domain_levels_html(values, sources=None):
+    """Participant-context table of entered and WAB-profile-derived levels."""
     levels = normalise_domain_levels(values)
+    sources = sources or {}
+    source_label = {
+        "wab_profile_impaired": "WAB/WAB-R profile: impaired (−); mild is a profile floor",
+        "wab_profile_preserved": "WAB/WAB-R profile: relatively preserved (+); severity not assigned",
+        "entered": "Entered for this report",
+    }
+    def source_for(domain, level):
+        fallback = "Entered for this report" if level != "not_assessed" else "—"
+        return source_label.get(sources.get(domain), fallback)
     rows = "".join(
         f"<tr><td><b>{escape(DOMAIN_LABELS[domain])}</b></td>"
-        f"<td>{escape(DOMAIN_LEVEL_LABELS[level])}</td></tr>"
+        f"<td>{escape(DOMAIN_LEVEL_LABELS[level])}</td>"
+        f"<td>{escape(source_for(domain, level))}</td></tr>"
         for domain, level in levels.items())
-    return ("<p class='section-intro'>Domain levels were entered directly for this report. They are not inferred "
-            "from WAB-AQ, aphasia type, language, or lesion location; <b>not assessed</b> is not normal performance."
-            "</p><table class='behaviour-table'>" + rows + "</table>")
+    seeded = any(str(value).startswith("wab_profile_") for value in sources.values())
+    intro = (
+        "The participant's recorded aphasia type was not displayed as a clinical measure. Instead, its "
+        "Kertesz WAB/WAB-R profile informed only the rows identified in the Source column: <b>− impaired → mild "
+        "profile floor</b>; <b>+ relatively preserved → severity not assigned</b>. These are not measured domain "
+        "severities; replace them with assessed levels when available."
+        if seeded else
+        "Domain levels were entered directly for this report. They are not inferred from WAB-AQ, language, or "
+        "lesion location."
+    )
+    return (f"<p class='section-intro'>{intro} <b>Not assessed</b> is not normal performance.</p>"
+            "<table class='behaviour-table'><thead><tr><th>Domain</th><th>Level</th><th>Source</th></tr></thead>"
+            "<tbody>" + rows + "</tbody></table>")
 
 
 def lesion_volume_ml(mask_path):
@@ -523,11 +553,10 @@ def interp_table(kb, rules, df, kind, top_n):
     rows = []
     for _, r in sub.iterrows():
         name = kb.label_for(r["target"])
-        decomp = decompose_html(rules, r["target"]) if kind == "impairment" else ""
         id_note = (f" <small style='color:#5a5a66;font-size:10px'>({r['target']})</small>"
                    if name != r["target"] else "")
         rows.append(f"<tr><td style='padding:4px 2px'>{_badge(r['direction'])}</td>"
-                    f"<td style='padding:4px 8px'><b>{name}</b>{id_note}{decomp}</td>"
+                    f"<td style='padding:4px 8px'><b>{name}</b>{id_note}</td>"
                     f"<td style='padding:4px 8px'>{_stars_html(rules, r['score'])}</td>"
                     f"<td style='text-align:center;padding:4px 4px'>{r['n_findings']}</td>"
                     f"<td style='font-size:11px;color:#666;padding:4px 4px'>{', '.join(r.get('citations') or [])}</td></tr>")
@@ -648,13 +677,11 @@ def behaviour_html(rules, row, predictors, volume_ml):
     if not row and volume_ml is None:
         return "<p style='color:#888'><em>No participants.tsv entry.</em></p>"
     row = row or {}
-    wab_type = row.get("wab_type")
     education = education_measure(row)
     education_value = education.get("value")
     if education_value is not None and education.get("units") == "years":
         education_value = f"{education_value:g} years"
     items = [("WAB-AQ", row.get("wab_aq")),
-             ("WAB type", (str(wab_type) + decompose_html(rules, wab_type)) if wab_type else None),
              ("Age at stroke", row.get("age_at_stroke")),
              ("Education", education_value),
              ("Sex", row.get("sex")),
@@ -691,8 +718,9 @@ LEGEND_HTML = '''
         represent independent studies or independent cohorts. Group associations do not predict this participant&rsquo;s outcome.</p>
         <p>An &ldquo;atlas match includes a documented judgement call&rdquo; note links a knowledge-base region to
         atlas units using a curated decision recorded in <code>stroke-aphasia-kb/atlas_mapping/README.md</code>.</p>
-        <b>WAB decomposition</b>: flu = fluency, comp = comprehension, rep = repetition.
-        + preserved, &#8722; impaired (WAB type taxonomy).<br>
+        <b>WAB/WAB-R profile conversion</b>: where a recorded type informed the domain table,
+        + relatively preserved kept severity unassigned and &#8722; impaired became a &ldquo;mild profile floor&rdquo;.
+        Neither is a measured domain severity.<br>
         <b>Stage badge</b>:
         Acute &lt;7 d &middot; Subacute 7 d–6 mo &middot; Chronic &gt;6 mo. A therapy-stage warning identifies
         evidence from a different recovery stage; open it for detail.
@@ -1108,7 +1136,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     impairments = list(dict.fromkeys(impairments))
     wab_type = (row or {}).get("wab_type") or ""
     behavioural = kb.wab_to_impairments(wab_type)
-    note(f"  WAB type: {wab_type!r} -> behavioral impairments: {behavioural}")
+    note(f"  Recorded behavioural profile -> KB therapy-gating impairments: {behavioural}")
     therapies = kb.interpret_therapies(impairments, behavioral_impairment_ids=behavioural,
                                        max_results=settings.top_n)
 
@@ -1141,14 +1169,27 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       </div>
     </header>
     '''
-    domain_levels = normalise_domain_levels(namespace.get("INTERP_DOMAIN_LEVELS"))
+    domain_key = f"{entry['subject']}|{entry.get('session') or ''}"
+    levels_by_participant = namespace.get("INTERP_DOMAIN_LEVELS_BY_PARTICIPANT") or {}
+    sources_by_participant = namespace.get("INTERP_DOMAIN_LEVEL_SOURCES_BY_PARTICIPANT") or {}
+    if domain_key in levels_by_participant:
+        domain_levels = normalise_domain_levels(levels_by_participant[domain_key])
+        domain_sources = dict(sources_by_participant.get(domain_key) or {})
+    elif levels_by_participant:
+        # Another participant's current UI values must never leak into this report.
+        domain_levels, domain_sources = wab_profile_domain_levels(rules, (row or {}).get("wab_type"))
+    elif "INTERP_DOMAIN_LEVELS" in namespace:
+        domain_levels = normalise_domain_levels(namespace.get("INTERP_DOMAIN_LEVELS"))
+        domain_sources = dict(namespace.get("INTERP_DOMAIN_LEVEL_SOURCES") or {})
+    else:
+        domain_levels, domain_sources = wab_profile_domain_levels(rules, (row or {}).get("wab_type"))
     context = f'''
       <h3>Behavioural / clinical data</h3>
       <p class="section-intro">These participant measures provide context before the lesion description. Missing
-        values remain missing and are not inferred.</p>
+        raw measures remain missing; any qualitative WAB-profile conversion is identified separately below.</p>
       {behaviour_html(rules, row, predictors, volume)}
       <h3>Domain-level impairment context</h3>
-      {domain_levels_html(domain_levels)}
+      {domain_levels_html(domain_levels, domain_sources)}
       <h3>Damaged regions ({settings.display_atlas}, &ge;{settings.min_overlap_pct}%)</h3>
       <p class="section-intro">This table locates the lesion in the selected display atlas. It is an anatomical
         overview; the literature interpretation follows below.</p>
@@ -1175,7 +1216,8 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       {measures_section(kb, predictors, _days(days), "high" if settings.high_conf_only else None, phase=stage_id)}'''
     therapy = f'''
       <p class="section-intro">These are therapies with evidence targeting impairments represented above. They are
-        research associations, not prescriptions; recovery-stage mismatches remain marked for clinical review.</p>
+        research associations, not prescriptions; recovery-stage mismatches remain marked for clinical review.
+        Therapy gating uses the KB mapping from the recorded WAB profile, not the report-only domain-level table.</p>
       {therapy_table(kb, therapies, stage_id, stage_label, therapy_stages)}'''
     body = ("<main class='report-content'>"
             + report_section("Participant context and lesion overview", context, open=True)

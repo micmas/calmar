@@ -1,6 +1,7 @@
 import json
 import math
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
@@ -10,7 +11,8 @@ from calmar.diffusion import (assess_dwi_series, assess_dwi_sessions,
                               direct_diffusion_section, load_tractometry,
                               tractometry_paths)
 from calmar.dmri_choice import apply_dmri_selection, dmri_options, show_dmri_choice
-from calmar.dmri_pipeline import _bundle_side, _scalar_rows, stage_bids
+from calmar.dmri_pipeline import (_bundle_side, _derivative_methods, _hmc_method,
+                                  _run, _scalar_rows, preprocess, stage_bids)
 
 
 def gradients(folder, stem, bvals, *, phase="j-", readout=0.036):
@@ -133,12 +135,14 @@ def test_direct_tractometry_is_separate_and_conservative_in_report(tmp_path):
     metadata.write_text(json.dumps({"n_directions": 40, "shells": [0, 1000],
                                     "session": "ses-dwi", "anatomical_session": "ses-t1",
                                     "preprocessor": "QSIPrep 26.1.1",
+                                    "hmc_method": "tortoise",
                                     "warnings": ["no opposite phase-encoding DWI"]}))
     html = direct_diffusion_section(tmp_path, {}, entry)
     assert "participant&rsquo;s own directional diffusion" in html
     assert "do not validate or numerically combine" in html
     assert "must therefore not be read as proof" in html
     assert "Arcuate fasciculus" in html and "22.5%" in html and "QSIPrep 26.1.1" in html
+    assert "tortoise motion/eddy correction" in html
     assert "diffusion session ses-dwi" in html and "lesion/anatomy session ses-t1" in html
 
 
@@ -214,6 +218,102 @@ def test_staged_bids_keeps_diffusion_session_and_records_cross_session_anatomy(t
     assert provenance["cross_session_anatomy"] is True
 
 
+def test_failed_dmri_tool_surfaces_its_log_tail(tmp_path, monkeypatch):
+    log = tmp_path / "tool.log"
+    crash = tmp_path / "work/crash-fixture.txt"
+
+    def fail(command, **kwargs):
+        kwargs["stdout"].write("specific QSIPrep diagnostic\n")
+        crash.parent.mkdir()
+        crash.write_text("crash detail")
+        return SimpleNamespace(returncode=23)
+
+    monkeypatch.setattr(dmri_pipeline.subprocess, "run", fail)
+    with pytest.raises(RuntimeError, match="specific QSIPrep diagnostic") as error:
+        _run(["qsiprep", "input", "output"], log, failure_dir=tmp_path / "retained")
+    assert "exit status 23" in str(error.value)
+    assert "diagnostics retained" in str(error.value)
+    assert log.read_text() == "specific QSIPrep diagnostic\n"
+    assert (tmp_path / "retained/tool.log").is_file()
+    assert list((tmp_path / "retained").glob("*-crash-fixture.txt"))
+
+
+def test_tortoise_is_the_selected_qsiprep_hmc_default():
+    assert _hmc_method({}) == "tortoise"
+    assert _hmc_method({"DMRI_HMC_METHOD": "eddy"}) == "eddy"
+    with pytest.raises(ValueError, match="tortoise, eddy or shoreline"):
+        _hmc_method({"DMRI_HMC_METHOD": "unknown"})
+
+
+def test_existing_qsiprep_derivative_fails_before_staging(tmp_path, monkeypatch):
+    entry = {"subject": "sub-one", "session": "ses-dwi"}
+    request = {"dataset": str(tmp_path), "entries": [entry], "config": {}}
+    final = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/qsiprep"
+    final.mkdir(parents=True)
+    monkeypatch.setenv("SLURM_JOB_ID", "123")
+    monkeypatch.setenv("CALMAR_EXECUTION_SCRIPT", "src/analysis_45_dmri_preproc.sh")
+    monkeypatch.setattr(dmri_pipeline, "stage_bids",
+                        lambda *args, **kwargs: pytest.fail("staging should not run"))
+    with pytest.raises(FileExistsError, match="DMRI_OVERWRITE=True"):
+        preprocess(request, tmp_path / "result")
+
+
+def test_preprocess_passes_selected_hmc_method_to_qsiprep(tmp_path, monkeypatch):
+    entry = {"subject": "sub-one", "session": "ses-dwi", "t1w": "unused"}
+    request = {"dataset": str(tmp_path), "entries": [entry],
+               "config": {"DMRI_HMC_METHOD": "tortoise"}}
+    commands = []
+
+    def staged(request, entry, destination):
+        Path(destination).mkdir(parents=True)
+        return {"cross_session_anatomy": False}
+
+    def run(command, log, **kwargs):
+        commands.append([str(value) for value in command])
+        produced = Path(command[2])
+        produced.mkdir(parents=True)
+        (produced / "sub-one_desc-preproc_dwi.nii.gz").write_bytes(b"fixture")
+        (produced / "sub-one.html").write_text("report")
+        Path(log).write_text("log")
+
+    monkeypatch.setenv("SLURM_JOB_ID", "123")
+    monkeypatch.setenv("CALMAR_EXECUTION_SCRIPT", "src/analysis_45_dmri_preproc.sh")
+    monkeypatch.setattr(dmri_pipeline, "stage_bids", staged)
+    monkeypatch.setattr(dmri_pipeline, "_run", run)
+    monkeypatch.setattr(dmri_pipeline, "_publish", lambda *args, **kwargs: None)
+    monkeypatch.setattr(dmri_pipeline, "_publish_result", lambda *args, **kwargs: None)
+    preprocess(request, tmp_path / "result")
+    command = commands[0]
+    assert command[command.index("--hmc-method") + 1] == "tortoise"
+
+
+def test_metrics_methods_come_from_published_derivatives(tmp_path):
+    entry = {"subject": "sub-one", "session": "ses-dwi"}
+    request = {"dataset": str(tmp_path), "entries": [entry],
+               "config": {"DMRI_HMC_METHOD": "tortoise", "DMRI_RECON_SPEC": "wrong-current-value"}}
+    preproc = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/qsiprep"
+    recon = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/qsirecon"
+    preproc.mkdir(parents=True)
+    recon.mkdir(parents=True)
+    (preproc / "calmar-selection.json").write_text(json.dumps({"hmc_method": "eddy"}))
+    (recon / "calmar-reconstruction.json").write_text(json.dumps({"recon_spec": "published-spec"}))
+    assert _derivative_methods(request, entry) == ("eddy", "published-spec")
+
+
+def test_metrics_hmc_method_can_come_from_retained_legacy_qsiprep_log(tmp_path):
+    entry = {"subject": "sub-one", "session": "ses-dwi"}
+    request = {"dataset": str(tmp_path), "entries": [entry], "config": {}}
+    preproc = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/qsiprep"
+    recon = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/qsirecon"
+    preproc.mkdir(parents=True)
+    recon.mkdir(parents=True)
+    (preproc / "calmar-selection.json").write_text(json.dumps({"subject": "sub-one"}))
+    (preproc / "calmar-qsiprep.log").write_text(
+        "Processing preview: TORTOISE + DRBUDDI (--hmc-method tortoise --sdc-method drbuddi)\n")
+    (recon / "calmar-reconstruction.json").write_text(json.dumps({"recon_spec": "published-spec"}))
+    assert _derivative_methods(request, entry) == ("tortoise", "published-spec")
+
+
 def test_reconstruction_command_uses_installed_spec_name_and_license(tmp_path, monkeypatch):
     entry = {"subject": "sub-one", "session": "ses-dwi", "t1w": str(tmp_path / "T1w.nii.gz")}
     license_file = tmp_path / "license.txt"
@@ -223,7 +323,7 @@ def test_reconstruction_command_uses_installed_spec_name_and_license(tmp_path, m
     preproc = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/qsiprep"
     preproc.mkdir(parents=True)
     commands = []
-    def run(command, log):
+    def run(command, log, **kwargs):
         commands.append([str(value) for value in command])
         produced = Path(command[2])
         produced.mkdir(parents=True)

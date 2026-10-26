@@ -276,6 +276,8 @@ def direct_diffusion_section(dataset, config, entry):
         acquisition.append("shells " + "/".join(map(str, metadata["shells"])))
     if metadata.get("preprocessor"):
         acquisition.append(str(metadata["preprocessor"]))
+    if metadata.get("hmc_method"):
+        acquisition.append(f"{metadata['hmc_method']} motion/eddy correction")
     if metadata.get("session"):
         acquisition.append(f"diffusion session {metadata['session']}")
     if metadata.get("anatomical_session"):
