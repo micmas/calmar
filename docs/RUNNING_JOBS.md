@@ -62,14 +62,14 @@ are preserved and require deliberate replacement, with backups.
 ## Lightweight tests
 
 ```bash
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements.txt
 python -m pytest -q tests
 ```
 
 These tests exercise discovery, imports, widget callbacks and script
 dispatch without launching imaging jobs or downloads. They do not
 replace the three-participant end-to-end run or browser QC. Optional
-browser checks need Playwright (listed in `requirements-dev.txt`) and
+browser checks need Playwright (the commented line in `requirements.txt`) and
 `python -m playwright install chromium`.
 
 ## Validating a checkout

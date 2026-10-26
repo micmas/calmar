@@ -26,8 +26,7 @@ Python helpers live in the local `calmar/` package; no editable install
 is needed. Python dependencies are in `requirements.txt` (mostly
 pre-installed in Neurodesktop; the notebook's Setup cell installs what
 is missing with `pip install --user` and prints instructions for
-anything it cannot install). Contributors running the test suite install
-`requirements-dev.txt` instead, which includes it. The notebook loads explicit module
+anything it cannot install). It also lists the test tools. The notebook loads explicit module
 versions; follow its setup sequence rather than inferring a tool
 version from an older notebook's outputs.
 
@@ -107,7 +106,7 @@ still be important unfinished work.
 ## Checking the install
 
 ```bash
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements.txt
 python -m pytest -q tests
 ```
 
