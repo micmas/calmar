@@ -1,52 +1,85 @@
-# Repository layout and script migration
+# Repository layout
 
-Open the notebooks and submit analytical jobs from the repository root. The
-`calmar/` directory is a regular Python package importable directly from this
-checkout; the package initializer does not start processing or initialize UI.
-KB tools keep their existing entry points under `stroke-aphasia-kb/`, which is a
-git submodule of the knowledge base's own repository,
-[micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb)
-(formerly the in-tree `aphasia-kb/` folder).
+Open the notebooks and submit jobs from the repository root. `calmar/`
+is a regular Python package importable from this checkout; its
+initialiser does not start processing or build UI.
 
 ```text
-calmar/
-  acquisition.py        # fetch annex NIfTI inputs and check readable headers
-  dwi_choice.py         # optional trace-DWI + ADC / OpenADS selection
-  diffusion.py          # gradient eligibility and direct-tract report contract
-  dmri_choice.py        # separate opt-in directional-dMRI session selection
-  dmri_pipeline.py      # scheduler-only QSIPrep/QSIRecon/metrics orchestration
-  brain_health.py       # structural/WMH output contract and report section
-  brain_health_choice.py # optional per-participant T1/FLAIR selection
-  brain_health_pipeline.py # scheduler-only SynthSeg/DeepWMH/ANTs orchestration
-  execution.py          # explicit checkpoint lock and manual continuation
-  qc_decisions.py       # persistent QC choices and report notices
-  qc.py                 # ratings, mask edits, registration, tool dispatch
-  masks.py              # existing mask inventory by subject/session/space
-  disconnectomes.py     # BCBToolkit and DeepDisco output discovery
-  widgets.py            # shared NiiVue lifecycle and volume helpers
-  overlay.py            # binary-mask overlay controls
-  atlas_ui.py           # validated atlas/mask/subject selection
-  atlas_results.py      # one results preview and optional cohort summaries
-  atlas_overlap.py      # measured laterality and subject/session cache status
-  colors.py             # consistent colours for each mask/map origin
-  guided.py             # guided notebook and canonical cell lookup
-  qc_panel.py           # QC review, saved-rating reuse and continuation
-  report_ui.py          # report selection, preview and decoding presentation
-  viewer_transport.py   # deferred image transport and compact widget state
-  synthetic.py          # benchmark phantom and edge-case battery generation
+calmar-guided.ipynb                   form-based workflow (reuses the detailed notebook's cells)
+lesion-interpretation-pipeline.ipynb  the detailed notebook and canonical implementation
+lesion-segmentation-benchmark.ipynb   LINDA / SynthStroke / OpenADS benchmark
+
+calmar/                               the Python package (module map below)
 src/
-  analysis_*.sh         # retained analytical entry points, including dMRI 45–47 and brain health 48–50
-  python/               # implementations called by those entry points
-  r/                    # LINDA API and transform helpers
-tests/
-container/              # in-container wrapper source and build instructions
-stroke-aphasia-kb/      # SUBMODULE: github.com/micmas/stroke-aphasia-kb (knowledge base, extraction, review, interpretation)
-diffusion-tract-analysis/ # ASTRA specification for the optional direct-dMRI route
-brain-health-analysis/  # ASTRA specification for optional atrophy/WMH features
-segmentation-benchmark/ # ASTRA record for ISLES, cross-tool and edge-case benchmarks
+  analysis_NN_*.sh                    retained Slurm entry points, numbered in pipeline order
+  python/  r/                         implementations those scripts call
+tests/                                pytest suite (no imaging jobs); images/ holds a sample T1
+container/                            in-container LINDA wrapper source and build notes
+stroke-aphasia-kb/                    SUBMODULE: the aphasia knowledge base (github.com/micmas/stroke-aphasia-kb)
+
+docs/                                 SETUP, NOTEBOOK_GUIDE, PIPELINE, RUNNING_JOBS, QC_RUBRIC,
+                                      design proposals, palette, validation evidence, issues/, images/
+AGENTS.md                             operating contract for agents working in Neurodesk
+CHANGELOG.md  CITATION.cff  LICENSE
+requirements.txt  requirements-dev.txt  constraints-neurodesk.txt
+
+alignment-repair/      brain-health-analysis/   diffusion-tract-analysis/
+segmentation-benchmark/  workflow-acceptance/   workflow-validation/
+                                      ASTRA scientific records (astra.yaml + universes/, request fixtures):
+                                      the inputs, decisions, outputs and findings of each analysis
 ```
 
-## Updated imports and entry points
+Runtime directories, created on first use and git-ignored: `data/`
+(DataLad datasets), `atlases/` (nilearn cache and the ch2→MNI152
+transforms), `reports/` (CSVs, group maps, HTML reports, `jobs/`),
+`qc_edits/` (ITK-SNAP / FSLeyes round trip), `logs/`, `notes/`.
+
+## Module map (`calmar/`)
+
+| Area | Modules |
+|---|---|
+| Study and inputs | `study.py` (where every input and derivative lives), `acquisition.py`, `cohort.py`, `single_subject.py`, `masks.py`, `templates.py`, `methods.py` (the run's scientific choices as one table) |
+| Processing (Slurm only) | `processing.py` (one `step_<name>` per step, atomic publication, cache identity), `scheduled.py` (`submit_step`, receipts, reuse), `job_progress.py`, `process_output.py`, `reporting.py` (atlas overlap, group maps, decoding), `dmri_pipeline.py`, `brain_health_pipeline.py`, `qc_operation.py` |
+| Choices made in the notebook | `method_choice.py` (segmentation methods), `dwi_choice.py` (OpenADS on a found DWI), `dmri_choice.py` (directional dMRI), `brain_health_choice.py` |
+| Route-specific logic | `brainmask.py`, `diffusion.py`, `brain_health.py`, `synthetic.py` (benchmark phantoms), `mask_method.py` |
+| Notebook execution | `execution.py` (checkpoints), `guided.py`, `notebook_navigation.py`, `workflow_cells.json` (stable cell IDs), `timing.py` |
+| QC | `qc.py` (ratings, edits, registration, tool dispatch; rubric in `docs/QC_RUBRIC.md`), `qc_panel.py`, `qc_decisions.py`, `qc_repair.py`, `step_qc.py`, `review.py` |
+| Viewers and widgets | `step_viewer.py`, `step_summary.py`, `widgets.py`, `widget_lifecycle.py`, `viewer_transport.py`, `layer_controls.py`, `overlay.py`, `output.py`, `colors.py` |
+| Results and atlases | `atlas_loader.py`, `atlas_overlap.py`, `anatomy_labels.py`, `atlas_ui.py`, `atlas_results.py`, `atlas_pdf.py`, `disconnectomes.py`, `disconnectome_compare.py` |
+| Participant report | `participant_report.py`, `report_evidence.py`, `report_ui.py`, `kb_paths.py` (where the KB's modules are imported from) |
+
+Each module starts with a docstring saying what it is for.
+
+## Conventions
+
+- `calmar.qc` resolves repository resources relative to its own source
+  location and passes `CALMAR_SOURCE_DIR` to the wrappers. Standalone
+  scripts resolve `PROJECT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"` and must not
+  infer a submission directory from a spool copy's filename.
+- The Neurodesk command `linda_predict_with_mask.sh` provided by the
+  installed container keeps its name; notebook calls to it are
+  intentional. The repository fallback is `src/analysis_17_*`, which
+  pins LINDA 0.5.1 in Neurodesk and retains native-R dispatch outside it.
+- The segmentation benchmark's scripts and ASTRA record live here even
+  though the participant workflow does not call them. Absence of a
+  caller in the main notebook does not make benchmark, KB, container or
+  provenance files obsolete.
+- The QC choice (Do QC / Skip QC) is stored in `QC_decision.json` under
+  the participant/session's LINDA output directory, separately from the
+  `*.qc.json` ratings and edits.
+
+## History
+
+**October 2026.** `SETUP.md` and `QC_RUBRIC.md` moved into `docs/`, the
+README was split into `docs/NOTEBOOK_GUIDE.md`, `docs/PIPELINE.md` and
+`docs/RUNNING_JOBS.md`, report screenshots moved to `docs/images/` and
+the sample image to `tests/images/`. The knowledge base moved its
+Python modules into `stroke-aphasia-kb/scripts/`; CALMaR imports them
+through `calmar/kb_paths.py`, which also accepts the old flat layout.
+
+**September 2026 (`2026-09-24`).** Root-level modules became the
+`calmar/` package and loose scripts moved under `src/`. Old names and
+their replacements:
 
 | Previous path/import | Replacement |
 |---|---|
@@ -64,49 +97,12 @@ segmentation-benchmark/ # ASTRA record for ISLES, cross-tool and edge-case bench
 | `src/refresh_corrected_disconnectomes.py` | `src/python/refresh_corrected_disconnectomes.py` |
 | `src/warp_native_mask_to_ch2.R` | `src/r/warp_native_mask_to_ch2.R` |
 
-The redundant root warp wrapper has been removed. The actual Neurodesk command
-`linda_predict_with_mask.sh` provided by the installed container keeps its name;
-notebook calls to that command are intentional. The repository fallback is
-analysis step 17, which pins LINDA 0.5.1 in Neurodesk and retains native-R
-dispatch outside Neurodesk.
-
-`calmar.qc` resolves repository resources relative to its installed source
-location and passes `CALMAR_SOURCE_DIR` to the wrappers. Standalone analytical
-scripts resolve `PROJECT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"`; they must not infer a
-Slurm submission directory from a spool copy's filename. Submit from the project
-root and create `logs/` first, following `AGENTS.md` in the execution environment.
-
-## Scope and compatibility
-
-Both notebooks, tests, container build examples, and local benchmark-script
-callers use the new locations. Restart an existing notebook kernel after pulling
-this change, then rerun Setup. Do not mix old root-module instances with the new
-package's viewer registry.
-
-The QC dashboard records the user's Do QC / Skip QC choice in `QC_decision.json` under
-each selected participant/session's LINDA output directory. This separate,
-atomic history leaves existing `*.qc.json` ratings and edits untouched. The
-interactive report and final HTML report read that participant's saved choice;
-the skip notice also appears when printing the final HTML to PDF. Selecting
-Do QC records review intent, not completed review. Regenerate a report after
-changing the QC choice to update its saved notice.
-
-This is a source layout change. Data, derivatives, QC sidecars, report locations,
-scientific parameters, and saved provenance remain in place. Automated callback and browser checks cover the UI. The retained
-interpretation verification checks existing atlas-overlap and decoding outputs;
-it does not establish a fresh end-to-end segmentation run or clinical QC. Historical scripts are recoverable from the pre-migration Git
-commit recorded in `alignment-repair/astra.yaml`; the local cleanup manifest also
-preserves unpublished benchmark-script versions.
-
-## Files removed or archived locally
-
-Generated Python bytecode can be removed and regenerated on import. Old notebook
-snapshots and checkpoints with recovery value are archived under the ignored
-`notes/archive/repository-layout-2026-09-24/` directory with original paths and
-SHA-256 hashes in `manifest.json`. They are not scientific results and are not
-published as source files.
-
-The segmentation benchmark's retained scripts and ASTRA record live in this
-repository even when the participant workflow does not call them. Absence of a
-caller in the main notebook does not make benchmark, KB, container, or
-provenance files obsolete.
+Both were source layout changes: data, derivatives, QC sidecars, report
+locations, scientific parameters and saved provenance stayed in place.
+Historical scripts are recoverable from the pre-migration commit
+recorded in `alignment-repair/astra.yaml`. Old notebook snapshots with
+recovery value were archived under the ignored
+`notes/archive/repository-layout-2026-09-24/` with a `manifest.json` of
+SHA-256 hashes; they are not scientific results. The knowledge base
+itself moved out of the in-tree `aphasia-kb/` folder into its own
+repository in October 2026.
