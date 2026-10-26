@@ -36,6 +36,21 @@ inputs:
       anatomical normalization. The exact file, source and sessions are recorded
       per participant; downstream reporting retains a visual-QC warning.
 decisions:
+  motion_eddy_correction:
+    label: QSIPrep head-motion and eddy-current correction
+    rationale: >
+      TORTOISE DIFFPREP is the selected conservative default in Neurodesk
+      qsiprep/26.1.1. The image's FSL-eddy conda metadata is mode 0600 and
+      unreadable to the runtime user, which prevents QSIPrep's eddy workflow
+      from being constructed before processing starts.
+    default: tortoise
+    options:
+      tortoise:
+        label: TORTOISE DIFFPREP quadratic correction (tortoise)
+      eddy:
+        label: FSL eddy (eddy; unavailable in the current Neurodesk image)
+      shoreline:
+        label: SHORELine (shoreline; deprecated upstream)
   reconstruction:
     label: QSIRecon bundle reconstruction specification
     rationale: >
@@ -58,8 +73,9 @@ outputs:
       when permitted by the phase-encoding inputs, rotated gradients, QC tables,
       transforms and HTML report. Anatomical normalization uses the lesion ROI.
     inputs: [scheduler_request, bids_dataset, selected_lesion_mask]
+    decisions: [motion_eddy_correction]
     recipe:
-      command: bash src/analysis_45_dmri_preproc.sh {inputs.scheduler_request} {output}
+      command: CALMAR_DMRI_HMC_METHOD={decisions.motion_eddy_correction} bash src/analysis_45_dmri_preproc.sh {inputs.scheduler_request} {output}
       container: qsiprep:26.1.1
       resources:
         cpus: 8

@@ -3,7 +3,9 @@
 Open the notebooks and submit analytical jobs from the repository root. The
 `calmar/` directory is a regular Python package importable directly from this
 checkout; the package initializer does not start processing or initialize UI.
-KB tools remain in `aphasia-kb/` with their existing entry points.
+KB tools retain their existing entry points inside `stroke-aphasia-kb/`, an
+independently versioned Git submodule. Clone with `--recurse-submodules`, or run
+`git submodule update --init --recursive` in an existing checkout.
 
 ```text
 calmar/
@@ -37,7 +39,7 @@ src/
   r/                    # LINDA API and transform helpers
 tests/
 container/              # in-container wrapper source and build instructions
-aphasia-kb/             # knowledge base, extraction, review, and interpretation
+stroke-aphasia-kb/       # Git submodule: knowledge base, extraction, review, interpretation
 diffusion-tract-analysis/ # ASTRA specification for the optional direct-dMRI route
 brain-health-analysis/  # ASTRA specification for optional atrophy/WMH features
 ```

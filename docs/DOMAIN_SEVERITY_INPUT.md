@@ -10,10 +10,16 @@ impairment by functional domain without assuming that scores from different
 tests or languages are numerically interchangeable. These values are
 participant context, not diagnoses and not participant-level predictions.
 
-The input is independent of WAB aphasia type and WAB-AQ. A supplied domain
-level must never be inferred from a total score, syndrome label, lesion, or
-another domain. Instrument-to-level mappings below are optional data-entry
-guides; the person entering the data remains responsible for the level.
+The input is independent of WAB-AQ, lesion location, and language. When the
+participant table contains a recognised WAB/WAB-R aphasia type, CALMaR uses
+the Kertesz qualitative type profile to seed only fluency, comprehension, and
+repetition: `-` (impaired) becomes a `mild` profile floor, while `+`
+(relatively preserved within that WAB type's range) remains `not_assessed`
+because it does not establish normal performance. The syndrome label itself is not shown in the Behavioural /
+clinical data table. This conversion is participant context rather than a
+measured domain severity, is identified as profile-derived in the report, and
+is replaced as soon as the user enters another level. No domain is inferred
+from a total score, lesion, language, or another domain.
 
 ## Level scale
 
@@ -33,7 +39,7 @@ instruments use incompatible ranges, norms, cut-offs, and language versions.
 
 The first release uses domains that can be understood across instruments while
 retaining the processing constructs already represented in
-`aphasia-kb/impairments/`.
+`stroke-aphasia-kb/impairments/`.
 
 | Domain ID | Report label | Current KB relationship |
 |---|---|---|
@@ -54,8 +60,14 @@ retaining the processing constructs already represented in
 
 Syndrome entries (`brocas_aphasia`, `wernickes_aphasia`, `conduction_aphasia`,
 `anomic_aphasia`, and `global_aphasia`) inform why these functional domains are
-useful, but a syndrome label is not automatically decomposed into domain
-levels. The UI therefore asks for the levels directly.
+useful. The report UI seeds only the three axes explicitly encoded by the
+Kertesz WAB/WAB-R type profile and labels their source. It assigns a mild
+profile floor only to impaired (`-`) axes; relatively preserved (`+`) axes,
+naming, and all other domains stay `not_assessed`. The user can replace every
+profile-derived value. These report-only levels do not change the separate KB
+therapy-gating map derived from the recorded WAB profile. If an assessed value
+exactly matches a profile-derived default, the UI's **Mark shown profile values
+as assessed** button keeps the level while replacing its source label.
 
 ## Instrument-to-level entry guide
 

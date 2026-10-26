@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import pandas as pd
 from bs4 import BeautifulSoup
 
-KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
+KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
 sys.path.insert(0, str(KB_ROOT))
 import aphasia_rules as rules  # noqa: E402
 from aphasia_kb import KnowledgeBase  # noqa: E402

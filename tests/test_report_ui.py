@@ -99,6 +99,32 @@ class ReportInterfaceTests(unittest.TestCase):
         self.assertEqual(panel.domains['naming'].value, 'mild')
         self.assertEqual(ns['INTERP_DOMAIN_LEVELS_BY_PARTICIPANT']['sub-b|ses-2']['naming'], 'severe')
 
+    def test_wab_profile_seeds_domains_and_manual_change_replaces_source(self):
+        with TemporaryDirectory() as temp:
+            dataset = Path(temp) / 'data'
+            dataset.mkdir()
+            (dataset / 'participants.tsv').write_text(
+                'participant_id\twab_type\nsub-a\tBroca\n')
+            shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
+            ns = dict(SUBJECTS=[dict(subject='sub-a', session='ses-1')],
+                      INTERP_KB_ATLASES=['Atlas A'], available_mni_sources=lambda entry: ['manual'],
+                      RAW_DATASET_DIR=dataset, PROJECT_DIR=Path(__file__).resolve().parents[1])
+            panel = ReportInputs(ns, shell)
+            self.addCleanup(panel.close)
+            self.assertEqual(panel.domains['fluency'].value, 'mild')
+            self.assertEqual(panel.domains['comprehension'].value, 'not_assessed')
+            self.assertEqual(panel.domains['repetition'].value, 'mild')
+            self.assertEqual(panel.domains['naming'].value, 'not_assessed')
+            self.assertEqual(ns['INTERP_DOMAIN_LEVEL_SOURCES']['fluency'], 'wab_profile_impaired')
+            self.assertEqual(ns['INTERP_DOMAIN_LEVEL_SOURCES']['comprehension'], 'wab_profile_preserved')
+            panel.domains['fluency'].value = 'severe'
+            self.assertEqual(ns['INTERP_DOMAIN_LEVELS']['fluency'], 'severe')
+            self.assertNotIn('fluency', ns['INTERP_DOMAIN_LEVEL_SOURCES'])
+            panel.confirm_domains.click()
+            self.assertEqual(panel.domains['comprehension'].value, 'not_assessed')
+            self.assertEqual(panel.domains['repetition'].value, 'mild')
+            self.assertEqual(ns['INTERP_DOMAIN_LEVEL_SOURCES'], {})
+
     def test_report_keeps_evidence_and_qc_notice_and_adds_decoding_once(self):
         body = '<main><h4>Regions (Atlas A)</h4><table><tr><td>ROI</td></tr></table><h4>Outcomes</h4><p>Citation X</p><hr><div class="legend"><h5>How to read the evidence</h5><p>Legend</p></div></main>'
         sections = report_sections(body)

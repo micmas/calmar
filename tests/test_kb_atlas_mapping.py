@@ -1,11 +1,11 @@
-"""The curated atlas -> knowledge-base mapping (aphasia-kb/atlas_mapping/)."""
+"""The curated atlas -> knowledge-base mapping (stroke-aphasia-kb/atlas_mapping/)."""
 import sys
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
+KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
 sys.path.insert(0, str(KB_ROOT))
 import atlas_mapping  # noqa: E402
 from aphasia_kb import KnowledgeBase  # noqa: E402
@@ -20,13 +20,13 @@ def test_every_location_finding_is_mapped_or_explained():
     (mapped, or under `unmapped` with the reason): nothing is dropped silently."""
     kb = KnowledgeBase(KB_ROOT, include=("approved", "in_review", "draft"))
     found = atlas_mapping.coverage(kb.findings)
-    assert found["missing"] == {}, f"Add these regions to aphasia-kb/atlas_mapping/kb_regions.yaml: {found['missing']}"
+    assert found["missing"] == {}, f"Add these regions to stroke-aphasia-kb/atlas_mapping/kb_regions.yaml: {found['missing']}"
     assert found["mapped"] >= 0.9 * found["findings"]
 
 
 def test_generated_table_is_up_to_date():
     assert (atlas_mapping.DIR / "MAPPING.md").read_text() == atlas_mapping.markdown_table(), \
-        "Run: python aphasia-kb/atlas_mapping.py --write-table"
+        "Run: python stroke-aphasia-kb/atlas_mapping.py --write-table"
 
 
 def overlap_rows(atlas, rows, total=1000):

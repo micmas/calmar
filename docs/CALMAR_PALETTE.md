@@ -81,7 +81,7 @@ Stay inside these; do not invent new tints per figure.
 | Sequential ramp (one magnitude) | Smart Blue 100 → 700 (light → dark) |
 | Diverging (two poles) | Smart Blue ↔ Bubblegum Pink with Platinum `#ebebeb` midpoint |
 
-In the `aphasia-kb` annotated PDFs the `supports` tags map as: claim =
+In the `stroke-aphasia-kb` annotated PDFs the `supports` tags map as: claim =
 Smart Blue, statistics = Bubblegum Pink, sample = Strong Cyan,
 limitation = Dusty Grape, method / confounders / region_definition =
 neutral `#bdbdbd`.
