@@ -1,0 +1,11 @@
+id: baseline
+description: 'Historical benchmark: ISLES pilot n=25; HD-BET fast; unseeded LINDA; baseline SynthStroke'
+analyses:
+  isles2022_openads:
+    decisions:
+      cohort_size: n25
+  synthetic_crosstool:
+    decisions:
+      hdbet_mode: fast
+      linda_seed: historical_unseeded
+      synthstroke_profile: historical_baseline

@@ -38,7 +38,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 |------|---------|
 | `calmar-guided.ipynb` | Guided workflow — inputs, options, QC, and continuation buttons |
 | `lesion-interpretation-pipeline.ipynb` | Detailed processing notebook and canonical implementation |
-| `lesion-segmentation-benchmark.ipynb` | Benchmarks LINDA / SynthStroke across chronic and acute datasets |
+| `lesion-segmentation-benchmark.ipynb` | Benchmarks LINDA, SynthStroke and OpenADS across real, synthetic and edge-case stroke datasets |
 | `calmar/` | Shared Python package. Key modules: `study.py` (participant discovery + every derivatives path), `processing.py` (one documented `step_<name>` function per processing step, run inside Slurm), `scheduled.py` (`submit_step`: one Slurm job per participant, receipts, reuse; `in_slurm` for QC repairs), `step_qc.py` (saved QC figure + plausibility metrics per step), `step_summary.py` (`show_step` tables), `step_viewer.py` (the viewer under each step), `methods.py` (methods table), plus QC, viewer and report modules |
 | `src/analysis_*.sh` | Retained analysis entry points; submit from the repository root |
 | `src/python/`, `src/r/` | Python/R implementations called by the analysis scripts |
@@ -46,6 +46,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 | `alignment-repair/astra.yaml` | Scientific record of the native-to-MNI correction |
 | `diffusion-tract-analysis/astra.yaml` | Planned/implemented decisions and outputs for optional direct dMRI; no findings are recorded before execution and QC |
 | `brain-health-analysis/astra.yaml` | Scientific record for optional SynthSeg volumetry and stroke-aware DeepWMH measurements |
+| `segmentation-benchmark/astra.yaml` | Scientific record for the ISLES 2022, cross-tool phantom and edge-case lesion-segmentation benchmarks |
 | `docs/REPOSITORY_LAYOUT.md` | Module map, script entry points, and migration notes |
 | `docs/DOMAIN_SEVERITY_INPUT.md` | Report-only domain impairment scale, domain set, and instrument mapping proposed before any KB schema change |
 | `docs/CT_ROUTE.md` | CT lesion-segmentation and CT-to-MNI scope, reporting cautions, and minimum validation plan; no CT dependency is installed |

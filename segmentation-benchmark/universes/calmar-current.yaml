@@ -1,0 +1,11 @@
+id: calmar-current
+description: 'Current CALMaR segmentation settings: seeded LINDA and synth-plus SynthStroke with TTA and brain clipping'
+analyses:
+  isles2022_openads:
+    decisions:
+      cohort_size: n25
+  synthetic_crosstool:
+    decisions:
+      hdbet_mode: fast
+      linda_seed: seed1729
+      synthstroke_profile: calmar_current
