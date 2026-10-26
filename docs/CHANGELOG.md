@@ -7,6 +7,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Documentation and layout tidy-up (October 2026)
+
+- The README is an overview again. Its notebook-behaviour notes moved to
+  `docs/NOTEBOOK_GUIDE.md`, the per-stage method sections to
+  `docs/PIPELINE.md`, and the Slurm/caching/validation material from
+  `SETUP.md` to `docs/RUNNING_JOBS.md`. `SETUP.md` and `QC_RUBRIC.md`
+  now live in `docs/`; report screenshots in `docs/images/`; the sample
+  T1 in `tests/images/`. `docs/REPOSITORY_LAYOUT.md` has a module map.
+- The six ASTRA record folders live under `analyses/`; this changelog,
+  `constraints-neurodesk.txt` (now `src/`) and `requirements-dev.txt` plus the two
+  `tests/requirements*` files (all folded into `requirements.txt`) left the root.
+- The knowledge base keeps its Python modules in
+  `stroke-aphasia-kb/scripts/`. CALMaR imports them through the new
+  `calmar/kb_paths.py` (`add_kb_to_path`, `kb_content_paths`), which
+  also accepts the old flat layout; the notebook, report code, tests
+  and `src/python/verify_interpretation.py` use it.
+
 ### Knowledge base moved to its own repository
 
 - The aphasia knowledge base now lives at

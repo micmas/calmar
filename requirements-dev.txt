@@ -1,6 +1,0 @@
--r requirements.txt
-
-pytest>=8
-beautifulsoup4>=4.12
-jupyter_client>=8
-nbstripout>=0.9

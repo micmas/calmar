@@ -14,7 +14,7 @@ mkdir -p "$(dirname "$FINAL")"
 TMP="$(mktemp -d "${FINAL}.attempt.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 # Independent copies preserve QC, annex objects and historical artifacts.
-for item in data reports atlases qc_edits notes logs alignment-repair workflow-validation stroke-aphasia-kb/_neurosynth_cache; do
+for item in data reports atlases qc_edits notes logs analyses/alignment-repair analyses/workflow-validation stroke-aphasia-kb/_neurosynth_cache; do
     if [[ -e "$item" ]]; then
         mkdir -p "$TMP/$(dirname "$item")"
         cp -a --reflink=auto "$item" "$TMP/$item"

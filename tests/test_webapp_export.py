@@ -1,12 +1,12 @@
 """The knowledge-base export for the CALMaR webapp (stroke-aphasia-kb/export_webapp.py)."""
 import json
-import sys
 from pathlib import Path
 
 import yaml
 
 KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
-sys.path.insert(0, str(KB_ROOT))
+from calmar.kb_paths import add_kb_to_path  # noqa: E402
+add_kb_to_path(KB_ROOT)
 import atlas_mapping  # noqa: E402
 import export_webapp  # noqa: E402
 
