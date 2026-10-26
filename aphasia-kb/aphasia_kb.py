@@ -84,6 +84,7 @@ STATUS_VOCAB = {"draft", "in_review", "approved", "rejected", "legacy_v1"}
 #   legacy  approved before the governance policy; not PDF-re-read
 REVIEW_TIER_VOCAB = {"A", "B", "legacy"}
 from phase import PHASE_VOCAB, finding_phase  # noqa: E402  (v2.6 sample.phase)
+import lesion_mapping as _lm  # noqa: E402  (v2.7 lesion_mapping, sample.cohort)
 REVIEWER_PREFIXES = ("human:", "model:")
 
 # Reviewer strings that pre-date the human:/model: prefixes and are known
@@ -263,6 +264,40 @@ def _is_unset(v):
     return v is None or v == "" or v == "not_reported"
 
 
+DESIGN_PENALTY = 0.8
+
+
+def _design_weight(rows: "pd.DataFrame") -> "pd.Series":
+    """Per-row multiplier from the v2.7 lesion-mapping design (1.0 for
+    findings that are not lesion mapping)."""
+    w = pd.Series(1.0, index=rows.index)
+    if "lm_source" not in rows.columns:
+        return w
+    lesion = rows["lm_source"].notna()
+    weak_volume = ~rows["lm_volume_correction"].isin(["direct", "covariate"])
+    weak_correction = rows["lm_correction"].isin(["uncorrected", "not_reported"])
+    w[lesion & weak_volume] *= DESIGN_PENALTY
+    w[lesion & weak_correction] *= DESIGN_PENALTY
+    return w
+
+
+def _lesion_columns(f: dict) -> dict:
+    """Findings-table columns for the v2.7 design and cohort fields."""
+    lm, lm_src = _lm.finding_lesion_mapping(f)
+    cohort, cohort_src = _lm.finding_cohort(f)
+    return {
+        "lm_analysis": (lm or {}).get("analysis"),
+        "lm_n": (lm or {}).get("n_analysed"),
+        "lm_volume_correction": (lm or {}).get("lesion_volume_correction"),
+        "lm_correction": (lm or {}).get("multiple_comparisons"),
+        "lm_source": lm_src or None,
+        "lm_orientation": _lm.orientation(lm) or None,
+        "design_cautions": _lm.design_cautions(lm),
+        "cohort": cohort,
+        "cohort_source": cohort_src or None,
+    }
+
+
 def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
     """Validate a single v2 entry's frontmatter."""
     def err(msg):
@@ -279,10 +314,10 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
     # v2.4+ entries can use method=narrative_review with relaxed field rules.
     # v2.5 adds optional review-provenance fields (review_tier, per-finding
     # review block, audited_by/audited_on); no structural change.
-    _ALL_SV = (2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6,
-               "2", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6")
+    _ALL_SV = (2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7,
+               "2", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7")
     if sv not in _ALL_SV:
-        err(f"schema_version must be 2–2.6, got {sv!r}")
+        err(f"schema_version must be 2–2.7, got {sv!r}")
     # Compare numerically: the slice-based test this replaces silently
     # excluded every version added after it was written (2.6 drafts
     # failed "predictor entries require schema_version 2.3 or higher").
@@ -294,6 +329,7 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
     is_v22 = _v >= 2.2
     is_v23 = _v >= 2.3
     is_v24 = _v >= 2.4
+    is_v27 = _v >= 2.7
 
     # v2.3 predictor entries: validate file-level predictor fields.
     # (We check kind=='predictor' regardless of bucket so any file that
@@ -389,6 +425,27 @@ def _validate_v2_entry(entry: dict, src: str, issues: list[str]):
             ph = sample.get("phase")
             if ph is not None and ph not in PHASE_VOCAB:
                 err(f"{prefix}: sample.phase={ph!r} invalid; allowed: {sorted(PHASE_VOCAB)}")
+            coh = sample.get("cohort")
+            if coh is not None and not isinstance(coh, str):
+                err(f"{prefix}: sample.cohort must be a string (or not_reported)")
+
+            # v2.7: lesion-mapping design (Moore et al. 2026)
+            lm = f.get("lesion_mapping")
+            if lm is None:
+                if is_v27 and _lm.is_lesion_mapping(f):
+                    err(f"{prefix}: lesion_mapping required for lesion-mapping methods in v2.7")
+            elif not isinstance(lm, dict):
+                err(f"{prefix}: lesion_mapping must be a mapping")
+            else:
+                for key, vocab in (("analysis", _lm.ANALYSIS_VOCAB),
+                                   ("lesion_volume_correction", _lm.VOLUME_VOCAB),
+                                   ("multiple_comparisons", _lm.CORRECTION_VOCAB)):
+                    if lm.get(key, "not_reported") not in vocab:
+                        err(f"{prefix}: lesion_mapping.{key}={lm.get(key)!r} invalid; "
+                            f"allowed: {sorted(vocab)}")
+                na = lm.get("n_analysed", "not_reported")
+                if not (isinstance(na, int) or na == "not_reported"):
+                    err(f"{prefix}: lesion_mapping.n_analysed must be an int or not_reported")
 
             # Statistics
             stats = f.get("statistics") or {}
@@ -582,7 +639,13 @@ class KnowledgeBase:
             if not d.is_dir():
                 continue
             for path in sorted(d.glob("*.md")):
-                fm, body = parse_markdown(path)
+                try:
+                    fm, body = parse_markdown(path)
+                except Exception as e:  # noqa: BLE001 — one broken file must not stop the KB
+                    msg = f"{path}: frontmatter does not parse, entry skipped ({str(e).splitlines()[0]})"
+                    self.issues.append(msg)
+                    print(f"⚠ {msg}", file=sys.stderr)
+                    continue
                 if not fm:
                     self.issues.append(f"{path}: no frontmatter")
                     continue
@@ -689,6 +752,9 @@ class KnowledgeBase:
                         # inferred from the free-text time_post_onset (phase.py)
                         "phase": finding_phase(f)[0],
                         "phase_source": finding_phase(f)[1],
+                        # v2.7: lesion-mapping design (stated, else inferred
+                        # from method / threshold / confounders) and cohort
+                        **_lesion_columns(f),
                         "stat_threshold": (f.get("statistics") or {}).get("threshold"),
                         "stat_effect_size": (f.get("statistics") or {}).get("effect_size"),
                         "confidence":  (f.get("provenance") or {}).get("confidence"),
@@ -707,6 +773,10 @@ class KnowledgeBase:
                             (f.get("review") or {}).get("reviewer") or e.get("reviewer"),
                             (f.get("review") or {}).get("tier") or e.get("review_tier")),
                     })
+        # v2.7: findings from the same patients form one evidence group
+        groups = _lm.cohort_groups(rows)
+        for r in rows:
+            r["cohort_group"] = groups.get(r.get("citation")) or r.get("citation")
         self.findings = pd.DataFrame(rows)
         if self.review_kinds is not None and not self.findings.empty:
             keep = self.findings["review_kind"].isin(self.review_kinds)
@@ -978,8 +1048,14 @@ class KnowledgeBase:
         # Weight: share of the region destroyed (what lesion-symptom studies
         # relate deficits to); share of the lesion when the size is unknown.
         rows["damage_w"] = rows["region_pct"].where(rows["region_pct"].notna(), rows["lesion_pct"]) / 100.0
+        # v2.7: grade down lesion-mapping findings whose design leaves the
+        # result less trustworthy (Moore et al. 2026): lesion volume not
+        # controlled / not stated, and no / unstated multiple-comparison
+        # correction each multiply the weight by 0.8.
+        rows["design_w"] = _design_weight(rows)
         rows["contribution"] = (
             rows["damage_w"]
+            * rows["design_w"]
             * rows["strength"].map(_STRENGTH_WEIGHT).fillna(1.0)
             * rows["evidence_quality"].map(_EVIDENCE_WEIGHT).fillna(1.0)
             * rows["confidence"].map(_CONFIDENCE_WEIGHT).fillna(1.0)
@@ -987,7 +1063,9 @@ class KnowledgeBase:
         rows = rows.rename(columns={"id": "finding_id"})
         keep = ["region", "side", "lesion_pct", "region_pct", "predicts", "predicts_kind", "claim", "direction",
                 "citation", "method", "strength", "evidence_quality", "confidence", "source_id", "finding_id",
-                "population", "time_post_onset", "phase", "source_status", "source_path", "contribution"]
+                "population", "time_post_onset", "phase", "source_status", "source_path", "contribution",
+                "design_w", "lm_analysis", "lm_n", "lm_volume_correction", "lm_correction", "lm_source",
+                "lm_orientation", "design_cautions", "cohort", "cohort_source", "cohort_group"]
         return rows[[c for c in keep if c in rows.columns]].reset_index(drop=True)
 
     def interpret_damage(

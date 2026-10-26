@@ -24,7 +24,7 @@ re-review. `python kb_status.py` prints the current numbers.
 
 | You want to… | Read / run |
 |---|---|
-| understand the entry format | [`schema.md`](schema.md) (v2.6), then `examples/region_ifg_opercularis_fridriksson2018.md` |
+| understand the entry format | [`schema.md`](schema.md) (v2.7), then `examples/region_ifg_opercularis_fridriksson2018.md` |
 | take one PDF to an approved entry | [`HOWTO.md`](HOWTO.md) |
 | look up any command and its options | [`COMMANDS.md`](COMMANDS.md) |
 | know who may approve what | [`GOVERNANCE.md`](GOVERNANCE.md) |
@@ -71,7 +71,7 @@ git add aphasia-kb && git commit -m "Foo2024 extraction"
 ```
 aphasia-kb/
 ├── README.md                  # this file
-├── schema.md                  # YAML frontmatter spec (v2.6) — the data contract
+├── schema.md                  # YAML frontmatter spec (v2.7) — the data contract
 ├── HOWTO.md                   # procedure: one PDF → approved entry
 ├── GOVERNANCE.md              # policy: review tiers, model approval, audit, legacy
 ├── MODELS.md                  # choosing and benchmarking the local models; decision log
@@ -190,7 +190,9 @@ research-only caveat that no flag removes. Only regions present in
   bucket, `method: narrative_review` · **v2.5** review provenance
   (`review_tier`, per-finding `review` block, `human:`/`model:` reviewers)
   · **v2.6** `sample.phase` (acute … chronic; inferred for older entries,
-  filterable in the RAG with `--phase`).
+  filterable in the RAG with `--phase`) · **v2.7** `lesion_mapping`
+  design block and `sample.cohort` (inferred for older entries;
+  `lesion_mapping.py`).
 
 Changing the schema is a change to `schema.md` and `aphasia_kb.py`
 together; changing who may approve what is a change to `GOVERNANCE.md`

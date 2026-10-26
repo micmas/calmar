@@ -1081,10 +1081,11 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       {behaviour_html(rules, row, predictors, volume)}
       <h3>Damaged regions ({settings.display_atlas}, &ge;{settings.min_overlap_pct}%)</h3>
       <p class="section-intro">This table locates the lesion in the selected display atlas. It is an anatomical
-        overview; the literature interpretation follows in the next section.</p>
+        overview; the literature interpretation follows below.</p>
       {damaged_regions_html(damaged, settings.display_atlas, atlas_dir)}'''
     location = location_section(
-        kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings, phase=stage_id)
+        kb, rules, location_rows, damage, location_coverage(kb, location_rows, damage), settings, phase=stage_id,
+        lesion_volume_ml=volume)
     white_matter = disconnection_section(
         kb, rules, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id,
         map_name=map_path.name if map_path is not None else None, mask_label=label,
@@ -1100,9 +1101,12 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
       {therapy_table(kb, therapies, stage_id, stage_label, therapy_stages)}'''
     body = ("<main class='report-content'>"
             + report_section("Participant context and lesion overview", context, open=True)
+            # Non-lesion predictors (age, education, severity, lesion volume)
+            # come before location: they carry most of the prognostic weight
+            # (Brain Communications 2024 commentary, fcae364; Huygelier 2025).
+            + report_section("This participant’s measures: what the evidence says", measures, open=True)
             + report_section("Lesion location: what the evidence says", location, open=True)
             + report_section("White-matter disconnection: what the evidence says", white_matter)
-            + report_section("This participant’s measures: what the evidence says", measures)
             + report_section(f"Therapy recommendations ({n_therapy} matched)", therapy)
             + report_section("How to read the evidence", LEGEND_HTML)
             + "</main>")

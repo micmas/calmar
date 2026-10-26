@@ -150,7 +150,7 @@ def test_symptom_summaries_use_multi_citation_multi_anatomy_relevance_not_top_n(
     assert len(main) == 1 and main[0]["id"] == "symptom-multi-source-symptom"
     assert extra is not None and not extra.has_attr("open")
     assert "Show 2 symptom summaries below the primary display criterion" in extra.summary.get_text(" ", strip=True)
-    assert "at least 2 distinct citation keys and 2 distinct anatomy mappings" in html
+    assert "at least 2 independent evidence groups" in html and "2 distinct anatomy mappings" in html
     assert "null, mixed and unclassified findings all count" in html
 
 
