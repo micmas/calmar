@@ -3,12 +3,12 @@
 CALMaR is an open-source Jupyter notebook pipeline for automated stroke lesion segmentation, quality control, and clinician-facing interpretation of structural brain MRI data. It is designed to run inside [Neurodesktop](https://www.neurodesk.org/), a browser-accessible neuroimaging environment that provides all required tools pre-installed.
 
 > [!NOTE]
-> **All model steps run locally.** `aphasia-kb/extract.py`,
+> **All model steps run locally.** `stroke-aphasia-kb/extract.py`,
 > `auto_review.py --llm-review` and `aphasia_kb_rag.py --llm` use a local
 > model via Ollama; paper text and patient-derived lesion data never leave
-> the machine. Model choice is in `aphasia-kb/models.yaml`
-> (see `aphasia-kb/MODELS.md`); who may approve what is in
-> `aphasia-kb/GOVERNANCE.md`. The CALMaR colour palette for figures and
+> the machine. Model choice is in `stroke-aphasia-kb/models.yaml`
+> (see `stroke-aphasia-kb/MODELS.md`); who may approve what is in
+> `stroke-aphasia-kb/GOVERNANCE.md`. The CALMaR colour palette for figures and
 > UI is `docs/CALMAR_PALETTE.md`.
 
 Given a BIDS-formatted dataset, CALMaR will:
@@ -51,7 +51,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 | `docs/CT_ROUTE.md` | CT lesion-segmentation and CT-to-MNI scope, reporting cautions, and minimum validation plan; no CT dependency is installed |
 | `docs/SAMPLE_APPLICABILITY_FIELDS.md` | Approval-gated proposal for stroke-history, laterality, modality, and age applicability fields |
 | `QC_RUBRIC.md` | Stage-aware QC rating reference (acute / subacute / chronic) |
-| `aphasia-kb/` | Aphasia literature knowledge base (see `aphasia-kb/README.md`) |
+| `stroke-aphasia-kb/` | Aphasia literature knowledge base (see `stroke-aphasia-kb/README.md`) |
 | `container/` | In-container LINDA wrapper source (baked into the Neurodesk image) |
 | `requirements.txt` | Python dependencies |
 
@@ -350,23 +350,23 @@ overlay is reviewed, and appear in a separate report section.
 
 ## Aphasia knowledge base
 
-`aphasia-kb/` is a curated, source-traceable literature base: each
+`stroke-aphasia-kb/` is a curated, source-traceable literature base: each
 finding links a brain region, predictor or therapy to an outcome, with
 the verbatim passages from the paper that support it. CALMaR's
 clinical-interpretation stage queries it to turn a lesion mask into a
 cited report. Extraction and review run on a local model via Ollama;
-approval follows the two-tier policy in `aphasia-kb/GOVERNANCE.md`
+approval follows the two-tier policy in `stroke-aphasia-kb/GOVERNANCE.md`
 (an independent model may approve routine findings after re-reading
 the PDF; a person approves the rest and audits).
 
 ```bash
-python aphasia-kb/kb_status.py                                        # what is in it
-python aphasia-kb/extract.py --pdf aphasia-kb/papers/<Key>.pdf        # one paper → drafts
-python aphasia-kb/auto_review.py --all --llm-review --require-pdf-match
-python aphasia-kb/promote.py --list                                   # what needs a person
+python stroke-aphasia-kb/kb_status.py                                        # what is in it
+python stroke-aphasia-kb/extract.py --pdf stroke-aphasia-kb/papers/<Key>.pdf        # one paper → drafts
+python stroke-aphasia-kb/auto_review.py --all --llm-review --require-pdf-match
+python stroke-aphasia-kb/promote.py --list                                   # what needs a person
 ```
 
-See `aphasia-kb/README.md` for the layout and `aphasia-kb/HOWTO.md` for
+See `stroke-aphasia-kb/README.md` for the layout and `stroke-aphasia-kb/HOWTO.md` for
 the full procedure.
 
 ---

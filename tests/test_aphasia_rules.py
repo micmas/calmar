@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-KB_ROOT = Path(__file__).resolve().parents[1] / "aphasia-kb"
+KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
 sys.path.insert(0, str(KB_ROOT))
 import aphasia_rules as rules  # noqa: E402
 
@@ -101,7 +101,7 @@ def test_kb_maps_spelling_variants_of_wab_type_to_impairments():
 def test_therapy_gating_uses_the_same_aliases_as_the_display_rules():
     import sys
     from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'aphasia-kb'))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'stroke-aphasia-kb'))
     from aphasia_kb import KnowledgeBase
     import aphasia_rules
     kb = KnowledgeBase.__new__(KnowledgeBase)  # mapping needs no loaded KB

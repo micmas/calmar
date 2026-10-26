@@ -151,15 +151,15 @@ checkout that still has the old history.
 
 ## Knowledge base
 
-KB data and tools remain together under `aphasia-kb/`. From the repository root:
+KB data and tools remain together under `stroke-aphasia-kb/`. From the repository root:
 
 ```bash
-python aphasia-kb/aphasia_kb.py
+python stroke-aphasia-kb/aphasia_kb.py
 ```
 
-See [aphasia-kb/README.md](aphasia-kb/README.md) and
-[aphasia-kb/HOWTO.md](aphasia-kb/HOWTO.md) for extraction and review.
-Source PDFs under `aphasia-kb/papers/` are local files, not distributed via Git.
+See [stroke-aphasia-kb/README.md](stroke-aphasia-kb/README.md) and
+[stroke-aphasia-kb/HOWTO.md](stroke-aphasia-kb/HOWTO.md) for extraction and review.
+Source PDFs under `stroke-aphasia-kb/papers/` are local files, not distributed via Git.
 
 ## What travels through Git
 

@@ -18,7 +18,7 @@ How the numbers are computed
   voxels lesioned) at or above ``min_region_pct`` — the same rule the KB
   interpretation uses; at most ``max_rois`` rows.
 * Lesion location (calmar.report_evidence.location_section): damage per KB
-  region through the curated atlas mapping (aphasia-kb/atlas_mapping/; share of
+  region through the curated atlas mapping (stroke-aphasia-kb/atlas_mapping/; share of
   the lesion and share of the region destroyed, per hemisphere), the findings
   about each damaged region with their direction, and the impairments they
   point to (:meth:`KnowledgeBase.location_findings` / ``interpret_damage``).
@@ -35,7 +35,7 @@ How the numbers are computed
   how the mask was made (calmar.mask_method).
 
 The clinical rules (WAB type profile, recovery stage, display-signal bins) live in
-``aphasia-kb/aphasia_rules.py`` and are shown by :func:`rules_html`.
+``stroke-aphasia-kb/aphasia_rules.py`` and are shown by :func:`rules_html`.
 """
 from __future__ import annotations
 
@@ -216,7 +216,7 @@ def rules_html(kb_root):
         parts.append(f"<h4 style='margin:10px 0 4px'>{escape(title)}</h4>"
                      + table.to_html(index=False, border=0, escape=True))
     return ("<div style='font-size:12px'>" + "".join(parts) +
-            "<p style='font-size:11px'>Defined in <code>aphasia-kb/aphasia_rules.py</code> "
+            "<p style='font-size:11px'>Defined in <code>stroke-aphasia-kb/aphasia_rules.py</code> "
             "(sources and caveats in its docstrings).</p></div>")
 
 
@@ -262,7 +262,7 @@ def _days(value):
 
 
 def lesion_damage(entry, source, settings, overlap_paths, reports_dir):
-    """Damage per knowledge-base region (aphasia-kb/atlas_mapping) from the
+    """Damage per knowledge-base region (stroke-aphasia-kb/atlas_mapping) from the
     participant's rows of each atlas overlap table in ``settings.kb_atlases``.
     Returns ``(region damage, {atlas: rows})``."""
     import atlas_mapping
@@ -690,13 +690,13 @@ LEGEND_HTML = '''
         <p>Finding counts are descriptive. They do not measure certainty, and findings do not necessarily
         represent independent studies or independent cohorts. Group associations do not predict this participant&rsquo;s outcome.</p>
         <p>An &ldquo;atlas match includes a documented judgement call&rdquo; note links a knowledge-base region to
-        atlas units using a curated decision recorded in <code>aphasia-kb/atlas_mapping/README.md</code>.</p>
+        atlas units using a curated decision recorded in <code>stroke-aphasia-kb/atlas_mapping/README.md</code>.</p>
         <b>WAB decomposition</b>: flu = fluency, comp = comprehension, rep = repetition.
         + preserved, &#8722; impaired (WAB type taxonomy).<br>
         <b>Stage badge</b>:
         Acute &lt;7 d &middot; Subacute 7 d–6 mo &middot; Chronic &gt;6 mo. A therapy-stage warning identifies
         evidence from a different recovery stage; open it for detail.
-        Rules and their sources: <code>aphasia-kb/aphasia_rules.py</code>.
+        Rules and their sources: <code>stroke-aphasia-kb/aphasia_rules.py</code>.
       </div>'''
 
 
@@ -1063,7 +1063,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
         map_label = MAP_LABELS[settings.disconnectome]
         note(f"  Tract disconnection from {map_path.name}: {0 if disconnection_rows is None else len(disconnection_rows)} findings")
     damaged = damaged_regions(entry, source, settings, overlap_paths, reports_dir)
-    note("  Overlap rows by atlas (matched to KB regions through aphasia-kb/atlas_mapping):")
+    note("  Overlap rows by atlas (matched to KB regions through stroke-aphasia-kb/atlas_mapping):")
     for atlas, n in per_atlas:
         note(f"    . {atlas:14s} {n:3d} regions overlapped")
 

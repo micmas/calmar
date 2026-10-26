@@ -76,7 +76,7 @@ for e, ax in zip(entries, axes):
     ax.set_xticks([]); ax.set_yticks([])
 fig.tight_layout(); fig.savefig(out/'laterality.png', dpi=130); plt.close(fig)
 
-sys.path.insert(0, str(Path('aphasia-kb').resolve()))
+sys.path.insert(0, str(Path('stroke-aphasia-kb').resolve()))
 import decode_lesion as decoder
 assert all((cache/name).is_file() for name in decoder._NS_FILES), 'Neurosynth cache incomplete'
 # The decoder's separate nilearn atlas cache must also exist; forbid acquisition.
@@ -86,7 +86,7 @@ def no_download(*args, **kwargs):
     raise RuntimeError('Validation uses existing local data only')
 urllib.request.urlretrieve = no_download
 import aphasia_kb
-result = aphasia_kb.KnowledgeBase('aphasia-kb').decode_lesion(str(mask_path(entries[0], 'synthstroke')), verbose=True)
+result = aphasia_kb.KnowledgeBase('stroke-aphasia-kb').decode_lesion(str(mask_path(entries[0], 'synthstroke')), verbose=True)
 assert result['neurosynth_available'], result['warnings']
 assert len(result['term_decoding']) and np.isfinite(result['term_decoding']['r']).all()
 result['term_decoding'].to_csv(out/'neurosynth_terms.csv', index=False)
