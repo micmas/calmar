@@ -16,8 +16,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   now live in `docs/`; report screenshots in `docs/images/`; the sample
   T1 in `tests/images/`. `docs/REPOSITORY_LAYOUT.md` has a module map.
 - The six ASTRA record folders live under `analyses/`; this changelog,
-  `constraints-neurodesk.txt` (now `src/`) and the two `tests/requirements*`
-  files (folded into `requirements-dev.txt`) left the root.
+  `constraints-neurodesk.txt` (now `src/`) and `requirements-dev.txt` plus the two
+  `tests/requirements*` files (all folded into `requirements.txt`) left the root.
 - The knowledge base keeps its Python modules in
   `stroke-aphasia-kb/scripts/`. CALMaR imports them through the new
   `calmar/kb_paths.py` (`add_kb_to_path`, `kb_content_paths`), which

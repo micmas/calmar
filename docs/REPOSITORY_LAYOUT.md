@@ -32,7 +32,7 @@ docs/                                 SETUP, NOTEBOOK_GUIDE, PIPELINE, RUNNING_J
                                       issues/, images/
 AGENTS.md                             operating contract for agents working in Neurodesk
 CITATION.cff  LICENSE
-requirements.txt  requirements-dev.txt
+requirements.txt
 ```
 
 Runtime directories, created on first use and git-ignored: `data/`
@@ -83,8 +83,8 @@ Each module starts with a docstring saying what it is for.
 
 **October 2026.** The six ASTRA record folders moved under `analyses/`,
 `CHANGELOG.md`, `SETUP.md` and `QC_RUBRIC.md` into `docs/`,
-`constraints-neurodesk.txt` into `src/`, and `tests/requirements*.txt`
-were folded into `requirements-dev.txt`; the
+`constraints-neurodesk.txt` into `src/`, and `requirements-dev.txt` and
+`tests/requirements*.txt` were folded into `requirements.txt`; the
 README was split into `docs/NOTEBOOK_GUIDE.md`, `docs/PIPELINE.md` and
 `docs/RUNNING_JOBS.md`, report screenshots moved to `docs/images/` and
 the sample image to `tests/images/`. The knowledge base moved its
