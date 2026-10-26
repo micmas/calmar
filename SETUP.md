@@ -5,8 +5,14 @@ notebooks from its root directory:
 
 ```bash
 cd ~/neurodesktop-storage
-git clone https://github.com/micmas/calmar.git
+git clone --recurse-submodules https://github.com/micmas/calmar.git
 cd calmar
+```
+
+For an existing checkout after pulling the KB relocation, run:
+
+```bash
+git submodule update --init --recursive
 ```
 
 The source layout is described in [docs/REPOSITORY_LAYOUT.md](docs/REPOSITORY_LAYOUT.md).
@@ -18,7 +24,8 @@ is required when running from the repository root.
 Use Neurodesktop for the neuroimaging tools. The notebook loads explicit module
 versions; follow its setup sequence rather than inferring a tool version from
 an older notebook's outputs. Python dependencies are listed in
-`requirements.txt`. Setup checks them and prints terminal installation
+`requirements.txt`. Contributors running the test suite should additionally
+install `requirements-dev.txt`. Setup checks runtime packages and prints terminal installation
 instructions if something is missing; restart the kernel after installing
 packages.
 
@@ -151,7 +158,10 @@ checkout that still has the old history.
 
 ## Knowledge base
 
-KB data and tools remain together under `stroke-aphasia-kb/`. From the repository root:
+KB data and tools live in the independently versioned
+[`micmas/stroke-aphasia-kb`](https://github.com/micmas/stroke-aphasia-kb)
+repository, consumed here as the `stroke-aphasia-kb/` Git submodule. From the
+CALMaR repository root:
 
 ```bash
 python stroke-aphasia-kb/aphasia_kb.py

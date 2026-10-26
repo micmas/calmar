@@ -133,10 +133,33 @@ def stage_bids(request, entry, destination):
     return provenance
 
 
-def _run(command, log):
-    with Path(log).open("w", encoding="utf-8") as stream:
-        subprocess.run([str(value) for value in command], stdout=stream, stderr=subprocess.STDOUT,
-                       text=True, check=True)
+def _run(command, log, failure_dir=None):
+    log = Path(log)
+    with log.open("w", encoding="utf-8") as stream:
+        completed = subprocess.run([str(value) for value in command], stdout=stream,
+                                   stderr=subprocess.STDOUT, text=True, check=False)
+    if completed.returncode:
+        lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
+        retained = ""
+        if failure_dir is not None:
+            failure_dir = Path(failure_dir)
+            failure_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(log, failure_dir / log.name)
+            crashes = (path for path in log.parent.rglob("crash-*") if path.is_file())
+            for index, crash in enumerate(crashes, 1):
+                shutil.copy2(crash, failure_dir / f"{index:02d}-{crash.name}")
+            retained = f" Full diagnostics retained in {failure_dir}."
+        tail = "\n".join(lines[-40:]) or "(the tool wrote no diagnostic output)"
+        raise RuntimeError(
+            f"{Path(str(command[0])).name} failed with exit status {completed.returncode}. "
+            f"Last {min(len(lines), 40)} log lines:{retained}\n{tail}")
+
+
+def _hmc_method(config):
+    method = config.get("DMRI_HMC_METHOD", "tortoise")
+    if method not in {"tortoise", "eddy", "shoreline"}:
+        raise ValueError("DMRI_HMC_METHOD must be tortoise, eddy or shoreline.")
+    return method
 
 
 def _preserve_or_refuse(final, overwrite):
@@ -207,7 +230,12 @@ def preprocess(request, output):
     config = request["config"]
     final = _final_dir(request, entry, "qsiprep")
     overwrite = bool(config.get("DMRI_OVERWRITE", False))
+    hmc_method = _hmc_method(config)
     final.parent.mkdir(parents=True, exist_ok=True)
+    if final.exists() and not overwrite:
+        raise FileExistsError(
+            f"QSIPrep derivative already exists and is preserved: {final}. Reuse its scheduler receipt, "
+            "or set DMRI_OVERWRITE=True to preserve it as a backup and recompute.")
     with tempfile.TemporaryDirectory(prefix="qsiprep.attempt.", dir=final.parent) as folder:
         folder = Path(folder)
         bids = folder / "bids"
@@ -220,20 +248,23 @@ def preprocess(request, output):
         command = [
             "qsiprep", bids, produced, "participant", "--participant-label", label,
             "--output-resolution", str(config.get("DMRI_OUTPUT_RESOLUTION", 2.0)),
-            "--anat-modality", "T1w", "--hmc-method", "eddy",
+            "--anat-modality", "T1w", "--hmc-method", hmc_method,
             "--nprocs", threads, "--omp-nthreads", min(threads, 4), "--mem", memory,
             "--skip-bids-validation", "--stop-on-first-crash", "--notrack", "-w", work,
         ]
-        _run(command, folder / "qsiprep.log")
+        failure_dir = final.parent / f"qsiprep.failed.{os.environ['SLURM_JOB_ID']}"
+        _run(command, folder / "qsiprep.log", failure_dir=failure_dir)
         preprocessed = list(produced.rglob("*desc-preproc_dwi.nii*"))
         reports = list(produced.rglob("*.html"))
         if not preprocessed or not reports:
             raise RuntimeError("QSIPrep completed without a preprocessed DWI and HTML report.")
+        provenance["hmc_method"] = hmc_method
         (produced / "calmar-selection.json").write_text(json.dumps(provenance, indent=2) + "\n")
         shutil.copy2(folder / "qsiprep.log", produced / "calmar-qsiprep.log")
         _publish(produced, final, "dmri_preproc", "qsiprep", os.environ["CALMAR_EXECUTION_SCRIPT"], overwrite)
     qc = {"png": None, "metrics": {"preprocessed_dwi": len(preprocessed),
                                      "reports": len(reports),
+                                     "hmc_method": hmc_method,
                                      "cross_session_anatomy": provenance["cross_session_anatomy"]},
           "flags": (["cross-session anatomy/lesion mask"] if provenance["cross_session_anatomy"] else []),
           "complete": True}
@@ -251,6 +282,10 @@ def reconstruct(request, output):
     final = _final_dir(request, entry, "qsirecon")
     overwrite = bool(config.get("DMRI_OVERWRITE", False))
     final.parent.mkdir(parents=True, exist_ok=True)
+    if final.exists() and not overwrite:
+        raise FileExistsError(
+            f"QSIRecon derivative already exists and is preserved: {final}. Reuse its scheduler receipt, "
+            "or set DMRI_OVERWRITE=True to preserve it as a backup and recompute.")
     with tempfile.TemporaryDirectory(prefix="qsirecon.attempt.", dir=final.parent) as folder:
         folder = Path(folder)
         produced, work = folder / "produced", folder / "work"
@@ -268,7 +303,8 @@ def reconstruct(request, output):
             "--mem", memory, "--fs-license-file", license_file,
             "--stop-on-first-crash", "--notrack", "-w", work,
         ]
-        _run(command, folder / "qsirecon.log")
+        failure_dir = final.parent / f"qsirecon.failed.{os.environ['SLURM_JOB_ID']}"
+        _run(command, folder / "qsirecon.log", failure_dir=failure_dir)
         scalarstats = [*produced.rglob("*scalarstats.csv"), *produced.rglob("*scalarstats.tsv")]
         bundles = [*produced.rglob("*_streamlines.tck.gz"), *produced.rglob("*.tck")]
         reports = list(produced.rglob("*.html"))
@@ -301,6 +337,40 @@ def _bundle_side(name):
     if match:
         return "left" if match.group(1).lower() == "l" else "right"
     return "bilateral/unspecified"
+
+
+def _derivative_methods(request, entry):
+    """Read method choices from published derivatives, never current defaults."""
+    records = []
+    for stage, name in (("qsiprep", "calmar-selection.json"),
+                        ("qsirecon", "calmar-reconstruction.json")):
+        path = _final_dir(request, entry, stage) / name
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"Direct-dMRI method provenance is unavailable: {path}: {exc}") from exc
+        if not isinstance(record, dict):
+            raise RuntimeError(f"Direct-dMRI method provenance is not an object: {path}")
+        records.append(record)
+    hmc_method = records[0].get("hmc_method")
+    if not hmc_method:
+        # Compatibility with derivatives published before CALMaR copied this
+        # field into calmar-selection.json.  QSIPrep records the effective CLI
+        # choice in its retained log, so this remains observed provenance and
+        # never falls back to today's configuration default.
+        log_path = _final_dir(request, entry, "qsiprep") / "calmar-qsiprep.log"
+        try:
+            log = log_path.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            raise RuntimeError(
+                f"Direct-dMRI HMC provenance is unavailable: {log_path}: {exc}") from exc
+        match = re.search(r"--hmc-method\s+(tortoise|eddy|shoreline)\b", log)
+        if match:
+            hmc_method = match.group(1)
+    recon_spec = records[1].get("recon_spec")
+    if not hmc_method or not recon_spec:
+        raise RuntimeError("Published direct-dMRI derivatives do not record hmc_method and recon_spec.")
+    return hmc_method, recon_spec
 
 
 def _scalar_rows(recon):
@@ -365,12 +435,14 @@ def normalize_metrics(request, output):
     metrics_dir.parent.mkdir(parents=True, exist_ok=True)
     overwrite = bool(request["config"].get("DMRI_OVERWRITE", False))
     assessment = entry.get("dmri_assessment") or {}
+    hmc_method, recon_spec = _derivative_methods(request, entry)
     metadata = {
         "subject": entry["subject"], "session": entry.get("session"),
         "anatomical_session": entry.get("anatomical_session"),
         "cross_session_anatomy": entry.get("anatomical_session") != entry.get("session"),
         "preprocessor": "QSIPrep 26.1.1 + QSIRecon 26.0.1",
-        "recon_spec": request["config"].get("DMRI_RECON_SPEC", "ss3t_fod_autotrack"),
+        "hmc_method": hmc_method,
+        "recon_spec": recon_spec,
         "n_directions": assessment.get("n_directions"), "shells": assessment.get("shells"),
         "qc_status": "requires_visual_review",
         "warnings": list(dict.fromkeys([
@@ -404,6 +476,8 @@ def main():
     parser.add_argument("output", type=Path)
     args = parser.parse_args()
     request = json.loads(args.request.read_text(encoding="utf-8"))
+    if os.environ.get("CALMAR_DMRI_HMC_METHOD"):
+        request["config"]["DMRI_HMC_METHOD"] = os.environ["CALMAR_DMRI_HMC_METHOD"]
     if os.environ.get("CALMAR_DMRI_RECON_SPEC"):
         request["config"]["DMRI_RECON_SPEC"] = os.environ["CALMAR_DMRI_RECON_SPEC"]
     if args.output.exists():
