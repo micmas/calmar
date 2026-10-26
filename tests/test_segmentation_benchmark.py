@@ -89,7 +89,7 @@ def test_benchmark_scripts_use_neurodesk_environment_and_provenance():
 
 
 def test_benchmark_astra_outputs_are_typed_and_recipes_name_software():
-    spec = yaml.safe_load((ROOT / "segmentation-benchmark/astra.yaml").read_text())
+    spec = yaml.safe_load((ROOT / "analyses/segmentation-benchmark/astra.yaml").read_text())
     assert spec["version"] == version("astra-spec")
     for analysis in spec["analyses"].values():
         for output in analysis.get("outputs", []):
@@ -100,7 +100,7 @@ def test_benchmark_astra_outputs_are_typed_and_recipes_name_software():
 
 
 def test_current_tool_profiles_have_separate_preprocessing_and_tool_provenance():
-    spec = yaml.safe_load((ROOT / "segmentation-benchmark/astra.yaml").read_text())
+    spec = yaml.safe_load((ROOT / "analyses/segmentation-benchmark/astra.yaml").read_text())
     cross = spec["analyses"]["synthetic_crosstool"]
     outputs = {output["id"]: output for output in cross["outputs"]}
     assert outputs["synthstroke_masks"]["recipe"]["container"] == "synthstroke:0.0.0"
@@ -123,7 +123,7 @@ def test_current_tool_profiles_have_separate_preprocessing_and_tool_provenance()
 
 
 def test_benchmark_analyses_consume_prepared_dataset_outputs():
-    spec = yaml.safe_load((ROOT / "segmentation-benchmark/astra.yaml").read_text())
+    spec = yaml.safe_load((ROOT / "analyses/segmentation-benchmark/astra.yaml").read_text())
     isles = spec["analyses"]["isles2022_openads"]["inputs"]
     cross = spec["analyses"]["synthetic_crosstool"]["inputs"]
     assert isles == [{"id": "isles2022", "from": "../benchmark_inputs.isles2022_dataset"}]

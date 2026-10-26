@@ -1,5 +1,4 @@
 """Report sections that show each finding with its direction."""
-import sys
 import re
 from pathlib import Path
 from types import SimpleNamespace
@@ -8,7 +7,8 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
-sys.path.insert(0, str(KB_ROOT))
+from calmar.kb_paths import add_kb_to_path  # noqa: E402
+add_kb_to_path(KB_ROOT)
 import aphasia_rules as rules  # noqa: E402
 from aphasia_kb import KnowledgeBase  # noqa: E402
 from calmar.participant_report import ReportSettings  # noqa: E402

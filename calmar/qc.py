@@ -52,7 +52,7 @@ import pandas as pd
 # ============================================================
 # Controlled vocab — ratings and issue tags
 # ------------------------------------------------------------
-# Definitions live here so the notebook UI and QC_RUBRIC.md stay in sync.
+# Definitions live here so the notebook UI and docs/QC_RUBRIC.md stay in sync.
 # ============================================================
 
 RATING_VOCAB = {1: "good", 2: "acceptable", 3: "poor"}

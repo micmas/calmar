@@ -76,7 +76,8 @@ for e, ax in zip(entries, axes):
     ax.set_xticks([]); ax.set_yticks([])
 fig.tight_layout(); fig.savefig(out/'laterality.png', dpi=130); plt.close(fig)
 
-sys.path.insert(0, str(Path('stroke-aphasia-kb').resolve()))
+from calmar.kb_paths import add_kb_to_path
+add_kb_to_path('stroke-aphasia-kb')
 import decode_lesion as decoder
 assert all((cache/name).is_file() for name in decoder._NS_FILES), 'Neurosynth cache incomplete'
 # The decoder's separate nilearn atlas cache must also exist; forbid acquisition.

@@ -159,7 +159,8 @@ def execute(request, output):
                 result[key] = str(target)
         return result
     if task == 'decode':
-        sys.path.insert(0, str(Path(request['kb_root']).resolve()))
+        from .kb_paths import add_kb_to_path
+        add_kb_to_path(request['kb_root'])
         from aphasia_kb import KnowledgeBase
         from .acquisition import ensure_nifti_content
         if not ensure_nifti_content(Path(request['mask']), Path(request['dataset'])):

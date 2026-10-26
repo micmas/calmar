@@ -40,7 +40,7 @@ pymupdf>=1.23           # for annotate_paper.py (PDF highlight annotations)
 #   (the KB is the submodule stroke-aphasia-kb/, github.com/micmas/stroke-aphasia-kb;
 #    its own requirements.txt is a subset of this file)
 #   Which model each step uses: stroke-aphasia-kb/models.yaml
-#   Check it:  python stroke-aphasia-kb/model_config.py
+#   Check it:  python stroke-aphasia-kb/scripts/model_config.py
 
 # Notebook validation (used by the workflow)
 nbformat>=5.0
@@ -58,6 +58,17 @@ nimare>=0.5.0
 scikit-learn>=1.3
 statsmodels>=0.14
 
+# Tests and notebook tooling (python -m pytest -q tests)
+pytest>=8
+pytest-subtests>=0.14
+beautifulsoup4>=4.12
+jupyter_client>=8
+nbstripout>=0.9
+
 # Optional: dataset management. Comes pre-installed in Neurodesk; if
 # you're running this elsewhere you'll need datalad too:
 # datalad>=0.19
+
+# Optional: the browser UI regression check (python tests/browser_workflow.py),
+# then `python -m playwright install chromium`. Not needed for the notebooks.
+# playwright==1.63.0

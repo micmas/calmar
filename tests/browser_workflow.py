@@ -1,6 +1,6 @@
 """Isolated JupyterLab smoke test. No real acquisition or imaging is executed.
 
-Install tests/requirements-browser.txt and run `python -m playwright install chromium`.
+Install playwright (the commented line in requirements.txt) and run `python -m playwright install chromium`.
 Then run this file from the repository root. The server and fixture kernels are
 owned by this test and are stopped afterward. Screenshots/logs go to --artifacts.
 """

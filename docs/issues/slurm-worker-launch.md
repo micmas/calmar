@@ -83,8 +83,8 @@ Job 2 (workspace backup), job 3 (environment restoration) and job 4
 ```bash
 sbatch --parsable --dependency=afterok:4 --kill-on-invalid-dep=yes \
   --export=ALL,CALMAR_HDBET_MODE=fast \
-  src/analysis_23_brain.sh workflow-acceptance/request.json \
-  workflow-acceptance/brain workflow-acceptance/acquisition
+  src/analysis_23_brain.sh analyses/workflow-acceptance/request.json \
+  analyses/workflow-acceptance/brain analyses/workflow-acceptance/acquisition
 ```
 
 The controller recorded job 5 as RUNNING, but neither its expected stdout/stderr
