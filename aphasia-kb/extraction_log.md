@@ -474,3 +474,4 @@ add an `EXTRACTED` line for every run.
 2026-10-26 | BACKFILL-REAPPLIED | @Schwartz2009 | lesion_mapping | 2 value(s) written, 0 not (no quote found) across 5 finding(s) | model: gemma4:31b-it-q8_0
 2026-10-26 | BACKFILL-REAPPLIED | @Schwartz2012 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
 2026-10-26 | BACKFILL-REAPPLIED | @Sheppard2020 | cohort, lesion_mapping | 4 value(s) written, 0 not (no quote found) across 3 finding(s) | model: gemma4:31b-it-q8_0
+2026-10-26 | BACKFILLED | @Siegel2016 | cohort, lesion_mapping | 3 value(s) written, 0 not (no quote found) across 2 finding(s) | model: gemma4:31b-it-q8_0
