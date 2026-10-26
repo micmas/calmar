@@ -1,5 +1,5 @@
 ---
-schema_version: 2.6
+schema_version: 2.7
 id: left_ifg_pars_opercularis
 name: Left IFG Pars Opercularis (Broca's area, dorsal stream hub)
 kind: classical
@@ -28,6 +28,7 @@ findings:
     age_range: mean 63.21 (SD 11.93)
     handedness: right-handed
     language: native English speakers
+    cohort: not_reported
   statistics:
     threshold: P = 0.001 voxel-level and cluster-level corrected using family-wise error (FWE) at P =
       0.05
@@ -97,6 +98,36 @@ findings:
     quote: High-resolution structural T1-weighted MRI scans were acquired for each patient on a 3.0 T
       Philips Achieva scanner... A T1-weighted inversion recovery sequence with 3D acquisition was used.
     supports: imaging_details
+  - section: added by backfill
+    page: 4
+    quote: A multiple regression model was created using the normalized-smoothed T1-weighted images as
+      the dependant variable and language and cognitive component as regressors of interest, entered simultaneously
+      along with the other components and demographic variables (age, education, and time since stroke
+      onset).
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Two parallel analyses were performed, with/without lesion volume as a covariate, to avoid a
+      possible risk for type II error with the inclusion of lesion volume.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The results were thresholded at P5 0.001 voxel-level and cluster-level corrected using family-wise
+      error (FWE) at P5 0.05.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 46
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: cluster_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 - id: f2
   target: fluency
   target_kind: impairment
@@ -117,6 +148,7 @@ findings:
     age_range: mean 63.21 (SD 11.93)
     handedness: right-handed
     language: native English speakers
+    cohort: not_reported
   statistics:
     threshold: P = 0.001 voxel-level and cluster-level corrected using family-wise error (FWE) at P =
       0.05
@@ -186,6 +218,35 @@ findings:
     quote: High-resolution structural T1-weighted MRI scans were acquired for each patient on a 3.0 T
       Philips Achieva scanner... A T1-weighted inversion recovery sequence with 3D acquisition was used.
     supports: imaging_details
+  - section: added by backfill
+    page: 4
+    quote: A multiple regression model was created using the normalized-smoothed T1-weighted images as
+      the dependant variable and language and cognitive component as regressors of interest, entered simultaneously
+      along with the other components and demographic variables (age, education, and time since stroke
+      onset).
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: Two parallel analyses were performed, with/without lesion volume as a covariate, to avoid a
+      possible risk for type II error with the inclusion of lesion volume.
+    supports: method
+  - section: added by backfill
+    page: 4
+    quote: The results were thresholded at P5 0.001 voxel-level and cluster-level corrected using family-wise
+      error (FWE) at P5 0.05.
+    supports: method
+  lesion_mapping:
+    analysis: multivariate
+    n_analysed: 46
+    min_lesion_overlap: not_reported
+    lesion_volume_correction: covariate
+    multiple_comparisons: cluster_fwe
+  filled:
+    by: model:gemma4:31b-it-q8_0
+    date: '2026-10-26'
+    tool: backfill.py
+    fields:
+    - cohort
+    - lesion_mapping
 ---
-
 Findings from @Alyahya2020 regarding the role of the left IFG pars opercularis in connected speech production (verbal quantity and quality).

@@ -43,6 +43,7 @@ import argparse
 import copy
 import datetime as dt
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -155,6 +156,10 @@ Fields:
 - author_limitations: list of the limitations the AUTHORS state (short
   phrases), [] if none are stated.
 
+Findings often come from the same analysis. When a finding's answers are
+identical to an earlier finding's, write {{"key": "K7", "same_as": "K3"}}
+instead of repeating them.
+
 Answer with JSON only, in this shape (include only the requested fields):
 {{"findings": [
   {{"key": "K1",
@@ -202,6 +207,12 @@ def _verified(quote, paper: PaperText) -> str | None:
     return g if g in ACCEPT else None
 
 
+_VOLUME_WORDS = re.compile(r"volume|lesion size|lesion load|tlvc", re.I)
+_CORRECTION_WORDS = re.compile(r"correct|fwe|family|fdr|false discovery|bonferroni|holm|permutation|"
+                               r"multiple comparison|threshold|p\s*[<=≤]|p[\s-]*values?|alpha|α\s*=|"
+                               r"\ba\s*=\s*0?\.\d", re.I)
+
+
 def check(field: str, item, paper: PaperText):
     """(value, [verified quotes], note) — value None means: do not write."""
     if not isinstance(item, dict):
@@ -228,7 +239,19 @@ def check(field: str, item, paper: PaperText):
         informative = any(lm[k] != "not_reported" for k in LM.FIELDS)
         if informative and not good:
             return None, [], "no quote found in the PDF"
-        return lm, good, ""
+        # A design value needs a verified quote that is about it: "none" or
+        # "uncorrected" from a sentence that never mentions volume or a
+        # correction is the model filling a gap, not the paper.
+        said = " ".join(good)
+        downgraded = []
+        if lm["lesion_volume_correction"] != "not_reported" and not _VOLUME_WORDS.search(said):
+            lm["lesion_volume_correction"] = "not_reported"
+            downgraded.append("lesion_volume_correction")
+        if lm["multiple_comparisons"] != "not_reported" and not _CORRECTION_WORDS.search(said):
+            lm["multiple_comparisons"] = "not_reported"
+            downgraded.append("multiple_comparisons")
+        return lm, good, (f"{', '.join(downgraded)} → not_reported (no quote states it)"
+                          if downgraded else "")
     if field == "phase":
         if val not in PHASE_VOCAB:
             return None, [], f"off-vocabulary {val!r}"
@@ -324,9 +347,13 @@ def apply(targets_by_key: dict, answer: dict, paper: PaperText, pdf: Path,
         if f is None:
             continue
         a = by_key.get(key, {})
+        if a.get("same_as"):            # "identical to an earlier finding"
+            a = by_key.get(str(a["same_as"]), {})
         filled = []
         for field in t["missing"]:
             val, quotes, why = check(field, a.get(field), paper)
+            if why and val is not None:
+                notes.append(f"{path.name} {t['fid']} {field}: {why}")
             if val is None:
                 skipped += 1
                 notes.append(f"{path.name} {t['fid']} {field}: not written ({why})")

@@ -37,3 +37,12 @@ def test_lesion_mapping_vocabulary_and_quotes():
     assert val["n_analysed"] == 48 and val["min_lesion_overlap"] == "not_reported" and quotes
     bad = dict(lm, multiple_comparisons="holm-ish")
     assert B.check("lesion_mapping", {"value": bad, "quotes": []}, PAPER)[0] is None
+
+
+def test_design_values_need_a_quote_about_them():
+    lm = {"analysis": "univariate", "n_analysed": 48, "lesion_volume_correction": "none",
+          "multiple_comparisons": "uncorrected"}
+    val, _, why = B.check("lesion_mapping", {"value": lm, "quotes": [
+        "voxel-based lesion symptom mapping (VLSM) in 48 patients"]}, PAPER)
+    assert val["lesion_volume_correction"] == "not_reported"
+    assert val["multiple_comparisons"] == "not_reported" and "no quote states it" in why
