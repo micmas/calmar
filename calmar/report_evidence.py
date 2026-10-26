@@ -29,7 +29,7 @@ DIRECTION_TEXT = {"likely": "association", "likely_responder": "association",
 WAB_BANDS = ((25, "very severe"), (50, "severe"), (75, "moderate"), (93.7, "mild"), (100, "within normal limits"))
 EARLY = r"(?i)\b(?:initial|acute|admission|baseline|early|first (?:week|month)|subacute|onset)\b"
 # A damaged region whose findings come from this many studies or fewer is marked
-# as resting on thin evidence (see aphasia-kb/atlas_mapping/EVIDENCE_GAPS.md).
+# as resting on thin evidence (see stroke-aphasia-kb/atlas_mapping/EVIDENCE_GAPS.md).
 THIN_STUDIES = 2
 ABBREVIATIONS = {"ifg", "stg", "mtg", "itg", "smg", "slf", "ilf", "ifof", "dlpfc", "sma", "ba"}
 
@@ -74,7 +74,7 @@ def finding_phases(row):
     """Recovery stages (acute / subacute / chronic) a finding was studied in.
 
     From the KB's ``phase`` (``sample.phase``, stated or inferred from
-    ``time_post_onset`` by aphasia-kb/phase.py). When that is ``mixed``,
+    ``time_post_onset`` by stroke-aphasia-kb/phase.py). When that is ``mixed``,
     ``longitudinal`` or ``not_reported``, the stages named in the sample
     population text are used (aphasia_rules); empty = unknown.
     """
@@ -465,7 +465,7 @@ def location_section(kb, rules, rows, damage, coverage, settings, phase=None, le
              f"<p class='method-note'>A region counts as damaged when it holds "
              f"&ge;{settings.min_overlap_pct:g}% of the lesion or &ge;{settings.min_region_pct:g}% of it is destroyed. "
              f"Regions are matched to the knowledge base through the curated atlas mapping "
-             f"(<code>aphasia-kb/atlas_mapping/</code>). Of the knowledge base's {coverage['findings']} location "
+             f"(<code>stroke-aphasia-kb/atlas_mapping/</code>). Of the knowledge base's {coverage['findings']} location "
              f"findings, {matched_before_filter} concern regions this lesion damages before the symptom-only display "
              f"filter; <b>{len(rows)}</b> symptom findings are shown. {coverage['undamaged']} concern "
              f"regions it does not damage, and {coverage['unmappable']} concern regions no atlas can represent "
@@ -922,8 +922,8 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
              f"<li>The participant-specific <b>{source}</b> mask is the input.</li>"
              f"<li>CALMaR reads its <b>{escape(map_label)}</b> probability map{filename}.</li>"
              "<li>That map is overlapped with the JHU and XTRACT tract atlases using the threshold above.</li>"
-             "<li>Literature claims come from the tract/region entries in <code>aphasia-kb/</code>, linked through "
-             "the curated <code>aphasia-kb/atlas_mapping/</code>; each finding retains its citation and review details.</li>"
+             "<li>Literature claims come from the tract/region entries in <code>stroke-aphasia-kb/</code>, linked through "
+             "the curated <code>stroke-aphasia-kb/atlas_mapping/</code>; each finding retains its citation and review details.</li>"
              "</ol><p>The participant map calculation and the literature claims are separate provenance layers. "
              "Group associations do not predict this participant&rsquo;s outcome.</p></div></details>")
     rows = _symptom_findings(rows, rules)
