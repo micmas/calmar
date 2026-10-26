@@ -23,7 +23,8 @@ is required when running from the repository root.
 Use Neurodesktop for the neuroimaging tools. The notebook loads explicit module
 versions; follow its setup sequence rather than inferring a tool version from
 an older notebook's outputs. Python dependencies are listed in
-`requirements.txt`. Setup checks them and prints terminal installation
+`requirements.txt`. Contributors running the test suite should additionally
+install `requirements-dev.txt`. Setup checks runtime packages and prints terminal installation
 instructions if something is missing; restart the kernel after installing
 packages.
 
