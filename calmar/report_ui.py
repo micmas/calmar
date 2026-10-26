@@ -82,21 +82,36 @@ class ReportInputs:
         from .participant_report import DOMAIN_LABELS, DOMAIN_LEVELS, DOMAIN_LEVEL_LABELS, normalise_domain_levels
         self._normalise_domain_levels = normalise_domain_levels
         self._domain_by_entry = dict(namespace.get("INTERP_DOMAIN_LEVELS_BY_PARTICIPANT") or {})
+        self._domain_sources_by_entry = dict(namespace.get("INTERP_DOMAIN_LEVEL_SOURCES_BY_PARTICIPANT") or {})
         initial_key = self._domain_key()
-        self._domain_by_entry.setdefault(initial_key, normalise_domain_levels(namespace.get("INTERP_DOMAIN_LEVELS")))
+        if initial_key not in self._domain_by_entry:
+            if namespace.get("INTERP_DOMAIN_LEVELS") is not None:
+                self._domain_by_entry[initial_key] = normalise_domain_levels(namespace["INTERP_DOMAIN_LEVELS"])
+            else:
+                values, sources = self._wab_domain_defaults()
+                self._domain_by_entry[initial_key] = values
+                self._domain_sources_by_entry[initial_key] = sources
         self.domains = {}
         domain_options = [(DOMAIN_LEVEL_LABELS[level], level) for level in DOMAIN_LEVELS]
         for domain, label in DOMAIN_LABELS.items():
             control = w.Dropdown(options=domain_options, value="not_assessed", description=label + ":",
                                  style={"description_width": "190px"}, layout=w.Layout(width="390px"))
-            control.observe(self.apply, names="value")
+            control.observe(lambda change, key=domain: self._domain_changed(key, change), names="value")
             self.domains[domain] = control
+        self.confirm_domains = w.Button(
+            description="Mark shown profile values as assessed", icon="check",
+            tooltip="Keep the current levels but replace their WAB-profile source with direct report entry",
+            layout=w.Layout(width="310px"))
+        self.confirm_domains.on_click(self._confirm_profile_values)
         domain_grid = w.GridBox(list(self.domains.values()),
                                 layout=w.Layout(grid_template_columns="repeat(auto-fit,minmax(390px,1fr))",
                                                 width="100%"))
         self.domain_panel = w.Accordion(children=[w.VBox([
-            w.HTML("<p>Enter an impairment level only when it was assessed. Values are participant context and "
-                   "are not inferred from WAB-AQ or lesion location.</p>"), domain_grid])], selected_index=None)
+            w.HTML("<p>Measured levels can be entered directly. When participant data contain a recognised "
+                   "WAB/WAB-R aphasia type, fluency, comprehension and repetition start from its qualitative "
+                   "profile (− impaired → mild profile floor; + relatively preserved → severity not assigned). Changing a value "
+                   "replaces that profile-derived default. Use the confirmation button only when the shown values "
+                   "were assessed directly.</p>"), domain_grid, self.confirm_domains])], selected_index=None)
         self.domain_panel.set_title(0, "Domain-level impairment (optional)")
         self.summary, self.message, self.agreement = w.HTML(), w.HTML(), w.HTML()
         self.generate = w.Button(description="Generate participant report", button_style="success",
@@ -131,7 +146,42 @@ class ReportInputs:
             return
         self._domain_by_entry[self._domain_key(index)] = {key: control.value for key, control in self.domains.items()}
 
+    def _wab_domain_defaults(self, index=None):
+        from .participant_report import (_kb_modules, normalise_domain_levels, participant_row,
+                                         wab_profile_domain_levels)
+        entry = self.entries[self.subject.value if index is None else index]
+        study = self.ns.get("study")
+        dataset = (study.dataset_for(entry)
+                   if study is not None and hasattr(study, "dataset_for")
+                   else self.ns.get("RAW_DATASET_DIR"))
+        project = self.ns.get("PROJECT_DIR")
+        kb_root = self.ns.get("APHASIA_KB_ROOT")
+        if kb_root is None and project is not None:
+            kb_root = Path(project) / "stroke-aphasia-kb"
+        kb_root = Path(kb_root) if kb_root is not None else None
+        if dataset is None or kb_root is None or not kb_root.is_dir():
+            return normalise_domain_levels(None), {}
+        _, rules = _kb_modules(kb_root)
+        row = participant_row(dataset, entry["subject"])
+        return wab_profile_domain_levels(rules, row.get("wab_type"))
+
+    def _domain_changed(self, domain, change):
+        if not self.busy and change.get("old") != change.get("new"):
+            self._domain_sources_by_entry.setdefault(self._domain_key(), {}).pop(domain, None)
+        self.apply()
+
+    def _confirm_profile_values(self, _=None):
+        sources = self._domain_sources_by_entry.setdefault(self._domain_key(), {})
+        for domain in [key for key, value in sources.items() if str(value).startswith("wab_profile_")]:
+            sources.pop(domain, None)
+        self.apply()
+
     def _load_domains(self):
+        key = self._domain_key()
+        if key not in self._domain_by_entry:
+            values, sources = self._wab_domain_defaults()
+            self._domain_by_entry[key] = values
+            self._domain_sources_by_entry[key] = sources
         values = self._normalise_domain_levels(self._domain_by_entry.get(self._domain_key()))
         for key, control in self.domains.items():
             control.value = values[key]
@@ -168,8 +218,13 @@ class ReportInputs:
         self.ns.update(INTERP_SUBJECT_IDX=self.subject.value, INTERP_MASK_SOURCE=self.source.value,
                        INTERP_DISPLAY_ATLAS=self.atlas.value, INTERP_RUN_DECODING=self.decode.value,
                        INTERP_EVIDENCE=self.evidence.value, INTERP_DOMAIN_LEVELS=domain_levels,
-                       INTERP_DOMAIN_LEVELS_BY_PARTICIPANT=dict(self._domain_by_entry))
+                       INTERP_DOMAIN_LEVELS_BY_PARTICIPANT=dict(self._domain_by_entry),
+                       INTERP_DOMAIN_LEVEL_SOURCES=dict(self._domain_sources_by_entry.get(self._domain_key()) or {}),
+                       INTERP_DOMAIN_LEVEL_SOURCES_BY_PARTICIPANT=dict(self._domain_sources_by_entry))
         self.generate.disabled = self.source.value is None
+        self.confirm_domains.disabled = not any(
+            str(value).startswith("wab_profile_")
+            for value in self._domain_sources_by_entry.get(self._domain_key(), {}).values())
         if self.source.value is None:
             self.summary.value = "<b>No available MNI lesion mask for this participant.</b> Complete its warp before generating a report."
         else:

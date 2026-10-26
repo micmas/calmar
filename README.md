@@ -27,7 +27,7 @@ Given a BIDS-formatted dataset, CALMaR will:
 
 - [Neurodesktop](https://www.neurodesk.org/) (Play or local) — provides the neuroimaging tools that the retained Slurm scripts in `src/` load with pinned `module load` versions: LINDA, HD-BET, SynthStrip, SynthStroke, BCBToolkit, DeepDisco, DeepWMH, SynthSeg, ANTs, FSL, FreeSurfer, OpenADS, QSIPrep and QSIRecon, plus all Python/R dependencies
 - A BIDS-formatted dataset (the notebook fetches `ds004884` from OpenNeuro via datalad by default)
-- Python packages listed in `requirements.txt` (usually pre-installed in Neurodesktop; Setup prints terminal installation instructions for anything missing)
+- Python packages listed in `requirements.txt` (usually pre-installed in Neurodesktop; Setup prints terminal installation instructions for anything missing). Contributors running the test suite also install `requirements-dev.txt`.
 - A FreeSurfer licence at `~/license.txt` or in `FS_LICENSE` when the optional QSIRecon route is selected
 
 ---
@@ -51,9 +51,10 @@ Given a BIDS-formatted dataset, CALMaR will:
 | `docs/CT_ROUTE.md` | CT lesion-segmentation and CT-to-MNI scope, reporting cautions, and minimum validation plan; no CT dependency is installed |
 | `docs/SAMPLE_APPLICABILITY_FIELDS.md` | Approval-gated proposal for stroke-history, laterality, modality, and age applicability fields |
 | `QC_RUBRIC.md` | Stage-aware QC rating reference (acute / subacute / chronic) |
-| `stroke-aphasia-kb/` | Aphasia literature knowledge base (see `stroke-aphasia-kb/README.md`) |
+| `stroke-aphasia-kb/` | Git submodule containing the independently versioned [stroke-aphasia-kb](stroke-aphasia-kb/README.md) literature knowledge base |
 | `container/` | In-container LINDA wrapper source (baked into the Neurodesk image) |
 | `requirements.txt` | Python dependencies |
+| `requirements-dev.txt` | Test and notebook-diff dependencies for contributors |
 
 Runtime directories (created automatically, excluded from git):
 
@@ -71,7 +72,7 @@ Runtime directories (created automatically, excluded from git):
 ```bash
 # 1. Open Neurodesktop (Play or local) and start a JupyterLab session
 # 2. Clone the repo into neurodesktop-storage so it persists across sessions
-git clone https://github.com/micmas/calmar.git ~/neurodesktop-storage/calmar
+git clone --recurse-submodules https://github.com/micmas/calmar.git ~/neurodesktop-storage/calmar
 cd ~/neurodesktop-storage/calmar
 
 # 3. Open the notebook
@@ -79,6 +80,9 @@ cd ~/neurodesktop-storage/calmar
 
 # 4. Run the Inputs and options cell once, then use the form and buttons
 ```
+
+For an existing checkout after pulling the KB relocation, initialize it with
+`git submodule update --init --recursive`.
 
 The notebook uses `Path.cwd()` for all paths — no path editing required as long as you open it from the repo root.
 
@@ -255,6 +259,11 @@ participant and mask. Saved QC decisions remain unchanged.
 
 At **Choose report inputs**, select the participant, MNI mask and display atlas.
 An optional mask-comparison viewer and Neurosynth checkbox are in the same form.
+The Behavioural / clinical table does not display the recorded aphasia-type
+label. A recognised Kertesz WAB/WAB-R type profile can seed only fluency,
+comprehension and repetition context: impaired (`-`) axes receive a mild
+profile floor, while relatively preserved (`+`) axes keep severity unassigned.
+Every profile-derived row is labelled and can be replaced by an assessed level.
 **Generate participant report** starts the remaining report cells automatically.
 The result has one panel with expandable evidence sections, a lazy brain viewer,
 optional decoding and an HTML download. QC decisions remain in the saved report.
@@ -322,7 +331,7 @@ LINDA registers each brain to its **ch2 (Colin27)** template (single-subject ana
 - **Guided ISLES input:** choose **ISLES 2022 (local)** and its extracted root. The form validates compatible pairs, and the official `*_msk.nii.gz` reference masks are discovered automatically.
 - **Optional DWI beside a T1 workflow:** after participant discovery, the notebooks ask whether to analyse any OpenADS-ready DWI/ADC pair they find. A pair may come from the selected T1 session or another session and remains labelled with its own session. The choice is recorded immediately, but OpenADS runs only after the ordinary T1/manual-mask registration inspection and QC. Its registration receives a separate QC checkpoint because DWI contrast and lesion boundaries can change over time, even when the anatomical lesion is expected to be stable in chronic stroke.
 - **Directional dMRI is a separate opt-in route:** participant discovery inventories every BIDS `*_dwi.nii.gz` in the selected and other participant sessions. `calmar.diffusion` checks the b-values, b-vectors and JSON sidecar without fetching the NIfTI, requires a b=0 image and at least 30 distinct diffusion directions for participant reporting, and detects an opposite phase-encoding series when present. Trace-DWI/ADC cases without gradients remain eligible for OpenADS but are not treated as tensor or tractography data.
-- **Direct processing and reporting:** selected series run after lesion QC through `src/analysis_45_dmri_preproc.sh` (QSIPrep 26.1.1), `analysis_46_dmri_recon.sh` (QSIRecon 26.0.1, default `ss3t_fod_autotrack`) and `analysis_47_dmri_metrics.sh`. The selected native-T1 lesion mask is supplied to QSIPrep as a BIDS lesion ROI. QSIRecon bundle FA/MD summaries are normalized to `derivatives/calmar-dmri/<sub>/<ses>/dwi/metrics/*_desc-direct_tractometry.tsv`; uncomputed fields remain explicitly missing. Reports place these participant measurements in their own section and never numerically combine them with BCB/DeepDisco probabilities. Because stroke pathology can cause registration or tracking failure, a missing bundle is never called proof of disconnection.
+- **Direct processing and reporting:** selected series run after lesion QC through `src/analysis_45_dmri_preproc.sh` (QSIPrep 26.1.1; TORTOISE motion/eddy correction by default), `analysis_46_dmri_recon.sh` (QSIRecon 26.0.1, default `ss3t_fod_autotrack`) and `analysis_47_dmri_metrics.sh`. `DMRI_HMC_METHOD` can select another QSIPrep-supported method. TORTOISE is the current default because the Neurodesk 26.1.1 image ships unreadable FSL-eddy package metadata, which prevents QSIPrep's `eddy` workflow from being constructed. The selected native-T1 lesion mask is supplied to QSIPrep as a BIDS lesion ROI. QSIRecon bundle FA/MD summaries are normalized to `derivatives/calmar-dmri/<sub>/<ses>/dwi/metrics/*_desc-direct_tractometry.tsv`; uncomputed fields remain explicitly missing. Reports place these participant measurements in their own section and never numerically combine them with BCB/DeepDisco probabilities. Because stroke pathology can cause registration or tracking failure, a missing bundle is never called proof of disconnection. Failed tool output now appears in the notebook/job error rather than disappearing with the temporary attempt directory.
 - **Template space:** OpenADS also registers the DWI to MNI152 (affine + SyN against its JHU ADC template). Its own template-space "stroke" image is not the lesion, so the native lesion is warped with those transforms (`src/analysis_44_apply_openads_registration.sh`). On 10 ISLES-2022 cases the side was preserved in all, and OpenADS agreed with the expert masks at Dice 0.75–0.91 in template space for most lesions; small lesions are often missed.
 - **Same downstream steps:** manual masks, disconnectomes, atlas overlap and the report work as in the chronic route.
 - **Recovery phase:** reports tag each knowledge-base finding with the phase it was studied in, so an acute participant sees how much of the evidence comes from chronic-stroke studies.
