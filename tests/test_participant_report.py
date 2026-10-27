@@ -97,7 +97,7 @@ def test_report_cell_saves_report_with_provenance_and_rules(fixture):
     assert "Speech fluency" in html and "Mild" in html
     assert "TranscorticalMotor" not in "\n".join(report.messages)
     assert "Chronic (&gt;6 mo)" in html or "Chronic (>6 mo)" in html
-    titles = [report.panel.tabs.children[0].get_title(i) for i in range(len(report.panel.tabs.children[0].children))]
+    titles = [section.get_title(0) for section in report.panel.section_accordions]
     assert titles[0] == "Provenance and caveats" and "Generation details" in titles
     # The settings cell displays the rule tables.
     shown = "".join(c.args[0].data for c in ns["display"].call_args_list if hasattr(c.args[0], "data"))

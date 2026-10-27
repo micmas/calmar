@@ -20,7 +20,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class GuidedWorkflowTests(unittest.TestCase):
     def test_every_disabled_test_cell_only_prints_continuation(self):
-        for number in (20,23,25,27,"calmar-registration","calmar-openads","calmar-manual",32,34,35,39):
+        for number in (20,23,25,27,"calmar-registration","calmar-openads","calmar-manual",
+                       "calmar-single-optional",32,34,35,39):
             with self.subTest(cell=number):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
@@ -50,6 +51,121 @@ class GuidedWorkflowTests(unittest.TestCase):
         self.assertIn('show_step(dwi_openads, DWI_STUDY', source)
         self.assertIn('viewer=False', source)
         self.assertIn('open_qc_review(', source)
+
+    def test_optional_analyses_run_in_single_test_and_are_not_repeated_in_batch(self):
+        guided = json.loads((ROOT/'calmar-guided.ipynb').read_text())
+        source = ''.join(next(cell for cell in guided['cells']
+                              if cell.get('id') == 'calmar-guided-single-test')['source'])
+        self.assertLess(source.index('calmar-manual'), source.index('calmar-single-optional'))
+        self.assertLess(source.index('calmar-single-optional'), source.index('calmar-step-32'))
+        for cell_id in ('calmar-optional-dwi', 'calmar-direct-dmri', 'calmar-brain-health'):
+            self.assertIn('pending_optional_entries', ''.join(source_cell(cell_id)['source']))
+
+    def test_single_test_runs_every_selected_optional_route(self):
+        stages = []
+        test_entry = {'subject': 'sub-one', 'session': 'ses-t1'}
+        dwi_entry = {'subject': 'sub-one', 'session': 'ses-dwi',
+                     'anatomical_session': 'ses-t1', 'dwi': 'dwi.nii.gz'}
+        dmri_entry = {'subject': 'sub-one', 'session': 'ses-dmri',
+                      'anatomical_session': 'ses-t1', 'dwi': 'dmri.nii.gz'}
+        health_entry = {'subject': 'sub-one', 'session': 'ses-t1',
+                        'brain_health_components': ['atrophy', 'wmh']}
+
+        def submit(stage, entries, study, timings):
+            stages.append((stage, tuple(entries), study))
+            return SimpleNamespace(stage=stage)
+
+        namespace = {
+            'RUN_TEST': True, 'CONFIG': {'MODALITY': 't1'},
+            'SUBJECTS': [test_entry], 'TEST_SUBJECT_IDX': 0,
+            'DWI_SUBJECTS': [dwi_entry], 'DMRI_SUBJECTS': [dmri_entry],
+            'BRAIN_HEALTH_SUBJECTS': [health_entry],
+            'DWI_STUDY': SimpleNamespace(config={}, dataset='.'),
+            'DMRI_STUDY': SimpleNamespace(config={}, dataset='.'),
+            'study': SimpleNamespace(config={}, dataset='.'), 'BATCH_TIMINGS': {},
+            'submit_step': submit, 'show_step': lambda *args, **kwargs: None,
+        }
+        with patch('calmar.scheduled._result_stamps', return_value={}):
+            exec(''.join(source_cell('calmar-single-optional')['source']), namespace)
+
+        self.assertEqual([stage for stage, _, _ in stages], [
+            'acquisition', 'openads', 'dmri_preproc', 'dmri_recon', 'dmri_metrics',
+            'brain_health_anatomy', 'brain_health_wmh', 'brain_health_metrics'])
+        self.assertEqual(set(namespace['_SINGLE_OPTIONAL_COMPLETED']),
+                         {'dwi', 'dmri', 'brain_health'})
+
+    def test_optional_failure_does_not_block_other_single_test_routes(self):
+        stages = []
+        test_entry = {'subject': 'sub-one', 'session': 'ses-t1'}
+        dwi_entry = {'subject': 'sub-one', 'session': 'ses-dwi',
+                     'anatomical_session': 'ses-t1', 'dwi': 'dwi.nii.gz'}
+        health_entry = {'subject': 'sub-one', 'session': 'ses-t1',
+                        't1w': 't1.nii.gz', 'brain_health_components': ['atrophy']}
+
+        def submit(stage, entries, study, timings):
+            stages.append(stage)
+            if stage == 'openads':
+                raise RuntimeError('OpenADS failed')
+            return {'stage': stage, 'request': {'entries': entries}, 'results': []}
+
+        namespace = {
+            'RUN_TEST': True, 'CONFIG': {'MODALITY': 't1'}, 'SUBJECTS': [test_entry],
+            'TEST_SUBJECT_IDX': 0, 'DWI_SUBJECTS': [dwi_entry], 'DMRI_SUBJECTS': [],
+            'BRAIN_HEALTH_SUBJECTS': [health_entry], 'DWI_STUDY': SimpleNamespace(
+                config={}, dataset='.', config_for=lambda entry: {}, dataset_for=lambda entry: '.'),
+            'DMRI_STUDY': None, 'study': SimpleNamespace(
+                config={}, dataset='.', config_for=lambda entry: {}, dataset_for=lambda entry: '.',
+                masks=lambda entry: {}),
+            'BATCH_TIMINGS': {}, 'submit_step': submit,
+            'show_step': lambda *args, **kwargs: None,
+        }
+        with patch('calmar.scheduled._result_stamps', return_value={}):
+            exec(''.join(source_cell('calmar-single-optional')['source']), namespace)
+
+        self.assertIn('brain_health_metrics', stages)
+        self.assertNotIn('brain_health_wmh', stages)
+        self.assertEqual(namespace['DWI_ERROR'], 'OpenADS failed')
+        self.assertNotIn('dwi', namespace['_SINGLE_OPTIONAL_COMPLETED'])
+        self.assertIn('brain_health', namespace['_SINGLE_OPTIONAL_COMPLETED'])
+
+    def test_optional_dwi_batch_skips_reusable_test_entry_but_qcs_every_entry(self):
+        from calmar.single_subject import mark_optional_completed
+
+        class StopExecution(Exception):
+            pass
+
+        first = {'subject': 'sub-one', 'session': 'ses-dwi',
+                 'anatomical_session': 'ses-t1', 't1w': 'first_dwi.nii.gz',
+                 'dwi': 'first_dwi.nii.gz', 'adc': 'first_adc.nii.gz'}
+        second = {'subject': 'sub-two', 'session': 'ses-dwi',
+                  'anatomical_session': 'ses-t1', 't1w': 'second_dwi.nii.gz',
+                  'dwi': 'second_dwi.nii.gz', 'adc': 'second_adc.nii.gz'}
+        study = SimpleNamespace(config={'OVERWRITE': True}, dataset='.')
+        completed = {}
+        submitted = []
+
+        def submit(stage, entries, selected_study, timings):
+            submitted.append((stage, list(entries)))
+            return {'stage': stage, 'request': {'entries': list(entries)}, 'results': []}
+
+        namespace = {
+            'CONFIG': {'MODALITY': 't1'}, 'DWI_SUBJECTS': [first, second],
+            'DWI_STUDY': study, '_SINGLE_OPTIONAL_COMPLETED': completed,
+            'BATCH_TIMINGS': {}, 'submit_step': submit,
+            'show_step': lambda *args, **kwargs: None,
+            'cw': SimpleNamespace(fresh_viewer=lambda *args, **kwargs: 'viewer', vols='volumes'),
+            'StopExecution': StopExecution,
+        }
+        with patch('calmar.scheduled._result_stamps', return_value={}), \
+             patch('calmar.qc_panel.open_qc_review') as review:
+            mark_optional_completed(completed, 'dwi', [first], study,
+                                    [{'stage': 'openads', 'request': {'entries': [first]}, 'results': []}])
+            with self.assertRaises(StopExecution):
+                exec(''.join(source_cell('calmar-optional-dwi')['source']), namespace)
+
+        self.assertEqual([(stage, entries) for stage, entries in submitted],
+                         [('acquisition', [second]), ('openads', [second])])
+        self.assertEqual(review.call_args.args[0], [first, second])
 
     def test_mixed_atlas_tables_include_each_route_source(self):
         source = ''.join(source_cell('calmar-step-69')['source'])

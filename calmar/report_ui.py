@@ -332,12 +332,19 @@ class ParticipantReport:
         decode_details.set_title(0, "Decoding log")
         # Evidence tables use explicit light colours in the saved report.
         # Retain that background when presenting each section in a dark notebook.
-        accordion = w.Accordion(children=[w.HTML(
-            '<div class="calmar-report" style="background:#fff;color:#2b2b3a;padding:12px;overflow-x:auto">'
-            + html + '</div>') for _, html in sections], selected_index=0)
-        for i, (label, _) in enumerate(sections):
-            accordion.set_title(i, label)
-        children = [accordion, self.brain_box]
+        # Keep each disclosure independent. A single multi-child Accordion
+        # collapses the open (often very tall) section before expanding the
+        # next one; the resulting height change can leave JupyterLab scrolled
+        # to the bottom of the output instead of at the heading just clicked.
+        self.section_accordions = []
+        for i, (label, html) in enumerate(sections):
+            section = w.Accordion(children=[w.HTML(
+                '<div class="calmar-report" style="background:#fff;color:#2b2b3a;padding:12px;overflow-x:auto">'
+                + html + '</div>')], selected_index=0 if i == 0 else None)
+            section.set_title(0, label)
+            self.section_accordions.append(section)
+        self.section_box = w.VBox(self.section_accordions)
+        children = [self.section_box, self.brain_box]
         if decode:
             children.append(w.VBox([self.decode_html, decode_details]))
         self.tabs = w.Tab(children=children)

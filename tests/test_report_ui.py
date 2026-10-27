@@ -40,6 +40,26 @@ class ReportInterfaceTests(unittest.TestCase):
             controls = report.brain_box.children[0]                       # same controls as the step viewers
             self.assertEqual([r['label'] for r in controls.roles], ['Manual lesion'])
 
+    def test_report_sections_are_independent_single_section_disclosures(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            report = ParticipantReport(
+                'Report', '', [('First', '<p>tall first section</p>'),
+                               ('Second', '<p>second section</p>')],
+                root/'report.html', '<body></body>', root/'brain.nii.gz',
+                root/'mask.nii.gz', SimpleNamespace())
+            self.addCleanup(report.widget.close)
+            self.addCleanup(report.navigation.close)
+            self.assertEqual([item.get_title(0) for item in report.section_accordions],
+                             ['First', 'Second'])
+            self.assertTrue(all(len(item.children) == 1 for item in report.section_accordions))
+            self.assertEqual(report.section_accordions[0].selected_index, 0)
+            self.assertIsNone(report.section_accordions[1].selected_index)
+
+            report.section_accordions[1].selected_index = 0
+            self.assertEqual(report.section_accordions[0].selected_index, 0)
+            self.assertEqual(report.section_accordions[1].selected_index, 0)
+
     def test_table_title_tracks_atlas_mask_and_counts_full_overlap(self):
         rows = [dict(subject='sub-ui', session='', region=f'ROI {i}', overlap_voxels=1,
                      lesion_in_roi_percent=1., roi_coverage_percent=2., total_lesion_voxels=100)

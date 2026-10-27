@@ -45,15 +45,15 @@ def _processing_entry(entry, option):
 
 def apply_dmri_selection(namespace, selected):
     """Record direct-dMRI choices without changing the OpenADS selection."""
-    processing = {subject: _processing_entry(entry, option)
-                  for subject, (entry, option) in selected.items()}
+    processing = {(entry["subject"], entry.get("session")): _processing_entry(entry, option)
+                  for entry, option in selected.values()}
     subjects = []
     for entry in namespace.get("SUBJECTS", ()):
         copied = dict(entry)
         copied.pop("dmri_analysis", None)
-        if entry["subject"] in processing:
+        chosen = processing.get((entry["subject"], entry.get("session")))
+        if chosen is not None:
             # Report linkage is deliberately compact and JSON-serializable.
-            chosen = processing[entry["subject"]]
             copied["dmri_analysis"] = {
                 key: chosen.get(key) for key in
                 ("subject", "session", "dwi", "bval", "bvec", "json",
@@ -141,7 +141,7 @@ class DMRIChoice(w.VBox):
         self.checkpoint._cancel_queued()
 
     def _selection(self):
-        return {entry["subject"]: (entry, options[choice.value])
+        return {(entry["subject"], entry.get("session")): (entry, options[choice.value])
                 for entry, options, include, choice in self.rows if include.value}
 
     def _request(self, analyse):
@@ -159,8 +159,8 @@ class DMRIChoice(w.VBox):
             include.disabled = choice.disabled = True
         if selected:
             sessions = ", ".join(
-                f"{subject} {option.get('session') or ''}".strip()
-                for subject, (_, option) in selected.items())
+                f"{key[0] if isinstance(key, tuple) else key} {option.get('session') or ''}".strip()
+                for key, (_, option) in selected.items())
             self.message.value = "<b>Direct dMRI selected:</b> " + escape(sessions) + "."
         else:
             self.message.value = "<b>Direct dMRI declined.</b> Continuing without tract measurements."
@@ -177,9 +177,10 @@ class DMRIChoice(w.VBox):
 
 def show_dmri_choice(namespace, shell=None):
     """Offer direct analysis only for sidecar-validated directional dMRI."""
-    available = {entry["subject"]: dmri_options(entry) for entry in namespace.get("SUBJECTS", ())
+    available = {(entry["subject"], entry.get("session")): (entry, dmri_options(entry))
+                 for entry in namespace.get("SUBJECTS", ())
                  if _has_anatomical_t1(namespace["CONFIG"], entry)}
-    available = {subject: options for subject, options in available.items() if options}
+    available = {key: pair for key, pair in available.items() if pair[1]}
     if not available:
         apply_dmri_selection(namespace, {})
         directional_without_t1 = any(
@@ -196,9 +197,8 @@ def show_dmri_choice(namespace, shell=None):
         return None
     configured = namespace["CONFIG"].get("ANALYSE_TRACT_DWI")
     if configured is not None:
-        by_subject = {entry["subject"]: entry for entry in namespace.get("SUBJECTS", ())}
-        selected = ({subject: (by_subject[subject], options[0])
-                     for subject, options in available.items()} if configured else {})
+        selected = ({key: (entry, options[0])
+                     for key, (entry, options) in available.items()} if configured else {})
         apply_dmri_selection(namespace, selected)
         print((f"Direct diffusion analysis selected for {len(selected)} participant(s)."
                if selected else "Direct diffusion analysis disabled in CONFIG."))

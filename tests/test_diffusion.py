@@ -105,6 +105,27 @@ def test_selection_is_opt_in_and_keeps_anatomical_session(tmp_path):
     assert saved["selection"][0]["has_reverse_phase"] is False
 
 
+def test_selection_links_directional_dwi_to_each_anatomical_session(tmp_path):
+    entries = []
+    choices = {}
+    for index, anatomical_session in enumerate(("ses-t1a", "ses-t1b"), start=1):
+        dwi_session = f"ses-dwi{index}"
+        item = gradients(tmp_path / dwi_session, f"sub-one_{dwi_session}", [0] + [1000] * 32)
+        item.update(subject="sub-one", session=dwi_session, same_session=False)
+        entry = {"subject": "sub-one", "session": anatomical_session,
+                 "t1w": tmp_path / f"{anatomical_session}_T1w.nii.gz", "dwi_inventory": [item]}
+        entries.append(entry)
+        choices[("sub-one", anatomical_session)] = (entry, dmri_options(entry)[0])
+    namespace = {"CONFIG": {"ANALYSE_TRACT_DWI": None}, "SUBJECTS": entries,
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+
+    selected = apply_dmri_selection(namespace, choices)
+
+    assert [entry["anatomical_session"] for entry in selected] == ["ses-t1a", "ses-t1b"]
+    assert [entry["dmri_analysis"]["session"] for entry in namespace["SUBJECTS"]] == [
+        "ses-dwi1", "ses-dwi2"]
+
+
 def test_primary_trace_dwi_route_is_not_mislabelled_as_t1_for_qsiprep(tmp_path, capsys):
     item = gradients(tmp_path, "sub-acute_ses-one", [0] + [1000] * 32)
     item.update(subject="sub-acute", session="ses-one", same_session=True)
