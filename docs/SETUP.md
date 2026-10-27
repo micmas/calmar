@@ -65,19 +65,43 @@ synchronising a checkout that still has the old history.
 `stroke-aphasia-kb/` is a git submodule checkout of
 [micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb)
 at the commit CALMaR was last tested with (`git submodule status` shows
-which). CALMaR's report code imports the KB's modules from
-`stroke-aphasia-kb/scripts/` through `calmar/kb_paths.py`. Its commands
-run from the CALMaR root, for example:
+which). It remains the reproducible KB version recorded by a CALMaR
+release.
+
+For notebook work, `calmar/kb_location.py` resolves the KB in this order:
+
+1. `CALMAR_KB_ROOT`, when set;
+2. a sibling working copy at `<calmar checkout>/../stroke-aphasia-kb`;
+3. the pinned submodule at `<calmar checkout>/stroke-aphasia-kb`.
+
+A candidate must contain `scripts/aphasia_kb.py` and `regions/`. Setup
+prints the selected absolute path, why it was selected, its Git commit,
+and whether it has uncommitted changes. Participant reports record the
+same facts. A sibling checkout can therefore supply newly edited or
+uncommitted drafts; the report's **Evidence** setting still determines
+whether draft, in-review or only approved entries are loaded.
+
+Set the override before starting JupyterLab to force the submodule or a
+different checkout:
+
+```bash
+CALMAR_KB_ROOT="$PWD/stroke-aphasia-kb" jupyter lab
+CALMAR_KB_ROOT="$HOME/GITHUB/stroke-aphasia-kb" jupyter lab
+```
+
+CALMaR imports modules from the selected checkout's `scripts/` folder
+and reads entries from that same root. Restart the kernel and rerun
+Setup after changing `CALMAR_KB_ROOT`. KB commands can still run from
+the CALMaR root, for example:
 
 ```bash
 python stroke-aphasia-kb/scripts/kb_status.py
 ```
 
 Edits to KB entries or scripts are commits in the KB repository, not in
-CALMaR: commit and push inside `stroke-aphasia-kb/` (it is a full
-clone), then `git add stroke-aphasia-kb && git commit` here so CALMaR
-records the new commit. `git submodule update --remote stroke-aphasia-kb`
-moves the checkout to the KB's latest `main`. Source PDFs under
+CALMaR. Once a KB version is final, update the release pointer with
+`git submodule update --remote stroke-aphasia-kb`, then commit
+`stroke-aphasia-kb` in CALMaR. Source PDFs under
 `stroke-aphasia-kb/papers/` are local files, never committed. See the
 KB's [README](../stroke-aphasia-kb/README.md) and
 [docs/HOWTO.md](../stroke-aphasia-kb/docs/HOWTO.md) for extraction and

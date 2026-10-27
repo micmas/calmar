@@ -60,7 +60,8 @@ def _run_cells(f, **extra):
     ns = dict(SUBJECTS=[f.entry], TEST_SUBJECT_IDX=0, PROJECT_DIR=KB_ROOT.parent, CONFIG={"LESION_THRESHOLD": .5},
               study=f.study, REPORTS_DIR=f.reports, RAW_DATASET_DIR=f.dataset, ATLAS_DIR=f.root,
               cw=f.helpers, display=Mock(), HTML=HTML)
-    exec("".join(source_cell(77)["source"]), ns)
+    with patch.dict("os.environ", {"CALMAR_KB_ROOT": str(KB_ROOT)}):
+        exec("".join(source_cell(77)["source"]), ns)
     ns.update(INTERP_MASK_SOURCE="linda", INTERP_KB_ATLASES=["HarvardOxford"], **extra)
     with patch("calmar.atlas_overlap.prepare_report_overlap") as prepare, \
             patch("calmar.reporting.run_reporting_task", return_value=str(f.png)) as overlay:
@@ -84,6 +85,7 @@ def test_report_cell_saves_report_with_provenance_and_rules(fixture):
     assert "LINDA vs SynthStroke" not in html                  # agreement is shown before, in the form
     assert "MNI152" in html
     assert "<b>Knowledge base:</b> version " in html and "papers ·" in html and "extracted findings" in html
+    assert "KB root: CALMAR_KB_ROOT override" in html and str(KB_ROOT.resolve()) in html
     # Damaged regions use the min-overlap threshold (5 %): the 1 % ROI is not shown.
     assert "pars opercularis" in html and "Tiny ROI" not in html
     assert html.index("Behavioural / clinical data") < html.index("Damaged regions")
@@ -124,9 +126,9 @@ def test_mask_agreement_resamples_and_reports_dice(tmp_path):
 
 
 def test_kb_root_without_entries_is_an_error(tmp_path):
-    pr._kb_modules(KB_ROOT)  # modules come from the real KB; the entries root is empty
-    with pytest.raises(FileNotFoundError):
-        pr.load_kb(tmp_path, pr.ReportSettings())
+    aphasia_kb, _ = pr._kb_modules(KB_ROOT)  # code is real; the requested entries root is empty
+    with pytest.raises(FileNotFoundError, match="No aphasia knowledge base entries"):
+        pr.load_kb(tmp_path, pr.ReportSettings(), aphasia_kb=aphasia_kb)
 
 
 def test_kb_version_counts_what_the_report_used(tmp_path):
@@ -135,14 +137,19 @@ def test_kb_version_counts_what_the_report_used(tmp_path):
     kb = SimpleNamespace(include=("approved",), regions=[1, 2], impairments=[1], therapies=[], predictors=[1],
                          findings=pd.DataFrame({"citation": ["@A", "@A", "@B", None],
                                                 "review_kind": ["human", "legacy", "legacy", "human"]}))
-    version = pr.kb_version(tmp_path, kb)                    # not a git checkout
+    version = pr.kb_version(tmp_path, kb, location="CALMAR_KB_ROOT override")  # not a git checkout
     assert (version["commit"], version["papers"], version["findings"], version["findings_reviewed"]) == (None, 2, 4, 2)
     assert pr.kb_version_text(version) == (
-        "version unknown (not under git version control) · 2 papers · 4 extracted findings "
+        f"version unknown (not under git version control); working-tree status unknown "
+        f"· KB root: CALMAR_KB_ROOT override ({tmp_path.resolve()}) "
+        "· 2 papers · 4 extracted findings "
         "(2 approved by a named reviewer) in 4 entries (2 regions, 1 impairments, 0 therapies, 1 predictors) · "
         "statuses used: approved")
-    version = pr.kb_version(KB_ROOT, kb)                      # the repository's KB is in git
+    version = pr.kb_version(KB_ROOT, kb, location="pinned CALMaR submodule")
     assert version["commit"] and version["date"]
+    assert "KB root: pinned CALMaR submodule" in pr.kb_version_text(version)
+    version["uncommitted"] = True
+    assert "with uncommitted changes" in pr.kb_version_text(version)
 
 
 def test_evidence_levels_choose_the_kb_statuses():
