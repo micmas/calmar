@@ -154,12 +154,17 @@ class ReportInputs:
         dataset = (study.dataset_for(entry)
                    if study is not None and hasattr(study, "dataset_for")
                    else self.ns.get("RAW_DATASET_DIR"))
+        if dataset is None:
+            return normalise_domain_levels(None), {}
         project = self.ns.get("PROJECT_DIR")
         kb_root = self.ns.get("APHASIA_KB_ROOT")
-        if kb_root is None and project is not None:
-            kb_root = Path(project) / "stroke-aphasia-kb"
+        if kb_root is None:
+            from .kb_location import resolve_kb_root
+            kb_root, reason = resolve_kb_root(project)
+            self.ns["APHASIA_KB_ROOT"] = kb_root
+            self.ns["APHASIA_KB_REASON"] = reason
         kb_root = Path(kb_root) if kb_root is not None else None
-        if dataset is None or kb_root is None or not kb_root.is_dir():
+        if kb_root is None or not kb_root.is_dir():
             return normalise_domain_levels(None), {}
         _, rules = _kb_modules(kb_root)
         row = participant_row(dataset, entry["subject"])

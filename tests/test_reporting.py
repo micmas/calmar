@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import nibabel as nib
@@ -62,6 +63,37 @@ def test_client_passes_explicit_request_without_running_computation(tmp_path):
     stage, namespace = submit.call_args.args
     assert stage == 'reporting'
     assert namespace['_operation_request']['task'] == 'group'
+
+
+def test_decode_client_resolves_legacy_relative_kb_to_selected_root(tmp_path):
+    kb_root = Path(__file__).resolve().parents[1] / 'stroke-aphasia-kb'
+    with patch('calmar.kb_location.resolve_kb_root',
+               return_value=(kb_root, 'pinned CALMaR submodule')), \
+            patch('calmar.scheduled.run_step_sync', return_value={'value': {'ok': True}}) as submit:
+        result = run_reporting_task({'PROJECT_DIR': tmp_path}, 'decode', mask='mask.nii.gz',
+                                    dataset='data', kb_root='stroke-aphasia-kb')
+    assert result == {'ok': True}
+    request = submit.call_args.args[1]['_operation_request']
+    assert request['kb_root'] == str(kb_root)
+    assert request['kb_reason'] == 'pinned CALMaR submodule'
+
+
+def test_decode_output_records_selected_kb_provenance(tmp_path, monkeypatch):
+    monkeypatch.setenv('SLURM_JOB_ID', 'fixture')
+    kb_root = Path(__file__).resolve().parents[1] / 'stroke-aphasia-kb'
+    fake_module = SimpleNamespace(KnowledgeBase=lambda root: SimpleNamespace(
+        decode_lesion=lambda mask, verbose: {'neurosynth_available': False, 'warnings': []}))
+    output = tmp_path / 'out'
+    output.mkdir()
+    state = {'commit': 'abc123', 'date': '2026-10-27', 'uncommitted': True}
+    with patch('calmar.kb_paths.load_kb_modules', return_value=(fake_module,)), \
+            patch('calmar.acquisition.ensure_nifti_content', return_value=True), \
+            patch('calmar.kb_location.kb_git_state', return_value=state):
+        result = execute({'task': 'decode', 'mask': 'mask.nii.gz', 'dataset': 'data',
+                          'kb_root': str(kb_root), 'kb_reason': 'pinned CALMaR submodule'}, output)
+    expected = {'root': str(kb_root), 'reason': 'pinned CALMaR submodule', **state}
+    assert result['knowledge_base'] == expected
+    assert json.loads((output / 'decoding.json').read_text())['knowledge_base'] == expected
 
 
 def test_atlas_setup_reuses_published_maps_until_selection_or_force_changes(tmp_path):

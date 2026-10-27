@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import ipywidgets as w
 import pandas as pd
@@ -12,6 +12,8 @@ from calmar.atlas_ui import OverlapSelection, overlap_table
 from calmar.report_ui import ParticipantReport, ReportInputs, report_sections
 from calmar.participant_report import report_section
 from calmar import colors
+
+KB_ROOT = Path(__file__).resolve().parents[1] / "stroke-aphasia-kb"
 
 
 class ReportInterfaceTests(unittest.TestCase):
@@ -105,6 +107,27 @@ class ReportInterfaceTests(unittest.TestCase):
         self.assertEqual(ns['INTERP_DOMAIN_LEVELS']['naming'], 'moderate')
         self.assertEqual(ns['INTERP_DOMAIN_LEVELS']['reading'], 'not_assessed')
 
+    def test_form_without_dataset_does_not_resolve_the_kb(self):
+        shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
+        ns = dict(SUBJECTS=[dict(subject='sub-ui', session=None)],
+                  INTERP_KB_ATLASES=['Atlas A'], available_mni_sources=lambda entry: ['manual'])
+        with patch.dict('os.environ', {'CALMAR_KB_ROOT': '/definitely/not/a/kb'}):
+            panel = ReportInputs(ns, shell)
+        self.addCleanup(panel.close)
+        self.assertEqual(panel.domains['naming'].value, 'not_assessed')
+
+    def test_invalid_override_fails_clearly_when_form_needs_the_kb(self):
+        with TemporaryDirectory() as temp:
+            dataset = Path(temp) / 'data'
+            dataset.mkdir()
+            (dataset / 'participants.tsv').write_text('participant_id\nsub-ui\n')
+            shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
+            ns = dict(SUBJECTS=[dict(subject='sub-ui', session=None)], RAW_DATASET_DIR=dataset,
+                      INTERP_KB_ATLASES=['Atlas A'], available_mni_sources=lambda entry: ['manual'])
+            with patch.dict('os.environ', {'CALMAR_KB_ROOT': '/definitely/not/a/kb'}), \
+                    self.assertRaisesRegex(FileNotFoundError, 'CALMAR_KB_ROOT is set'):
+                ReportInputs(ns, shell)
+
     def test_domain_levels_are_kept_separate_when_switching_participants(self):
         shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
         ns = dict(SUBJECTS=[dict(subject='sub-a', session='ses-1'), dict(subject='sub-b', session='ses-2')],
@@ -128,7 +151,8 @@ class ReportInterfaceTests(unittest.TestCase):
             shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=Mock()))
             ns = dict(SUBJECTS=[dict(subject='sub-a', session='ses-1')],
                       INTERP_KB_ATLASES=['Atlas A'], available_mni_sources=lambda entry: ['manual'],
-                      RAW_DATASET_DIR=dataset, PROJECT_DIR=Path(__file__).resolve().parents[1])
+                      RAW_DATASET_DIR=dataset, PROJECT_DIR=Path(__file__).resolve().parents[1],
+                      APHASIA_KB_ROOT=KB_ROOT)
             panel = ReportInputs(ns, shell)
             self.addCleanup(panel.close)
             self.assertEqual(panel.domains['fluency'].value, 'mild')

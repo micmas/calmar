@@ -65,6 +65,24 @@ def _file_stamps(value):
 def run_reporting_task(namespace, task, *, force=False, **parameters):
     """Compute once in Slurm; reopening unchanged results only reads the receipt."""
     from .scheduled import run_step_sync
+    if task == 'decode':
+        configured = parameters.get('kb_root')
+        # Old retained requests used this relative default; resolve it now so
+        # they follow the same override/sibling/submodule selection as notebooks.
+        legacy_default = configured is not None and Path(configured) == Path('stroke-aphasia-kb')
+        if configured is None or legacy_default:
+            from .kb_location import resolve_kb_root
+            root, reason = resolve_kb_root(namespace.get('PROJECT_DIR'))
+            parameters = {**parameters, 'kb_root': str(root), 'kb_reason': reason}
+        elif not parameters.get('kb_reason'):
+            from .kb_location import resolve_kb_root
+            try:
+                selected, reason = resolve_kb_root(namespace.get('PROJECT_DIR'))
+            except FileNotFoundError:
+                selected, reason = None, 'explicit request'
+            root = Path(configured).expanduser().resolve()
+            parameters = {**parameters, 'kb_root': str(root),
+                          'kb_reason': reason if selected == root else 'explicit request'}
     request = {'task': task, **pack(parameters)}
     dependencies = [Path(__file__), Path(__file__).with_name('atlas_loader.py'),
                     Path(__file__).with_name('atlas_overlap.py'), Path(__file__).with_name('overlay.py')]
@@ -159,13 +177,25 @@ def execute(request, output):
                 result[key] = str(target)
         return result
     if task == 'decode':
-        from .kb_paths import add_kb_to_path
-        add_kb_to_path(request['kb_root'])
-        from aphasia_kb import KnowledgeBase
+        configured = request.get('kb_root')
+        # Preserve old request files while giving their relative default the
+        # current resolver semantics. An absolute path remains explicit.
+        legacy_default = configured is not None and Path(configured) == Path('stroke-aphasia-kb')
+        if configured is None or legacy_default:
+            from .kb_location import resolve_kb_root
+            kb_root, kb_reason = resolve_kb_root(Path.cwd())
+        else:
+            kb_root = Path(configured).expanduser().resolve()
+            kb_reason = request.get('kb_reason') or 'explicit request'
+        from .kb_paths import load_kb_modules
+        aphasia_kb, = load_kb_modules(kb_root, 'aphasia_kb')
         from .acquisition import ensure_nifti_content
         if not ensure_nifti_content(Path(request['mask']), Path(request['dataset'])):
             raise FileNotFoundError(request['mask'])
-        result = KnowledgeBase(request['kb_root']).decode_lesion(request['mask'], verbose=True)
+        result = aphasia_kb.KnowledgeBase(kb_root).decode_lesion(request['mask'], verbose=True)
+        from .kb_location import kb_git_state
+        result['knowledge_base'] = {'root': str(kb_root), 'reason': kb_reason,
+                                    **kb_git_state(kb_root)}
         (output/'decoding.json').write_text(json.dumps(pack(result), indent=2))
         return pack(result)
     if task == 'disconnectome':

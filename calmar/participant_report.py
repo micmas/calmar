@@ -52,7 +52,8 @@ import re
 
 import pandas as pd
 
-from .kb_paths import add_kb_to_path, kb_content_paths
+from .kb_location import kb_git_state
+from .kb_paths import load_kb_modules
 
 from . import colors as cc
 from .masks import MASK_LABELS
@@ -143,16 +144,14 @@ class ParticipantReportResult:
 # ============================================================
 
 def _kb_modules(kb_root):
-    """Import ``aphasia_kb`` and ``aphasia_rules`` from ``kb_root`` (no reload)."""
-    add_kb_to_path(kb_root)
-    import aphasia_kb
-    import aphasia_rules
-    return aphasia_kb, aphasia_rules
+    """Freshly import ``aphasia_kb`` and ``aphasia_rules`` from one root."""
+    return load_kb_modules(kb_root, "aphasia_kb", "aphasia_rules")
 
 
-def load_kb(kb_root, settings):
+def load_kb(kb_root, settings, aphasia_kb=None):
     """KnowledgeBase from ``kb_root``. Raises if the root holds no KB entries."""
-    aphasia_kb, _ = _kb_modules(kb_root)
+    if aphasia_kb is None:
+        aphasia_kb, _ = _kb_modules(kb_root)
     kb = aphasia_kb.KnowledgeBase(Path(kb_root), include=settings.include)
     if not len(kb.regions) and not len(kb.impairments):
         # A wrong root does not error inside KnowledgeBase; it loads nothing.
@@ -162,27 +161,16 @@ def load_kb(kb_root, settings):
 
 
 
-def kb_version(kb_root, kb):
-    """What the report's interpretation drew on: the KB version (the last git
-    commit that changed its entries or rules, and whether they have changed
-    since) and how much it holds in the statuses loaded for this report."""
-    import subprocess
-    root = Path(kb_root)
-    def git(*args):
-        try:
-            done = subprocess.run(["git", "-C", str(root), *args, "--", *kb_content_paths(root)],
-                                  capture_output=True, text=True, timeout=20)
-        except (OSError, subprocess.TimeoutExpired):
-            return None
-        return done.stdout.strip() if done.returncode == 0 else None
-    commit = git("log", "-1", "--format=%h %cs")
-    changed = git("status", "--porcelain")
+def kb_version(kb_root, kb, location=None):
+    """The KB checkout and content scope used for this report."""
+    root = Path(kb_root).expanduser().resolve()
+    state = kb_git_state(root)
     findings = kb.findings
     reviewed = (findings["review_kind"] == "human").sum() if "review_kind" in findings else 0
     return {
-        "commit": commit.split()[0] if commit else None,
-        "date": commit.split()[1] if commit else None,
-        "uncommitted": bool(changed),
+        **state,
+        "root": str(root),
+        "location": location or "configured KB root",
         "papers": int(findings["citation"].dropna().nunique()) if "citation" in findings else 0,
         "findings": len(findings),
         "findings_reviewed": int(reviewed),
@@ -195,10 +183,15 @@ def kb_version_text(version):
     """One line for the report, e.g. "version 059bcd5 (2026-10-19) · 36 papers · ..."."""
     if version["commit"]:
         text = f"version {version['commit']} ({version['date']})"
-        if version["uncommitted"]:
+        if version["uncommitted"] is True:
             text += " with uncommitted changes"
+        elif version.get("uncommitted") is None:
+            text += "; working-tree status unknown"
     else:
         text = "version unknown (not under git version control)"
+        if version.get("uncommitted") is None:
+            text += "; working-tree status unknown"
+    text += f" · KB root: {version.get('location', 'configured KB root')} ({version.get('root', 'unknown')})"
     entries = version["entries"]
     return (f"{text} · {version['papers']} papers · {version['findings']} extracted findings "
             f"({version['findings_reviewed']} approved by a named reviewer) in "
@@ -1031,7 +1024,8 @@ def _overlay_img(namespace, entry, mask, background, source):
 # ============================================================
 
 def generate_participant_report(entry, source, settings, *, study, namespace, reports_dir,
-                                dataset_dir, atlas_dir, kb_root, helpers, run_decoding=False):
+                                dataset_dir, atlas_dir, kb_root, helpers, run_decoding=False,
+                                kb_reason=None):
     """Build, save and return the interpretation report for one participant + mask.
 
     ``study`` (calmar.study.Study) locates masks and derivatives. ``namespace``
@@ -1048,10 +1042,18 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
 
     messages = []
     note = messages.append
-    _, rules = _kb_modules(kb_root)
-    kb = load_kb(kb_root, settings)
+    if kb_reason is None:
+        from .kb_location import resolve_kb_root
+        try:
+            selected_root, selected_reason = resolve_kb_root(namespace.get("PROJECT_DIR"))
+        except FileNotFoundError:
+            selected_root, selected_reason = None, "explicit report root"
+        kb_reason = (selected_reason if selected_root == Path(kb_root).expanduser().resolve()
+                     else "explicit report root")
+    aphasia_kb, rules = _kb_modules(kb_root)
+    kb = load_kb(kb_root, settings, aphasia_kb=aphasia_kb)
     note(kb.summary())
-    kb_line = kb_version_text(kb_version(kb_root, kb))
+    kb_line = kb_version_text(kb_version(kb_root, kb, location=kb_reason))
     note(f"Knowledge base {kb_line}")
 
     if source not in study.mni_sources(entry):

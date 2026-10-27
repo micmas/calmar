@@ -76,9 +76,11 @@ for e, ax in zip(entries, axes):
     ax.set_xticks([]); ax.set_yticks([])
 fig.tight_layout(); fig.savefig(out/'laterality.png', dpi=130); plt.close(fig)
 
-from calmar.kb_paths import add_kb_to_path
-add_kb_to_path('stroke-aphasia-kb')
-import decode_lesion as decoder
+from calmar.kb_location import kb_git_state, kb_selection_text, resolve_kb_root
+from calmar.kb_paths import load_kb_modules
+kb_root, kb_reason = resolve_kb_root(Path.cwd())
+print(kb_selection_text(kb_root, kb_reason), flush=True)
+aphasia_kb, decoder = load_kb_modules(kb_root, 'aphasia_kb', 'decode_lesion')
 assert all((cache/name).is_file() for name in decoder._NS_FILES), 'Neurosynth cache incomplete'
 # The decoder's separate nilearn atlas cache must also exist; forbid acquisition.
 assert (Path.home()/'nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz').is_file()
@@ -86,11 +88,11 @@ import urllib.request
 def no_download(*args, **kwargs):
     raise RuntimeError('Validation uses existing local data only')
 urllib.request.urlretrieve = no_download
-import aphasia_kb
-result = aphasia_kb.KnowledgeBase('stroke-aphasia-kb').decode_lesion(str(mask_path(entries[0], 'synthstroke')), verbose=True)
+result = aphasia_kb.KnowledgeBase(kb_root).decode_lesion(str(mask_path(entries[0], 'synthstroke')), verbose=True)
 assert result['neurosynth_available'], result['warnings']
 assert len(result['term_decoding']) and np.isfinite(result['term_decoding']['r']).all()
 result['term_decoding'].to_csv(out/'neurosynth_terms.csv', index=False)
+summary['knowledge_base'] = {'root': str(kb_root), 'reason': kb_reason, **kb_git_state(kb_root)}
 summary['decoding'] = dict(subject=entries[0]['subject'], source='synthstroke',
                            terms=len(result['term_decoding']), warnings=result['warnings'],
                            lesion_voxels=result['lesion_voxels'])

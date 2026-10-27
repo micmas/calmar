@@ -80,17 +80,31 @@ The interpretation stage draws on
 [micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb),
 a curated, source-traceable literature base in which each finding links
 a brain region, predictor or therapy to an outcome with the verbatim
-passages that support it. CALMaR pins it as the git submodule
-`stroke-aphasia-kb/` and imports its modules from
-`stroke-aphasia-kb/scripts/`. Entries are written, reviewed and
-committed in that repository; CALMaR only records which commit it was
-tested with.
+passages that support it. CALMaR records a tested KB release as the git
+submodule `stroke-aphasia-kb/`, but the notebooks prefer a sibling
+working copy at `../stroke-aphasia-kb/` when one is present. This lets
+reports use the latest local entries—including uncommitted drafts—while
+they are being edited. Setup and every participant report identify the
+selected root, its commit and whether it has uncommitted changes.
+
+Selection order is `CALMAR_KB_ROOT`, the sibling working copy, then the
+pinned submodule. Set the environment variable before starting
+JupyterLab to force the submodule or another checkout:
 
 ```bash
-git submodule update --init                       # existing checkout without the KB
-git submodule update --remote stroke-aphasia-kb \
-    && git add stroke-aphasia-kb && git commit -m "KB: track <commit>"   # move to the KB's latest main
-python stroke-aphasia-kb/scripts/kb_status.py     # what is in it
+CALMAR_KB_ROOT="$PWD/stroke-aphasia-kb" jupyter lab
+CALMAR_KB_ROOT="$HOME/GITHUB/stroke-aphasia-kb" jupyter lab
+```
+
+The submodule pointer remains the reproducible KB version recorded by a
+CALMaR release. Once a KB version is final, update and commit it:
+
+```bash
+git submodule update --init
+git submodule update --remote stroke-aphasia-kb
+git add stroke-aphasia-kb
+git commit -m "KB: track <commit>"
+python stroke-aphasia-kb/scripts/kb_status.py
 ```
 
 ## Tests
