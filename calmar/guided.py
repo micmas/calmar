@@ -92,6 +92,7 @@ def source_cell(number, cells=None):
 
 # Cells of the optional single-subject test (their titles are hidden when skipped).
 TEST_CELLS = {"calmar-step-23", "calmar-step-25", "calmar-step-27", "calmar-registration", "calmar-openads", "calmar-manual",
+              "calmar-single-optional",
               "calmar-step-32", "calmar-step-34", "calmar-step-35", "calmar-step-39"}
 
 

@@ -1,6 +1,5 @@
 """Acute (DWI) route: OpenADS on diffusion-weighted images, and the recovery
 phase of the evidence the report uses."""
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -9,6 +8,7 @@ import pandas as pd
 import pytest
 
 from calmar.method_choice import MethodChoice
+from calmar.kb_paths import add_kb_to_path
 from calmar.study import (Study, analysis_mask_sources, attach_dwi_inventory, derivative_dirs, discover_dwi,
                           discover_dwi_inventory, mni_masks, modality, segmentation_methods,
                           select_cohorts, select_participants, stage_selected, template_source)
@@ -132,6 +132,7 @@ def test_optional_openads_keeps_another_dwi_session_distinct(tmp_path):
     assert namespace["CONFIG"]["_DWI_ANALYSIS_SELECTED"] is True
     assert namespace["DWI_SUBJECTS"][0]["t1w"] == dwi
     assert namespace["DWI_SUBJECTS"][0]["adc"] == adc
+    assert namespace["DWI_SUBJECTS"][0]["anatomical_session"] == "ses-chronic"
     assert analysis_mask_sources(namespace["CONFIG"]) == ("synthstroke", "openads", "manual")
     study = Study(namespace["CONFIG"], tmp_path, tmp_path)
     assert study.dirs(selected)["openads"] == tmp_path / "derivatives/openads/sub-one/ses-acute/anat"
@@ -139,6 +140,50 @@ def test_optional_openads_keeps_another_dwi_session_distinct(tmp_path):
     touch(study.dirs(selected)["openads"] / "OpenADS_in_MNI.nii.gz")
     assert study.masks(selected)["openads"]["T1w"] == native
     assert study.qc_anchor(selected, "openads").parent.name == "anat"
+
+
+def test_optional_openads_links_each_selection_to_its_t1_session(tmp_path):
+    from calmar.dwi_choice import apply_dwi_selection, openads_options
+    entries = []
+    selected = {}
+    for session in ("ses-one", "ses-two"):
+        dwi = touch(tmp_path / "sub-one" / f"{session}-dwi" / "dwi" / f"sub-one_{session}_dwi.nii.gz")
+        adc = touch(dwi.with_name(f"sub-one_{session}_adc.nii.gz"))
+        entry = {
+            "subject": "sub-one", "session": session, "t1w": tmp_path / f"{session}_T1w.nii.gz",
+            "dwi_inventory": [{"subject": "sub-one", "session": f"{session}-dwi",
+                               "dwi": dwi, "adc": adc, "openads_ready": True,
+                               "same_session": False}],
+        }
+        entries.append(entry)
+        selected[("sub-one", session)] = openads_options(entry)[0]
+    namespace = {"CONFIG": {"MODALITY": "t1"}, "SUBJECTS": entries,
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+
+    apply_dwi_selection(namespace, selected)
+
+    assert [entry["anatomical_session"] for entry in namespace["DWI_SUBJECTS"]] == [
+        "ses-one", "ses-two"]
+    assert [entry["dwi_analysis"]["anatomical_session"] for entry in namespace["SUBJECTS"]] == [
+        "ses-one", "ses-two"]
+
+
+def test_optional_openads_accepts_a_sessionless_anatomical_entry(tmp_path):
+    from calmar.dwi_choice import apply_dwi_selection, openads_options
+    dwi = touch(tmp_path / "sub-one" / "dwi" / "sub-one_dwi.nii.gz")
+    adc = touch(tmp_path / "sub-one" / "dwi" / "sub-one_adc.nii.gz")
+    entry = {
+        "subject": "sub-one", "session": None, "t1w": tmp_path / "sub-one_T1w.nii.gz",
+        "dwi_inventory": [{"subject": "sub-one", "session": None, "dwi": dwi, "adc": adc,
+                           "openads_ready": True, "same_session": True}],
+    }
+    namespace = {"CONFIG": {"MODALITY": "t1"}, "SUBJECTS": [entry],
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+
+    apply_dwi_selection(namespace, {("sub-one", None): openads_options(entry)[0]})
+
+    assert namespace["DWI_SUBJECTS"][0]["anatomical_session"] is None
+    assert namespace["SUBJECTS"][0]["dwi_analysis"]["subject"] == "sub-one"
 
 
 def test_dwi_choice_close_does_not_register_the_panel_as_its_own_control(tmp_path):
@@ -212,7 +257,7 @@ def test_no_segmentation_choice_in_the_acute_route():
 
 
 def test_findings_carry_their_study_phase_and_the_report_flags_other_phases():
-    sys.path.insert(0, str(KB_ROOT))
+    add_kb_to_path(KB_ROOT)
     from calmar.report_evidence import finding_phases, phase_summary
     rows = pd.DataFrame([
         dict(population="chronic left-hemisphere stroke survivors", phase=None),
