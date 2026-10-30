@@ -184,13 +184,25 @@ def kb_version_text(version):
     if version["commit"]:
         text = f"version {version['commit']} ({version['date']})"
         if version["uncommitted"] is True:
-            text += " with uncommitted changes"
+            digest = version.get("working_tree_sha256") or "unavailable"
+            paths = ", ".join(version.get("changed_paths") or []) or "unavailable"
+            text += f" with uncommitted changes (working-tree SHA-256 {digest}; changed paths: {paths})"
         elif version.get("uncommitted") is None:
             text += "; working-tree status unknown"
+        if version.get("commit_on_origin_main") is False:
+            basis = ("verified origin/main" if version.get("latest_verified") is True
+                     else "last-fetched origin/main")
+            text += f"; HEAD is not contained in {basis}"
     else:
         text = "version unknown (not under git version control)"
         if version.get("uncommitted") is None:
             text += "; working-tree status unknown"
+    if version.get("latest_verified") is True:
+        text += f"; latest origin/main verified at {version.get('verified_origin_main')}"
+    elif version.get("latest_verified") is False:
+        text += f"; LATEST NOT VERIFIED ({version.get('latest_status')})"
+    else:
+        text += "; latest origin/main verification status unavailable"
     text += f" · KB root: {version.get('location', 'configured KB root')} ({version.get('root', 'unknown')})"
     entries = version["entries"]
     return (f"{text} · {version['papers']} papers · {version['findings']} extracted findings "

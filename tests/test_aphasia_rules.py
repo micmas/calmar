@@ -36,14 +36,18 @@ def test_every_profile_is_distinct_and_covers_all_eight_wab_types():
 @pytest.mark.parametrize("text,canonical", [
     ("Broca", "brocas_aphasia"), ("Broca's aphasia", "brocas_aphasia"), ("WERNICKE", "wernickes_aphasia"),
     ("TranscorticalMotor", "transcortical_motor_aphasia"),  # spelling used in ds004884
-    ("TCS", "transcortical_sensory_aphasia"), ("anomia", "anomic_aphasia"),
+    ("TCS", "transcortical_sensory_aphasia"),
     ("mixed_transcortical_aphasia", "mixed_transcortical_aphasia"), ("anomic aphasia", "anomic_aphasia"),
 ])
 def test_type_spellings_are_recognised(text, canonical):
     assert rules.canonical_aphasia_type(text) == canonical
 
 
-@pytest.mark.parametrize("text", [None, "", "  ", "n/a", "dysarthria", "fluency"])
+def test_anomia_symptom_is_not_relabelled_as_anomic_aphasia_syndrome():
+    assert rules.canonical_aphasia_type("anomia") is None
+
+
+@pytest.mark.parametrize("text", [None, "", "  ", "n/a", "dysarthria", "fluency", "anomia"])
 def test_non_wab_values_are_not_decomposed(text):
     assert rules.decompose_aphasia(text) is None
 

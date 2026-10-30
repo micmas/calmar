@@ -68,14 +68,14 @@ def test_client_passes_explicit_request_without_running_computation(tmp_path):
 def test_decode_client_resolves_legacy_relative_kb_to_selected_root(tmp_path):
     kb_root = Path(__file__).resolve().parents[1] / 'stroke-aphasia-kb'
     with patch('calmar.kb_location.resolve_kb_root',
-               return_value=(kb_root, 'pinned CALMaR submodule')), \
+               return_value=(kb_root, 'CALMaR submodule')), \
             patch('calmar.scheduled.run_step_sync', return_value={'value': {'ok': True}}) as submit:
         result = run_reporting_task({'PROJECT_DIR': tmp_path}, 'decode', mask='mask.nii.gz',
                                     dataset='data', kb_root='stroke-aphasia-kb')
     assert result == {'ok': True}
     request = submit.call_args.args[1]['_operation_request']
     assert request['kb_root'] == str(kb_root)
-    assert request['kb_reason'] == 'pinned CALMaR submodule'
+    assert request['kb_reason'] == 'CALMaR submodule'
 
 
 def test_decode_output_records_selected_kb_provenance(tmp_path, monkeypatch):
@@ -90,8 +90,8 @@ def test_decode_output_records_selected_kb_provenance(tmp_path, monkeypatch):
             patch('calmar.acquisition.ensure_nifti_content', return_value=True), \
             patch('calmar.kb_location.kb_git_state', return_value=state):
         result = execute({'task': 'decode', 'mask': 'mask.nii.gz', 'dataset': 'data',
-                          'kb_root': str(kb_root), 'kb_reason': 'pinned CALMaR submodule'}, output)
-    expected = {'root': str(kb_root), 'reason': 'pinned CALMaR submodule', **state}
+                          'kb_root': str(kb_root), 'kb_reason': 'CALMaR submodule'}, output)
+    expected = {'root': str(kb_root), 'reason': 'CALMaR submodule', **state}
     assert result['knowledge_base'] == expected
     assert json.loads((output / 'decoding.json').read_text())['knowledge_base'] == expected
 
