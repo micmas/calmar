@@ -72,6 +72,12 @@ replace the three-participant end-to-end run or browser QC. Optional
 browser checks need Playwright (the commented line in `requirements.txt`) and
 `python -m playwright install chromium`.
 
+GitHub CI checks CALMaR against the latest KB `main` and prints the exact
+KB SHA. This is an intentional development compatibility gate: a KB
+change that adds or resolves an atlas-mapping identifier may require the
+corresponding issue-#19 allowlist update in CALMaR before unrelated PRs
+can merge.
+
 ## Validating a checkout
 
 The retained `src/analysis_19_verify_interpretation.sh` verifies overlap

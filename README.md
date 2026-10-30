@@ -82,13 +82,18 @@ a curated, source-traceable literature base in which each finding links
 a brain region, predictor or therapy to an outcome with the verbatim
 passages that support it. CALMaR records a tested KB release as the git
 submodule `stroke-aphasia-kb/`, but the notebooks prefer a sibling
-working copy at `../stroke-aphasia-kb/` when one is present. This lets
-reports use the latest local entries—including uncommitted drafts—while
-they are being edited. Setup and every participant report identify the
-selected root, its commit and whether it has uncommitted changes.
+working copy at `../stroke-aphasia-kb/` when one is present. During
+Setup, the selected checkout is fetched and fast-forwarded to the latest
+`origin/main` before any KB module is imported. If the network is unavailable,
+Setup continues with a prominent “latest not verified” warning. A checkout that already
+contains current `main` may retain local commits or uncommitted drafts;
+a stale dirty or divergent checkout stops with instructions rather than
+mixing KB versions. Setup and every participant report identify the
+selected root, its full commit and, for uncommitted content, a SHA-256
+digest and changed-path inventory.
 
 Selection order is `CALMAR_KB_ROOT`, the sibling working copy, then the
-pinned submodule. Set the environment variable before starting
+CALMaR submodule. Set the environment variable before starting
 JupyterLab to force the submodule or another checkout:
 
 ```bash
@@ -96,11 +101,15 @@ CALMAR_KB_ROOT="$PWD/stroke-aphasia-kb" jupyter lab
 CALMAR_KB_ROOT="$HOME/GITHUB/stroke-aphasia-kb" jupyter lab
 ```
 
-The submodule pointer remains the reproducible KB version recorded by a
-CALMaR release. Once a KB version is final, update and commit it:
+Reports default to **All, including unreviewed drafts** during
+development and label each finding's review status. Set
+`CALMAR_KB_UPDATE=off` only for a deliberately pinned or offline run;
+the exact revision remains recorded in the report. The submodule pointer
+is also updated when CALMaR is released:
 
 ```bash
 git submodule update --init
+# .gitmodules declares main as the update --remote branch.
 git submodule update --remote stroke-aphasia-kb
 git add stroke-aphasia-kb
 git commit -m "KB: track <commit>"

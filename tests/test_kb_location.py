@@ -3,7 +3,8 @@ import subprocess
 
 import pytest
 
-from calmar.kb_location import kb_git_state, resolve_kb_root
+from calmar.kb_location import (kb_git_state, kb_selection_text, resolve_kb_root,
+                                update_kb_to_latest)
 from calmar.kb_paths import add_kb_to_path, load_kb_modules
 
 
@@ -41,7 +42,7 @@ def test_submodule_is_the_portable_fallback(tmp_path):
     project = tmp_path / "calmar"
     submodule = make_kb(project / "stroke-aphasia-kb")
 
-    assert resolve_kb_root(project, {}) == (submodule, "pinned CALMaR submodule")
+    assert resolve_kb_root(project, {}) == (submodule, "CALMaR submodule")
 
 
 def test_missing_kb_lists_paths_tried(tmp_path):
@@ -77,7 +78,10 @@ def test_git_state_marks_uncommitted_drafts(tmp_path):
 
     (root / "drafts").mkdir()
     (root / "drafts" / "new.md").write_text("uncommitted draft\n")
-    assert kb_git_state(root)["uncommitted"] is True
+    dirty = kb_git_state(root)
+    assert dirty["uncommitted"] is True
+    assert len(dirty["working_tree_sha256"]) == 64
+    assert dirty["changed_paths"] == ["drafts/new.md"]
 
 
 def test_git_state_does_not_claim_a_parent_repository(tmp_path):
@@ -87,6 +91,119 @@ def test_git_state_does_not_claim_a_parent_repository(tmp_path):
     root = make_kb(parent / "copied-kb")
 
     assert kb_git_state(root) == {"commit": None, "date": None, "uncommitted": None}
+
+
+def _commit(root, text):
+    (root / "regions" / "version.txt").write_text(text)
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.name=fixture",
+                    "-c", "user.email=fixture@example.test", "commit", "-qm", text], check=True)
+
+
+def test_update_kb_fast_forwards_a_clean_checkout(tmp_path):
+    source = make_kb(tmp_path / "source")
+    subprocess.run(["git", "init", "-q", "-b", "main", str(source)], check=True)
+    _commit(source, "first")
+    bare = tmp_path / "remote.git"
+    subprocess.run(["git", "clone", "-q", "--bare", str(source), str(bare)], check=True)
+    checkout = tmp_path / "checkout"
+    subprocess.run(["git", "clone", "-q", str(bare), str(checkout)], check=True)
+    first = subprocess.run(["git", "-C", str(checkout), "rev-parse", "HEAD"],
+                           capture_output=True, text=True, check=True).stdout.strip()
+    subprocess.run(["git", "-C", str(source), "remote", "add", "origin", str(bare)], check=True)
+    _commit(source, "second")
+    subprocess.run(["git", "-C", str(source), "push", "-q", "origin", "main"], check=True)
+
+    message = update_kb_to_latest(checkout, "sibling working copy", {})
+
+    current = subprocess.run(["git", "-C", str(checkout), "rev-parse", "HEAD"],
+                             capture_output=True, text=True, check=True).stdout.strip()
+    assert current != first
+    assert "updated to latest origin/main" in message
+    state = kb_git_state(checkout)
+    assert state["latest_verified"] is True
+    assert state["verified_origin_main"] == current
+
+
+def test_update_kb_refuses_to_overwrite_stale_drafts(tmp_path):
+    source = make_kb(tmp_path / "source")
+    subprocess.run(["git", "init", "-q", "-b", "main", str(source)], check=True)
+    _commit(source, "first")
+    bare = tmp_path / "remote.git"
+    subprocess.run(["git", "clone", "-q", "--bare", str(source), str(bare)], check=True)
+    checkout = tmp_path / "checkout"
+    subprocess.run(["git", "clone", "-q", str(bare), str(checkout)], check=True)
+    subprocess.run(["git", "-C", str(source), "remote", "add", "origin", str(bare)], check=True)
+    _commit(source, "second")
+    subprocess.run(["git", "-C", str(source), "push", "-q", "origin", "main"], check=True)
+    (checkout / "drafts").mkdir()
+    (checkout / "drafts" / "local.md").write_text("local draft\n")
+
+    with pytest.raises(RuntimeError, match="behind origin/main.*uncommitted changes"):
+        update_kb_to_latest(checkout, "sibling working copy", {})
+
+
+def test_update_kb_can_be_explicitly_disabled(tmp_path):
+    root = make_kb(tmp_path / "copied-kb")
+    assert "disabled" in update_kb_to_latest(
+        root, "CALMAR_KB_ROOT override", {"CALMAR_KB_UPDATE": "off"})
+
+
+def test_update_kb_preserves_drafts_when_head_already_contains_latest_main(tmp_path):
+    source = make_kb(tmp_path / "source")
+    subprocess.run(["git", "init", "-q", "-b", "main", str(source)], check=True)
+    _commit(source, "current")
+    bare = tmp_path / "remote.git"
+    subprocess.run(["git", "clone", "-q", "--bare", str(source), str(bare)], check=True)
+    checkout = tmp_path / "checkout"
+    subprocess.run(["git", "clone", "-q", str(bare), str(checkout)], check=True)
+    (checkout / "drafts").mkdir()
+    draft = checkout / "drafts" / "local.md"
+    draft.write_text("keep this draft\n")
+
+    message = update_kb_to_latest(checkout, "sibling working copy", {})
+
+    assert "current with origin/main" in message
+    assert draft.read_text() == "keep this draft\n"
+
+
+def test_update_kb_reports_unverified_and_continues_when_fetch_fails(tmp_path):
+    root = make_kb(tmp_path / "stroke-aphasia-kb")
+    subprocess.run(["git", "init", "-q", "-b", "main", str(root)], check=True)
+    _commit(root, "local")
+
+    message = update_kb_to_latest(root, "sibling working copy", {})
+
+    assert "WARNING: latest knowledge base not verified" in message
+    assert subprocess.run(["git", "-C", str(root), "status", "--porcelain"],
+                          capture_output=True, text=True, check=True).stdout == ""
+    assert kb_git_state(root)["latest_verified"] is False
+    assert "latest not verified" in kb_selection_text(root, "sibling working copy")
+
+
+def test_submodule_update_detaches_at_latest_and_warns_about_release_pointer(tmp_path):
+    source = make_kb(tmp_path / "source")
+    subprocess.run(["git", "init", "-q", "-b", "main", str(source)], check=True)
+    _commit(source, "first")
+    bare = tmp_path / "remote.git"
+    subprocess.run(["git", "clone", "-q", "--bare", str(source), str(bare)], check=True)
+    checkout = tmp_path / "checkout"
+    subprocess.run(["git", "clone", "-q", str(bare), str(checkout)], check=True)
+    subprocess.run(["git", "-C", str(checkout), "checkout", "-q", "--detach"], check=True)
+    subprocess.run(["git", "-C", str(source), "remote", "add", "origin", str(bare)], check=True)
+    _commit(source, "second")
+    subprocess.run(["git", "-C", str(source), "push", "-q", "origin", "main"], check=True)
+
+    message = update_kb_to_latest(checkout, "CALMaR submodule", {})
+
+    head = subprocess.run(["git", "-C", str(checkout), "rev-parse", "HEAD"],
+                          capture_output=True, text=True, check=True).stdout.strip()
+    latest = subprocess.run(["git", "-C", str(checkout), "rev-parse", "origin/main"],
+                            capture_output=True, text=True, check=True).stdout.strip()
+    branch = subprocess.run(["git", "-C", str(checkout), "branch", "--show-current"],
+                            capture_output=True, text=True, check=True).stdout.strip()
+    assert head == latest and branch == ""
+    assert "submodule pointer" in message and "do not commit it unless" in message
 
 
 def test_kb_modules_are_fresh_and_follow_the_selected_root(tmp_path):

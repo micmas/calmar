@@ -65,21 +65,34 @@ synchronising a checkout that still has the old history.
 `stroke-aphasia-kb/` is a git submodule checkout of
 [micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb)
 at the commit CALMaR was last tested with (`git submodule status` shows
-which). It remains the reproducible KB version recorded by a CALMaR
-release.
+which). The committed pointer remains the reproducible fallback for a
+CALMaR release; development Setup updates the selected checkout to
+current KB `origin/main` before importing it.
 
 For notebook work, `calmar/kb_location.py` resolves the KB in this order:
 
 1. `CALMAR_KB_ROOT`, when set;
 2. a sibling working copy at `<calmar checkout>/../stroke-aphasia-kb`;
-3. the pinned submodule at `<calmar checkout>/stroke-aphasia-kb`.
+3. the CALMaR submodule at `<calmar checkout>/stroke-aphasia-kb`.
 
 A candidate must contain `scripts/aphasia_kb.py` and `regions/`. Setup
-prints the selected absolute path, why it was selected, its Git commit,
-and whether it has uncommitted changes. Participant reports record the
-same facts. A sibling checkout can therefore supply newly edited or
-uncommitted drafts; the report's **Evidence** setting still determines
-whether draft, in-review or only approved entries are loaded.
+fetches `origin/main` and fast-forwards a clean main checkout (or moves
+the detached submodule checkout) before loading it. A checkout that
+already contains current main may also contain local commits or
+uncommitted drafts. Setup refuses to overwrite a stale dirty, divergent
+or stale feature-branch checkout. If GitHub is unreachable, Setup keeps
+the local checkout and prominently reports that latest was not verified,
+so unrelated segmentation and QC development remains usable. It then
+prints the selected absolute path, why it was selected, its full Git
+commit, and whether it has uncommitted changes; for dirty content it also
+records a SHA-256 digest and the changed paths. Participant reports record
+the same facts.
+
+During development the report's **Evidence** setting defaults to **All,
+including unreviewed drafts**. Review status remains visible on the
+evidence rather than removing it. Set `CALMAR_KB_UPDATE=off` before
+starting JupyterLab only when a pinned/offline run is intentional; the
+selected commit is still recorded.
 
 Set the override before starting JupyterLab to force the submodule or a
 different checkout:
@@ -99,7 +112,8 @@ python stroke-aphasia-kb/scripts/kb_status.py
 ```
 
 Edits to KB entries or scripts are commits in the KB repository, not in
-CALMaR. Once a KB version is final, update the release pointer with
+CALMaR. `.gitmodules` declares `main` as the branch used by
+`git submodule update --remote`. Once a KB version is final, update the release pointer with
 `git submodule update --remote stroke-aphasia-kb`, then commit
 `stroke-aphasia-kb` in CALMaR. Source PDFs under
 `stroke-aphasia-kb/papers/` are local files, never committed. See the

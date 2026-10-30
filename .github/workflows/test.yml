@@ -1,0 +1,43 @@
+name: test
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out latest knowledge base
+        uses: actions/checkout@v4
+        with:
+          repository: micmas/stroke-aphasia-kb
+          ref: main
+          path: stroke-aphasia-kb
+          persist-credentials: false
+      - name: Record tested knowledge-base revision
+        run: git -C stroke-aphasia-kb rev-parse HEAD
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install test dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run unit and notebook checks against latest KB main
+        run: python -m pytest -q tests
+      - name: Check analysis script syntax
+        run: |
+          test -n "$(find src -maxdepth 1 -name 'analysis_*.sh' -print -quit)"
+          find src -maxdepth 1 -name 'analysis_*.sh' -print0 | xargs -0 -r -n1 bash -n

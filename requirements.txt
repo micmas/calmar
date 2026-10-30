@@ -44,6 +44,10 @@ pymupdf>=1.23           # for annotate_paper.py (PDF highlight annotations)
 
 # Notebook validation (used by the workflow)
 nbformat>=5.0
+ipykernel>=6.0
+
+# ASTRA scientific records in analyses/ are authored and tested at this schema version.
+astra-spec==0.0.14
 
 # NiMARE — coordinate-based meta-analysis (Stage-2 Neurosynth
 # bootstrap + KB-internal meta-analysis). Promoted from optional to

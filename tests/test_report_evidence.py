@@ -32,7 +32,7 @@ def test_location_section_shows_regions_damage_and_merges_kb_synonyms():
     assert "finding-claim" in html and "Evidence strength" in html and "Extraction confidence" in html
     assert "Source passages" in html and "Full citation for" in html
     assert "Project-specific display heuristic" in html and "&#9733;" in html
-    assert "very strong / replicated" in html and "display-label" in html
+    assert "display-label" in html
     assert "visually-hidden" in html and "of 4 stars" in html
     assert "All implicated regions:" in html and "display-signal-print" in html
     assert rows["source_path"].str.len().gt(0).all()

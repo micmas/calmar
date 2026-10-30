@@ -140,16 +140,23 @@ def test_kb_version_counts_what_the_report_used(tmp_path):
     version = pr.kb_version(tmp_path, kb, location="CALMAR_KB_ROOT override")  # not a git checkout
     assert (version["commit"], version["papers"], version["findings"], version["findings_reviewed"]) == (None, 2, 4, 2)
     assert pr.kb_version_text(version) == (
-        f"version unknown (not under git version control); working-tree status unknown "
+        f"version unknown (not under git version control); working-tree status unknown"
+        f"; latest origin/main verification status unavailable "
         f"· KB root: CALMAR_KB_ROOT override ({tmp_path.resolve()}) "
         "· 2 papers · 4 extracted findings "
         "(2 approved by a named reviewer) in 4 entries (2 regions, 1 impairments, 0 therapies, 1 predictors) · "
         "statuses used: approved")
-    version = pr.kb_version(KB_ROOT, kb, location="pinned CALMaR submodule")
+    version = pr.kb_version(KB_ROOT, kb, location="CALMaR submodule")
     assert version["commit"] and version["date"]
-    assert "KB root: pinned CALMaR submodule" in pr.kb_version_text(version)
+    assert "KB root: CALMaR submodule" in pr.kb_version_text(version)
     version["uncommitted"] = True
+    version["working_tree_sha256"] = "abc123"
+    version["changed_paths"] = ["drafts/example.md"]
     assert "with uncommitted changes" in pr.kb_version_text(version)
+    assert "working-tree SHA-256 abc123" in pr.kb_version_text(version)
+    assert "drafts/example.md" in pr.kb_version_text(version)
+    version.update(latest_verified=False, latest_status="fetch failed", verified_origin_main=None)
+    assert "LATEST NOT VERIFIED (fetch failed)" in pr.kb_version_text(version)
 
 
 def test_evidence_levels_choose_the_kb_statuses():
