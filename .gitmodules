@@ -1,3 +1,4 @@
 [submodule "stroke-aphasia-kb"]
 	path = stroke-aphasia-kb
 	url = https://github.com/micmas/stroke-aphasia-kb.git
+	branch = main
