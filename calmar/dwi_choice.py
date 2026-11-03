@@ -15,6 +15,9 @@ import ipywidgets as w
 from IPython import get_ipython
 from IPython.display import display
 
+from .analysis_choice import (RERUN, RUN, SKIP, USE_PRIOR, action_buttons,
+                              action_dropdown, action_help_html, action_state_kwargs,
+                              entry_with_action, set_action_options, without_action_policy)
 from .execution import ExecutionCheckpoint
 from .notebook_navigation import NotebookNavigation
 from .study import ENTRY_CONFIG, ENTRY_DATASET, Study, config_for_entry, modality
@@ -53,13 +56,53 @@ def dwi_entry(item, anatomical_session=_MISSING):
     return entry
 
 
+def dwi_analysis_state(namespace, entry, item):
+    """Read-only saved-result state for one OpenADS pair."""
+    try:
+        selected = dwi_entry(item, entry.get("session"))
+        config = deepcopy(namespace["CONFIG"])
+        config.update(MODALITY="dwi", SEGMENTATION_METHODS=["openads"],
+                      MANUAL_MASK_PATH=None, MANUAL_MASK_REF=None)
+        study = Study(config, namespace["RAW_DATASET_DIR"], namespace["PROJECT_DIR"])
+        from .scheduled import cached_step_results, previous_step_results
+        current = cached_step_results("openads", [selected], study)[0]
+        prior = previous_step_results("openads", [selected], study)[0]
+        outputs_exist = study.dirs(selected)["openads"].exists()
+        route_config = config_for_entry(config, selected)
+        overwrite_requested = bool(route_config.get(
+            "OPENADS_OVERWRITE", route_config.get("OVERWRITE", False)))
+        if overwrite_requested and (outputs_exist or prior is not None):
+            status = "↻ rerun requested in CONFIG; existing results will not be reused"
+        elif current is not None:
+            status = "✓ analysed already (reusable)"
+        elif prior is not None:
+            status = "⚠ input file date or size differs from saved result: OpenADS"
+        elif outputs_exist:
+            status = "⚠ existing OpenADS output; no reusable receipt"
+        else:
+            status = "○ not analysed yet"
+        return {"status": status, "current_complete": current is not None,
+                "prior_available": prior is not None,
+                "outputs_exist": outputs_exist or current is not None or prior is not None,
+                "rerun_required": overwrite_requested and (outputs_exist or prior is not None)}
+    except Exception as exc:
+        return {"status": f"⚠ analysis status unavailable ({type(exc).__name__})",
+                "current_complete": False, "prior_available": False,
+                "outputs_exist": True, "rerun_required": True}
+
+
 def apply_dwi_selection(namespace, selected):
     """Record selected pairs and expose the optional OpenADS route."""
     sessions_by_subject = {}
     for entry in namespace.get("SUBJECTS", ()):
         sessions_by_subject.setdefault(entry["subject"], []).append(entry.get("session"))
     processing = {}
-    for key, item in selected.items():
+    actions = {}
+    for key, value in selected.items():
+        item, action = value if (isinstance(value, tuple) and len(value) == 2 and
+                                 value[1] in (RUN, USE_PRIOR, RERUN, SKIP)) else (value, RUN)
+        if action == SKIP:
+            continue
         subject = key[0] if isinstance(key, tuple) else key
         known_session = False
         if isinstance(key, tuple):
@@ -73,14 +116,18 @@ def apply_dwi_selection(namespace, selected):
             known_session = True
         if not known_session:
             raise ValueError(f"DWI selection for {subject} is not linked to a unique anatomical session.")
-        processing[(subject, anatomical_session)] = dwi_entry(item, anatomical_session)
+        chosen = dwi_entry(item, anatomical_session)
+        chosen = entry_with_action(chosen, action, overwrite_key="OPENADS_OVERWRITE",
+                                   reuse_key="OPENADS_REUSE_PRIOR")
+        processing[(subject, anatomical_session)] = chosen
+        actions[(subject, anatomical_session)] = action
     subjects = []
     for entry in namespace.get("SUBJECTS", ()):
         copied = dict(entry)
         copied.pop("dwi_analysis", None)
         chosen = processing.get((entry["subject"], entry.get("session")))
         if chosen is not None:
-            copied["dwi_analysis"] = chosen
+            copied["dwi_analysis"] = without_action_policy(chosen)
         subjects.append(copied)
 
     config = namespace["CONFIG"]
@@ -98,10 +145,12 @@ def apply_dwi_selection(namespace, selected):
                      DWI_STUDY=Study(dwi_config, namespace["RAW_DATASET_DIR"], namespace["PROJECT_DIR"]))
 
     record = {
-        "analyse_dwi": bool(selected),
+        "analyse_dwi": bool(processing),
         "selection": [{"subject": e["subject"], "session": e.get("session"),
                        "anatomical_session": e.get("anatomical_session"),
-                       "dwi": str(e["dwi"]), "adc": str(e["adc"])} for e in dwi_subjects],
+                       "dwi": str(e["dwi"]), "adc": str(e["adc"]),
+                       "action": actions[(e["subject"], e.get("anatomical_session"))]}
+                      for e in dwi_subjects],
     }
     path = Path(namespace["PROJECT_DIR"]) / "reports" / "dwi-selection.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -120,33 +169,47 @@ class DWIChoice(w.VBox):
         self.checkpoint = ExecutionCheckpoint(
             shell, "Execution is paused for the optional DWI decision. Choose analyse or continue without DWI.")
         self.message = w.HTML()
-        self.navigation = NotebookNavigation(self.message, on_cell_order=self.checkpoint._update_cell_order)
+        self.navigation = NotebookNavigation(
+            self.message, on_cell_order=self.checkpoint._update_cell_order,
+            focus_checkpoint=self.checkpoint)
         self.rows = []
         children = [w.HTML(
-            "<h3>Optional DWI analysis</h3><p>OpenADS-ready DWI+ADC data were found for the selected "
+            "<h3>Optional acute DWI+ADC lesion segmentation (OpenADS)</h3>"
+            "<p>OpenADS-ready DWI+ADC data were found for the selected "
             "participant(s). Choose which pairs to analyse. The selected test participant is processed in "
             "the single-subject check; remaining pairs are processed after the ordinary QC.</p><p>A pair from another session is "
             "allowed and stays labelled with its own session. This can be useful in chronic stroke, but DWI "
             "contrast changes over time: CALMaR registers and QC-checks it independently and does not assume "
-            "that signal or lesion boundaries are identical across sessions.</p>")]
+            "that signal or lesion boundaries are identical across sessions.</p>"
+            "<p>This choice is only for acute-lesion segmentation from a DWI with a matching ADC map. "
+            "Gradient-bearing diffusion MRI for tract-microstructure analysis is assessed separately "
+            "below.</p>" + action_help_html())]
         for entry in self.entries:
             options = openads_options(entry)
             if not options:
                 continue
-            include = w.Checkbox(value=True, description=f"Analyse {entry['subject']}", indent=False,
-                                 layout=w.Layout(width="220px"))
             choices = []
+            states = []
             for i, item in enumerate(options):
                 relation = "same session" if item.get("same_session") else "different session"
-                label = f"{item.get('session') or '(no session)'} · {relation} · {Path(item['dwi']).name}"
+                state = dwi_analysis_state(namespace, entry, item)
+                states.append(state)
+                label = (f"{state['status']} · {item.get('session') or '(no session)'} · "
+                         f"{relation} · {Path(item['dwi']).name}")
                 choices.append((label, i))
             pair = w.Dropdown(options=choices, value=0, description="DWI + ADC:",
                               style={"description_width": "initial"}, layout=w.Layout(width="680px"))
-            self.rows.append((entry, options, include, pair))
-            children.append(w.HBox([include, pair], layout=w.Layout(flex_flow="row wrap")))
-        self.analyse = w.Button(description="Analyse selected DWI", button_style="primary",
-                                layout=w.Layout(width="250px"))
-        self.skip = w.Button(description="Continue without DWI", layout=w.Layout(width="210px"))
+            action = action_dropdown(**action_state_kwargs(states[0]))
+            pair.observe(lambda change, a=action, s=states: set_action_options(
+                a, **action_state_kwargs(s[change["new"]])), names="value")
+            self.rows.append((entry, options, action, pair, states))
+            identity = entry["subject"]
+            if entry.get("session"):
+                identity += f" · anatomy {entry['session']}"
+            children.append(w.VBox([
+                w.HTML(f"<b>{escape(identity)}</b>"),
+                w.HBox([action, pair], layout=w.Layout(flex_flow="row wrap"))]))
+        self.analyse, self.skip = action_buttons()
         self.analyse.on_click(lambda _: self._request(True))
         self.skip.on_click(lambda _: self._request(False))
         children.extend([w.HBox([self.analyse, self.skip]), self.message, self.navigation])
@@ -158,28 +221,25 @@ class DWIChoice(w.VBox):
         self.checkpoint._cancel_queued()
 
     def _selection(self):
-        return {(entry["subject"], entry.get("session")): options[pair.value]
-                for entry, options, include, pair in self.rows if include.value}
+        return {(entry["subject"], entry.get("session")): (options[pair.value], action.value)
+                for entry, options, action, pair, _ in self.rows if action.value != SKIP}
 
     def _request(self, analyse):
-        # Directional dMRI is a separate decision in the next cell. It decides
-        # whether to continue to the single-test selection after its own choice.
+        # Directional dMRI and brain health are separate subsequent decisions;
+        # the final one continues to the single-test selection.
         self.navigation.request("dmri-choice", lambda: self._apply(analyse), all_below=True)
 
     def _apply(self, analyse):
         selected = self._selection() if analyse else {}
-        if analyse and not selected:
-            self.message.value = "Select at least one participant, or choose Continue without DWI."
-            return False
         apply_dwi_selection(self.namespace, selected)
         self.checkpoint.release()
         self.analyse.disabled = self.skip.disabled = True
-        for _, _, include, pair in self.rows:
-            include.disabled = pair.disabled = True
+        for _, _, action, pair, _ in self.rows:
+            action.disabled = pair.disabled = True
         if selected:
             sessions = ", ".join((f"{key[0] if isinstance(key, tuple) else key} "
-                                  f"{item.get('session') or ''}").strip()
-                                 for key, item in selected.items())
+                                  f"{item.get('session') or ''} ({action.replace('_', ' ')})").strip()
+                                 for key, (item, action) in selected.items())
             self.message.value = ("<b>DWI analysis selected:</b> " + escape(sessions)
                                   + ". The test participant will run in the single-subject check.")
         else:
@@ -211,17 +271,20 @@ def show_dwi_choice(namespace, shell=None):
         apply_dwi_selection(namespace, {})
         has_dwi = any(entry.get("dwi_inventory") for entry in t1_entries)
         if has_dwi:
-            print("DWI was detected, but optional OpenADS analysis is unavailable: no DWI has a matching ADC map.")
+            print("DWI data were detected. OpenADS acute-lesion segmentation was not offered because it "
+                  "requires a DWI with a matching ADC map. This does not reject those DWI data: "
+                  "gradient-bearing series are assessed separately for tract-microstructure analysis "
+                  "below.")
         else:
-            print("DWI is unavailable for the selected participant(s); continuing with the T1 workflow.")
+            print("No DWI data were found for the selected participant(s); continuing with the T1 workflow.")
         return None
     configured = config.get("ANALYSE_DWI")
     if configured is not None:
         selected = ({key: options[0] for key, options in available.items()} if configured else {})
         apply_dwi_selection(namespace, selected)
-        print((f"Optional DWI analysis selected for {len(selected)} participant(s); the test participant "
+        print((f"OpenADS acute DWI+ADC segmentation selected for {len(selected)} participant(s); the test participant "
                "will run in the single-subject check."
-               if selected else "Optional DWI analysis disabled in CONFIG."))
+               if selected else "OpenADS acute DWI+ADC segmentation disabled in CONFIG."))
         return None
     shell = shell or get_ipython()
     if shell is None:

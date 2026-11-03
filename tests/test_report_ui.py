@@ -62,6 +62,29 @@ class ReportInterfaceTests(unittest.TestCase):
             self.assertEqual(report.section_accordions[0].selected_index, 0)
             self.assertEqual(report.section_accordions[1].selected_index, 0)
 
+    def test_saved_html_link_is_visible_next_to_choose_another_report(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            path = root / 'report.html'
+            with patch('calmar.widgets._detect_server', return_value=('/user/test/', root)):
+                report = ParticipantReport(
+                    'Report', '', [('Results', '<p>Fixture</p>')], path, '<body></body>',
+                    root / 'brain.nii.gz', root / 'mask.nii.gz', SimpleNamespace())
+            self.addCleanup(report.widget.close)
+            self.addCleanup(report.navigation.close)
+
+            self.assertEqual(report.report_actions.children,
+                             (report.choose_report, report.html_link))
+            self.assertEqual(report.choose_report.description, 'Choose another report')
+            self.assertIn('Open / download report HTML', report.html_link.value)
+            self.assertIn('target="_blank"', report.html_link.value)
+            self.assertIn('href="/user/test/files/report.html"', report.html_link.value)
+            self.assertIn(report.report_actions, report.widget.children)
+            self.assertLess(report.widget.children.index(report.report_actions),
+                            report.widget.children.index(report.tabs))
+            self.assertLess(report.widget.children.index(report.navigation_message),
+                            report.widget.children.index(report.tabs))
+
     def test_table_title_tracks_atlas_mask_and_counts_full_overlap(self):
         rows = [dict(subject='sub-ui', session='', region=f'ROI {i}', overlap_voxels=1,
                      lesion_in_roi_percent=1., roi_coverage_percent=2., total_lesion_voxels=100)

@@ -23,10 +23,13 @@ cells.changed = {connect: callback => changed = callback, disconnect: callback =
 }};
 globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 const scroller = {scrollTop: 120, addEventListener(){}, removeEventListener(){}};
-const panel = {id:'own-notebook', node:{contains: node => node === el},
+let ownsEl = true;
+const panel = {id:'own-notebook', node:{contains: node => ownsEl && node === el}, isVisible:true,
+    sessionContext:{session:{kernel:{id:'kernel-1'}}},
     content:{model:{cells}, deselectAll(){}, activeCellIndex:0, outerNode:scroller,
+             mode:'command',
              scrollToItem: async index => { scroller.scrollTop = 100 * index; }}};
-const app = {shell:{widgets: () => [panel], activateById: id => calls.push(id)},
+const app = {shell:{widgets: () => [panel], activateById: id => calls.push(id), currentWidget:panel},
              commands:{execute: async command => {
                calls.push(command);
                scroller.scrollTop = 5000;                 // JupyterLab scrolls to the last cell run
@@ -38,7 +41,7 @@ const manager = {loadClass: async (...args) => {
   assert.deepEqual(args, ['JupyterFrontEndModel', 'ipylab', '^1.0.0']);
   if (!available) throw Error('Extension is still loading');
   return {app};
-}, get_model: () => {throw Error('Must not use stored child models');}};
+}, kernel:{id:'kernel-1'}, get_model: () => {throw Error('Must not use stored child models');}};
 assert.equal(await module.getLabApplication(manager), app);
 await assert.rejects(module.getLabApplication({loadClass:async () => ({})}), /extension did not provide/);
 const model = {get: () => {throw Error('Must not read a lab trait');}, widget_manager:manager,
@@ -46,6 +49,37 @@ const model = {get: () => {throw Error('Must not read a lab trait');}, widget_ma
 const dispose = await module.default.render({model,el});
 assert.equal(sent[0].event, 'ready');
 assert.deepEqual(sent[1], {event:'cell-order', ids:['0','1'], batch_start:null});
+// Run All can leave the checkpoint output off-screen/detached. Resolve its
+// notebook by stable cell id and focus without activating a tab or command.
+ownsEl = false;
+await handlers['msg:custom']({action:'focus',cell_id:'1'});
+await new Promise(resolve => setTimeout(resolve, 20));
+assert.equal(panel.content.activeCellIndex,1);
+assert.equal(scroller.scrollTop,100);
+assert.deepEqual(calls,[]);
+assert.deepEqual(sent.at(-1),{event:'focused',cell_id:'1'});
+// A repeated focus is acknowledged but cannot keep stealing the view.
+scroller.scrollTop = 250;
+await handlers['msg:custom']({action:'focus',cell_id:'1'});
+assert.equal(scroller.scrollTop,250);
+assert.deepEqual(sent.at(-1),{event:'focused',cell_id:'1',skipped:true});
+// Hidden notebooks, background tabs and editing in a different cell are not disturbed.
+panel.isVisible = false;
+await handlers['msg:custom']({action:'focus',cell_id:'0'});
+assert.equal(panel.content.activeCellIndex,1);
+assert.deepEqual(sent.at(-1),{event:'focused',cell_id:'0',skipped:true});
+panel.isVisible = true;
+app.shell.currentWidget = {id:'other-tab'};
+await handlers['msg:custom']({action:'focus',cell_id:'0'});
+assert.equal(panel.content.activeCellIndex,1);
+assert.deepEqual(sent.at(-1),{event:'focused',cell_id:'0',skipped:true});
+app.shell.currentWidget = panel;
+panel.content.mode = 'edit';
+await handlers['msg:custom']({action:'focus',cell_id:'0'});
+assert.equal(panel.content.activeCellIndex,1);
+assert.deepEqual(sent.at(-1),{event:'focused',cell_id:'0',skipped:true});
+panel.content.mode = 'command';
+ownsEl = true;
 cells.push({id:'batch', getMetadata: () => ({role:'batch-start'})});
 changed();
 assert.deepEqual(sent.at(-1), {event:'cell-order', ids:['0','1','batch'], batch_start:'batch'});
@@ -53,6 +87,9 @@ await handlers['msg:custom']({action:'connected'});
 await handlers['msg:custom']({action:'prepare',role:'guided-start',all_below:false});
 assert.equal(sent.at(-1).event,'approved');
 const approvedView = sent.at(-1).view_id;
+await handlers['msg:custom']({action:'focus',cell_id:'0'});
+assert.equal(panel.content.activeCellIndex,1);           // pending continuation wins
+assert.deepEqual(sent.at(-1),{event:'focused',cell_id:'0',skipped:true});
 await handlers['msg:custom']({action:'execute',view_id:'another-restored-view'});
 assert.deepEqual(calls, []);
 await handlers['msg:custom']({action:'execute',view_id:approvedView});
@@ -68,6 +105,8 @@ const disposeRetry = await module.default.render({model,el});
 assert.deepEqual(sent.map(item => item.event), ['error']);
 assert.equal(sent[0].connection, true);
 assert.match(el.textContent, /Extension is still loading/);
+await handlers['msg:custom']({action:'focus',cell_id:'1'});
+assert.deepEqual(sent.at(-1),{event:'focused',cell_id:'1',skipped:true});
 // The handler survives initialization failure and can reconnect without reload.
 available = true;
 await handlers['msg:custom']({action:'connect'});

@@ -392,7 +392,7 @@ class BatchCheckpoint(ExecutionCheckpoint):
             "setup and selection without running the batch processing cells. "
             "This does not mark QC as completed.")
         self.navigation = NotebookNavigation(self.message, on_cell_order=self._update_cell_order,
-                                             on_error=self._retry_controls)
+                                             on_error=self._retry_controls, focus_checkpoint=self)
         self.button = widgets.Button(description="Continue to batch",
                                      button_style="warning",
                                      layout=widgets.Layout(width="190px"))
@@ -551,7 +551,8 @@ def pause_for_qc(entries, directory_for, *, display_controls=True):
     shell._calmar_qc_checkpoint = checkpoint
     if display_controls:
         checkpoint.navigation = NotebookNavigation(
-            checkpoint.message, on_cell_order=checkpoint._update_cell_order)
+            checkpoint.message, on_cell_order=checkpoint._update_cell_order,
+            focus_checkpoint=checkpoint)
         checkpoint.controls.append(checkpoint.navigation)
         display(*checkpoint.controls)
     display(recovery_instructions("skip-qc"))

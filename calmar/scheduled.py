@@ -198,6 +198,34 @@ def _result_stamps(result):
     return {str(p): [p.stat().st_mtime_ns, p.stat().st_size] for p in paths}
 
 
+def _result_output_stamps(result):
+    """Stamp only published outputs, allowing prior inputs to change safely."""
+    paths = set()
+    for entry in result.get('results', []):
+        if (entry.get('qc') or {}).get('png'):
+            paths.add(Path(entry['qc']['png']))
+        for output in entry.get('outputs', []):
+            if not output.get('path'):
+                continue
+            path = Path(output['path'])
+            if path.is_dir():
+                paths.update(path/name for name in output.get('images', {}))
+                for marker in ('calmar-selection.json', 'calmar-reconstruction.json'):
+                    if (path/marker).is_file():
+                        paths.add(path/marker)
+            else:
+                paths.add(path)
+            provenance = Path(str(path) + '.prov.json')
+            if provenance.is_file():
+                paths.add(provenance)
+            record = path/'calmar-cache.json' if path.is_dir() else Path(str(path)+'.cache.json')
+            if record.is_file():
+                paths.add(record)
+    if not paths or any(not path.is_file() for path in paths):
+        return None
+    return {str(path): [path.stat().st_mtime_ns, path.stat().st_size] for path in paths}
+
+
 async def run_step(stage, namespace, *, single=False, timeout=43200):
     return await asyncio.to_thread(run_step_sync, stage, namespace, single=single, timeout=timeout)
 
@@ -240,6 +268,70 @@ def submit_step(stage, entries, study, *, timings=None, timeout=43200):
     return result
 
 
+def cached_step_results(stage, entries, study):
+    """Inspect reusable receipts for ``entries`` without submitting work.
+
+    The returned list follows the entry order and contains either the reusable
+    saved result or ``None``. This is intentionally read-only so notebook
+    decision panels can report prior analysis before the user opts in.
+    """
+    entries = list(entries)
+    request = {'dataset': str(study.dataset), 'config': study.config, 'entries': entries}
+    payloads = _split(stage, request)
+    if len(payloads) != len(entries):
+        raise ValueError(f"Cache inspection for {stage} did not resolve one payload per entry.")
+    project = Path(study.project)
+    results = []
+    for payload in payloads:
+        result = _cached(stage, payload, project)
+        if result is not None and not _prior_matches_dependencies(stage, payload, project):
+            result = None
+        results.append(result)
+    return results
+
+
+def previous_step_results(stage, entries, study):
+    """Inspect prior receipts whose published outputs still exist.
+
+    Unlike :func:`cached_step_results`, this deliberately ignores changed input
+    stamps.  It is only used after the notebook has labelled the result as
+    prior and the user explicitly chooses to keep it.
+    """
+    entries = list(entries)
+    request = {'dataset': str(study.dataset), 'config': study.config, 'entries': entries}
+    payloads = _split(stage, request)
+    if len(payloads) != len(entries):
+        raise ValueError(f"Prior-result inspection for {stage} did not resolve one payload per entry.")
+    return [_previous(stage, payload, Path(study.project)) for payload in payloads]
+
+
+def usable_previous_step_results(stage, entries, study):
+    """Inspect prior receipts the scheduler would honour for explicit reuse.
+
+    This includes the same upstream-receipt check used immediately before job
+    submission. Decision panels can therefore avoid offering a reuse action
+    that would later be rejected because an upstream stage has advanced.
+    """
+    entries = list(entries)
+    request = {'dataset': str(study.dataset), 'config': study.config, 'entries': entries}
+    payloads = _split(stage, request)
+    if len(payloads) != len(entries):
+        raise ValueError(f"Usable-prior inspection for {stage} did not resolve one payload per entry.")
+    project = Path(study.project)
+    results = []
+    for original in payloads:
+        payload = dict(original)
+        payload['config'] = dict(original.get('config', {}))
+        key = _reuse_prior_key(stage)
+        if key:
+            payload['config'][key] = True
+        prior = _previous(stage, payload, project)
+        if prior is not None and not _prior_matches_dependencies(stage, payload, project):
+            prior = None
+        results.append(prior)
+    return results
+
+
 def _not_selected(stage, request):
     """A step the selected segmentation methods do not need: no job is submitted."""
     from .processing import not_selected_reason
@@ -269,8 +361,9 @@ def _stage_payload(stage, payload):
     """
     payload = dict(payload)
     if stage != 'acquisition' and 'entries' in payload:
-        ignored = {'dwi_inventory', 'bval', 'bvec', 'json', 'flair', 'anatomical_t1w',
-                   'brain_health_components'}
+        ignored = {'dwi_inventory', 'dmri_analysis', 'brain_health_analysis',
+                   'bval', 'bvec', 'json', 'flair',
+                   'anatomical_t1w', 'brain_health_components'}
         if stage in ('dmri_preproc', 'dmri_recon', 'dmri_metrics'):
             ignored -= {'bval', 'bvec', 'json'}
         if stage.startswith('brain_health_'):
@@ -297,7 +390,10 @@ def _identity_key(stage, payload):
             'NIIVUE_URL_BASE', 'VERBOSE', 'ANALYSE_DWI', '_DWI_ANALYSIS_SELECTED',
             'ANALYSE_TRACT_DWI', '_TRACT_DWI_SELECTED',
             'ANALYSE_BRAIN_HEALTH', '_BRAIN_HEALTH_SELECTED',
-            'ADDITIONAL_COHORTS', 'DMRI_OVERWRITE'}
+            'ADDITIONAL_COHORTS', 'OVERWRITE', 'DEEPDISCO_OVERWRITE', 'BCB_OVERWRITE',
+            'DMRI_OVERWRITE', 'DMRI_REUSE_PRIOR',
+            'OPENADS_OVERWRITE', 'OPENADS_REUSE_PRIOR',
+            'BRAIN_HEALTH_OVERWRITE', 'BRAIN_HEALTH_REUSE_PRIOR'}
         config = identity['config']
         if stage.startswith('dmri_'):
             # Direct dMRI reads only its own method settings plus the derivative
@@ -335,25 +431,97 @@ def _identity_key(stage, payload):
 
 def _reusable(stage, payload):
     config = payload.get('config', {})
-    return stage not in ('qc_operation', 'reporting') and not (
-        config.get('OVERWRITE') or config.get('DEEPDISCO_OVERWRITE') or config.get('BCB_OVERWRITE')
-        or (stage.startswith('dmri_') and config.get('DMRI_OVERWRITE'))
-        or (stage.startswith('brain_health_') and config.get('BRAIN_HEALTH_OVERWRITE')))
+    route_key = ('OPENADS_OVERWRITE' if stage == 'openads' else
+                 'DMRI_OVERWRITE' if stage.startswith('dmri_') else
+                 'BRAIN_HEALTH_OVERWRITE' if stage.startswith('brain_health_') else None)
+    overwrite = (config.get(route_key, config.get('OVERWRITE', False))
+                 if route_key else config.get('OVERWRITE', False))
+    overwrite = bool(overwrite or
+                     (stage == 'deepdisco' and config.get('DEEPDISCO_OVERWRITE')) or
+                     (stage == 'bcb' and config.get('BCB_OVERWRITE')))
+    return stage not in ('qc_operation', 'reporting') and not overwrite
 
 
 _MEMORY_CACHE = {}
+
+
+def _receipt(stage, payload, project):
+    key = _identity_key(stage, payload)
+    disk_cache = project/'reports'/'step-cache'/(hashlib.sha256(str(key).encode()).hexdigest()+'.json')
+    previous = _MEMORY_CACHE.get(key)
+    if disk_cache.is_file():
+        try:
+            # Disk is authoritative because another notebook kernel may have
+            # refreshed this receipt since our process populated memory.
+            previous = json.loads(disk_cache.read_text())
+            _MEMORY_CACHE[key] = previous
+        except (OSError, ValueError):
+            return None
+    return previous
+
+
+def _receipt_time(stage, payload, project, receipt):
+    if receipt and receipt.get('stored_ns'):
+        return int(receipt['stored_ns'])
+    key = _identity_key(stage, payload)
+    path = project/'reports'/'step-cache'/(hashlib.sha256(str(key).encode()).hexdigest()+'.json')
+    try:
+        return path.stat().st_mtime_ns
+    except OSError:
+        return 0
+
+
+def _receipt_has_outputs(result):
+    """Minimum safety check for an explicitly selected prior result."""
+    found = False
+    for row in result.get('results', []):
+        qc = (row.get('qc') or {})
+        if qc.get('complete') is False:
+            return False
+        if qc.get('png'):
+            found = True
+            if not Path(qc['png']).is_file():
+                return False
+        for output in row.get('outputs', []):
+            if output.get('path'):
+                found = True
+                path = Path(output['path'])
+                if not path.exists():
+                    return False
+                if path.is_dir() and any(not (path/name).is_file()
+                                         for name in output.get('images', {})):
+                    return False
+    return found
+
+
+def _previous(stage, payload, project):
+    """Prior receipt with extant outputs, even when input stamps changed."""
+    previous = _receipt(stage, payload, project)
+    if not previous:
+        return None
+    result = previous.get('result') or {}
+    if stage in PROCESSING_STAGES and stage != 'acquisition':
+        if result.get('qc_version') != QC_VERSION or not _receipt_has_outputs(result):
+            return None
+        current_outputs = _result_output_stamps(result)
+        if current_outputs is None:
+            return None
+        saved_outputs = previous.get('output_stamps')
+        if saved_outputs is None:
+            # Backward-compatible extraction from receipts written before
+            # output stamps were stored separately.
+            saved = previous.get('stamps') or {}
+            saved_outputs = {path: saved.get(path) for path in current_outputs}
+        if saved_outputs != current_outputs:
+            return None
+    return result
 
 
 def _cached(stage, payload, project):
     """A previous receipt whose inputs and outputs are unchanged, else None."""
     if not _reusable(stage, payload):
         return None
-    key = _identity_key(stage, payload)
-    disk_cache = project/'reports'/'step-cache'/(hashlib.sha256(str(key).encode()).hexdigest()+'.json')
-    previous = _MEMORY_CACHE.get(key)
-    if previous is None and disk_cache.is_file():
-        try: previous = json.loads(disk_cache.read_text())
-        except (OSError, ValueError): pass
+    previous = _receipt(stage, payload, project)
     if not previous:
         return None
     if stage in PROCESSING_STAGES and stage != 'acquisition':
@@ -366,14 +534,129 @@ def _cached(stage, payload, project):
     return previous['result']
 
 
+def _reuse_prior_key(stage):
+    return ('OPENADS_REUSE_PRIOR' if stage == 'openads' else
+            'DMRI_REUSE_PRIOR' if stage.startswith('dmri_') else
+            'BRAIN_HEALTH_REUSE_PRIOR' if stage.startswith('brain_health_') else None)
+
+
+def _reuse_prior_requested(stage, payload):
+    config = payload.get('config', {})
+    key = _reuse_prior_key(stage)
+    return bool(key and config.get(key))
+
+
+def _stage_dependencies(stage, payload):
+    if stage == 'dmri_recon':
+        return ('dmri_preproc',)
+    if stage == 'dmri_metrics':
+        return ('dmri_preproc', 'dmri_recon')
+    if stage == 'brain_health_metrics':
+        components = payload.get('entries', [{}])[0].get('brain_health_components', ())
+        return tuple(
+            stage_name for component, stage_name in
+            (('atrophy', 'brain_health_anatomy'), ('wmh', 'brain_health_wmh'))
+            if component in components)
+    return ()
+
+
+def _receipt_token(stage, payload, project):
+    receipt = _receipt(stage, payload, project)
+    if not receipt:
+        return None
+    result = receipt.get('result') or {}
+    token = {'job': result.get('job')}
+    if receipt.get('stored_ns'):
+        token['stored_ns'] = int(receipt['stored_ns'])
+    if result.get('log_folder'):
+        token['log_folder'] = result['log_folder']
+    return token
+
+
+def _upstream_receipts(stage, payload, project):
+    receipts = {}
+    for dependency in _stage_dependencies(stage, payload):
+        token = _receipt_token(dependency, payload, project)
+        if token is not None:
+            receipts[dependency] = token
+    return receipts
+
+
+def _prior_matches_dependencies(stage, payload, project):
+    """False when an upstream receipt advanced after this prior was made."""
+    dependencies = _stage_dependencies(stage, payload)
+    if not dependencies:
+        return True
+    receipt = _receipt(stage, payload, project)
+    if not receipt:
+        return False
+    saved_result = receipt.get('result') or {}
+    saved_receipts = saved_result.get('upstream_receipts') or {}
+    saved_jobs = saved_result.get('upstream_jobs') or {}
+    prior_time = _receipt_time(stage, payload, project, receipt)
+    for dependency in dependencies:
+        current = _cached(dependency, payload, project)
+        if current is None and _reuse_prior_requested(stage, payload):
+            current = _previous(dependency, payload, project)
+        if current is None:
+            return False  # no verified upstream result to tie this prior to
+        current_token = _receipt_token(dependency, payload, project)
+        saved_token = saved_receipts.get(dependency)
+        if saved_token and current_token:
+            if saved_token.get('stored_ns') and current_token.get('stored_ns'):
+                if int(saved_token['stored_ns']) != int(current_token['stored_ns']):
+                    return False
+            elif saved_token.get('log_folder') and current_token.get('log_folder'):
+                if saved_token['log_folder'] != current_token['log_folder']:
+                    return False
+            elif str(saved_token.get('job')) != str(current_token.get('job')):
+                return False
+            continue
+        if dependency in saved_jobs:
+            if str(saved_jobs[dependency]) != str(current.get('job')):
+                return False
+            continue
+        dependency_receipt = _receipt(dependency, payload, project)
+        if _receipt_time(dependency, payload, project, dependency_receipt) > prior_time:
+            return False
+    return True
+
+
+def _prior_dependencies(stage, payload, project):
+    """Prior stages that a newly computed downstream result depends on."""
+    if not _reuse_prior_requested(stage, payload):
+        return []
+    dependencies = _stage_dependencies(stage, payload)
+    markers = []
+    for dependency in dependencies:
+        current = _cached(dependency, payload, project)
+        if current is not None:
+            for row in current.get('results', []):
+                markers.extend(row.get('derived_from_prior') or [])
+            continue
+        prior = _previous(dependency, payload, project)
+        if prior is not None:
+            markers.append({'stage': dependency, 'job': prior.get('job')})
+    unique = []
+    for marker in markers:
+        if marker not in unique:
+            unique.append(marker)
+    return unique
+
+
 def _store(stage, payload, project, result):
-    if not _reusable(stage, payload):
+    # Overwrite means "do not read before running", not "discard the fresh
+    # receipt". Saving the completed rerun makes it current after overwrite is
+    # turned off. QC/report operations remain intentionally non-cacheable.
+    if stage in ('qc_operation', 'reporting'):
         return
     stamps = _result_stamps(result)
-    if not stamps:
+    output_stamps = _result_output_stamps(result)
+    if not stamps or not output_stamps:
         return
     key = _identity_key(stage, payload)
-    cached = {'stamps': stamps, 'result': result}
+    cached = {'stamps': stamps, 'output_stamps': output_stamps,
+              'result': result, 'stored_ns': time.time_ns()}
     _MEMORY_CACHE[key] = cached
     disk_cache = project/'reports'/'step-cache'/(hashlib.sha256(str(key).encode()).hexdigest()+'.json')
     disk_cache.parent.mkdir(parents=True, exist_ok=True)
@@ -398,7 +681,7 @@ def _job_label(stage, payload):
     return '_'.join(filter(None, [stage] + [e.get('subject') for e in payload.get('entries', [])][:1]))
 
 
-def _attach_running(stage, payload, project):
+def _attach_running(stage, payload, project, upstream_receipts=None):
     """A queued or running job that was submitted for exactly this payload (for
     example before the notebook lost its connection), so a rerun of the cell
     waits for it instead of submitting a duplicate. None if there is none."""
@@ -417,16 +700,27 @@ def _attach_running(stage, payload, project):
             info = json.loads(submission.read_text())
             previous = _stage_payload(stage, json.loads((submission.parent/'request.json').read_text()))
             if info.get('job_id') in running and info.get('stage') == stage and previous == wanted:
+                expected = upstream_receipts or {}
+                if 'upstream_receipts' not in info and expected:
+                    raise RuntimeError(
+                        f"{stage}: active Slurm job {info['job_id']} predates dependency provenance; "
+                        "wait for it to finish, then rerun this cell.")
+                if (info.get('upstream_receipts') or {}) != expected:
+                    raise RuntimeError(
+                        f"{stage}: active Slurm job {info['job_id']} was submitted for older upstream "
+                        "results; wait for it to finish, then rerun this cell.")
                 folder = submission.parent
                 print(f"{stage}: Slurm job {info['job_id']} is already running this request; waiting for it.",
                       flush=True)
-                return {'job': info['job_id'], 'folder': folder, 'output': folder/'result', 'payload': payload}
+                return {'job': info['job_id'], 'folder': folder, 'output': folder/'result',
+                        'payload': payload,
+                        'upstream_receipts': info.get('upstream_receipts') or {}}
         except (OSError, ValueError):
             continue
     return None
 
 
-def _submit(stage, payload, project):
+def _submit(stage, payload, project, upstream_receipts=None):
     folder = project/'reports'/'jobs'/uuid4().hex
     folder.mkdir(parents=True)
     (project/'logs').mkdir(exist_ok=True)
@@ -445,8 +739,11 @@ def _submit(stage, payload, project):
                                env={**os.environ, 'CALMAR_PYTHON': sys.executable})
     job = submitted.stdout.strip().split(';')[0]
     if not job.isdigit(): raise RuntimeError(f'Invalid Slurm job ID: {submitted.stdout}')
-    (folder/'submission.json').write_text(json.dumps({'job_id':job,'command':command,'stage':stage},indent=2))
-    return {'job': job, 'folder': folder, 'output': output, 'payload': payload}
+    info = {'job_id': job, 'command': command, 'stage': stage,
+            'upstream_receipts': upstream_receipts or {}}
+    (folder/'submission.json').write_text(json.dumps(info, indent=2))
+    return {'job': job, 'folder': folder, 'output': output, 'payload': payload,
+            'upstream_receipts': upstream_receipts or {}}
 
 
 def _poll(stage, job, progress=None):
@@ -497,20 +794,42 @@ def _run_payloads(stage, payloads, project, timeout):
             if not stage_selected(stage, payload.get('config', {})):
                 parts[i] = _not_selected(stage, payload)
                 continue
-        cached = _cached(stage, payload, project)
+        current = _cached(stage, payload, project)
+        if current is not None and not _prior_matches_dependencies(stage, payload, project):
+            current = None
+        explicit_prior = (_previous(stage, payload, project)
+                          if (current is None and _reuse_prior_requested(stage, payload)
+                              and _prior_matches_dependencies(stage, payload, project)) else None)
+        cached = current or explicit_prior
         if cached is not None:
             # Mark the reuse on each participant: their output statuses describe
             # the original job, not this run.
-            parts[i] = {**cached, 'reused': True,
-                        'results': [{**r, 'reused_from_job': cached.get('job')} for r in cached.get('results', [])]}
+            marker = ({'prior_result_from_job': cached.get('job')} if explicit_prior is not None else
+                      {'reused_from_job': cached.get('job')})
+            parts[i] = {**cached, 'reused': True, 'explicit_prior': explicit_prior is not None,
+                        'results': [{**r, **marker} for r in cached.get('results', [])]}
         else:
-            job = _attach_running(stage, payload, project) or _submit(stage, payload, project)
+            upstream_receipts = _upstream_receipts(stage, payload, project)
+            try:
+                job = (_attach_running(stage, payload, project, upstream_receipts) or
+                       _submit(stage, payload, project, upstream_receipts))
+            except RuntimeError as error:
+                active = ' '.join(item['job'] for item in pending)
+                suffix = (f" Already submitted job(s) still active: {active}."
+                          if active else "")
+                raise RuntimeError(str(error) + suffix) from error
             job['index'], job['started'] = i, time.monotonic()
             pending.append(job)
     reused = sum(1 for p in parts if p is not None and p.get('reused'))
     if reused:
-        print(f'{stage}: using unchanged results for {reused} participant(s).' if len(payloads) > 1
-              else f'{stage}: using unchanged results.', flush=True)
+        prior = sum(1 for p in parts if p is not None and p.get('explicit_prior'))
+        unchanged = reused - prior
+        messages = []
+        if unchanged:
+            messages.append(f'using unchanged results for {unchanged} participant(s)')
+        if prior:
+            messages.append(f'using explicitly selected prior results for {prior} participant(s)')
+        print(f'{stage}: ' + '; '.join(messages) + '.', flush=True)
     failures = []
     progress = JobProgress(stage, list(pending)) if pending else None
     while pending and time.monotonic()-started < timeout:
@@ -522,6 +841,17 @@ def _run_payloads(stage, payloads, project, timeout):
                 failures.append(str(error)); pending.remove(job); continue
             if done:
                 pending.remove(job)
+                dependencies = _prior_dependencies(stage, job['payload'], project)
+                if dependencies:
+                    job['result']['results'] = [
+                        {**row, 'derived_from_prior': dependencies}
+                        for row in job['result'].get('results', [])]
+                upstream = job.get('upstream_receipts') or {}
+                if upstream:
+                    job['result']['upstream_receipts'] = upstream
+                    job['result']['upstream_jobs'] = {
+                        dependency: token.get('job')
+                        for dependency, token in upstream.items()}
                 parts[job['index']] = job['result']
                 _store(stage, job['payload'], project, job['result'])
         if progress is not None and pending:

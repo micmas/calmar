@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import numpy as np
@@ -8,8 +9,12 @@ from unittest.mock import patch
 
 from calmar.brain_health import (brain_health_inventory, brain_health_measure_note, brain_health_measure_records,
                                  brain_health_section, load_metrics, output_paths)
-from calmar.brain_health_choice import apply_brain_health_selection, available_entries
-from calmar.brain_health_pipeline import _native_lesion, _validate_mask, _wmh_measurements
+from calmar.brain_health_choice import (BrainHealthChoice, apply_brain_health_selection,
+                                        available_entries, show_brain_health_choice)
+from calmar.brain_health_pipeline import (_native_lesion, _overwrite_requested,
+                                          _validate_mask, _wmh_measurements)
+from calmar.analysis_choice import RERUN, SKIP, USE_PRIOR
+from calmar.study import ENTRY_DATASET
 
 
 def t1_entry(tmp_path, *, flair=True):
@@ -52,6 +57,103 @@ def test_selection_is_opt_in_and_attaches_report_metadata(tmp_path):
     assert namespace["BRAIN_HEALTH_SUBJECTS"][0]["brain_health_components"] == ["atrophy", "wmh"]
     assert namespace["SUBJECTS"][0]["brain_health_analysis"]["components"] == ["atrophy", "wmh"]
     assert json.loads((tmp_path / "reports" / "brain-health-selection.json").read_text())["analyse_brain_health"]
+
+
+def test_brain_health_panel_uses_the_shared_optional_action_controls(tmp_path):
+    entry = t1_entry(tmp_path, flair=False)
+    namespace = {"SUBJECTS": [entry], "CONFIG": {"MODALITY": "t1"},
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+    shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=lambda: None))
+    panel = BrainHealthChoice(namespace, shell)
+    try:
+        assert "Choose one action per participant" in panel.children[0].value
+        assert "single-scan measures are not diagnostic" in panel.children[0].value
+        assert panel.rows[0][3].value == "skip"
+        heading = panel.rows[0][6].value
+        assert "○ Not analysed" in heading
+        assert "T1 volumetry" in heading
+        assert "&nbsp;Details</summary>" in heading
+        assert "aria-label='Details for sub-1 · ses-a'" in heading
+        assert panel.analyse.description == "Apply choices and continue"
+        assert panel.skip.description == "Skip all and continue"
+        assert panel.skip.button_style == "warning"
+    finally:
+        panel.close()
+
+
+def test_brain_health_existing_output_is_resolved_in_mixed_cohort_dataset(tmp_path):
+    primary = tmp_path / "primary"
+    additional = tmp_path / "additional"
+    entry = t1_entry(additional, flair=False)
+    entry[ENTRY_DATASET] = str(additional)
+    existing = output_paths(additional, {"MODALITY": "t1"}, {
+        **entry, "brain_health_components": ["atrophy"]})["anatomy"]
+    existing.mkdir(parents=True)
+    namespace = {"SUBJECTS": [entry], "CONFIG": {"MODALITY": "t1"},
+                 "RAW_DATASET_DIR": primary, "PROJECT_DIR": tmp_path / "project"}
+    shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=lambda: None))
+    panel = BrainHealthChoice(namespace, shell)
+    try:
+        action = panel.rows[0][3]
+        assert [value for _, value in action.options] == [RERUN, SKIP]
+        assert action.value == SKIP
+        assert "⚠ Unmatched saved files" in panel.rows[0][6].value
+        assert "existing brain-health output" in panel.rows[0][6].value
+    finally:
+        panel.close()
+
+
+def test_configured_brain_health_requires_explicit_policy_for_unmatched_output(tmp_path, capsys):
+    entry = t1_entry(tmp_path, flair=False)
+    existing = output_paths(tmp_path, {"MODALITY": "t1"}, {
+        **entry, "brain_health_components": ["atrophy"]})["anatomy"]
+    existing.mkdir(parents=True)
+    namespace = {"SUBJECTS": [entry],
+                 "CONFIG": {"MODALITY": "t1", "ANALYSE_BRAIN_HEALTH": True},
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path / "project"}
+
+    with pytest.raises(RuntimeError, match="BRAIN_HEALTH_OVERWRITE=True"):
+        show_brain_health_choice(namespace)
+
+    namespace["CONFIG"]["BRAIN_HEALTH_OVERWRITE"] = True
+    assert show_brain_health_choice(namespace) is None
+    output = capsys.readouterr().out
+    assert "selected for 1 participant" in output
+    assert "rerun requested in CONFIG" in output
+
+
+def test_brain_health_compact_heading_updates_with_flair_choice(tmp_path, monkeypatch):
+    entry = t1_entry(tmp_path)
+    anat = Path(entry["t1w"]).parent
+    second = anat / "sub-1_ses-a_run-2_FLAIR.nii.gz"
+    second.touch()
+
+    def state(namespace, source, inventory, components):
+        reusable = Path(inventory["flair"]).name == second.name
+        return {
+            "status": ("✓ analysed already (reusable)" if reusable else "○ not analysed yet"),
+            "kind": "reusable" if reusable else "new",
+            "current_complete": reusable, "prior_available": reusable,
+            "outputs_exist": reusable, "rerun_required": False,
+        }
+
+    monkeypatch.setattr("calmar.brain_health_choice.brain_health_analysis_state", state)
+    namespace = {"SUBJECTS": [entry], "CONFIG": {"MODALITY": "t1"},
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+    shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=lambda: None))
+    panel = BrainHealthChoice(namespace, shell)
+    try:
+        _, _, _, action, flair_choice, _, heading = panel.rows[0]
+        assert flair_choice is not None
+        assert "○ Not analysed" in heading.value
+        assert action.value == SKIP
+
+        flair_choice.value = str(second)
+        assert "✓ Reusable" in heading.value
+        assert second.name in heading.value
+        assert action.value == USE_PRIOR
+    finally:
+        panel.close()
 
 
 def test_selection_keeps_sessions_of_same_subject_distinct(tmp_path):
@@ -154,6 +256,14 @@ def test_no_stroke_exclusion_never_labels_raw_burden_as_nonstroke():
     assert measured["total_flair_hyperintensity_ml"] == pytest.approx(.008)
     assert measured["wmh_candidate_ml"] is None
     assert measured["stroke_excluded_hyperintensity_ml"] is None
+
+
+def test_brain_health_overwrite_uses_route_override_then_global_policy():
+    assert _overwrite_requested({"config": {"OVERWRITE": True}}) is True
+    assert _overwrite_requested({
+        "config": {"OVERWRITE": True, "BRAIN_HEALTH_OVERWRITE": False}}) is False
+    assert _overwrite_requested({
+        "config": {"OVERWRITE": False, "BRAIN_HEALTH_OVERWRITE": True}}) is True
 
 
 def test_empty_wmh_is_a_valid_zero_measurement():

@@ -9,10 +9,15 @@ import ipywidgets as w
 from IPython import get_ipython
 from IPython.display import display
 
+from .analysis_choice import (RUN, SKIP, action_buttons, action_dropdown,
+                              action_help_html, action_state_kwargs,
+                              compact_choice_heading, entry_with_action,
+                              set_action_options, without_action_policy)
 from .brain_health import brain_health_inventory
 from .execution import ExecutionCheckpoint
 from .notebook_navigation import NotebookNavigation
-from .study import ENTRY_CONFIG, ENTRY_DATASET
+from .study import (ENTRY_CONFIG, ENTRY_DATASET, config_for_entry,
+                    dataset_for_entry)
 from .widget_lifecycle import close_widget
 
 
@@ -24,10 +29,130 @@ def _selected_entry(entry, inventory, components):
     return selected
 
 
+def brain_health_analysis_state(namespace, entry, inventory, components):
+    """Read-only receipt status for the exact brain-health selection."""
+    try:
+        selected = _selected_entry(entry, inventory, components)
+        from .scheduled import (cached_step_results, previous_step_results,
+                                usable_previous_step_results)
+        from .study import Study
+        study = Study(namespace["CONFIG"], namespace["RAW_DATASET_DIR"], namespace["PROJECT_DIR"])
+        stages = (["brain_health_anatomy"] if "atrophy" in components else []) + \
+                 (["brain_health_wmh"] if "wmh" in components else []) + ["brain_health_metrics"]
+        current = {stage: cached_step_results(stage, [selected], study)[0] for stage in stages}
+        previous = {stage: previous_step_results(stage, [selected], study)[0] for stage in stages}
+        usable_previous = {
+            stage: usable_previous_step_results(stage, [selected], study)[0]
+            for stage in stages
+        }
+        labels = {"brain_health_anatomy": "T1 volumetry", "brain_health_wmh": "FLAIR WMH",
+                  "brain_health_metrics": "final metrics"}
+        current_stages = [stage for stage in stages if current[stage] is not None]
+        prior_stages = [stage for stage in stages if usable_previous[stage] is not None]
+        retained_prior = [stage for stage in stages
+                          if current[stage] is None and usable_previous[stage] is not None]
+        from .brain_health import output_paths
+        route_config = config_for_entry(namespace["CONFIG"], selected)
+        overwrite_requested = bool(route_config.get(
+            "BRAIN_HEALTH_OVERWRITE", route_config.get("OVERWRITE", False)))
+        dataset = dataset_for_entry(namespace["RAW_DATASET_DIR"], selected)
+        paths = output_paths(dataset, route_config, selected)
+        stage_paths = {
+            "brain_health_anatomy": paths["anatomy"],
+            "brain_health_wmh": paths["wmh"],
+            "brain_health_metrics": paths["metrics"],
+        }
+        existing_stages = [stage for stage in stages if Path(stage_paths[stage]).exists()]
+        unmatched = [
+            stage for stage in stages
+            if current[stage] is None and usable_previous[stage] is None and
+            (previous[stage] is not None or stage in existing_stages)
+        ]
+        outputs_exist = bool(existing_stages or any(current.values()) or any(previous.values()))
+        derived_stages = []
+        for stage in stages:
+            result = current[stage] or usable_previous[stage]
+            if result is not None and any(
+                    row.get("derived_from_prior") for row in result.get("results", [])):
+                derived_stages.append(stage)
+        if overwrite_requested and outputs_exist:
+            text = "↻ rerun requested in CONFIG; existing results will not be reused"
+            kind = "rerun"
+        elif derived_stages:
+            text = ("⚠ analysed using explicitly retained older inputs: " +
+                    ", ".join(labels[s] for s in derived_stages))
+            kind = "derived"
+        elif len(current_stages) == len(stages):
+            text = "✓ analysed already (reusable)"
+            kind = "reusable"
+        elif current_stages:
+            text = "◐ partly analysed: " + ", ".join(labels[s] for s in current_stages)
+            if unmatched:
+                text += "; later outputs not reusable: " + ", ".join(labels[s] for s in unmatched)
+            if retained_prior:
+                text += ("; input file date or size differs for this or an earlier stage: " +
+                         ", ".join(labels[s] for s in retained_prior))
+            kind = "partial_changed" if retained_prior else "partial"
+        elif prior_stages:
+            text = ("⚠ input file date or size differs for this or an earlier stage: " +
+                    ", ".join(labels[s] for s in prior_stages))
+            if unmatched:
+                text += "; later outputs not reusable: " + ", ".join(labels[s] for s in unmatched)
+            kind = "changed"
+        elif outputs_exist:
+            found = unmatched or existing_stages
+            text = "⚠ existing brain-health output"
+            if found:
+                text += ": " + ", ".join(labels[s] for s in found)
+            text += "; no reusable receipt"
+            kind = "existing"
+        else:
+            text = "○ not analysed yet"
+            kind = "new"
+        return {"status": text,
+                "kind": kind,
+                "current_complete": len(current_stages) == len(stages) and not derived_stages,
+                "prior_available": bool(prior_stages),
+                "outputs_exist": outputs_exist,
+                "rerun_required": bool(unmatched or (overwrite_requested and outputs_exist)),
+                "requires_overwrite": bool(unmatched)}
+    except Exception as exc:
+        return {"status": f"⚠ analysis status unavailable ({type(exc).__name__})",
+                "kind": "unavailable", "current_complete": False,
+                "prior_available": False, "outputs_exist": True, "rerun_required": True,
+                "requires_overwrite": True}
+
+
+def _brain_health_heading(entry, inventory, components, state):
+    identity = entry["subject"]
+    if entry.get("session"):
+        identity += f" · {entry['session']}"
+    component_labels = []
+    if "atrophy" in components:
+        component_labels.append("T1 volumetry")
+    if "wmh" in components:
+        component_labels.append("FLAIR WMH")
+    details = [("Saved result", state["status"]),
+               ("Measures", " + ".join(component_labels))]
+    if inventory.get("t1w"):
+        details.append(("T1 input", Path(inventory["t1w"]).name))
+    if inventory.get("flair"):
+        details.append(("FLAIR input", Path(inventory["flair"]).name))
+    return compact_choice_heading(identity, state["kind"], details, tags=component_labels)
+
+
 def apply_brain_health_selection(namespace, selected):
     """Attach compact report metadata and retain processing entries."""
-    processing = {key: _selected_entry(entry, inventory, components)
-                  for key, (entry, inventory, components) in selected.items()}
+    processing, actions = {}, {}
+    for key, value in selected.items():
+        entry, inventory, components, action = (*value, RUN) if len(value) == 3 else value
+        if action == SKIP:
+            continue
+        chosen = _selected_entry(entry, inventory, components)
+        processing[key] = entry_with_action(
+            chosen, action, overwrite_key="BRAIN_HEALTH_OVERWRITE",
+            reuse_key="BRAIN_HEALTH_REUSE_PRIOR")
+        actions[key] = action
     subjects = []
     for entry in namespace.get("SUBJECTS", ()):
         copied = dict(entry)
@@ -41,7 +166,11 @@ def apply_brain_health_selection(namespace, selected):
             }
             for key in (ENTRY_DATASET, ENTRY_CONFIG):
                 if key in chosen:
-                    copied["brain_health_analysis"][key] = chosen[key]
+                    value = chosen[key]
+                    if key == ENTRY_CONFIG:
+                        value = without_action_policy({ENTRY_CONFIG: value}).get(ENTRY_CONFIG)
+                    if value:
+                        copied["brain_health_analysis"][key] = value
         subjects.append(copied)
     namespace["SUBJECTS"] = subjects
     namespace["BRAIN_HEALTH_SUBJECTS"] = list(processing.values())
@@ -52,6 +181,7 @@ def apply_brain_health_selection(namespace, selected):
             "subject": item["subject"], "session": item.get("session"),
             "components": item["brain_health_components"], "t1w": item.get("anatomical_t1w"),
             "flair": item.get("flair"),
+            "action": actions[(item["subject"], item.get("session"))],
         } for item in processing.values()],
     }
     path = Path(namespace["PROJECT_DIR"]) / "reports" / "brain-health-selection.json"
@@ -79,24 +209,24 @@ class BrainHealthChoice(w.VBox):
         self.namespace = namespace
         self.checkpoint = ExecutionCheckpoint(shell, "Execution is paused for the optional brain-health decision.")
         self.message = w.HTML()
-        self.navigation = NotebookNavigation(self.message, on_cell_order=self.checkpoint._update_cell_order)
+        self.navigation = NotebookNavigation(
+            self.message, on_cell_order=self.checkpoint._update_cell_order,
+            focus_checkpoint=self.checkpoint)
         self.rows = []
         children = [w.HTML(
             "<h3>Optional structural brain health</h3>"
-            "<p>Analyse T1-derived atrophy-sensitive volumes and, where same-session FLAIR exists, white-matter "
-            "hyperintensity burden. These measurements remain separate from the focal stroke interpretation.</p>"
-            "<p>A single scan cannot diagnose atrophy. Stroke cavities and acute FLAIR lesion signal can bias both "
-            "analyses, so CALMaR reports lesion-adjusted values, preserves the raw burden and requires visual QC.</p>")]
+            "<p>Choose one action per participant. The badges show saved-result status and the measurements "
+            "available from the selected scans. <b>These single-scan measures are not diagnostic; stroke "
+            "lesions can bias them, and visual QC is required.</b></p>"
+            "<details style='margin-bottom:10px'><summary style='cursor:pointer'>About these measurements and "
+            "the available actions</summary>"
+            "<p>T1-derived atrophy-sensitive volumes and same-session FLAIR white-matter-hyperintensity burden "
+            "remain separate from the focal stroke interpretation.</p>"
+            "<p>A single scan cannot diagnose atrophy. Stroke cavities and acute FLAIR lesion signal can bias "
+            "both analyses, so CALMaR reports lesion-adjusted values, preserves the raw burden and requires "
+            "visual QC.</p>" + action_help_html() + "</details>")]
         for key, (entry, inventory, components) in available_entries(namespace).items():
             subject, session = key
-            include = w.Checkbox(value=False, description=f"Analyse {subject}", indent=False,
-                                 layout=w.Layout(width="230px"))
-            options = []
-            if "atrophy" in components:
-                options.append("T1 volumetry")
-            if "wmh" in components:
-                options.append("FLAIR WMH candidates")
-            detail = w.HTML("<span style='color:#555'>" + escape(" + ".join(options)) + "</span>")
             flair_options = inventory.get("flair_candidates") or []
             flair_choice = None
             if len(flair_options) > 1:
@@ -104,12 +234,25 @@ class BrainHealthChoice(w.VBox):
                     options=[(Path(path).name, path) for path in flair_options], value=inventory.get("flair"),
                     description="FLAIR:", style={"description_width": "initial"},
                     layout=w.Layout(width="520px"))
-            self.rows.append((entry, inventory, components, include, flair_choice))
-            children.append(w.HBox([item for item in (include, detail, flair_choice) if item is not None],
-                                   layout=w.Layout(flex_flow="row wrap")))
-        self.analyse = w.Button(description="Analyse selected brain health", button_style="primary",
-                                layout=w.Layout(width="270px"))
-        self.skip = w.Button(description="Continue without brain health", layout=w.Layout(width="250px"))
+            state = brain_health_analysis_state(namespace, entry, inventory, components)
+            action = action_dropdown(**action_state_kwargs(state))
+            heading = w.HTML(_brain_health_heading(entry, inventory, components, state))
+            if flair_choice is not None:
+                def update_flair(change, *, base=inventory, analysis=action, label=heading,
+                                 source=entry, selected_components=components):
+                    chosen = dict(base)
+                    chosen["flair"] = change["new"]
+                    updated = brain_health_analysis_state(
+                        namespace, source, chosen, selected_components)
+                    set_action_options(analysis, **action_state_kwargs(updated))
+                    label.value = _brain_health_heading(
+                        source, chosen, selected_components, updated)
+                flair_choice.observe(update_flair, names="value")
+            self.rows.append((entry, inventory, components, action, flair_choice, state, heading))
+            children.append(w.VBox([
+                heading, w.HBox([item for item in (action, flair_choice) if item is not None],
+                                layout=w.Layout(flex_flow="row wrap"))]))
+        self.analyse, self.skip = action_buttons()
         self.analyse.on_click(lambda _: self._request(True))
         self.skip.on_click(lambda _: self._request(False))
         children.extend([w.HBox([self.analyse, self.skip]), self.message, self.navigation])
@@ -119,13 +262,14 @@ class BrainHealthChoice(w.VBox):
 
     def _selection(self):
         selected = {}
-        for entry, inventory, components, include, flair_choice in self.rows:
-            if not include.value:
+        for entry, inventory, components, action, flair_choice, *_ in self.rows:
+            if action.value == SKIP:
                 continue
             chosen = dict(inventory)
             if flair_choice is not None:
                 chosen["flair"] = flair_choice.value
-            selected[(entry["subject"], entry.get("session"))] = (entry, chosen, components)
+            selected[(entry["subject"], entry.get("session"))] = (
+                entry, chosen, components, action.value)
         return selected
 
     def _request(self, analyse):
@@ -133,19 +277,22 @@ class BrainHealthChoice(w.VBox):
 
     def _apply(self, analyse):
         selected = self._selection() if analyse else {}
-        if analyse and not selected:
-            self.message.value = "Select at least one participant, or continue without brain-health analysis."
-            return False
         apply_brain_health_selection(self.namespace, selected)
         self.checkpoint.release()
         self.analyse.disabled = self.skip.disabled = True
-        for _, _, _, include, flair_choice in self.rows:
-            include.disabled = True
+        for _, _, _, action, flair_choice, *_ in self.rows:
+            action.disabled = True
             if flair_choice is not None:
                 flair_choice.disabled = True
         if selected:
-            labels = [f"{subject} {session or ''}".strip() for subject, session in selected]
+            labels = [
+                (f"{subject} {session or ''} ({value[3].replace('_', ' ')})").strip()
+                for (subject, session), value in selected.items()
+            ]
             self.message.value = "<b>Brain-health analysis selected:</b> " + escape(", ".join(labels)) + "."
+        elif analyse:
+            self.message.value = ("<b>No participant had an analysis action selected.</b> "
+                                  "Continuing without brain-health analysis.")
         else:
             self.message.value = "<b>Brain-health analysis declined.</b>"
         return True
@@ -167,10 +314,34 @@ def show_brain_health_choice(namespace, shell=None):
         return None
     configured = namespace["CONFIG"].get("ANALYSE_BRAIN_HEALTH")
     if configured is not None:
+        states = [
+            (key, brain_health_analysis_state(namespace, entry, inventory, components))
+            for key, (entry, inventory, components) in available.items()
+        ]
+        if configured:
+            unsafe = []
+            for key, state in states:
+                entry = available[key][0]
+                effective = config_for_entry(namespace["CONFIG"], entry)
+                overwrite = bool(effective.get(
+                    "BRAIN_HEALTH_OVERWRITE", effective.get("OVERWRITE", False)))
+                reuse = bool(effective.get("BRAIN_HEALTH_REUSE_PRIOR"))
+                if ((state.get("requires_overwrite") and not overwrite) or
+                        (state["outputs_exist"] and not state["current_complete"] and
+                         not overwrite and not reuse)):
+                    unsafe.append(key)
+            if unsafe:
+                names = ", ".join(" ".join(filter(None, key)) for key in unsafe)
+                raise RuntimeError(
+                    "Configured brain-health analysis found prior or unmatched outputs for " + names +
+                    ". Set BRAIN_HEALTH_OVERWRITE=True to recompute them, or "
+                    "BRAIN_HEALTH_REUSE_PRIOR=True to explicitly retain compatible prior results.")
         selected = available if configured else {}
         apply_brain_health_selection(namespace, selected)
         print((f"Brain-health analysis selected for {len(selected)} participant(s)."
                if selected else "Brain-health analysis disabled in CONFIG."))
+        for (subject, session), state in states:
+            print(f"  {subject} {session or '(no session)'}: {state['status']}")
         return None
     shell = shell or get_ipython()
     if shell is None:

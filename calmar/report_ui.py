@@ -117,7 +117,8 @@ class ReportInputs:
         self.generate = w.Button(description="Generate participant report", button_style="success",
             icon="play", layout=w.Layout(width="270px", min_height="36px"))
         self.navigation = NotebookNavigation(
-            self.message, on_cell_order=self.gate._update_cell_order if self.gate else None)
+            self.message, on_cell_order=self.gate._update_cell_order if self.gate else None,
+            focus_checkpoint=self.gate)
         self.compare_body = w.VBox()
         self.preview_controls = None
         self.compare = w.Accordion(children=[self.compare_body], selected_index=None)
@@ -360,11 +361,17 @@ class ParticipantReport:
         self.tabs.observe(self.show_brain, names="selected_index")
         self.navigation_message = w.HTML()
         self.navigation = NotebookNavigation(self.navigation_message)
-        choose = w.Button(description="Choose another report", layout=w.Layout(width="220px"))
-        choose.on_click(lambda _: self.navigation.request("report-selection", lambda: True, all_below=False))
+        self.choose_report = w.Button(description="Choose another report", layout=w.Layout(width="220px"))
+        self.choose_report.on_click(
+            lambda _: self.navigation.request("report-selection", lambda: True, all_below=False))
+        self.html_link = w.HTML(
+            file_link(path, "Open / download report HTML")
+            + " · Use the saved report’s Print button for PDF.")
+        self.report_actions = w.HBox(
+            [self.choose_report, self.html_link],
+            layout=w.Layout(align_items="center", flex_flow="row wrap", grid_gap="8px"))
         self.widget = w.VBox([w.HTML(report_style + '<div class="calmar-report">' + title + qc_notice + '</div>'),
-            w.HTML(file_link(path, "Open / download report HTML") + " · Use the saved report’s Print button for PDF."),
-            self.tabs, choose, self.navigation_message, self.navigation])
+            self.report_actions, self.navigation_message, self.navigation, self.tabs])
 
     def show_brain(self, change):
         if change["new"] != 1 or getattr(self, "viewer", None) is not None:

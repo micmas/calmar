@@ -68,8 +68,9 @@ def _metric_lines(metrics):
         sessions = take("dwi_sessions_available")
         same, other = take("dwi_same_session"), take("dwi_other_session")
         ready = take("dwi_openads_ready")
-        text = (f"{total} series across {sessions}; {same} in the selected session, "
-                f"{other} in other sessions; {ready} with an exact sibling ADC map for OpenADS")
+        text = ("none found" if not total else
+                f"{total} series ({sessions}); selected session: {same}; other sessions: {other}; "
+                f"OpenADS-ready: {ready} (exact sibling ADC)")
         lines.append(("DWI availability", text))
     if "brain_volume_ml" in m:
         parts = [f"{_fmt(take('brain_volume_ml'))} ml"]
@@ -155,7 +156,16 @@ def step_html(result, *, title=None, images=False):
     for i, entry in enumerate(entries):
         who = escape(f"{entry['subject']} {entry.get('session') or ''}".strip())
         status, reasons = _status(entry)
-        if entry.get("reused_from_job"):
+        if entry.get("prior_result_from_job"):
+            status = ("used prior result by explicit choice — inputs or outputs may have changed "
+                      f"(Slurm job {entry['prior_result_from_job']})")
+        elif entry.get("derived_from_prior"):
+            sources = ", ".join(
+                f"{item.get('stage')} (job {item.get('job') or '?'})"
+                for item in entry["derived_from_prior"])
+            status = ("computed from explicitly retained prior result(s) — review required: " +
+                      sources)
+        elif entry.get("reused_from_job"):
             status = f"reused — unchanged since Slurm job {entry['reused_from_job']}"
         flags = list((entry.get("qc") or {}).get("flags", [])) + [
             r for r in reasons if "Stale" in r or "unavailable" in r or "predates" in r]
@@ -184,7 +194,21 @@ def step_html(result, *, title=None, images=False):
         if entry.get("log_folder"):
             parts.append(f"<p style='font-size:12px'>Slurm job logs: <code>{escape(entry['log_folder'])}</code></p>")
         if parts:
-            details.append(f"<details><summary><b>{who}</b>: commands, files and logs</summary>{''.join(parts)}</details>")
+            details.append((who, "".join(parts)))
+    opened = " open" if images else ""
+    if len(details) == 1:
+        who, body = details[0]
+        detail_html = (f"<details{opened}><summary><b>{who}</b>: commands, files and logs</summary>"
+                       f"{body}</details>")
+    elif details:
+        children = "".join(
+            f"<details{opened}><summary><b>{who}</b></summary>{body}</details>"
+            for who, body in details)
+        detail_html = (f"<details class='step-provenance'{opened}>"
+                       f"<summary>Commands, output files and logs ({len(details)} participants)</summary>"
+                       f"{children}</details>")
+    else:
+        detail_html = ""
     logs = None if any(e.get("log_folder") for e in entries) else result.get("log_folder")
     head = escape(title or f"{result.get('stage')} step")
     return (f"<div style='font-family:sans-serif'><h4 style='margin:6px 0'>{head}</h4>"
@@ -192,7 +216,46 @@ def step_html(result, *, title=None, images=False):
             "<tr><th>Participant</th><th>Result</th><th>Key metrics</th><th>⚠ Workflow checks</th><th>Time</th></tr>"
             + "".join(rows) + "</table>"
             + (f"<p style='font-size:12px'>Slurm logs: <code>{escape(logs)}</code></p>" if logs else "")
-            + "".join(details) + "</div>")
+            + detail_html + "</div>")
+
+
+def mask_inventory_html(study, entries):
+    """Group identical locally available mask source/space inventories."""
+    entries = list(entries)
+    source_order = {source: index for index, source in enumerate(SOURCES)}
+    space_order = {"T1w": 0, "MNI": 1}
+    groups = {}
+    for entry in entries:
+        inventory = study.masks(entry)
+        signature = tuple(
+            (source, tuple(sorted(spaces, key=lambda space: (space_order.get(space, 99), space))))
+            for source, spaces in sorted(
+                inventory.items(), key=lambda item: (source_order.get(item[0], 99), item[0])))
+        groups.setdefault(signature, []).append(study.label(entry))
+
+    rows = []
+    for signature, participants in groups.items():
+        availability = ("<br>".join(
+            f"{escape(SOURCES.get(source, source))}: {escape(', '.join(spaces))}"
+            for source, spaces in signature) if signature else "none found locally")
+        labels = "<br>".join(escape(label) for label in participants)
+        rows.append(f"<tr><td>{labels}</td><td>{availability}</td></tr>")
+    count = len(entries)
+    return (
+        "<details class='mask-inventory'>"
+        f"<summary>Existing lesion masks: {len(groups)} availability pattern"
+        f"{'s' if len(groups) != 1 else ''} across {count} participant{'s' if count != 1 else ''}</summary>"
+        "<table style='border-collapse:collapse;font-size:13px' border='1' cellpadding='4'>"
+        "<tr><th>Participants / selected sessions</th><th>Locally available sources and spaces</th></tr>"
+        + "".join(rows) + "</table>"
+        "<p style='font-size:12px'>Availability is not QC. “T1w” denotes the route's native analysis-image "
+        "space (native DWI for an acute DWI route); source files and original sessions remain in the "
+        "acquisition provenance above.</p></details>")
+
+
+def show_mask_inventory(study, entries):
+    """Display a compact grouped inventory of locally available lesion masks."""
+    display(HTML(mask_inventory_html(study, entries)))
 
 
 def show_step(result, study=None, *, title=None, images=False, viewer=True):

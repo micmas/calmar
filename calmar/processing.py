@@ -674,7 +674,7 @@ def step_openads(config, entry, p, request):
     sub, ses = entry['subject'], entry.get('session')
     stem = '_'.join(filter(None, [sub, ses]))
     short = sub.removeprefix('sub-')
-    overwrite = config.get('OVERWRITE', False)
+    overwrite = config.get('OPENADS_OVERWRITE', config.get('OVERWRITE', False))
     mask_name = f'{stem}_space-DWI_desc-lesion_mask.nii.gz'
     def build(tmp):
         tmp.mkdir()

@@ -2,7 +2,7 @@
 
 CALMaR uses the word DWI in two different senses that must not be conflated:
 
-* a three-dimensional trace-DWI plus ADC image can be used by OpenADS to
+* a DWI with a matching ADC map can be considered by the OpenADS route to
   segment an acute infarct;
 * a four-dimensional diffusion acquisition with valid b-values and b-vectors
   can support tensor fitting and, with stronger assumptions, tractography.
@@ -202,7 +202,8 @@ def tractometry_paths(dataset, config, entry):
 
 
 TRACTOMETRY_COLUMNS = {
-    "tract", "hemisphere", "lesion_overlap_pct", "fa_median", "md_median_mm2_s", "valid_voxel_pct"
+    "tract", "hemisphere", "lesion_overlap_pct", "fa", "md_mm2_s",
+    "summary_statistic", "valid_voxel_pct"
 }
 
 
@@ -210,30 +211,39 @@ def load_tractometry(path):
     """Load CALMaR's normalized tractometry contract and reject ambiguous rows."""
     path = Path(path)
     table = pd.read_csv(path, sep="\t")
+    # Read derivatives produced before the contract recorded whether QSIRecon
+    # supplied bundle means or medians. Those columns were explicitly medians.
+    legacy = {"fa_median", "md_median_mm2_s"}
+    if legacy.issubset(table.columns) and not {"fa", "md_mm2_s"}.intersection(table.columns):
+        table = table.rename(columns={"fa_median": "fa", "md_median_mm2_s": "md_mm2_s"})
+        table["summary_statistic"] = "median"
     missing = TRACTOMETRY_COLUMNS - set(table.columns)
     if missing:
         raise ValueError(f"tractometry table lacks: {', '.join(sorted(missing))}")
     if table.empty:
         raise ValueError("tractometry table is empty")
-    numeric = sorted(TRACTOMETRY_COLUMNS - {"tract", "hemisphere"})
+    numeric = sorted(TRACTOMETRY_COLUMNS - {"tract", "hemisphere", "summary_statistic"})
     for column in numeric:
         table[column] = pd.to_numeric(table[column], errors="raise")
     for column in ("lesion_overlap_pct", "valid_voxel_pct"):
         measured = table[column].dropna()
         if not measured.between(0, 100).all():
             raise ValueError(f"{column} must be between 0 and 100")
-    if not table["fa_median"].dropna().between(0, 1).all():
-        raise ValueError("fa_median must be between 0 and 1")
-    md = table["md_median_mm2_s"].dropna()
+    statistics = table["summary_statistic"].dropna().astype(str).str.lower()
+    if not statistics.isin({"mean", "median"}).all():
+        raise ValueError("summary_statistic must be mean or median")
+    if not table["fa"].dropna().between(0, 1).all():
+        raise ValueError("fa must be between 0 and 1")
+    md = table["md_mm2_s"].dropna()
     if not md.between(0, 0.01).all():
-        raise ValueError("md_median_mm2_s must be in physical mm²/s units (0 to 0.01)")
+        raise ValueError("md_mm2_s must be in physical mm²/s units (0 to 0.01)")
     return table
 
 
 def direct_diffusion_section(dataset, config, entry):
     """Render direct participant dMRI separately from normative disconnectomes.
 
-    Returns ``None`` when direct dMRI was neither selected nor produced, so
+    Returns ``None`` when diffusion tract-microstructure analysis was neither selected nor produced, so
     legacy reports remain unchanged.
     """
     table_path, metadata_path = tractometry_paths(dataset, config, entry)
@@ -260,8 +270,9 @@ def direct_diffusion_section(dataset, config, entry):
             "<tr>" +
             f"<td>{escape(str(row['tract']))}</td><td>{escape(str(row['hemisphere']))}</td>" +
             f"<td>{measured(row['lesion_overlap_pct'], '{:.1f}%')}</td>" +
-            f"<td>{measured(row['fa_median'], '{:.3f}')}</td>" +
-            f"<td>{measured(row['md_median_mm2_s'], '{:.6g}')}</td>" +
+            f"<td>{escape(str(row['summary_statistic']).title())}</td>" +
+            f"<td>{measured(row['fa'], '{:.3f}')}</td>" +
+            f"<td>{measured(row['md_mm2_s'], '{:.6g}')}</td>" +
             f"<td>{measured(row['valid_voxel_pct'], '{:.1f}%')}</td></tr>")
     warnings = list(metadata.get("warnings") or [])
     qc = metadata.get("qc_status")
@@ -293,5 +304,5 @@ def direct_diffusion_section(dataset, config, entry):
         "missing tract must therefore not be read as proof of anatomical disconnection."
         + (f" Acquisition: {acquisition_text}." if acquisition_text else "") + "</p>" + warning_html +
         "<div class='table-wrap'><table><thead><tr><th>Tract</th><th>Side</th><th>Lesion overlap</th>"
-        "<th>Median FA</th><th>Median MD (mm²/s)</th><th>Valid tract voxels</th></tr></thead><tbody>" +
+        "<th>Summary</th><th>FA</th><th>MD (mm²/s)</th><th>Valid tract voxels</th></tr></thead><tbody>" +
         "".join(rows) + "</tbody></table></div>")

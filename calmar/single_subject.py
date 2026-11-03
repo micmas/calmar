@@ -40,7 +40,7 @@ def _anatomical_session(entry):
 def optional_entries_for_test(entries, test_entry):
     """Optional entries linked to the selected anatomical test session.
 
-    Trace-DWI and directional-dMRI entries can use another imaging session;
+    OpenADS DWI+ADC and gradient-bearing diffusion entries can use another imaging session;
     ``anatomical_session`` keeps them attached to the T1w session selected for
     the single-subject test.
     """
@@ -168,7 +168,8 @@ class SingleSubjectInputs:
         self.message = w.HTML()
         self.gate = ExecutionCheckpoint(shell, 'Choose the test participant and click Run single-subject test.') if shell else None
         self.navigation = NotebookNavigation(self.message,
-            on_cell_order=self.gate._update_cell_order if self.gate else None)
+            on_cell_order=self.gate._update_cell_order if self.gate else None,
+            focus_checkpoint=self.gate)
         self.start = w.Button(description='Run single-subject test', button_style='primary',
                               layout=w.Layout(width='230px'))
         self.start.on_click(lambda _: self.navigation.request('single-test-start', self.approve))

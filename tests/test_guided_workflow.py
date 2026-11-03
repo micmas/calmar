@@ -1,4 +1,5 @@
 import contextlib
+import ast
 import io
 import json
 from pathlib import Path
@@ -45,6 +46,84 @@ class GuidedWorkflowTests(unittest.TestCase):
             for role in ('batch-start', 'skull-repair', 'after-qc', 'after-dwi-qc', 'dmri-choice', 'brain-health-choice', 'report-prepare',
                          'report-setup', 'single-test-selection', 'single-test-start'):
                 self.assertEqual(roles.count(role), 1, (name, role))
+
+    def test_guided_references_current_canonical_cells_and_all_optional_choices(self):
+        canonical = json.loads((ROOT / 'lesion-interpretation-pipeline.ipynb').read_text())
+        guided = json.loads((ROOT / 'calmar-guided.ipynb').read_text())
+        canonical_ids = [cell['id'] for cell in canonical['cells']]
+        canonical_order = {cell_id: index for index, cell_id in enumerate(canonical_ids)}
+
+        def run_spec(source):
+            call = next(node for node in ast.walk(ast.parse(source))
+                        if isinstance(node, ast.Call) and
+                        isinstance(node.func, ast.Name) and node.func.id == 'run_cells')
+            references = [node.value for node in call.args[0].elts]
+            stop_node = next((item.value for item in call.keywords if item.arg == 'stop_at'), None)
+            if stop_node is None:
+                stops = []
+            elif isinstance(stop_node, (ast.List, ast.Tuple, ast.Set)):
+                stops = [node.value for node in stop_node.elts]
+            else:
+                stops = [stop_node.value]
+            return references, stops
+
+        # This is the intentional guided route. Keeping the complete manifest
+        # here makes a newly added canonical code cell fail until it is routed
+        # into guided or consciously excluded below.
+        expected = {
+            'guided-start': (
+                ['calmar-step-04', 'calmar-step-05', 'calmar-step-08', 'calmar-step-10',
+                 'calmar-step-12', 'calmar-step-13', 'calmar-step-15', 'calmar-step-17',
+                 'calmar-acquire', 'calmar-dwi-choice'],
+                ['calmar-dwi-choice']),
+            'dmri-choice': (['calmar-dmri-choice'], ['calmar-dmri-choice']),
+            'brain-health-choice': (
+                ['calmar-brain-health-choice'], ['calmar-brain-health-choice']),
+            'single-test-selection': (
+                ['calmar-test-participant'], ['calmar-test-participant']),
+            'single-test-start': (
+                ['calmar-step-23', 'calmar-step-25', 'calmar-step-27', 'calmar-registration',
+                 'calmar-openads', 'calmar-manual', 'calmar-single-optional', 'calmar-step-32',
+                 'calmar-step-34', 'calmar-step-35', 'calmar-step-39'], []),
+            'batch-start': (
+                ['calmar-step-42', 'calmar-step-44', 'calmar-batch-registration',
+                 'calmar-batch-openads', 'calmar-step-48'], []),
+            'qc-review': (['calmar-step-51'], []),
+            # Repair deliberately returns to the earlier QC panel.
+            'skull-repair': (['calmar-step-53', 'calmar-step-51'], []),
+            'after-qc': (['calmar-step-58', 'calmar-optional-dwi'], ['calmar-optional-dwi']),
+            'after-dwi-qc': (
+                ['calmar-direct-dmri', 'calmar-brain-health', 'calmar-step-63',
+                 'calmar-step-65'], []),
+            'report-prepare': (['calmar-step-69', 'calmar-step-74', 'calmar-step-75'], []),
+            'report-selection': (
+                ['calmar-step-77', 'calmar-step-79'], ['calmar-step-79']),
+            'report-start': (['calmar-step-81', 'calmar-step-85', 'calmar-step-87'], []),
+        }
+        actual = {}
+        for cell in guided['cells']:
+            source = ''.join(cell.get('source', []))
+            if 'run_cells(' not in source:
+                continue
+            role = cell.get('metadata', {}).get('calmar', {}).get('role')
+            references, stops = run_spec(source)
+            missing = [cell_id for cell_id in references if cell_id not in canonical_order]
+            self.assertEqual(missing, [], (cell.get('id'), missing))
+            self.assertNotIn(role, actual, role)
+            actual[role] = (references, stops)
+        self.assertEqual(actual, expected)
+
+        excluded = {
+            # Text-only recovery shortcut, superseded by guided report buttons.
+            'ad540b5a-742b-40e6-b645-20152606ff84',
+            # Advanced LINDA repair/reset controls remain in the detailed notebook.
+            'calmar-step-55', 'calmar-step-56', 'calmar-step-57', 'calmar-step-60',
+        }
+        referenced = {cell_id for references, _ in actual.values() for cell_id in references}
+        canonical_code = {cell['id'] for cell in canonical['cells']
+                          if cell.get('cell_type') == 'code'}
+        self.assertTrue(referenced.isdisjoint(excluded))
+        self.assertEqual(canonical_code, referenced | excluded)
 
     def test_optional_dwi_uses_the_qc_viewer_only(self):
         source = ''.join(source_cell('calmar-optional-dwi')['source'])
@@ -93,6 +172,27 @@ class GuidedWorkflowTests(unittest.TestCase):
             'brain_health_anatomy', 'brain_health_wmh', 'brain_health_metrics'])
         self.assertEqual(set(namespace['_SINGLE_OPTIONAL_COMPLETED']),
                          {'dwi', 'dmri', 'brain_health'})
+        self.assertEqual(namespace['_single_optional_skipped'], [])
+
+    def test_single_test_summarises_unselected_optional_routes_once(self):
+        namespace = {
+            'RUN_TEST': True, 'CONFIG': {'MODALITY': 't1'},
+            'SUBJECTS': [{'subject': 'sub-one', 'session': 'ses-t1'}], 'TEST_SUBJECT_IDX': 0,
+            'DWI_SUBJECTS': [], 'DMRI_SUBJECTS': [], 'BRAIN_HEALTH_SUBJECTS': [],
+            'DWI_STUDY': None, 'DMRI_STUDY': None,
+            'study': SimpleNamespace(config={}, dataset='.'), 'BATCH_TIMINGS': {},
+            'submit_step': Mock(), 'show_step': Mock(),
+        }
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            exec(''.join(source_cell('calmar-single-optional')['source']), namespace)
+
+        lines = output.getvalue().splitlines()
+        self.assertEqual(len(lines), 1)
+        self.assertIn('acute DWI+ADC/OpenADS lesion segmentation', lines[0])
+        self.assertIn('diffusion tract-microstructure analysis', lines[0])
+        self.assertIn('structural brain-health analysis', lines[0])
+        self.assertIn('selections for other participants run in the batch section', lines[0])
 
     def test_optional_failure_does_not_block_other_single_test_routes(self):
         stages = []
@@ -215,6 +315,88 @@ class GuidedWorkflowTests(unittest.TestCase):
 
 
 class GuidedRunnerTests(unittest.IsolatedAsyncioTestCase):
+    async def test_navigation_focuses_checkpoint_once_and_cancels_on_request(self):
+        from calmar.notebook_navigation import NotebookNavigation
+        gate = SimpleNamespace(paused=True, boundary_cell_id='decision-cell')
+        nav = NotebookNavigation(ipywidgets.HTML(), focus_checkpoint=gate)
+        self.addCleanup(nav.close)
+        nav.send = Mock()
+        nav._receive(None, {'event': 'ready'}, [])
+        nav._receive(None, {'event': 'ready'}, [])
+        focus = [call.args[0] for call in nav.send.call_args_list
+                 if call.args[0].get('action') == 'focus']
+        self.assertEqual(focus, [dict(action='focus', cell_id='decision-cell')])
+
+        other = NotebookNavigation(ipywidgets.HTML(), focus_checkpoint=gate)
+        self.addCleanup(other.close)
+        other.send = Mock()
+        other.request('next-step', Mock())
+        other._receive(None, {'event': 'ready'}, [])
+        self.assertFalse(any(call.args[0].get('action') == 'focus'
+                             for call in other.send.call_args_list))
+
+        released = NotebookNavigation(ipywidgets.HTML(), focus_checkpoint=gate)
+        self.addCleanup(released.close)
+        released.send = Mock()
+        gate.paused = False
+        released._receive(None, {'event': 'ready'}, [])
+        self.assertFalse(any(call.args[0].get('action') == 'focus'
+                             for call in released.send.call_args_list))
+
+        expired_gate = SimpleNamespace(paused=True, boundary_cell_id='expired-cell')
+        expired = NotebookNavigation(ipywidgets.HTML(), focus_checkpoint=expired_gate)
+        self.addCleanup(expired.close)
+        expired.send = Mock()
+        expired._focus_deadline = 0
+        expired._receive(None, {'event': 'ready'}, [])
+        self.assertFalse(any(call.args[0].get('action') == 'focus'
+                             for call in expired.send.call_args_list))
+
+    async def test_navigation_starts_focus_window_after_checkpoint_cell(self):
+        from calmar.notebook_navigation import NotebookNavigation
+
+        class Events:
+            def __init__(self):
+                self.handlers = []
+            def register(self, name, callback):
+                self.assert_name(name)
+                self.handlers.append(callback)
+            def unregister(self, name, callback):
+                self.assert_name(name)
+                self.handlers.remove(callback)
+            @staticmethod
+            def assert_name(name):
+                if name != 'post_run_cell':
+                    raise AssertionError(name)
+            def fire(self):
+                for callback in list(self.handlers):
+                    callback(None)
+
+        events = Events()
+        gate = SimpleNamespace(
+            paused=True, boundary_cell_id='post-run-decision',
+            shell=SimpleNamespace(events=events))
+        nav = NotebookNavigation(ipywidgets.HTML(), focus_checkpoint=gate)
+        self.addCleanup(nav.close)
+        nav.send = Mock()
+        self.assertEqual(len(events.handlers), 1)
+        nav._receive(None, {'event': 'ready'}, [])
+        self.assertFalse(any(call.args[0].get('action') == 'focus'
+                             for call in nav.send.call_args_list))
+        events.fire()
+        self.assertEqual(events.handlers, [])
+        nav.send.assert_called_with(dict(action='focus', cell_id='post-run-decision'))
+
+        cancelled_events = Events()
+        cancelled_gate = SimpleNamespace(
+            paused=True, boundary_cell_id='cancelled-decision',
+            shell=SimpleNamespace(events=cancelled_events))
+        cancelled = NotebookNavigation(ipywidgets.HTML(), focus_checkpoint=cancelled_gate)
+        self.addCleanup(cancelled.close)
+        cancelled.send = Mock()
+        cancelled.request('next-step', Mock())
+        self.assertEqual(cancelled_events.handlers, [])
+
     async def test_navigation_reconnects_stale_ready_state_and_reports_timeout(self):
         from calmar.notebook_navigation import NotebookNavigation
         retry = Mock()

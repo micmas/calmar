@@ -44,6 +44,12 @@ def _components(entry):
     return set(entry.get("brain_health_components") or ())
 
 
+def _overwrite_requested(request):
+    """Use the route-specific override when set, otherwise the global policy."""
+    config = request["config"]
+    return bool(config.get("BRAIN_HEALTH_OVERWRITE", config.get("OVERWRITE", False)))
+
+
 def _run(command, log):
     with Path(log).open("w", encoding="utf-8") as stream:
         subprocess.run([str(item) for item in command], stdout=stream, stderr=subprocess.STDOUT,
@@ -181,7 +187,7 @@ def anatomy(request, output):
     t1w = _materialize(entry.get("anatomical_t1w") or entry.get("t1w"), request["dataset"])
     final = output_paths(request["dataset"], request["config"], entry)["anatomy"]
     final.parent.mkdir(parents=True, exist_ok=True)
-    overwrite = bool(request["config"].get("BRAIN_HEALTH_OVERWRITE", False))
+    overwrite = _overwrite_requested(request)
     if final.exists() and not overwrite:
         files = [final / name for name in ("segmentation.nii.gz", "volumes.csv", "synthseg_qc.csv",
                                            "anatomy_metrics.json", "anatomy_qc.png")]
@@ -278,7 +284,7 @@ def wmh(request, output):
     flair = _materialize(entry["flair"], request["dataset"])
     final = output_paths(request["dataset"], request["config"], entry)["wmh"]
     final.parent.mkdir(parents=True, exist_ok=True)
-    overwrite = bool(request["config"].get("BRAIN_HEALTH_OVERWRITE", False))
+    overwrite = _overwrite_requested(request)
     if final.exists() and not overwrite:
         files = [final / name for name in ("wmh_raw_mask.nii.gz", "wmh_raw_qc.png", "deepwmh.log")]
         if any(not path.is_file() for path in files):
@@ -358,7 +364,7 @@ def metrics(request, output):
     paths = output_paths(request["dataset"], request["config"], entry)
     final = paths["metrics"]
     final.parent.mkdir(parents=True, exist_ok=True)
-    overwrite = bool(request["config"].get("BRAIN_HEALTH_OVERWRITE", False))
+    overwrite = _overwrite_requested(request)
     if final.exists() and not overwrite:
         files = [final / name for name in ("brain_health.json", "brain_health.tsv", "brain_health_qc.png")]
         if any(not path.is_file() for path in files):

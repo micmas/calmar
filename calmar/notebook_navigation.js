@@ -10,6 +10,8 @@ export async function getLabApplication(manager) {
   throw Error('The ipylab extension did not provide notebook navigation.');
 }
 
+const scrollHolds = new WeakMap();
+
 // Show the first cell a button runs. JupyterLab scrolls to the LAST cell it
 // runs ('run all below' = the end of the notebook), asynchronously; instead
 // scroll to the first one and hold it there for about a second, unless
@@ -18,15 +20,21 @@ export function showCell(notebook, index) {
   notebook.activeCellIndex = index;
   const scroller = notebook.outerNode ?? notebook.node;
   if (!scroller || typeof notebook.scrollToItem !== 'function') return;
+  scrollHolds.get(scroller)?.();
   let top = null, frames = 90;
-  const stop = () => { frames = 0; };
   const events = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+  const stop = () => {
+    frames = 0;
+    events.forEach(e => scroller.removeEventListener(e, stop));
+    if (scrollHolds.get(scroller) === stop) scrollHolds.delete(scroller);
+  };
+  scrollHolds.set(scroller, stop);
   events.forEach(e => scroller.addEventListener(e, stop, {once: true, passive: true}));
   Promise.resolve(notebook.scrollToItem(index, 'start')).catch(() => {})
     .then(() => { top = scroller.scrollTop; });
   const hold = () => {
     if (frames-- <= 0) {
-      events.forEach(e => scroller.removeEventListener(e, stop));
+      stop();
       return;
     }
     if (top !== null && scroller.scrollTop !== top) scroller.scrollTop = top;
@@ -45,6 +53,7 @@ export default {
     let observedCells = null;
     let sourceTimer;
     let sourceSnapshot = '{}';
+    let focusedCellId = null;
     const sourceCells = new Set();
     const publishSources = () => {
       const cells = observedCells ? Array.from(observedCells) : [];
@@ -101,7 +110,23 @@ export default {
       })();
       try { await connecting; } finally { connecting = null; }
     };
-    const owner = () => Array.from(app.shell.widgets('main')).find(p => p.node.contains(el));
+    const owner = cellId => {
+      const panels = Array.from(app.shell.widgets('main'));
+      const containsCell = panel => Array.from(panel?.content?.model?.cells ?? [])
+        .some(cell => cell.id === cellId);
+      const containing = panels.find(panel => panel.node?.contains?.(el));
+      if (containing && (!cellId || containsCell(containing))) return containing;
+      if (!cellId) return containing;
+      const matches = panels.filter(containsCell);
+      if (matches.length === 1) return matches[0];
+      const widgetKernel = model.widget_manager?.kernel?.id;
+      if (widgetKernel) {
+        const sameKernel = matches.filter(panel =>
+          panel.sessionContext?.session?.kernel?.id === widgetKernel);
+        if (sameKernel.length === 1) return sameKernel[0];
+      }
+      return null;
+    };
     const fail = error => model.send({event: 'error', message: String(error.message || error)});
     const receive = async data => {
       try {
@@ -110,6 +135,32 @@ export default {
           clearTimeout(connectionTimer);
         } else if (data.action === 'connect') {
           await connect();
+        } else if (data.action === 'focus') {
+          const acknowledge = extra => {
+            try { model.send({event: 'focused', cell_id: data.cell_id, ...extra}); } catch (_) {}
+          };
+          if (!app) { acknowledge({skipped: true}); return; }
+          try {
+            const panel = owner(data.cell_id);
+            // Focus is presentation only: never switch tabs, interrupt editing,
+            // execute a command, or compete with a continuation request.
+            if (focusedCellId === data.cell_id || pending || !panel || panel.isDisposed ||
+                panel.isVisible === false || (app.shell.currentWidget && app.shell.currentWidget !== panel)) {
+              acknowledge({skipped: true});
+              return;
+            }
+            const cells = Array.from(panel.content.model.cells);
+            const index = cells.findIndex(c => c.id === data.cell_id);
+            if (index < 0 || (panel.content.mode === 'edit' && panel.content.activeCellIndex !== index)) {
+              acknowledge({skipped: true});
+              return;
+            }
+            focusedCellId = data.cell_id;
+            showCell(panel.content, index);
+            acknowledge({});
+          } catch (error) {
+            acknowledge({skipped: true, error: String(error.message || error)});
+          }
         } else if (data.action === 'prepare') {
           if (!app) await connect();
           if (!app) return;

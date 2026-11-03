@@ -109,6 +109,11 @@ from .method_choice import METHOD_CHOICES
 def normalize_selection(values):
     """Interpret form filters without constraining the manual-mask session."""
     values = dict(values)
+    # The guided workflow is the interactive route: never inherit a saved
+    # yes/no policy from the canonical notebook's CONFIG cell. Eligible inputs
+    # must reach the OpenADS, tract-microstructure and brain-health panels.
+    values.update(ANALYSE_DWI=None, ANALYSE_TRACT_DWI=None,
+                  ANALYSE_BRAIN_HEALTH=None)
     # ISLES 2022 is a DWI+ADC dataset with no T1w input. Keep its guided source
     # self-contained: choosing it always selects the compatible OpenADS route.
     if values.get("DATASET_SOURCE") == "isles2022":
@@ -188,7 +193,7 @@ def pause_for_report(namespace):
     gate = ExecutionCheckpoint(shell, "Choose a participant and mask, then click Generate report.")
     shell._calmar_report_checkpoint = gate
     message = w.HTML("Choose a participant and mask above, then generate the report.")
-    nav = NotebookNavigation(message, on_cell_order=gate._update_cell_order)
+    nav = NotebookNavigation(message, on_cell_order=gate._update_cell_order, focus_checkpoint=gate)
     button = w.Button(description="Generate report", button_style="success")
     def release():
         if namespace.get("INTERP_MASK_SOURCE") is None:
@@ -360,7 +365,7 @@ def show_inputs(namespace):
         fields[key].observe(update_sampling, names="value")
     update_sampling()
     message = w.HTML()
-    nav = NotebookNavigation(message, on_cell_order=gate._update_cell_order)
+    nav = NotebookNavigation(message, on_cell_order=gate._update_cell_order, focus_checkpoint=gate)
     start = w.Button(description="Start workflow", button_style="success")
     def prepare():
         try:

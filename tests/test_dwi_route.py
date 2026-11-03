@@ -105,6 +105,32 @@ def test_optional_dwi_ignores_primary_dwi_cohort_entries(tmp_path, capsys):
     assert "1 participant" in capsys.readouterr().out
 
 
+def test_unmatched_dwi_is_not_described_as_rejected_diffusion_data(tmp_path, capsys):
+    from calmar.dwi_choice import show_dwi_choice
+
+    dwi = touch(tmp_path / "sub-chronic" / "ses-dwi" / "dwi" / "sub-chronic_ses-dwi_dwi.nii.gz")
+    entry = {
+        "subject": "sub-chronic", "session": "ses-t1", "t1w": tmp_path / "t1.nii.gz",
+        "dwi_inventory": [{"subject": "sub-chronic", "session": "ses-dwi", "dwi": dwi,
+                           "adc": None, "openads_ready": False, "same_session": False}],
+    }
+    namespace = {"CONFIG": {"MODALITY": "t1"}, "SUBJECTS": [entry],
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+
+    assert show_dwi_choice(namespace) is None
+
+    output = capsys.readouterr().out
+    assert "OpenADS acute-lesion segmentation" in output
+    assert "requires a DWI with a matching ADC map" in output
+    assert "does not reject those DWI data" in output
+    assert "tract-microstructure analysis" in output
+
+    namespace["SUBJECTS"] = [{"subject": "sub-two", "session": "ses-t1",
+                              "t1w": tmp_path / "other_t1.nii.gz"}]
+    assert show_dwi_choice(namespace) is None
+    assert "No DWI data were found" in capsys.readouterr().out
+
+
 def test_t1_entry_inventory_keeps_dwi_from_same_and_other_sessions(tmp_path):
     t1 = touch(tmp_path / "sub-one" / "ses-t1" / "anat" / "sub-one_ses-t1_T1w.nii.gz")
     same = touch(tmp_path / "sub-one" / "ses-t1" / "dwi" / "sub-one_ses-t1_dwi.nii.gz")
@@ -198,12 +224,49 @@ def test_dwi_choice_close_does_not_register_the_panel_as_its_own_control(tmp_pat
     shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=lambda: None))
     panel = DWIChoice(namespace, shell)
     assert panel.checkpoint.controls == []
+    assert "Optional acute DWI+ADC lesion segmentation" in panel.children[0].value
+    assert "tract-microstructure analysis is assessed separately" in panel.children[0].value
+    assert "Choose one action per participant" in panel.children[0].value
+    assert panel.rows[0][2].value == "skip"
+    assert "sub-one · anatomy ses-t1" in panel.children[1].children[0].value
+    assert panel.analyse.description == "Apply choices and continue"
+    assert panel.skip.description == "Skip all and continue"
+    assert panel.skip.button_style == "warning"
     panel.navigation.request = Mock()
     panel._request(True)
     panel.navigation.request.assert_called_once()
     assert panel.navigation.request.call_args.args[0] == "dmri-choice"
     assert panel.navigation.request.call_args.kwargs["all_below"] is True
     panel.close()
+
+
+def test_openads_overwrite_is_presented_as_rerun_not_changed_inputs(tmp_path, monkeypatch):
+    from calmar.dwi_choice import DWIChoice, dwi_analysis_state
+
+    dwi = touch(tmp_path / "sub-one/ses-dwi/dwi/sub-one_ses-dwi_dwi.nii.gz")
+    adc = touch(dwi.with_name("sub-one_ses-dwi_adc.nii.gz"))
+    item = {"subject": "sub-one", "session": "ses-dwi", "same_session": False,
+            "dwi": dwi, "adc": adc, "openads_ready": True}
+    entry = {"subject": "sub-one", "session": "ses-t1", "t1w": tmp_path / "t1.nii.gz",
+             "dwi_inventory": [item]}
+    namespace = {"SUBJECTS": [entry],
+                 "CONFIG": {"MODALITY": "t1", "OPENADS_OVERWRITE": True},
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+    monkeypatch.setattr("calmar.scheduled.cached_step_results", lambda *args: [None])
+    monkeypatch.setattr(
+        "calmar.scheduled.previous_step_results", lambda *args: [{"job": "old", "results": []}])
+
+    state = dwi_analysis_state(namespace, entry, item)
+    assert state["status"] == "↻ rerun requested in CONFIG; existing results will not be reused"
+    assert state["rerun_required"] is True
+
+    shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=lambda: None))
+    panel = DWIChoice(namespace, shell)
+    try:
+        assert [value for _, value in panel.rows[0][2].options] == ["rerun", "skip"]
+        assert panel.rows[0][2].value == "skip"
+    finally:
+        panel.close()
 
 
 def test_datalad_dangling_dwi_and_adc_links_are_discovered_without_fetching(tmp_path):

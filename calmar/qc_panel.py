@@ -52,7 +52,8 @@ class QCPanel(w.VBox):
         self.message = w.HTML()
         self.navigation_message = w.HTML()
         self.navigation = NotebookNavigation(
-            self.navigation_message, on_cell_order=checkpoint._update_cell_order)
+            self.navigation_message, on_cell_order=checkpoint._update_cell_order,
+            focus_checkpoint=checkpoint)
         self.subject = w.Dropdown(options=[
             (f"{i+1}. {e['subject']} {e.get('session') or ''}", i)
             for i, e in enumerate(self.entries)], description="Participant:",

@@ -15,8 +15,11 @@ repository root and nothing needs editing. They import the local
 `calmar-guided.ipynb` is the form-based workflow: run its first code
 cell, fill in the inputs and options, click **Start workflow**, and
 drive the rest with buttons. Its code is collapsed and reuses the
-detailed notebook's cells, resolved by stable cell IDs in
-`calmar/workflow_cells.json`. It saves your selected inputs in
+detailed notebook's cells, resolved by stable cell IDs. Each guided
+stage reloads the current saved `lesion-interpretation-pipeline.ipynb`,
+so there is no second copy of the processing code to update. Restart the
+guided kernel after changing or pulling notebook/package files so its
+already-imported Python modules are refreshed. It saves your selected inputs in
 `reports/guided-inputs.json`.
 
 `lesion-interpretation-pipeline.ipynb` is the detailed notebook and the
@@ -106,6 +109,24 @@ applies to the single-subject checkpoint, QC, report selection and the
 guided input form. Rerunning an earlier viewer does not record a QC
 choice or start report generation. Intentional pauses suppress queued
 downstream cells without a traceback for each one.
+
+When **Run All Cells** reaches an unresolved stop, the notebook returns
+the active view to that decision cell instead of leaving it at the final
+queued cell. This navigation is presentational only: it does not choose
+an option, release the checkpoint or execute anything below it. A delayed
+widget connection expires rather than pulling the view away later, and a
+manual scroll or edit cancels the short scroll hold.
+
+The three optional processing decisions—OpenADS DWI+ADC, diffusion
+tract-microstructure, and structural brain health—use the same controls. Each
+eligible participant has an **Action** menu: run a new analysis, use saved
+stages where available, rerun from the start, or do not analyse. A saved result
+is labelled reusable only when its receipt, inputs, and published outputs still
+match. If an older receipt is still available after an input changes, retaining
+it requires an explicit **Use saved results where available** choice and remains visibly warned
+in the processing summary. New, partial, and changed analyses default to not
+selected; a fully current result defaults to unchanged reuse. The bottom buttons
+are consistently **Apply choices and continue** and **Skip all and continue**.
 
 **Single-subject test.** Before brain extraction,
 **Choose the single-subject test participant** lists the cohort and each

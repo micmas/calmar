@@ -1237,7 +1237,7 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
             + report_section("This participant’s measures: what the evidence says", measures, open=True)
             + report_section("Lesion location: what the evidence says", location, open=True)
             + report_section("White-matter disconnection: normative lesion-based models", white_matter)
-            + (report_section("Direct diffusion measurements: participant dMRI", direct_diffusion)
+            + (report_section("Participant diffusion tract-microstructure measurements", direct_diffusion)
                if direct_diffusion is not None else "")
             + report_section(f"Therapy recommendations ({n_therapy} matched)", therapy)
             + report_section("How to read the evidence", LEGEND_HTML)
