@@ -57,6 +57,72 @@ def test_missing_kb_lists_paths_tried(tmp_path):
     assert "scripts/aphasia_kb.py and regions/" in message
 
 
+def _calmar_checkout_without_its_submodule(tmp_path, monkeypatch, kb_source):
+    """A clone of a CALMaR-like repository made without --recurse-submodules,
+    which is what a plain ``git clone`` and the Neurodesk Play launch links give."""
+    # Git refuses file-path submodules unless told otherwise; the fixtures are local folders.
+    monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
+    monkeypatch.setenv("GIT_CONFIG_KEY_0", "protocol.file.allow")
+    monkeypatch.setenv("GIT_CONFIG_VALUE_0", "always")
+    identity = ["-c", "user.name=fixture", "-c", "user.email=fixture@example.test"]
+    upstream = tmp_path / "upstream" / "calmar"
+    upstream.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", "-b", "main", str(upstream)], check=True)
+    subprocess.run(["git", "-C", str(upstream), "submodule", "--quiet", "add",
+                    str(kb_source), "stroke-aphasia-kb"], check=True)
+    subprocess.run(["git", "-C", str(upstream), *identity, "commit", "-qm", "calmar"], check=True)
+    project = tmp_path / "play" / "calmar"
+    project.parent.mkdir()
+    subprocess.run(["git", "clone", "-q", str(upstream), str(project)], check=True)
+    assert not (project / "stroke-aphasia-kb" / "regions").exists()
+    return project.resolve()
+
+
+def test_unfetched_submodule_is_fetched_on_first_use(tmp_path, monkeypatch, capsys):
+    source = make_kb(tmp_path / "kb-source")
+    subprocess.run(["git", "init", "-q", "-b", "main", str(source)], check=True)
+    _commit(source, "release")
+    project = _calmar_checkout_without_its_submodule(tmp_path, monkeypatch, source)
+
+    root, reason = resolve_kb_root(project, {})
+
+    assert (root, reason) == (project / "stroke-aphasia-kb", "CALMaR submodule")
+    assert (root / "scripts" / "aphasia_kb.py").is_file()
+    assert "fetching it" in capsys.readouterr().out
+    # The second call finds it in place and says nothing.
+    assert resolve_kb_root(project, {}) == (root, reason)
+    assert capsys.readouterr().out == ""
+
+
+def test_unfetched_submodule_that_cannot_be_fetched_says_what_to_run(tmp_path, monkeypatch):
+    source = make_kb(tmp_path / "kb-source")
+    subprocess.run(["git", "init", "-q", "-b", "main", str(source)], check=True)
+    _commit(source, "release")
+    project = _calmar_checkout_without_its_submodule(tmp_path, monkeypatch, source)
+    source.rename(tmp_path / "kb-source-gone")          # the remote is unreachable
+
+    with pytest.raises(FileNotFoundError) as caught:
+        resolve_kb_root(project, {})
+
+    message = str(caught.value)
+    assert "Could not locate the stroke aphasia knowledge base." in message
+    assert "fetching it failed" in message
+    assert f"git -C {project} submodule update --init stroke-aphasia-kb" in message
+
+
+def test_an_override_never_triggers_a_fetch(tmp_path, monkeypatch, capsys):
+    source = make_kb(tmp_path / "kb-source")
+    subprocess.run(["git", "init", "-q", "-b", "main", str(source)], check=True)
+    _commit(source, "release")
+    project = _calmar_checkout_without_its_submodule(tmp_path, monkeypatch, source)
+
+    with pytest.raises(FileNotFoundError, match="CALMAR_KB_ROOT is set"):
+        resolve_kb_root(project, {"CALMAR_KB_ROOT": str(tmp_path / "nowhere")})
+
+    assert capsys.readouterr().out == ""
+    assert not (project / "stroke-aphasia-kb" / "regions").exists()
+
+
 def test_invalid_override_is_strict(tmp_path):
     project = tmp_path / "calmar"
     make_kb(tmp_path / "stroke-aphasia-kb")

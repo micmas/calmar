@@ -9,6 +9,7 @@ import subprocess
 
 
 _REQUIRED = (Path("scripts/aphasia_kb.py"), Path("regions"))
+_SUBMODULE = "stroke-aphasia-kb"
 _KB_UPDATE_STATUS = {}
 
 
@@ -16,11 +17,47 @@ def _is_kb_root(path: Path) -> bool:
     return (path / _REQUIRED[0]).is_file() and (path / _REQUIRED[1]).is_dir()
 
 
+def _declares_kb_submodule(project: Path) -> bool:
+    """Is ``project`` a Git checkout of CALMaR that declares the KB submodule?"""
+    try:
+        declared = (project / ".gitmodules").read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return (project / ".git").exists() and f"path = {_SUBMODULE}" in declared
+
+
+def _fetch_missing_submodule(project: Path) -> str:
+    """Fetch the KB submodule into a checkout that came without it.
+
+    A copy made without ``--recurse-submodules`` has an empty
+    ``stroke-aphasia-kb/`` folder: a plain ``git clone``, and the "launch in
+    Neurodesk Play" links, which copy the repository with nbgitpuller. Setup
+    would stop there, so the submodule is fetched once, at the revision this
+    CALMaR release pins. Returns ``""`` on success, otherwise the reason.
+    """
+    print("The knowledge base is not in this copy of CALMaR yet; fetching it "
+          "(first run only, this can take a minute)...", flush=True)
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(project), "submodule", "update", "--init", "--", _SUBMODULE],
+            capture_output=True, text=True, timeout=600, check=False,
+            env=dict(os.environ, GIT_TERMINAL_PROMPT="0"))
+    except (OSError, subprocess.TimeoutExpired) as error:
+        return str(error)
+    if completed.returncode:
+        return completed.stderr.strip() or completed.stdout.strip() or "git submodule update failed"
+    if not _is_kb_root(project / _SUBMODULE):
+        return "git reported success but the folder does not hold the knowledge base"
+    return ""
+
+
 def resolve_kb_root(project_dir=None, environ=None) -> tuple[Path, str]:
     """Return ``(root, reason)`` for the KB used by this CALMaR checkout.
 
     ``CALMAR_KB_ROOT`` is a strict explicit override. Without it, a sibling
-    working copy is preferred over CALMaR's submodule.
+    working copy is preferred over CALMaR's submodule. When neither is
+    present and this is a Git checkout whose submodule was never fetched,
+    the submodule is fetched once (see ``_fetch_missing_submodule``).
     """
     project = Path(project_dir or Path(__file__).resolve().parents[1]).expanduser().resolve()
     environment = os.environ if environ is None else environ
@@ -36,12 +73,22 @@ def resolve_kb_root(project_dir=None, environ=None) -> tuple[Path, str]:
         root = root.resolve()
         if _is_kb_root(root):
             return root, reason
+    fetch_note = ""
+    if not override and _declares_kb_submodule(project):
+        failure = _fetch_missing_submodule(project)
+        if not failure:
+            return (project / _SUBMODULE).resolve(), "CALMaR submodule"
+        fetch_note = (
+            "\nThe knowledge-base submodule is declared in this checkout but had not been "
+            f"fetched, and fetching it failed: {failure}\n"
+            "Run this in a terminal, then run Setup again:\n"
+            f"  git -C {project} submodule update --init {_SUBMODULE}")
     attempted = "\n".join(
         f"  - {root.resolve()} ({reason}; expected scripts/aphasia_kb.py and regions/)"
         for root, reason in candidates)
     prefix = ("CALMAR_KB_ROOT is set but is not a stroke aphasia knowledge base."
               if override else "Could not locate the stroke aphasia knowledge base.")
-    raise FileNotFoundError(f"{prefix}\nPaths tried:\n{attempted}")
+    raise FileNotFoundError(f"{prefix}\nPaths tried:\n{attempted}{fetch_note}")
 
 
 def update_kb_to_latest(kb_root, reason, environ=None) -> str:

@@ -19,8 +19,12 @@ cd calmar
 `--recurse-submodules` also fetches the aphasia knowledge base, a
 separate repository
 ([micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb))
-pinned here as the submodule `stroke-aphasia-kb/`. In a checkout cloned
-without it, run `git submodule update --init`.
+pinned here as the submodule `stroke-aphasia-kb/`. A copy made without it
+(a plain `git clone`, or the "launch in Neurodesk Play" buttons on
+[calmar.aphasia-kb.app](https://calmar.aphasia-kb.app), which copy the
+repository for you) fetches the knowledge base by itself the first time
+a notebook's Setup runs; `git submodule update --init` does the same by
+hand.
 
 Python helpers live in the local `calmar/` package; no editable install
 is needed. Python dependencies are in `requirements.txt` (mostly
