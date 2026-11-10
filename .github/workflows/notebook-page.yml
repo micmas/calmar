@@ -1,0 +1,72 @@
+name: notebook-page
+
+# Publishes the saved run of the CALMaR notebook as a page people can read, at
+# https://calmar.aphasia-kb.app (GitHub Pages for this repository; the address is set in
+# Settings → Pages). It runs whenever the notebook is pushed to main, and from
+# "Run workflow" on the Actions tab.
+#
+# The page builder and its styles live in the knowledge-base repository
+# (scripts/build_notebook_page.py, explorer/*.css), checked out beside this one, so the page
+# looks like the knowledge-base explorer it links to.
+#
+# Only open data may be published. The builder stops (--strict) when the run names a dataset
+# that is not known to be open; nothing is published then and the page that is live stays.
+on:
+  push:
+    branches: [main]
+    paths:
+      - lesion-interpretation-pipeline.ipynb
+      - .github/workflows/notebook-page.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  NOTEBOOK: lesion-interpretation-pipeline.ipynb
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out the page builder and styles from the knowledge base
+        uses: actions/checkout@v4
+        with:
+          repository: micmas/stroke-aphasia-kb
+          ref: main
+          path: _kb
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            scripts/build_notebook_page.py
+            explorer/styles.css
+            explorer/notebook.css
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install the markdown renderer
+        run: python -m pip install "markdown-it-py>=3.0"
+      - name: Build the page
+        run: |
+          python _kb/scripts/build_notebook_page.py --calmar . --notebook "$NOTEBOOK" \
+            --out _site --strict --source-commit "$GITHUB_SHA"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
