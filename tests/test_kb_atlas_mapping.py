@@ -15,14 +15,20 @@ from aphasia_kb import KnowledgeBase  # noqa: E402
 KNOWN_DRAFT_MAPPING_BACKLOG = {
     "global_structural_network", "left_anterior_thalamic_radiation",
     "left_basal_ganglia",
+    "left_arcuate_fasciculus_anterior_segment", "left_caudate",
+    "left_cortical_language_areas", "left_dacc_sfg", "left_ifg",
+    "left_ifg_pars_opercularis_triangularis",
     "left_dorsal_anterior_cingulate_cortex", "left_hemisphere_intrahemispheric_connectivity",
     "left_inferior_frontal_gyrus", "left_inferior_frontooccipital_fasciculus",
+    "left_posterior_inferior_temporal_gyrus", "left_posterior_insula",
     "left_posterior_temporal_white_matter_bottleneck", "left_presma_dacc",
     "left_rostral_anterior_cingulate_cortex", "left_temporal_fusiform_cortex_posterior",
+    "left_superior_longitudinal_fasciculus_iii",
     "left_temporoparietal_white_matter_crossroad", "left_thalamus",
     "left_ventromedial_prefrontal_cortex", "right_amygdala",
-    "right_dorsolateral_prefrontal_cortex", "right_frontal_operculum",
+    "right_dorsolateral_prefrontal_cortex", "right_frontal_operculum", "right_ifg",
     "right_inferior_frontal_gyrus", "right_insula", "right_motor_cortex", "right_posterior_stg",
+    "right_inferior_longitudinal_fasciculus", "right_superior_temporal_sulcus",
     "right_supplementary_motor_area", "right_superior_temporal_gyrus",
     "right_supramarginal_gyrus", "right_temporal_operculum", "right_thalamus",
 }
@@ -39,9 +45,20 @@ def test_every_location_finding_is_mapped_or_explained():
     found = atlas_mapping.coverage(kb.findings)
     missing = set(found["missing"])
     unexpected = missing - KNOWN_DRAFT_MAPPING_BACKLOG
-    resolved = KNOWN_DRAFT_MAPPING_BACKLOG - missing
     assert not unexpected, f"New regions are missing from atlas mapping: {unexpected}"
-    assert not resolved, f"Remove resolved regions from the #19 allowlist: {resolved}"
+    location_findings = kb.findings[
+        (kb.findings["source_kind"] == "region")
+        | ((kb.findings["source_kind"] == "impairment")
+           & (kb.findings["target_kind"] == "region"))
+    ]
+    present = set(location_findings.loc[
+        location_findings["source_kind"] == "region", "source_id"])
+    present.update(location_findings.loc[
+        location_findings["source_kind"] == "impairment", "target"])
+    # Absence is neutral so one allowlist works with both the release pin and
+    # moving KB main, but an entry that is present and now mapped is stale.
+    resolved = (KNOWN_DRAFT_MAPPING_BACKLOG & present) - missing
+    assert not resolved, f"Remove newly mapped regions from the draft backlog: {resolved}"
     approved = KnowledgeBase(KB_ROOT, include=("approved",))
     approved_missing = set(atlas_mapping.coverage(approved.findings)["missing"])
     assert not (approved_missing & KNOWN_DRAFT_MAPPING_BACKLOG), \

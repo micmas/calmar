@@ -37,6 +37,12 @@ jobs:
         run: python -m pip install -r requirements.txt
       - name: Run unit and notebook checks against latest KB main
         run: python -m pytest -q tests
+      - name: Run all checks against the pinned release KB
+        run: |
+          kb_pin="$(git ls-tree HEAD stroke-aphasia-kb | awk '{print $3}')"
+          git -C stroke-aphasia-kb fetch --depth=1 origin "${kb_pin}"
+          git -C stroke-aphasia-kb checkout --detach "${kb_pin}"
+          python -m pytest -q tests
       - name: Check analysis script syntax
         run: |
           test -n "$(find src -maxdepth 1 -name 'analysis_*.sh' -print -quit)"

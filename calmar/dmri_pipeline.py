@@ -661,10 +661,24 @@ def _dipy_qc_png(dwi_path, bval_path, mask_path, maps, output):
     fig.suptitle("DIPY weighted-least-squares tensor fit · review alignment and artefacts")
     fig.savefig(output, dpi=140, facecolor="white")
     plt.close(fig)
-    checked = subprocess.run(
-        ["identify", "-format", "%m %w %h", str(output)], capture_output=True, text=True, check=True)
-    if not checked.stdout.startswith("PNG "):
-        raise RuntimeError(f"DIPY QC is not a valid PNG: {checked.stdout!r}")
+    from PIL import Image
+    try:
+        with Image.open(output) as checked_image:
+            if checked_image.format != "PNG":
+                raise RuntimeError(f"DIPY QC has format {checked_image.format!r}, expected PNG")
+            checked_image.verify()
+    except (OSError, SyntaxError) as exc:
+        raise RuntimeError(f"DIPY QC is not a readable PNG: {exc}") from exc
+    # Neurodesk provides ImageMagick and uses it as an independent format
+    # check. Portable test runners may not, so Pillow remains the required
+    # validation and identify is an additional check when installed.
+    identify = shutil.which("identify")
+    if identify:
+        checked = subprocess.run(
+            [identify, "-format", "%m %w %h", str(output)],
+            capture_output=True, text=True, check=True)
+        if not checked.stdout.startswith("PNG "):
+            raise RuntimeError(f"DIPY QC is not a valid PNG: {checked.stdout!r}")
 
 
 def normalize_dipy_metrics(request, output):

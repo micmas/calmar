@@ -1,4 +1,5 @@
 import re
+import subprocess
 from pathlib import Path
 
 import pandas as pd
@@ -57,9 +58,37 @@ def test_citation_cell_identifies_the_pinned_approved_kb_export():
                   pins['REFERENCE_EXPORTED_ON']):
         assert value in source
     assert 'statuses: approved' in source
-    current = json.loads((root/'stroke-aphasia-kb/export/stroke-aphasia-kb.json').read_text())['version']
-    assert current['contentDigest'] == pins['EXPECTED_DIGEST']
-    assert current['statuses'] == ['approved']
+    # CI deliberately checks CALMaR against the latest KB main, which can be
+    # newer than this release pin. Verify the pinned export contract itself
+    # without falsely requiring a current development checkout to have the old
+    # digest.
+    for key, value in (("candidates", 159), ("searches", 24),
+                       ("included", 121), ("in_knowledge_base", 41)):
+        assert f'"{key}": {value}' in update_script
+    submodule_pin = subprocess.run(
+        ['git', '-C', str(root), 'ls-tree', 'HEAD', 'stroke-aphasia-kb'],
+        check=True, capture_output=True, text=True).stdout.split()[2]
+    assert submodule_pin == pins['EXPECTED_COMMIT'], \
+        "The shipped KB submodule and release verification script must use the same commit"
+    # When the checkout is at the release pin, tie the literals above to the
+    # actual committed export.  Development CI also runs against moving KB
+    # main, where requiring this historical digest would be a false failure.
+    kb_root = root / 'stroke-aphasia-kb'
+    checked_out = subprocess.run(
+        ['git', '-C', str(kb_root), 'rev-parse', 'HEAD'],
+        check=True, capture_output=True, text=True).stdout.strip()
+    if checked_out == pins['EXPECTED_COMMIT']:
+        export = json.loads((kb_root/'export/stroke-aphasia-kb.json').read_text())
+        version = export['version']
+        assert version['contentDigest'] == pins['EXPECTED_DIGEST']
+        assert version['date'] == pins['EXPECTED_CONTENT_DATE']
+        assert version['statuses'] == ['approved']
+        screening = export['screening']
+        prisma = screening['prisma']
+        assert len(screening['candidates']) == 159
+        assert len(screening['searches']) == 24
+        assert prisma['included']['total'] == 121
+        assert prisma['included']['kb']['in_kb'] == 41
 
 
 def test_timing_labels_use_titles_and_current_cell_numbers():
