@@ -135,9 +135,27 @@ OpenADS but are not treated as tensor or tractography data.
 
 Selected series run after lesion QC through
 `src/analysis_45_dmri_preproc.sh` (QSIPrep 26.1.1; TORTOISE
-motion/eddy correction by default), `analysis_46_dmri_recon.sh`
-(QSIRecon 26.0.1, default `ss3t_fod_autotrack`) and
-`analysis_47_dmri_metrics.sh`. `DMRI_HMC_METHOD` can select another
+motion/eddy correction by default), `analysis_46_dmri_recon.sh` and
+`analysis_47_dmri_metrics.sh`. The reconstruction choice is explicit:
+`DMRI_METHOD=qsirecon` runs QSIRecon 26.0.1 (default
+`ss3t_fod_autotrack`) for bundles and tractometry, while
+`DMRI_METHOD=dipy_dti` runs DIPY 1.12.1 weighted-least-squares tensor
+fitting and produces FA, MD, AD and RD maps plus a visual-QC montage and
+whole-brain summaries. This validated DTI route accepts one nonzero
+acquisition shell; multi-shell sessions remain available to QSIRecon but are
+disabled for DIPY rather than fitting a biased tensor across high-b shells.
+DIPY DTI is a second analysis method, not a
+post-processing metric for QSIRecon; its outputs are never labelled as
+tracts or disconnection. The single-participant test and batch use the
+same bounded review panel. It shows exactly one selected-method preview
+per participant: the SS3T fibre-orientation peak image for QSIRecon, or
+the FA/MD-on-b0 montage for DIPY. Similar QSIRecon GQI/ODF figures and
+the full QSIPrep/QSIRecon pages are linked rather than repeated inline.
+At most six participant previews are embedded in a group panel; later
+participants remain available in a collapsed report table. A preview already
+shown in the single-participant test is referenced rather than embedded a
+second time in the batch panel.
+`DMRI_HMC_METHOD` can select another
 QSIPrep-supported method. TORTOISE is the current default because the
 Neurodesk 26.1.1 image ships unreadable FSL-eddy package metadata, which
 prevents QSIPrep's `eddy` workflow from being constructed. The selected
@@ -145,7 +163,7 @@ native-T1 lesion mask is supplied to QSIPrep as a BIDS lesion ROI.
 QSIRecon bundle FA/MD summaries are normalised to
 `derivatives/calmar-dmri/<sub>/<ses>/dwi/metrics/*_desc-direct_tractometry.tsv`;
 uncomputed fields remain explicitly missing. Reports place these
-participant measurements in their own section and never numerically
+participant measurements—or the separately selected DIPY tensor summary—in their own section and never numerically
 combine them with BCB/DeepDisco probabilities. Because stroke pathology
 can cause registration or tracking failure, a missing bundle is never
 called proof of disconnection. Failed tool output appears in the

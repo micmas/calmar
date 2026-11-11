@@ -13,7 +13,9 @@ from .analysis_choice import (RUN, SKIP, action_buttons, action_dropdown,
                               action_help_html, action_state_kwargs,
                               compact_choice_heading, entry_with_action,
                               set_action_options, without_action_policy)
-from .diffusion import DMRI_SUBDIR, assess_dwi_sessions, tractometry_paths
+from .diffusion import (DMRI_METHODS, DMRI_SUBDIR, assess_dwi_sessions,
+                        dmri_method, dmri_option_shells, tensor_metrics_paths,
+                        tractometry_paths)
 from .execution import ExecutionCheckpoint
 from .notebook_navigation import NotebookNavigation
 from .study import (ENTRY_CONFIG, ENTRY_DATASET, Study, config_for_entry,
@@ -55,37 +57,69 @@ def _dmri_config(config):
     return selected
 
 
-_DMRI_STAGE_LABELS = {
-    "dmri_preproc": "QSIPrep",
-    "dmri_recon": "QSIRecon",
-    "dmri_metrics": "final metrics",
-}
+def _dipy_single_shell(option):
+    """DIPY DTI is validated only for one nonzero acquisition shell."""
+    shells = {float(value) for value in dmri_option_shells(option) if float(value) >= 100}
+    return len(shells) == 1
 
 
-def dmri_analysis_state(namespace, entry, option):
+def _apply_action_state(widget, state):
+    if not state.get("method_available", True):
+        widget.disabled = False
+        widget.options = [("Unavailable for this acquisition", SKIP)]
+        widget.value = SKIP
+        widget.disabled = True
+        return
+    widget.disabled = False
+    set_action_options(widget, **action_state_kwargs(state))
+
+
+def _stage_labels(method):
+    return {
+        "dmri_preproc": "QSIPrep",
+        "dmri_recon": "QSIRecon" if method == "qsirecon" else "DIPY DTI",
+        "dmri_metrics": "tract metrics" if method == "qsirecon" else "tensor metrics",
+    }
+
+
+def dmri_analysis_state(namespace, entry, option, method=None):
     """Read-only saved-result state for one exact directional-dMRI choice."""
     try:
-        selected = _processing_entry(entry, option)
         config = _dmri_config(namespace["CONFIG"])
+        method = method or dmri_method(config_for_entry(config, entry))
+        if method == "dipy_dti" and not _dipy_single_shell(option):
+            shells = "/".join(map(str, dmri_option_shells(option))) or "unknown"
+            return {
+                "status": ("DIPY DTI is unavailable for this multi-shell acquisition "
+                           f"(b={shells}); choose QSIRecon"),
+                "kind": "unavailable", "current_complete": False,
+                "prior_available": False, "outputs_exist": False,
+                "rerun_required": False, "method_available": False,
+            }
+        selected = _processing_entry(entry, option)
+        overrides = dict(selected.get(ENTRY_CONFIG) or {})
+        overrides["DMRI_METHOD"] = method
+        selected[ENTRY_CONFIG] = overrides
         study = Study(config, namespace["RAW_DATASET_DIR"], namespace["PROJECT_DIR"])
         from .scheduled import (cached_step_results, previous_step_results,
                                 usable_previous_step_results)
+        labels = _stage_labels(method)
         cached = {
             stage: cached_step_results(stage, [selected], study)[0]
-            for stage in _DMRI_STAGE_LABELS
+            for stage in labels
         }
         previous = {
             stage: previous_step_results(stage, [selected], study)[0]
-            for stage in _DMRI_STAGE_LABELS
+            for stage in labels
         }
         usable_previous = {
             stage: usable_previous_step_results(stage, [selected], study)[0]
-            for stage in _DMRI_STAGE_LABELS
+            for stage in labels
         }
 
         # Receipts are the authoritative match to the current inputs and settings.
         # A later stage is not operationally reusable when an earlier stage must rerun.
-        stages = list(_DMRI_STAGE_LABELS)
+        stages = list(labels)
         reusable_prefix = []
         for stage in stages:
             if cached[stage] is None:
@@ -98,14 +132,15 @@ def dmri_analysis_state(namespace, entry, option):
         dataset = dataset_for_entry(namespace["RAW_DATASET_DIR"], selected)
         root = (Path(dataset) / route_config.get("DMRI_SUBDIR", DMRI_SUBDIR) /
                 selected["subject"] / (selected.get("session") or ""))
-        table, _ = tractometry_paths(dataset, route_config, selected)
+        table, _ = (tractometry_paths(dataset, route_config, selected)
+                    if method == "qsirecon" else tensor_metrics_paths(dataset, route_config, selected))
         paths = {
             "dmri_preproc": root / "qsiprep",
-            "dmri_recon": root / "qsirecon",
+            "dmri_recon": root / ("qsirecon" if method == "qsirecon" else "dipy_dti"),
             "dmri_metrics": table,
         }
         unmatched = [
-            _DMRI_STAGE_LABELS[stage] for stage in stages[len(reusable_prefix):]
+            labels[stage] for stage in stages[len(reusable_prefix):]
             if ((cached[stage] is not None or previous[stage] is not None or paths[stage].exists())
                 and usable_previous[stage] is None)
         ]
@@ -123,7 +158,7 @@ def dmri_analysis_state(namespace, entry, option):
                 row.get("derived_from_prior") for row in cached[stage].get("results", []))
         ]
         retained_prior = [
-            _DMRI_STAGE_LABELS[stage] for stage in stages[len(reusable_prefix):]
+            labels[stage] for stage in stages[len(reusable_prefix):]
             if usable_previous[stage] is not None
         ]
         outputs_exist = bool(existing_stages or prior_prefix or reusable_prefix)
@@ -132,14 +167,14 @@ def dmri_analysis_state(namespace, entry, option):
             kind = "rerun"
         elif derived:
             text = ("⚠ analysed using explicitly retained older inputs: " +
-                    ", ".join(_DMRI_STAGE_LABELS[stage] for stage in derived))
+                    ", ".join(labels[stage] for stage in derived))
             kind = "derived"
         elif len(reusable_prefix) == len(stages):
             text = "✓ analysed already (reusable)"
             kind = "reusable"
         elif reusable_prefix:
             text = "◐ partly analysed: " + ", ".join(
-                _DMRI_STAGE_LABELS[stage] for stage in reusable_prefix)
+                labels[stage] for stage in reusable_prefix)
             if unmatched:
                 text += "; later outputs not reusable: " + ", ".join(unmatched)
             if retained_prior:
@@ -148,13 +183,13 @@ def dmri_analysis_state(namespace, entry, option):
             kind = "partial_changed" if retained_prior else "partial"
         elif prior_prefix:
             text = ("⚠ input file date or size differs for this or an earlier stage: " +
-                    ", ".join(_DMRI_STAGE_LABELS[stage] for stage in prior_prefix))
+                    ", ".join(labels[stage] for stage in prior_prefix))
             if unmatched:
                 text += "; later outputs not reusable: " + ", ".join(unmatched)
             kind = "changed"
         else:
             found = [
-                _DMRI_STAGE_LABELS[stage] for stage in stages
+                labels[stage] for stage in stages
                 if cached[stage] is not None or paths[stage].exists()
             ]
             if found:
@@ -179,25 +214,26 @@ def dmri_analysis_state(namespace, entry, option):
                 "prior_available": False, "outputs_exist": True, "rerun_required": True}
 
 
-def dmri_analysis_status(namespace, entry, option):
+def dmri_analysis_status(namespace, entry, option, method=None):
     """Short status retained for reports, tests and configured workflows."""
-    return dmri_analysis_state(namespace, entry, option)["status"]
+    return dmri_analysis_state(namespace, entry, option, method)["status"]
 
 
 def _dmri_option_label(option):
     """Describe a diffusion choice without repeating its saved-result status."""
     relation = "same session" if option["same_session"] else "different session"
     reverse = "opposite-PE pair" if option["has_reverse_phase"] else "single PE"
-    shells = "/".join(map(str, option["shells"]))
+    shells = "/".join(map(str, dmri_option_shells(option)))
     return (f"{option['session'] or '(no session)'} · {relation} · "
             f"{option['n_directions']} dirs · b={shells} · {reverse}")
 
 
-def _dmri_row_heading(entry, option, options, states, selected):
-    state = states[selected]
+def _dmri_row_heading(entry, option, options, states, selected, method="qsirecon"):
+    method_states = states[method] if isinstance(states, dict) else states
+    state = method_states[selected]
     warning_count = len(option.get("warnings") or ())
     details = []
-    for index, (candidate, candidate_state) in enumerate(zip(options, states)):
+    for index, (candidate, candidate_state) in enumerate(zip(options, method_states)):
         session = candidate["session"] or "(no session)"
         if index == selected:
             session += " (selected)"
@@ -210,21 +246,36 @@ def _dmri_row_heading(entry, option, options, states, selected):
     if entry.get("session"):
         identity += f" · anatomy {entry['session']}"
     return compact_choice_heading(
-        identity, state["kind"], details, warning_count=warning_count)
+        identity, state["kind"], details, tags=(DMRI_METHODS[method],),
+        warning_count=warning_count)
 
 
 def apply_dmri_selection(namespace, selected):
     """Record direct-dMRI choices without changing the OpenADS selection."""
-    processing, actions = {}, {}
+    # A re-applied choice can change method, cohort or selected session.  Do
+    # not let a single-subject preview from the previous choice suppress the
+    # newly selected batch preview.
+    namespace.pop("_SINGLE_DMRI_VISUALIZED", None)
+    processing, actions, methods = {}, {}, {}
     for value in selected.values():
-        entry, option, action = (*value, RUN) if len(value) == 2 else value
+        if len(value) == 2:
+            entry, option = value
+            action, method = RUN, dmri_method(config_for_entry(namespace["CONFIG"], entry))
+        elif len(value) == 3:
+            entry, option, action = value
+            method = dmri_method(config_for_entry(namespace["CONFIG"], entry))
+        else:
+            entry, option, action, method = value
+        if method not in DMRI_METHODS:
+            raise ValueError(f"Unknown direct-dMRI method: {method!r}")
         if action == SKIP:
             continue
         chosen = _processing_entry(entry, option)
         chosen = entry_with_action(chosen, action, overwrite_key="DMRI_OVERWRITE",
                                    reuse_key="DMRI_REUSE_PRIOR")
+        chosen.setdefault(ENTRY_CONFIG, {})["DMRI_METHOD"] = method
         key = (entry["subject"], entry.get("session"))
-        processing[key], actions[key] = chosen, action
+        processing[key], actions[key], methods[key] = chosen, action, method
     subjects = []
     for entry in namespace.get("SUBJECTS", ()):
         copied = dict(entry)
@@ -239,7 +290,8 @@ def apply_dmri_selection(namespace, selected):
             }
             copied["dmri_analysis"].update(
                 n_directions=chosen["dmri_assessment"]["n_directions"],
-                shells=chosen["dmri_assessment"]["shells"])
+                shells=dmri_option_shells(chosen["dmri_assessment"]),
+                method=config_for_entry(namespace["CONFIG"], chosen)["DMRI_METHOD"])
             for key in (ENTRY_DATASET, ENTRY_CONFIG):
                 if key in chosen:
                     value = chosen[key]
@@ -262,10 +314,11 @@ def apply_dmri_selection(namespace, selected):
             "subject": item["subject"], "session": item.get("session"),
             "dwi": str(item["dwi"]),
             "n_directions": item["dmri_assessment"]["n_directions"],
-            "shells": item["dmri_assessment"]["shells"],
+            "shells": dmri_option_shells(item["dmri_assessment"]),
             "has_reverse_phase": item["dmri_assessment"]["has_reverse_phase"],
             "warnings": item["dmri_assessment"]["warnings"],
             "action": actions[(item["subject"], item.get("anatomical_session"))],
+            "method": methods[(item["subject"], item.get("anatomical_session"))],
         } for item in entries],
     }
     path = Path(namespace["PROJECT_DIR"]) / "reports" / "dmri-selection.json"
@@ -286,41 +339,52 @@ class DMRIChoice(w.VBox):
             self.message, on_cell_order=self.checkpoint._update_cell_order,
             focus_checkpoint=self.checkpoint)
         self.rows = []
+        configured_method = dmri_method(namespace["CONFIG"])
         children = [w.HTML(
             "<h3>Optional diffusion tract-microstructure analysis</h3>"
-            "<p>Choose one action per participant. The badge shows the selected session's saved-result "
+            "<p>Choose a reconstruction method, then one action per participant. The badge shows the selected session's saved-result "
             "status; open <i>Details</i> only when you need the exact receipt or scan warning.</p>"
             "<details style='margin-bottom:10px'><summary style='cursor:pointer'>About this analysis and the "
             "available actions</summary>"
             "<p>This is separate from OpenADS: it preprocesses gradient-bearing 4-D diffusion MRI and can "
-            "measure participant-specific tract microstructure. Results remain separate from BCB/DeepDisco "
+            "measure participant-specific diffusion. QSIRecon reconstructs bundles and tractometry; DIPY "
+            "fits voxelwise DTI maps (FA, MD, AD and RD). Results remain separate from BCB/DeepDisco "
             "normative disconnectome predictions.</p>"
-            "<p>Stroke lesions can distort registration and cause tractography to stop. CALMaR reports lesion "
-            "overlap and diffusion QC, and never treats a missing reconstructed tract as proof of "
-            "disconnection.</p>"
+            "<p>These methods answer different questions and are not interchangeable. Stroke lesions can "
+            "distort both; CALMaR never treats a missing reconstructed tract as proof of disconnection.</p>"
             "<p><b>Prior-analysis status is checked without running tools.</b> Reusable means all three saved "
             "receipts still match the selected inputs and outputs. Partial and changed results are identified "
             "explicitly and are not silently treated as current.</p>" + action_help_html() + "</details>")]
+        self.method = w.Dropdown(
+            options=[(label, key) for key, label in DMRI_METHODS.items()],
+            value=configured_method, description="dMRI method:",
+            style={"description_width": "initial"}, layout=w.Layout(width="460px"))
+        children.append(self.method)
         for entry in namespace.get("SUBJECTS", ()):
             if not _has_anatomical_t1(namespace["CONFIG"], entry):
                 continue
             options = dmri_options(entry)
             if not options:
                 continue
-            choices, states = [], []
+            choices = []
+            states = {method: [] for method in DMRI_METHODS}
             for index, option in enumerate(options):
-                state = dmri_analysis_state(namespace, entry, option)
-                states.append(state)
+                for method in DMRI_METHODS:
+                    states[method].append(dmri_analysis_state(namespace, entry, option, method))
                 choices.append((_dmri_option_label(option), index))
             choice = w.Dropdown(options=choices, value=0, description="Diffusion session:",
                                 style={"description_width": "initial"}, layout=w.Layout(width="460px"))
-            action = action_dropdown(**action_state_kwargs(states[0]))
-            heading = w.HTML(_dmri_row_heading(entry, options[0], options, states, 0))
+            action = action_dropdown(**action_state_kwargs(states[configured_method][0]))
+            _apply_action_state(action, states[configured_method][0])
+            heading = w.HTML(_dmri_row_heading(
+                entry, options[0], options, states, 0, configured_method))
 
-            def update_session(change, a=action, s=states, e=entry, o=options, h=heading):
+            def update_session(change, a=action, s=states, e=entry, o=options, h=heading,
+                               method_widget=self.method):
                 selected = change["new"]
-                set_action_options(a, **action_state_kwargs(s[selected]))
-                h.value = _dmri_row_heading(e, o[selected], o, s, selected)
+                method = method_widget.value
+                _apply_action_state(a, s[method][selected])
+                h.value = _dmri_row_heading(e, o[selected], o, s, selected, method)
 
             choice.observe(update_session, names="value")
             self.rows.append((entry, options, action, choice, states, heading))
@@ -329,14 +393,24 @@ class DMRIChoice(w.VBox):
         self.analyse, self.skip = action_buttons()
         self.analyse.on_click(lambda _: self._request(True))
         self.skip.on_click(lambda _: self._request(False))
+        self.method.observe(self._update_method, names="value")
         children.extend([w.HBox([self.analyse, self.skip]), self.message, self.navigation])
         super().__init__(children)
         self.checkpoint.controls = []
         self.checkpoint._cancel_queued()
 
     def _selection(self):
-        return {(entry["subject"], entry.get("session")): (entry, options[choice.value], action.value)
+        return {(entry["subject"], entry.get("session")):
+                (entry, options[choice.value], action.value, self.method.value)
                 for entry, options, action, choice, *_ in self.rows if action.value != SKIP}
+
+    def _update_method(self, change):
+        method = change["new"]
+        for entry, options, action, choice, states, heading in self.rows:
+            selected = choice.value
+            _apply_action_state(action, states[method][selected])
+            heading.value = _dmri_row_heading(
+                entry, options[selected], options, states, selected, method)
 
     def _request(self, analyse):
         self.navigation.request("brain-health-choice", lambda: self._apply(analyse), all_below=True)
@@ -348,12 +422,14 @@ class DMRIChoice(w.VBox):
         self.analyse.disabled = self.skip.disabled = True
         for _, _, action, choice, *_ in self.rows:
             action.disabled = choice.disabled = True
+        self.method.disabled = True
         if selected:
             sessions = ", ".join(
                 (f"{key[0] if isinstance(key, tuple) else key} {option.get('session') or ''} "
                  f"({action.replace('_', ' ')})").strip()
-                for key, (_, option, action) in selected.items())
-            self.message.value = "<b>Diffusion tract-microstructure analysis selected:</b> " + escape(sessions) + "."
+                for key, (_, option, action, _) in selected.items())
+            self.message.value = ("<b>Diffusion analysis selected:</b> " +
+                                  escape(DMRI_METHODS[self.method.value]) + " · " + escape(sessions) + ".")
         elif analyse:
             self.message.value = ("<b>No participant had an analysis action selected.</b> "
                                   "Continuing without participant diffusion measurements.")
@@ -404,7 +480,11 @@ def show_dmri_choice(namespace, shell=None):
         ]
         if configured:
             unsafe = []
+            unavailable = []
             for key, entry, state in states:
+                if not state.get("method_available", True):
+                    unavailable.append(key)
+                    continue
                 effective = config_for_entry(namespace["CONFIG"], entry)
                 overwrite = bool(effective.get(
                     "DMRI_OVERWRITE", effective.get("OVERWRITE", False)))
@@ -413,6 +493,11 @@ def show_dmri_choice(namespace, shell=None):
                         (state["outputs_exist"] and not state["current_complete"] and
                          not overwrite and not reuse)):
                     unsafe.append(key)
+            if unavailable:
+                names = ", ".join(" ".join(filter(None, key)) for key in unavailable)
+                raise RuntimeError(
+                    "Configured DIPY DTI analysis is unavailable for multi-shell input: " + names +
+                    ". Select QSIRecon or a single-shell diffusion session.")
             if unsafe:
                 names = ", ".join(" ".join(filter(None, key)) for key in unsafe)
                 raise RuntimeError(
@@ -422,7 +507,8 @@ def show_dmri_choice(namespace, shell=None):
         selected = ({key: (entry, options[0])
                      for key, (entry, options) in available.items()} if configured else {})
         apply_dmri_selection(namespace, selected)
-        print((f"Diffusion tract-microstructure analysis selected for {len(selected)} participant(s)."
+        selected_method = dmri_method(namespace["CONFIG"])
+        print((f"{DMRI_METHODS[selected_method]} selected for {len(selected)} participant(s)."
                if selected else "Diffusion tract-microstructure analysis disabled in CONFIG."))
         for (subject, session), _, state in states:
             print(f"  {subject} {session or '(no session)'}: {state['status']}")

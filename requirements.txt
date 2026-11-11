@@ -14,6 +14,7 @@ nilearn>=0.10,<0.14
 scipy>=1.10
 numpy>=1.24
 pandas>=2.0
+dipy==1.12.1            # optional direct-dMRI DTI method; Slurm script verifies this pin
 
 # Notebook UI
 ipywidgets>=8.0
@@ -21,6 +22,7 @@ anywidget>=0.11,<1
 ipylab==1.0.0            # JupyterLab continuation buttons
 ipyniivue>=2.0
 matplotlib>=3.7
+Pillow>=10              # bounded notebook thumbnails for existing dMRI QC figures
 
 # Coregistration (T2w → T1w, expert mask warping)
 SimpleITK>=2.3

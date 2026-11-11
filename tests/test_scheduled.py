@@ -548,10 +548,37 @@ def test_direct_dmri_settings_are_scoped_to_direct_dmri_stages():
             'config': {'MODALITY': 't1', 'DMRI_RECON_SPEC': 'ss3t_fod_autotrack'}}
     changed = {**base, 'config': {**base['config'], 'DMRI_RECON_SPEC': 'dsi_studio_autotrack'}}
     assert _identity_key('brain', base) == _identity_key('brain', changed)
+    # Retained for compatibility with receipts created before method selection
+    # existed; changing only DMRI_METHOD still reuses the same preprocessing.
+    assert _identity_key('dmri_preproc', base) != _identity_key('dmri_preproc', changed)
     assert _identity_key('dmri_recon', base) != _identity_key('dmri_recon', changed)
+    dipy = {**base, 'config': {**base['config'], 'DMRI_METHOD': 'dipy_dti'}}
+    qsirecon = {**base, 'config': {**base['config'], 'DMRI_METHOD': 'qsirecon'}}
+    assert _identity_key('dmri_preproc', base) == _identity_key('dmri_preproc', dipy)
+    assert _identity_key('dmri_recon', base) == _identity_key('dmri_recon', qsirecon)
+    assert _identity_key('dmri_metrics', base) == _identity_key('dmri_metrics', qsirecon)
+    assert _identity_key('dmri_recon', base) != _identity_key('dmri_recon', dipy)
+    assert _identity_key('dmri_metrics', base) != _identity_key('dmri_metrics', dipy)
     overwrite = {**base, 'config': {**base['config'], 'DMRI_OVERWRITE': True}}
     assert _reusable('brain', overwrite)
     assert not _reusable('dmri_preproc', overwrite)
+
+
+def test_dipy_prior_stamp_includes_record_and_every_tensor_map(tmp_path):
+    from calmar.scheduled import _result_output_stamps
+
+    derivative = tmp_path / 'dipy_dti'
+    derivative.mkdir()
+    maps = {name: f'{name}.nii.gz' for name in ('FA', 'MD', 'AD', 'RD')}
+    for name in maps.values():
+        (derivative / name).write_bytes(name.encode())
+    (derivative / 'calmar-dipy-dti.json').write_text(json.dumps({'maps': maps}))
+    result = {'results': [{'outputs': [{'path': str(derivative)}]}]}
+
+    stamps = _result_output_stamps(result)
+
+    assert str(derivative / 'calmar-dipy-dti.json') in stamps
+    assert all(str(derivative / name) in stamps for name in maps.values())
 
 
 def test_dmri_report_link_does_not_change_processing_cache_identity():

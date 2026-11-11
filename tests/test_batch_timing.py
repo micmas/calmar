@@ -8,7 +8,7 @@ import pytest
 
 from calmar.atlas_overlap import cached_overlap
 from calmar.guided import source_cell
-from calmar.timing import BatchTiming, install_timing, show_timings
+from calmar.timing import BatchTiming, batch_title, install_timing, show_timings
 
 
 def test_durations_outcomes_reruns_and_participant_totals():
@@ -33,6 +33,36 @@ def test_durations_outcomes_reruns_and_participant_totals():
             with batch.participant(entry, 'LINDA') as timing:
                 timing['status'] = 'Cached'
     assert len(ns['BATCH_TIMINGS']['Segmentation']['participants']) == 1
+
+
+def test_timing_summary_is_compact_and_uses_readable_stage_names():
+    ns = {
+        'STEP_TIMINGS': {'calmar-step-12': 2.0},
+        'BATCH_TIMINGS': {
+            'dmri_preproc': {
+                'seconds': 3.0,
+                'participants': {
+                    ('sub-one', 'ses-one', 'dmri_preproc', ''): {
+                        'subject': 'sub-one', 'session': 'ses-one',
+                        'stage': 'dmri_preproc', 'detail': '',
+                        'status': 'reused', 'seconds': 120.0,
+                    },
+                },
+            },
+        },
+    }
+    with patch('calmar.timing.display') as display:
+        show_timings(ns)
+    html = display.call_args.args[0].data
+    assert batch_title('dmri_preproc') == 'Diffusion preprocessing (QSIPrep)'
+    assert '<h4>Batch analyses</h4>' in html
+    assert '<th>Latest result</th>' in html
+    assert 'Diffusion preprocessing (QSIPrep)' in html
+    assert 'Participant-level details · 1 analysis' in html
+    assert 'dmri_preproc — participants' not in html
+    assert 'Includes computation and waiting inside each step' not in html
+    assert 'They include computation and any time waiting for Slurm' in html
+    assert '<h4>Recorded time by participant</h4>' in html
 
 
 def test_batch_runs_retained_stages_and_stops_after_failure():

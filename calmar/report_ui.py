@@ -25,7 +25,7 @@ def file_link(path, label):
         url = base + "files/" + quote(Path(path).absolute().relative_to(root).as_posix())
         return f'<a href="{escape(url, quote=True)}" target="_blank">{escape(label)}</a>'
     except ValueError:
-        return escape(str(path))
+        return f'{escape(label)}: <code>{escape(str(path))}</code>'
 
 
 def report_sections(body):

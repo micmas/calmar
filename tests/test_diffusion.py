@@ -2,20 +2,25 @@ import json
 import math
 import os
 from pathlib import Path
+import shutil
 import subprocess
 from types import SimpleNamespace
 
 import pandas as pd
+import nibabel as nib
+import numpy as np
 import pytest
 
 import calmar.dmri_pipeline as dmri_pipeline
 from calmar.diffusion import (assess_dwi_series, assess_dwi_sessions,
-                              direct_diffusion_section, load_tractometry,
-                              tractometry_paths)
+                              direct_diffusion_section, dmri_method,
+                              load_tensor_metrics, load_tractometry,
+                              tensor_metrics_paths, tractometry_paths)
 from calmar.dmri_choice import (apply_dmri_selection, dmri_analysis_state,
                                 dmri_analysis_status, dmri_options, show_dmri_choice)
 from calmar.dmri_pipeline import (_bundle_side, _derivative_methods, _hmc_method,
-                                  _run, _scalar_rows, preprocess, stage_bids)
+                                  _run, _scalar_rows, normalize_dipy_metrics,
+                                  preprocess, stage_bids)
 
 
 def gradients(folder, stem, bvals, *, phase="j-", readout=0.036):
@@ -187,7 +192,7 @@ def test_diffusion_choice_updates_compact_status_when_session_changes(tmp_path, 
     monkeypatch.setattr("calmar.dmri_choice.dmri_options", lambda entry: options)
     monkeypatch.setattr(
         "calmar.dmri_choice.dmri_analysis_state",
-        lambda namespace, entry, option: states[option["session"]])
+        lambda namespace, entry, option, method=None: states[option["session"]])
     entry = {"subject": "sub-one", "session": "ses-current", "t1w": tmp_path / "t1.nii.gz"}
     namespace = {"CONFIG": {"MODALITY": "t1"}, "SUBJECTS": [entry],
                  "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
@@ -202,11 +207,16 @@ def test_diffusion_choice_updates_compact_status_when_session_changes(tmp_path, 
         assert ("⚠ input file date or size differs for this or an earlier stage: QSIPrep"
                 in heading.value)
         assert heading.value.count("analysed already") == 1
+        assert panel.method.value == "qsirecon"
+        assert {value for _, value in panel.method.options} == {"qsirecon", "dipy_dti"}
 
         choice.value = 1
         assert "⚠ Saved result may be out of date" in heading.value
         assert "✓ Reusable" not in heading.value
         assert action.value == "skip"
+
+        panel.method.value = "dipy_dti"
+        assert "DIPY diffusion tensor maps" in heading.value
         assert "1 scan warning" in heading.value
         assert "⚠ 1 scan warning" not in heading.value
         assert "<b>ses-old (selected)</b>" in heading.value
@@ -238,6 +248,35 @@ def test_configured_diffusion_analysis_refuses_unmatched_outputs(tmp_path, monke
 
     with pytest.raises(RuntimeError, match="DMRI_OVERWRITE=True"):
         show_dmri_choice(namespace)
+
+
+def test_dipy_choice_disables_multi_shell_acquisition(tmp_path):
+    entry = {"subject": "sub-one", "session": "ses-t1", "t1w": tmp_path / "t1.nii.gz"}
+    option = {"session": "ses-dwi", "shells": [0, 1000, 2000]}
+    namespace = {"CONFIG": {"MODALITY": "t1"}, "SUBJECTS": [entry],
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+
+    state = dmri_analysis_state(namespace, entry, option, method="dipy_dti")
+
+    assert state["kind"] == "unavailable"
+    assert state["method_available"] is False
+    assert "multi-shell" in state["status"] and "choose QSIRecon" in state["status"]
+
+
+def test_dipy_choice_unions_shells_across_every_qsiprep_series(tmp_path):
+    first = gradients(tmp_path, "sub-one_ses-dwi_run-1", [0] + [1000] * 32)
+    second = gradients(tmp_path, "sub-one_ses-dwi_run-2", [0] + [2000] * 32)
+    for item in (first, second):
+        item.update(subject="sub-one", session="ses-dwi", same_session=False)
+    entry = {"subject": "sub-one", "session": "ses-t1", "t1w": tmp_path / "t1.nii.gz",
+             "dwi_inventory": [first, second]}
+    option = dmri_options(entry)[0]
+    namespace = {"CONFIG": {"MODALITY": "t1"}, "SUBJECTS": [entry],
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+
+    assert option["shells"] == [0, 1000, 2000]
+    assert dmri_analysis_state(namespace, entry, option, method="dipy_dti")[
+        "method_available"] is False
 
 
 def test_configured_diffusion_analysis_allows_explicit_rerun(tmp_path, monkeypatch):
@@ -290,7 +329,7 @@ def test_diffusion_choice_reports_complete_partial_and_unmatched_prior_analysis(
         state = dmri_analysis_state(namespace, entry, option)
         assert state["status"] == (
             "◐ partly analysed: QSIPrep, QSIRecon; "
-            "input file date or size differs for this or an earlier stage: final metrics")
+            "input file date or size differs for this or an earlier stage: tract metrics")
         assert state["kind"] == "partial_changed"
         assert state["rerun_required"] is False
 
@@ -447,6 +486,60 @@ def tractometry(path):
          "fa": 0.45, "md_mm2_s": 0.00078, "summary_statistic": "median",
          "valid_voxel_pct": 91.0},
     ]).to_csv(path, sep="\t", index=False)
+
+
+def tensor_metrics(path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame([
+        {"metric": metric, "median": median, "p05": p05, "p95": p95,
+         "valid_voxels": 100, "valid_brain_pct": 99.0,
+         "physical_units": "unitless" if metric == "FA" else "mm²/s"}
+        for metric, median, p05, p95 in (
+            ("FA", .42, .12, .71), ("MD", .0008, .0005, .0012),
+            ("AD", .0011, .0007, .0018), ("RD", .0006, .0003, .0010),
+        )
+    ]).to_csv(path, sep="\t", index=False)
+
+
+def test_dipy_is_a_second_direct_dmri_method_with_its_own_report_contract(tmp_path):
+    assert dmri_method({}) == "qsirecon"
+    assert dmri_method({"DMRI_METHOD": "dipy_dti"}) == "dipy_dti"
+    with pytest.raises(ValueError, match="DMRI_METHOD"):
+        dmri_method({"DMRI_METHOD": "unknown"})
+    entry = {
+        "subject": "sub-one", "session": "ses-t1",
+        "dmri_analysis": {"subject": "sub-one", "session": "ses-dwi",
+                          "method": "dipy_dti"},
+    }
+    table, metadata = tensor_metrics_paths(tmp_path, {}, entry)
+    tensor_metrics(table)
+    metadata.write_text(json.dumps({
+        "software": "DIPY 1.12.1", "n_directions": 64, "shells": [0, 1000],
+        "warnings": ["visual review required"],
+    }))
+    validated = load_tensor_metrics(table)
+    assert list(validated["metric"]) == ["FA", "MD", "AD", "RD"]
+    html = direct_diffusion_section(tmp_path, {}, entry)
+    assert "second direct-dMRI method" in html
+    assert "not QSIRecon bundle tractometry" in html
+    assert "Fractional anisotropy" in html and "0.420" in html
+    assert "visual review required" in html
+
+
+def test_selection_records_dipy_method_independently_of_qsirecon(tmp_path):
+    item = gradients(tmp_path, "sub-one_ses-dwi", [0] + [1000] * 32)
+    item.update(subject="sub-one", session="ses-dwi", same_session=False)
+    entry = {"subject": "sub-one", "session": "ses-t1", "t1w": tmp_path / "t1.nii.gz",
+             "dwi_inventory": [item]}
+    option = dmri_options(entry)[0]
+    namespace = {"CONFIG": {"MODALITY": "t1"}, "SUBJECTS": [entry],
+                 "RAW_DATASET_DIR": tmp_path, "PROJECT_DIR": tmp_path}
+    selected = apply_dmri_selection(
+        namespace, {"sub-one": (entry, option, "run", "dipy_dti")})
+    assert selected[0]["_calmar_config"]["DMRI_METHOD"] == "dipy_dti"
+    assert namespace["SUBJECTS"][0]["dmri_analysis"]["method"] == "dipy_dti"
+    record = json.loads((tmp_path / "reports/dmri-selection.json").read_text())
+    assert record["selection"][0]["method"] == "dipy_dti"
 
 
 def test_direct_tractometry_is_separate_and_conservative_in_report(tmp_path):
@@ -756,6 +849,161 @@ def test_reconstruction_command_uses_installed_spec_name_and_license(tmp_path, m
     command = commands[0]
     assert command[command.index("--recon-spec") + 1] == "ss3t_fod_autotrack"
     assert command[command.index("--fs-license-file") + 1] == str(license_file)
+
+
+def _synthetic_qsiprep_inputs(root, entry, shape=(5, 5, 5)):
+    preproc = root / "derivatives/calmar-dmri" / entry["subject"] / entry["session"] / "qsiprep"
+    folder = preproc / entry["subject"] / entry["session"] / "dwi"
+    folder.mkdir(parents=True)
+    stem = f"{entry['subject']}_{entry['session']}_space-ACPC"
+    dwi = folder / f"{stem}_desc-preproc_dwi.nii.gz"
+    mask = folder / f"{stem}_desc-brain_mask.nii.gz"
+    data = np.ones((*shape, 7), dtype=np.float32) * 100
+    nib.save(nib.Nifti1Image(data, np.eye(4)), dwi)
+    nib.save(nib.Nifti1Image(np.ones(shape, dtype=np.uint8), np.eye(4)), mask)
+    dwi.with_name(dwi.name.removesuffix(".nii.gz") + ".bval").write_text("0 1000 1000 1000 1000 1000 1000")
+    dwi.with_name(dwi.name.removesuffix(".nii.gz") + ".bvec").write_text(
+        "0 1 0 0 1 0 0\n0 0 1 0 0 1 0\n0 0 0 1 0 0 1\n")
+    return dwi, mask
+
+
+def test_dipy_reconstruction_is_selected_as_an_alternative_stage(tmp_path, monkeypatch):
+    entry = {"subject": "sub-one", "session": "ses-dwi"}
+    _synthetic_qsiprep_inputs(tmp_path, entry)
+    request = {"dataset": str(tmp_path), "entries": [entry],
+               "config": {"DMRI_METHOD": "dipy_dti"}}
+    commands, publications = [], []
+
+    def run(command, log, **kwargs):
+        commands.append([str(value) for value in command])
+        out = Path(command[command.index("--out_dir") + 1])
+        for flag in ("--out_fa", "--out_md", "--out_ad", "--out_rd"):
+            name = command[command.index(flag) + 1]
+            value = .4 if flag == "--out_fa" else .0008
+            nib.save(nib.Nifti1Image(np.ones((5, 5, 5), dtype=np.float32) * value, np.eye(4)),
+                     out / name)
+        Path(log).write_text("DIPY fixture")
+
+    def publish(source, final, *args, **kwargs):
+        publications.append(args)
+        shutil.copytree(source, final)
+
+    monkeypatch.setenv("SLURM_JOB_ID", "123")
+    monkeypatch.setenv("CALMAR_EXECUTION_SCRIPT", "src/analysis_46_dmri_recon.sh")
+    monkeypatch.setattr(dmri_pipeline, "_dipy_version", lambda: "1.12.1")
+    monkeypatch.setattr(dmri_pipeline, "_run", run)
+    monkeypatch.setattr(dmri_pipeline, "_publish", publish)
+    monkeypatch.setattr(dmri_pipeline, "_publish_result", lambda *args, **kwargs: None)
+    dmri_pipeline.reconstruct(request, tmp_path / "result")
+    command = commands[0]
+    assert command[0] == "dipy_fit_dti"
+    assert command[command.index("--fit_method") + 1] == "WLS"
+    final = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/dipy_dti"
+    record = json.loads((final / "calmar-dipy-dti.json").read_text())
+    assert record["method"] == "dipy_dti" and record["dipy_version"] == "1.12.1"
+    assert record["fitted_shells"] == [1000]
+    assert len(list(final.glob("*param-*_dwimap.nii.gz"))) == 4
+    assert publications[0][0] == "dipy_dti_recon"
+
+
+def test_dipy_metrics_publish_validated_summary_and_png(tmp_path, monkeypatch):
+    entry = {"subject": "sub-one", "session": "ses-dwi",
+             "dmri_assessment": {"n_directions": 32, "shells": [0, 1000]}}
+    dwi, mask = _synthetic_qsiprep_inputs(tmp_path, entry)
+    recon = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/dipy_dti"
+    recon.mkdir(parents=True)
+    names = {}
+    for metric, value in {"FA": .4, "MD": .0008, "AD": .0011, "RD": .0006}.items():
+        name = f"sub-one_ses-dwi_space-ACPC_model-DIPYDTI_param-{metric}_dwimap.nii.gz"
+        names[metric] = name
+        nib.save(nib.Nifti1Image(np.ones((5, 5, 5), dtype=np.float32) * value, np.eye(4)), recon / name)
+    base = dwi.with_name(dwi.name.removesuffix(".nii.gz"))
+    (recon / "calmar-dipy-dti.json").write_text(json.dumps({
+        "method": "dipy_dti", "fit_method": "WLS", "dipy_version": "1.12.1",
+        "b0_threshold": 100, "source_preprocessed_dwi": str(dwi),
+        "source_bval": str(base) + ".bval", "source_bvec": str(base) + ".bvec",
+        "source_mask": str(mask), "maps": names,
+    }))
+    request = {"dataset": str(tmp_path), "entries": [entry],
+               "config": {"DMRI_METHOD": "dipy_dti"}}
+    captured, publications = {}, []
+
+    def publish(source, final, *args, **kwargs):
+        publications.append(args)
+        shutil.copytree(source, final)
+
+    def result(output, stage, request, entry, derivative, started, qc, **kwargs):
+        captured.update(stage=stage, derivative=derivative, qc=qc)
+
+    monkeypatch.setenv("SLURM_JOB_ID", "124")
+    monkeypatch.setenv("CALMAR_EXECUTION_SCRIPT", "src/analysis_47_dmri_metrics.sh")
+    monkeypatch.setattr(dmri_pipeline, "_publish", publish)
+    monkeypatch.setattr(dmri_pipeline, "_publish_result", result)
+    normalize_dipy_metrics(request, tmp_path / "result")
+    table, metadata = tensor_metrics_paths(tmp_path, request["config"], entry)
+    assert set(load_tensor_metrics(table)["metric"]) == {"FA", "MD", "AD", "RD"}
+    assert json.loads(metadata.read_text())["software"] == "DIPY 1.12.1"
+    assert captured["stage"] == "dmri_metrics"
+    png = Path(captured["qc"]["png"])
+    assert png.is_file() and png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert publications[0][0] == "dipy_dti_metrics"
+
+
+def test_dipy_rejects_multi_shell_tensor_fit(tmp_path):
+    bvals = tmp_path / "multi.bval"
+    bvals.write_text("0 1000 1000 2000 2000")
+
+    with pytest.raises(RuntimeError, match="single nonzero shell.*1000/2000"):
+        dmri_pipeline._dipy_acquisition_shells(bvals)
+
+    jittered = tmp_path / "jittered.bval"
+    jittered.write_text("0 1040 1060")
+    assert dmri_pipeline._dipy_acquisition_shells(jittered) == [1050]
+
+
+def test_dipy_contract_failure_retains_complete_attempt(tmp_path, monkeypatch):
+    entry = {"subject": "sub-one", "session": "ses-dwi"}
+    _synthetic_qsiprep_inputs(tmp_path, entry)
+    request = {"dataset": str(tmp_path), "entries": [entry],
+               "config": {"DMRI_METHOD": "dipy_dti"}}
+
+    def run(command, log, **kwargs):
+        out = Path(command[command.index("--out_dir") + 1])
+        for flag in ("--out_fa", "--out_md", "--out_ad", "--out_rd"):
+            name = command[command.index(flag) + 1]
+            # Deliberately wrong grid: the complete attempt and log must survive.
+            nib.save(nib.Nifti1Image(np.ones((4, 4, 4), dtype=np.float32), np.eye(4)),
+                     out / name)
+        Path(log).write_text("DIPY diagnostic log")
+
+    monkeypatch.setenv("SLURM_JOB_ID", "321")
+    monkeypatch.setenv("CALMAR_EXECUTION_SCRIPT", "src/analysis_46_dmri_recon.sh")
+    monkeypatch.setattr(dmri_pipeline, "_dipy_version", lambda: "1.12.1")
+    monkeypatch.setattr(dmri_pipeline, "_run", run)
+
+    with pytest.raises(RuntimeError, match="derivative contract failed"):
+        dmri_pipeline.reconstruct(request, tmp_path / "result")
+
+    retained = tmp_path / "derivatives/calmar-dmri/sub-one/ses-dwi/dipy_dti.failed.321"
+    assert (retained / "produced").is_dir()
+    assert (retained / "dipy-dti.log").read_text() == "DIPY diagnostic log"
+
+
+def test_dipy_receipt_uses_method_specific_astra_output_id(tmp_path, monkeypatch):
+    published = []
+    monkeypatch.setenv("SLURM_JOB_ID", "322")
+    monkeypatch.setenv("CALMAR_EXECUTION_SCRIPT", "src/analysis_47_dmri_metrics.sh")
+    monkeypatch.setattr(dmri_pipeline, "_publish",
+                        lambda source, final, output_id, *args, **kwargs:
+                        published.append(output_id))
+
+    dmri_pipeline._publish_result(
+        tmp_path / "result", "dmri_metrics",
+        {"config": {"DMRI_METHOD": "dipy_dti"}},
+        {"subject": "sub-one", "session": "ses-dwi"},
+        tmp_path / "derivative", 0., {"complete": True})
+
+    assert published == ["dipy_dti_metrics"]
 
 
 def test_reconstruction_publish_failure_retains_rerunnable_attempt(tmp_path, monkeypatch):

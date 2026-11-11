@@ -15,7 +15,7 @@ TOOLS = {
     "registration": "ANTs (ants/2.6.5) antsRegistrationSyN.sh",
     "openads": "OpenADS (openadscpu/1.0.0)",
     "dmri_preproc": "QSIPrep (qsiprep/26.1.1)",
-    "dmri_recon": "QSIRecon (qsirecon/26.0.1)",
+    "dmri_recon": "QSIRecon (qsirecon/26.0.1) or DIPY DTI (Python package 1.12.1)",
     "brain_health_anatomy": "SynthSeg (synthseg/8.2.1, robust parcellation)",
     "brain_health_wmh": "DeepWMH (deepwmh/1.0.1); lesion-to-FLAIR registration with ANTs (ants/2.6.5)",
     "bcb": "BCBToolkit disconnectome (bcbtoolkit/0.0.0, run_disco.sh)",
@@ -63,6 +63,15 @@ def methods_table(config):
     hmc = {"tortoise": "TORTOISE DIFFPREP", "eddy": "FSL eddy",
            "shoreline": "SHORELine"}.get(c("DMRI_HMC_METHOD", "tortoise"),
                                            c("DMRI_HMC_METHOD", "tortoise"))
+    dmri_method = c("DMRI_METHOD", "qsirecon")
+    if dmri_method == "dipy_dti":
+        dmri_parameters = "DIPY weighted-least-squares DTI; FA, MD, AD and RD maps"
+        dmri_meaning = ("Voxelwise tensor maps and whole-brain summaries kept separate from bundle "
+                        "tractometry and normative disconnectomes; visual QC required.")
+    else:
+        dmri_parameters = f"QSIRecon reconstruction={c('DMRI_RECON_SPEC', 'ss3t_fod_autotrack')}"
+        dmri_meaning = ("Participant-specific tractometry kept separate from BCB/DeepDisco; a missing "
+                        "bundle is not called a disconnection.")
     rows = [
         ("Input discovery and acquisition", TOOLS["acquisition"], "Used",
          "Selected T1w or DWI+ADC content; inventories all participant DWI sessions."),
@@ -93,10 +102,9 @@ def methods_table(config):
          f"lesion mask={c('DMRI_MASK_SOURCE', 'manual')}; output resolution={c('DMRI_OUTPUT_RESOLUTION', 2.0)} mm; "
          f"{hmc} motion/eddy correction",
          "Lesion-aware preprocessing, gradient rotation, motion/eddy correction and distortion correction when metadata permit."),
-        ("Participant tract reconstruction", TOOLS["dmri_recon"],
+        ("Participant diffusion reconstruction", TOOLS["dmri_recon"],
          "Selected (experimental)" if direct_dmri else "Optional; not run by default",
-         f"reconstruction={c('DMRI_RECON_SPEC', 'ss3t_fod_autotrack')}",
-         "Participant-specific tractometry kept separate from BCB/DeepDisco; a missing bundle is not called a disconnection."),
+         dmri_parameters, dmri_meaning),
         ("Brain-health structural markers", TOOLS["brain_health_anatomy"],
          "Selected (opt-in)" if brain_health else "Optional; not run by default",
          f"mode={c('BRAIN_HEALTH_SYNTHSEG_MODE', 'robust')}; "

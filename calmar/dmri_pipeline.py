@@ -1,4 +1,4 @@
-"""Scheduler-only QSIPrep/QSIRecon orchestration for optional tract-microstructure analysis."""
+"""Scheduler-only QSIPrep plus QSIRecon-or-DIPY direct-dMRI analysis."""
 
 from __future__ import annotations
 
@@ -19,7 +19,9 @@ from uuid import uuid4
 import pandas as pd
 
 from .acquisition import ensure_nifti_content
-from .diffusion import DMRI_SUBDIR, load_tractometry, tractometry_paths
+from .diffusion import (DMRI_SUBDIR, bvalue_shells, dmri_method,
+                        load_tensor_metrics, load_tractometry, tensor_metrics_paths,
+                        tractometry_paths)
 from .study import Study
 
 
@@ -269,21 +271,34 @@ def _publish(temporary, final, output_id, tool, script, overwrite=False):
             raise
 
 
-def _publish_result(output, stage, request, entry, derivative, started, qc, *, status="computed"):
+def _publish_result(output, stage, request, entry, derivative, started, qc, *,
+                    status="computed", tracked_files=()):
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=output.name + ".attempt.", dir=output.parent) as folder:
         result = Path(folder) / "result"
         result.mkdir()
+        listed = {"path": str(derivative), "status": status}
+        tracked = {str(Path(path)): str(Path(path)) for path in tracked_files}
+        if tracked:
+            # The scheduler stamp code uses these relative names to detect any
+            # in-place replacement of a published derivative member.
+            listed["images"] = tracked
         summary = {
             "stage": stage, "request": request, "job": os.environ["SLURM_JOB_ID"],
             "results": [{"subject": entry["subject"], "session": entry.get("session"),
                          "seconds": time.monotonic() - started,
-                         "outputs": [{"path": str(derivative), "status": status}],
+                         "outputs": [listed],
                          "qc": qc}], "qc_version": 7,
         }
         (result / "summary.json").write_text(json.dumps(summary, indent=2, default=str) + "\n")
-        _publish(result, output, stage, os.environ.get("CALMAR_PYTHON", "python"),
+        output_id = stage
+        if dmri_method(request.get("config", {})) == "dipy_dti":
+            output_id = {
+                "dmri_recon": "dipy_dti_recon",
+                "dmri_metrics": "dipy_dti_metrics",
+            }.get(stage, stage)
+        _publish(result, output, output_id, os.environ.get("CALMAR_PYTHON", "python"),
                  os.environ["CALMAR_EXECUTION_SCRIPT"])
 
 
@@ -467,8 +482,280 @@ def preprocess(request, output):
     _publish_result(output, "dmri_preproc", request, entry, final, started, qc)
 
 
+def _dipy_inputs(request, entry):
+    """Resolve one QSIPrep-preprocessed series and its matching gradients/mask."""
+    preprocessed = _final_dir(request, entry, "qsiprep")
+    dwi_files = sorted(preprocessed.rglob("*desc-preproc_dwi.nii.gz"))
+    if len(dwi_files) != 1:
+        raise RuntimeError(
+            f"DIPY DTI requires exactly one QSIPrep preprocessed DWI; found {len(dwi_files)} in {preprocessed}.")
+    dwi = dwi_files[0]
+    base = Path(str(dwi).removesuffix(".nii.gz"))
+    bval, bvec = Path(str(base) + ".bval"), Path(str(base) + ".bvec")
+    mask = dwi.with_name(dwi.name.replace("_desc-preproc_dwi.nii.gz", "_desc-brain_mask.nii.gz"))
+    missing = [path for path in (bval, bvec, mask) if not path.is_file()]
+    if missing:
+        raise FileNotFoundError("QSIPrep DIPY inputs are incomplete: " + ", ".join(map(str, missing)))
+    return dwi, bval, bvec, mask
+
+
+def _dipy_version():
+    completed = subprocess.run(
+        ["dipy_fit_dti", "--version"], capture_output=True, text=True, check=True)
+    match = re.search(r"\bDIPY\s+([0-9][^\s]*)", completed.stdout + completed.stderr)
+    if not match:
+        raise RuntimeError("dipy_fit_dti did not report a parseable version")
+    version = match.group(1)
+    expected = os.environ.get("CALMAR_DIPY_VERSION", "1.12.1")
+    if version != expected:
+        raise RuntimeError(f"DIPY version {version} is installed; CALMaR requires the pinned {expected}")
+    return version
+
+
+def _dipy_acquisition_shells(bval_path):
+    """Return rounded nonzero shells and reject unvalidated multi-shell DTI."""
+    import numpy as np
+    bvals = np.loadtxt(bval_path, ndmin=1)
+    shells = [value for value in bvalue_shells(bvals) if value >= 100]
+    if len(shells) != 1:
+        shown = "/".join(map(str, shells)) or "none"
+        raise RuntimeError(
+            "DIPY DTI is validated only for a single nonzero shell; "
+            f"found b={shown}. Select QSIRecon or a single-shell diffusion session.")
+    return shells
+
+
+def reconstruct_dipy(request, output):
+    """Fit a single-shell-compatible DIPY tensor model after shared QSIPrep."""
+    _require_slurm()
+    started = time.monotonic()
+    entry = _entry(request)
+    config = request["config"]
+    dwi, bval, bvec, mask = _dipy_inputs(request, entry)
+    final = _final_dir(request, entry, "dipy_dti")
+    overwrite = bool(config.get("DMRI_OVERWRITE", config.get("OVERWRITE", False)))
+    if final.exists() and not overwrite:
+        raise FileExistsError(
+            f"DIPY DTI derivative already exists and is preserved: {final}. Reuse its scheduler receipt "
+            "or select Rerun from the start.")
+    final.parent.mkdir(parents=True, exist_ok=True)
+    version = _dipy_version()
+    fitted_shells = _dipy_acquisition_shells(bval)
+    with tempfile.TemporaryDirectory(prefix="dipy_dti.attempt.", dir=final.parent) as folder:
+        folder = Path(folder)
+        produced = folder / "produced"
+        produced.mkdir()
+        subject, session, _ = _subject_parts(entry)
+        stem = "_".join(filter(None, [subject, session]))
+        names = {
+            "FA": f"{stem}_space-ACPC_model-DIPYDTI_param-FA_dwimap.nii.gz",
+            "MD": f"{stem}_space-ACPC_model-DIPYDTI_param-MD_dwimap.nii.gz",
+            "AD": f"{stem}_space-ACPC_model-DIPYDTI_param-AD_dwimap.nii.gz",
+            "RD": f"{stem}_space-ACPC_model-DIPYDTI_param-RD_dwimap.nii.gz",
+        }
+        command = [
+            "dipy_fit_dti", dwi, bval, bvec, mask,
+            "--fit_method", "WLS", "--b0_threshold", "100",
+            "--save_metrics", "fa", "md", "ad", "rd",
+            "--out_dir", produced,
+            "--out_fa", names["FA"], "--out_md", names["MD"],
+            "--out_ad", names["AD"], "--out_rd", names["RD"],
+        ]
+        failure_dir = final.parent / f"dipy_dti.failed.{os.environ['SLURM_JOB_ID']}"
+        _run(command, folder / "dipy-dti.log", failure_dir=failure_dir)
+        try:
+            import nibabel as nib
+            reference = nib.load(mask)
+            for metric, name in names.items():
+                path = produced / name
+                if not path.is_file():
+                    raise RuntimeError(f"DIPY did not produce its {metric} map: {path}")
+                image = nib.load(path)
+                if (image.shape[:3] != reference.shape[:3] or
+                        not _affines_close(image.affine, reference.affine)):
+                    raise RuntimeError(f"DIPY {metric} map does not match the QSIPrep brain-mask grid")
+            # The workflow writes a PAM peaks object even when only tensor
+            # scalars were requested. It is outside this DTI contract and adds
+            # about 25 MB per participant, so remove it only after validating
+            # the requested maps.
+            for unrequested in produced.glob("*.pam5"):
+                unrequested.unlink()
+            record = {
+                "method": "dipy_dti", "fit_method": "WLS", "dipy_version": version,
+                "b0_threshold": 100, "fitted_shells": fitted_shells,
+                "source_preprocessed_dwi": str(dwi),
+                "source_bval": str(bval), "source_bvec": str(bvec), "source_mask": str(mask),
+                "maps": names,
+                "interpretation": "voxelwise tensor model; not bundle tractometry or evidence of disconnection",
+            }
+            (produced / "calmar-dipy-dti.json").write_text(json.dumps(record, indent=2) + "\n")
+            shutil.copy2(folder / "dipy-dti.log", produced / "calmar-dipy-dti.log")
+        except Exception as exc:
+            retained, diagnostic_error = _retain_contract_failure(
+                folder, failure_dir, ["four same-grid DIPY tensor maps and provenance"],
+                {"tensor maps": len(list(produced.glob("*param-*_dwimap.nii.gz")))})
+            raise RuntimeError(
+                f"DIPY completed, but its derivative contract failed: {exc}. "
+                f"The complete attempt was retained in {retained}{diagnostic_error or ''}.") from exc
+        try:
+            _publish(produced, final, "dipy_dti_recon", "dipy_fit_dti",
+                     os.environ["CALMAR_EXECUTION_SCRIPT"], overwrite)
+        except Exception as exc:
+            retained, diagnostic_error = _retain_publish_failure(
+                folder, failure_dir, exc, {"tensor maps": len(names)})
+            raise RuntimeError(
+                f"DIPY completed, but provenance publication failed: {exc}. "
+                f"The complete attempt was retained in {retained}{diagnostic_error or ''}.") from exc
+    qc = {
+        "png": None,
+        "metrics": {"method": "DIPY DTI", "fit": "WLS", "maps": 4,
+                    "dipy_version": version, "fitted_shells": fitted_shells},
+        "flags": ["voxelwise tensor maps require visual QC; this method does not reconstruct bundles"],
+        "complete": True,
+    }
+    _publish_result(output, "dmri_recon", request, entry, final, started, qc,
+                    tracked_files=names.values())
+
+
+def _affines_close(first, second):
+    import numpy as np
+    return bool(np.allclose(first, second, rtol=1e-5, atol=1e-4))
+
+
+def _dipy_qc_png(dwi_path, bval_path, mask_path, maps, output):
+    """Make a compact FA/MD montage from the exact published-grid inputs."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import nibabel as nib
+    import numpy as np
+
+    mask = np.asanyarray(nib.load(mask_path).dataobj) > 0
+    bvals = np.loadtxt(bval_path, ndmin=1)
+    b0 = np.flatnonzero(bvals < 100)
+    if not len(b0):
+        raise RuntimeError("DIPY QC could not find a b=0 volume")
+    dwi = nib.load(dwi_path)
+    background = np.asarray(dwi.dataobj[..., int(b0[0])], dtype=np.float32)
+    fa = np.asarray(nib.load(maps["FA"]).dataobj, dtype=np.float32)
+    md = np.asarray(nib.load(maps["MD"]).dataobj, dtype=np.float32)
+    z_used = np.where(mask)[2]
+    if not len(z_used):
+        raise RuntimeError("QSIPrep brain mask is empty")
+    slices = np.quantile(z_used, [0.3, 0.5, 0.7]).round().astype(int)
+    vmax = float(np.nanpercentile(background[mask], 99))
+    fig, axes = plt.subplots(2, 3, figsize=(10.5, 6.2), constrained_layout=True)
+    for column, z in enumerate(slices):
+        bg = np.rot90(background[:, :, z])
+        valid = np.rot90(mask[:, :, z])
+        axes[0, column].imshow(bg, cmap="gray", vmin=0, vmax=vmax)
+        axes[0, column].imshow(np.ma.masked_where(~valid, np.rot90(fa[:, :, z])),
+                               cmap="viridis", vmin=0, vmax=1, alpha=.78)
+        axes[0, column].set_title(f"FA · axial slice {z}")
+        axes[1, column].imshow(bg, cmap="gray", vmin=0, vmax=vmax)
+        axes[1, column].imshow(np.ma.masked_where(~valid, np.rot90(md[:, :, z])),
+                               cmap="magma", vmin=0, vmax=.002, alpha=.78)
+        axes[1, column].set_title(f"MD (mm²/s) · axial slice {z}")
+        for row in range(2):
+            axes[row, column].axis("off")
+    fig.suptitle("DIPY weighted-least-squares tensor fit · review alignment and artefacts")
+    fig.savefig(output, dpi=140, facecolor="white")
+    plt.close(fig)
+    checked = subprocess.run(
+        ["identify", "-format", "%m %w %h", str(output)], capture_output=True, text=True, check=True)
+    if not checked.stdout.startswith("PNG "):
+        raise RuntimeError(f"DIPY QC is not a valid PNG: {checked.stdout!r}")
+
+
+def normalize_dipy_metrics(request, output):
+    """Validate DIPY maps and publish explicit whole-brain tensor summaries."""
+    _require_slurm()
+    started = time.monotonic()
+    entry = _entry(request)
+    recon = _final_dir(request, entry, "dipy_dti")
+    record_path = recon / "calmar-dipy-dti.json"
+    if not record_path.is_file():
+        raise FileNotFoundError(f"Run the DIPY DTI reconstruction first: {record_path}")
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    if record.get("method") != "dipy_dti" or record.get("fit_method") != "WLS":
+        raise RuntimeError("Published DIPY reconstruction does not record the expected WLS tensor method")
+    import nibabel as nib
+    import numpy as np
+    mask_path = Path(record["source_mask"])
+    mask = np.asanyarray(nib.load(mask_path).dataobj) > 0
+    rows, warnings, maps = [], [], {}
+    ranges = {"FA": (0., 1., "unitless"), "MD": (0., .01, "mm²/s"),
+              "AD": (0., .01, "mm²/s"), "RD": (0., .01, "mm²/s")}
+    for metric, name in record["maps"].items():
+        path = recon / name
+        maps[metric] = path
+        values = np.asarray(nib.load(path).dataobj, dtype=np.float64)[mask]
+        lower, upper, units = ranges[metric]
+        valid = np.isfinite(values) & (values >= lower) & (values <= upper)
+        if not valid.any():
+            raise RuntimeError(f"DIPY {metric} map has no finite physical values inside the brain mask")
+        fraction = float(valid.mean() * 100.)
+        if fraction < 98.:
+            warnings.append(f"{metric}: only {fraction:.1f}% of brain-mask voxels are in the physical range")
+        measured = values[valid]
+        rows.append({
+            "metric": metric, "median": float(np.median(measured)),
+            "p05": float(np.percentile(measured, 5)), "p95": float(np.percentile(measured, 95)),
+            "valid_voxels": int(valid.sum()), "valid_brain_pct": fraction,
+            "physical_units": units,
+        })
+    table = pd.DataFrame(rows).sort_values("metric", kind="stable")
+    table_path, metadata_path = tensor_metrics_paths(request["dataset"], request["config"], entry)
+    metrics_dir = table_path.parent
+    metrics_dir.parent.mkdir(parents=True, exist_ok=True)
+    overwrite = bool(request["config"].get(
+        "DMRI_OVERWRITE", request["config"].get("OVERWRITE", False)))
+    assessment = entry.get("dmri_assessment") or {}
+    metadata = {
+        "subject": entry["subject"], "session": entry.get("session"),
+        "anatomical_session": entry.get("anatomical_session"),
+        "method": "dipy_dti", "fit_method": "WLS",
+        "software": f"DIPY {record['dipy_version']}",
+        "preprocessor": "QSIPrep-preprocessed DWI", "b0_threshold": record["b0_threshold"],
+        "n_directions": assessment.get("n_directions"),
+        "source_shells": assessment.get("shells"),
+        "fitted_shells": record.get("fitted_shells"),
+        "qc_status": "requires_visual_review",
+        "warnings": [
+            *warnings,
+            "whole-brain tensor summaries are descriptive and are not bundle tractometry",
+            "stroke, crossing fibres and residual distortion can bias DTI measures",
+        ],
+        "source_maps": {key: str(value) for key, value in maps.items()},
+    }
+    with tempfile.TemporaryDirectory(prefix="dipy_metrics.attempt.", dir=metrics_dir.parent) as folder:
+        temporary = Path(folder) / "dipy_metrics"
+        temporary.mkdir()
+        temporary_table = temporary / table_path.name
+        temporary_metadata = temporary / metadata_path.name
+        table.to_csv(temporary_table, sep="\t", index=False)
+        load_tensor_metrics(temporary_table)
+        temporary_metadata.write_text(json.dumps(metadata, indent=2, default=str) + "\n")
+        qc_name = table_path.name.replace("_metrics.tsv", "_qc.png")
+        _dipy_qc_png(record["source_preprocessed_dwi"], record["source_bval"],
+                     mask_path, maps, temporary / qc_name)
+        _publish(temporary, metrics_dir, "dipy_dti_metrics",
+                 os.environ.get("CALMAR_PYTHON", "python"),
+                 os.environ["CALMAR_EXECUTION_SCRIPT"], overwrite)
+    qc_path = metrics_dir / qc_name
+    qc = {
+        "png": str(qc_path),
+        "metrics": {row["metric"]: row["median"] for row in rows},
+        "flags": metadata["warnings"], "complete": True,
+    }
+    _publish_result(output, "dmri_metrics", request, entry, metrics_dir, started, qc,
+                    tracked_files=(table_path.name, metadata_path.name, qc_name))
+
+
 def reconstruct(request, output):
     _require_slurm()
+    if dmri_method(request["config"]) == "dipy_dti":
+        return reconstruct_dipy(request, output)
     started = time.monotonic()
     entry = _entry(request)
     config = request["config"]
@@ -812,6 +1099,8 @@ def _scalar_rows(recon):
 
 def normalize_metrics(request, output):
     _require_slurm()
+    if dmri_method(request["config"]) == "dipy_dti":
+        return normalize_dipy_metrics(request, output)
     started = time.monotonic()
     entry = _entry(request)
     recon = _final_dir(request, entry, "qsirecon")
@@ -877,6 +1166,8 @@ def main():
         request["config"]["DMRI_HMC_METHOD"] = os.environ["CALMAR_DMRI_HMC_METHOD"]
     if os.environ.get("CALMAR_DMRI_RECON_SPEC"):
         request["config"]["DMRI_RECON_SPEC"] = os.environ["CALMAR_DMRI_RECON_SPEC"]
+    if os.environ.get("CALMAR_DMRI_METHOD"):
+        request["config"]["DMRI_METHOD"] = os.environ["CALMAR_DMRI_METHOD"]
     if args.output.exists():
         raise FileExistsError(args.output)
     if args.stage == "dmri_recon_recover":

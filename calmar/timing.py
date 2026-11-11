@@ -2,6 +2,7 @@
 
 import re
 import time
+from collections import Counter
 from contextlib import contextmanager
 from html import escape
 
@@ -29,6 +30,24 @@ TITLES = {
     74: 'Preview and export results', 75: 'Export atlas results',
     77: 'Prepare interpretation', 79: 'Choose report inputs',
     81: 'Generate participant report', 85: 'Functional decoding', 87: 'Available outputs',
+}
+
+
+BATCH_TITLES = {
+    'acquisition': 'Input acquisition',
+    'brain': 'Brain extraction',
+    'linda': 'LINDA lesion segmentation',
+    'synthstroke': 'SynthStroke lesion segmentation',
+    'registration': 'Template registration',
+    'openads': 'OpenADS acute lesion segmentation',
+    'manual': 'Manual mask preparation',
+    'dmri_preproc': 'Diffusion preprocessing (QSIPrep)',
+    'dmri_recon': 'Diffusion reconstruction',
+    'dmri_metrics': 'Diffusion metrics',
+    'brain_health_anatomy': 'Structural brain-health analysis',
+    'brain_health_metrics': 'Brain-health metrics',
+    'bcb': 'BCBToolkit disconnectome',
+    'deepdisco': 'DeepDisco disconnectome',
 }
 
 
@@ -73,6 +92,21 @@ def format_seconds(seconds):
     return f'{int(seconds // 3600)} h {int(seconds % 3600 // 60)} min'
 
 
+def batch_title(label):
+    """Human-readable batch name while stable stage keys remain internal."""
+    return BATCH_TITLES.get(label, str(label).replace('_', ' ').strip().capitalize())
+
+
+def _batch_summary(record):
+    records = list(record['participants'].values())
+    participants = {(row['subject'], row['session']) for row in records}
+    statuses = Counter(str(row['status']).strip() for row in records)
+    status = ' · '.join(
+        f'{name} ({count})' if count > 1 else name
+        for name, count in statuses.items()) or 'No operations'
+    return len(participants), status, sum(row['seconds'] for row in records)
+
+
 def batch_html(label, record):
     records = list(record['participants'].values())
     def table_rows(records):
@@ -93,11 +127,11 @@ def batch_html(label, record):
             total['status'] = ', '.join(sorted(total['statuses']))
         details = '<details><summary>Mask and atlas breakdown</summary>' + header + table_rows(records) + '</table></details>'
         records = list(summary.values())
-    return (f'<h4>{escape(label)} — batch timings</h4>'
+    return (f'<h4>{escape(batch_title(label))}</h4>'
             + (header + table_rows(records) + '</table>' if records else '<p>No participant operations ran.</p>')
             + details +
-            f'<p>Step elapsed time: <b>{format_seconds(record["seconds"])}</b>. '
-            'Cached rows measure the cache check and any preparation, not the original processing time.</p>')
+            f'<p>Notebook elapsed time: <b>{format_seconds(record["seconds"])}</b>. '
+            'For reused results, the participant time is only the reuse check—not the original analysis.</p>')
 
 
 class BatchTiming:
@@ -141,21 +175,44 @@ def show_timings(namespace, min_seconds=.5, top=None, slowest_first=False):
     if slowest_first:
         rows.sort(key=lambda item: item[1], reverse=True)
     body = ''.join(f'<tr><td>{escape(step_title(key))}</td><td>{format_seconds(sec)}</td></tr>' for key, sec in rows)
-    html = ('<h4>Step timings</h4><table><tr><th>Step</th><th>Time</th></tr>' + body +
-            f'<tr><td><b>Total (latest run of each step)</b></td><td>{format_seconds(sum(timings.values()))}</td></tr></table>'
-            '<p>Includes computation and waiting inside each step. Reruns replace the earlier duration. '
-            'Browser image loading and time spent reviewing controls are not included.</p>')
-    for label, record in namespace.get('BATCH_TIMINGS', {}).items():
-        html += '<details><summary>' + escape(label) + ' — participants</summary>' + batch_html(label, record) + '</details>'
+    total = format_seconds(sum(timings.values()))
+    html = ('<h4>Workflow timing</h4>'
+            '<p>Times are the most recent recorded durations. They include computation and any time waiting '
+            'for Slurm. Running a step again replaces its previous time. Time spent viewing images or choosing '
+            'controls is not measured.</p>'
+            f'<details><summary>Notebook steps · {escape(total)} total</summary>'
+            '<table><tr><th>Step</th><th>Time</th></tr>' + body +
+            f'<tr><td><b>Total</b></td><td>{escape(total)}</td></tr></table></details>')
+    batches = namespace.get('BATCH_TIMINGS', {})
+    if batches:
+        html += ('<h4>Batch analyses</h4><table><tr><th>Analysis</th><th>Participants</th>'
+                 '<th>Latest result</th><th>Recorded time</th></tr>')
+        for label, record in batches.items():
+            participants, status, seconds = _batch_summary(record)
+            html += ('<tr>'
+                     f'<td>{escape(batch_title(label))}</td>'
+                     f'<td>{participants}</td>'
+                     f'<td>{escape(status)}</td>'
+                     f'<td>{format_seconds(seconds)}</td></tr>')
+        html += ('</table><p>Recorded time is the sum of the latest participant rows. For cached or reused '
+                 'results, it measures only the check and preparation—not the original analysis.</p>'
+                 f'<details><summary>Participant-level details · {len(batches)} '
+                 f'{"analysis" if len(batches) == 1 else "analyses"}</summary>')
+        for label, record in batches.items():
+            participants, status, seconds = _batch_summary(record)
+            summary = (f'{batch_title(label)} · {participants} participant'
+                       f'{"s" if participants != 1 else ""} · {status} · {format_seconds(seconds)}')
+            html += '<details><summary>' + escape(summary) + '</summary>' + batch_html(label, record) + '</details>'
+        html += '</details>'
     totals = {}
-    for record in namespace.get('BATCH_TIMINGS', {}).values():
+    for record in batches.values():
         for row in record['participants'].values():
             key = (row['subject'], row['session'])
             totals[key] = totals.get(key, 0.) + row['seconds']
     if totals:
-        html += '<h4>Batch time per participant</h4><table><tr><th>Participant / session</th><th>Time</th></tr>'
+        html += '<h4>Recorded time by participant</h4><table><tr><th>Participant / session</th><th>Time</th></tr>'
         html += ''.join(f'<tr><td>{escape(" ".join(key).strip())}</td><td>{format_seconds(sec)}</td></tr>' for key, sec in totals.items())
-        html += '</table><p>Sum of the latest recorded batch operations; shared setup is excluded.</p>'
+        html += '</table><p>Sum of the latest participant rows across analyses; shared setup is excluded.</p>'
     display(HTML(html))
 
 

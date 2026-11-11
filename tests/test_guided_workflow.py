@@ -120,8 +120,15 @@ class GuidedWorkflowTests(unittest.TestCase):
             'calmar-step-55', 'calmar-step-56', 'calmar-step-57', 'calmar-step-60',
         }
         referenced = {cell_id for references, _ in actual.values() for cell_id in references}
-        canonical_code = {cell['id'] for cell in canonical['cells']
-                          if cell.get('cell_type') == 'code'}
+        # A live detailed notebook may contain the tiny continuation cell that
+        # the navigation widget inserts after a checkpoint. It is execution
+        # state, not a canonical workflow step for the guided notebook.
+        canonical_code = {
+            cell['id'] for cell in canonical['cells']
+            if cell.get('cell_type') == 'code'
+            and not ''.join(cell.get('source', [])).lstrip().startswith('%calmar_continue ')
+        }
+        excluded &= canonical_code
         self.assertTrue(referenced.isdisjoint(excluded))
         self.assertEqual(canonical_code, referenced | excluded)
 
@@ -130,6 +137,15 @@ class GuidedWorkflowTests(unittest.TestCase):
         self.assertIn('show_step(dwi_openads, DWI_STUDY', source)
         self.assertIn('viewer=False', source)
         self.assertIn('open_qc_review(', source)
+
+    def test_direct_dmri_uses_one_shared_visual_panel_in_single_and_batch_paths(self):
+        single = ''.join(source_cell('calmar-single-optional')['source'])
+        batch = ''.join(source_cell('calmar-direct-dmri')['source'])
+        self.assertIn('show_dmri_visuals(', single)
+        self.assertIn('title="Test participant diffusion visual review"', single)
+        self.assertNotIn('show_step(test_dmri_metrics, title="Test participant diffusion metrics", images=True', single)
+        self.assertIn('show_dmri_visuals(DMRI_SUBJECTS, DMRI_STUDY', batch)
+        self.assertIn('already_shown=_already_shown', batch)
 
     def test_optional_analyses_run_in_single_test_and_are_not_repeated_in_batch(self):
         guided = json.loads((ROOT/'calmar-guided.ipynb').read_text())

@@ -27,6 +27,18 @@ from .study import dataset_for_entry
 MIN_TENSOR_DIRECTIONS = 6
 MIN_REPORT_DIRECTIONS = 30
 DMRI_SUBDIR = "derivatives/calmar-dmri"
+DMRI_METHODS = {
+    "qsirecon": "QSIRecon bundle tractometry",
+    "dipy_dti": "DIPY diffusion tensor maps",
+}
+
+
+def dmri_method(config):
+    """Selected direct-dMRI reconstruction; preprocessing remains shared."""
+    method = config.get("DMRI_METHOD", "qsirecon")
+    if method not in DMRI_METHODS:
+        raise ValueError(f"DMRI_METHOD must be one of {list(DMRI_METHODS)}, not {method!r}")
+    return method
 
 
 def _numbers(path):
@@ -63,6 +75,17 @@ def _shells(values, b0_threshold=100):
     """Readable shell centres; rounding avoids pretending scanner b-values are exact."""
     return sorted({0 if value < b0_threshold else int(round(value / 50.0) * 50)
                    for value in values})
+
+
+def bvalue_shells(values, b0_threshold=100):
+    """Public shell classification shared by discovery and execution checks."""
+    return _shells(values, b0_threshold)
+
+
+def dmri_option_shells(option):
+    """Union of shells across every series QSIPrep will combine."""
+    series = option.get("series") or (option,)
+    return sorted({shell for item in series for shell in item.get("shells", ())})
 
 
 def _unique_directions(bvals, vectors, b0_threshold=100, angular_tolerance_degrees=3.0):
@@ -177,7 +200,9 @@ def assess_dwi_sessions(entry, *, min_report_directions=MIN_REPORT_DIRECTIONS):
             "subject": entry["subject"], "session": session,
             "same_session": session == entry.get("session"), "series": preprocessing_series,
             "primary": primary, "reverse": reverse,
-            "n_directions": primary["n_directions"], "shells": primary["shells"],
+            "n_directions": primary["n_directions"],
+            "shells": sorted({shell for item in preprocessing_series
+                              for shell in item.get("shells", ())}),
             "has_reverse_phase": reverse is not None, "warnings": warnings,
         })
     return sorted(sessions, key=lambda item: (
@@ -199,6 +224,43 @@ def tractometry_paths(dataset, config, entry):
     folder = direct_diffusion_dir(dataset, config, entry) / "metrics"
     table = folder / f"{stem}_desc-direct_tractometry.tsv"
     return table, table.with_suffix(".json")
+
+
+def tensor_metrics_paths(dataset, config, entry):
+    """Normalized whole-brain DIPY-DTI summary and its method metadata."""
+    selected = entry.get("dmri_analysis") or entry
+    stem = "_".join(filter(None, [selected["subject"], selected.get("session")]))
+    folder = direct_diffusion_dir(dataset, config, entry) / "dipy_metrics"
+    table = folder / f"{stem}_model-DIPYDTI_desc-tensor_metrics.tsv"
+    return table, table.with_suffix(".json")
+
+
+TENSOR_METRIC_COLUMNS = {
+    "metric", "median", "p05", "p95", "valid_voxels", "valid_brain_pct",
+    "physical_units",
+}
+
+
+def load_tensor_metrics(path):
+    """Validate CALMaR's compact DIPY-DTI summary contract."""
+    table = pd.read_csv(path, sep="\t")
+    missing = TENSOR_METRIC_COLUMNS - set(table.columns)
+    if missing:
+        raise ValueError(f"tensor metrics table lacks: {', '.join(sorted(missing))}")
+    if table.empty or set(table["metric"]) != {"FA", "MD", "AD", "RD"}:
+        raise ValueError("tensor metrics must contain exactly FA, MD, AD and RD")
+    for column in ("median", "p05", "p95", "valid_voxels", "valid_brain_pct"):
+        table[column] = pd.to_numeric(table[column], errors="raise")
+    if not table["valid_brain_pct"].between(0, 100).all():
+        raise ValueError("valid_brain_pct must be between 0 and 100")
+    fa = table.loc[table["metric"] == "FA", ["median", "p05", "p95"]]
+    if not fa.stack().between(0, 1).all():
+        raise ValueError("FA summaries must be between 0 and 1")
+    diffusivity = table.loc[table["metric"].isin(["MD", "AD", "RD"]),
+                            ["median", "p05", "p95"]]
+    if not diffusivity.stack().between(0, 0.01).all():
+        raise ValueError("diffusivity summaries must be in mm²/s (0 to 0.01)")
+    return table
 
 
 TRACTOMETRY_COLUMNS = {
@@ -246,10 +308,14 @@ def direct_diffusion_section(dataset, config, entry):
     Returns ``None`` when diffusion tract-microstructure analysis was neither selected nor produced, so
     legacy reports remain unchanged.
     """
-    table_path, metadata_path = tractometry_paths(dataset, config, entry)
     selected = bool(entry.get("dmri_analysis"))
     if not selected:
         return None
+    selected_config = {**config, "DMRI_METHOD": entry["dmri_analysis"].get(
+        "method", config.get("DMRI_METHOD", "qsirecon"))}
+    if dmri_method(selected_config) == "dipy_dti":
+        return _tensor_diffusion_section(dataset, selected_config, entry)
+    table_path, metadata_path = tractometry_paths(dataset, selected_config, entry)
     if not table_path.is_file():
         return ("<p class='section-intro'>Directional diffusion MRI was selected for this participant, but no "
                 "validated tractometry table is available yet. The normative BCB/DeepDisco section remains "
@@ -305,4 +371,53 @@ def direct_diffusion_section(dataset, config, entry):
         + (f" Acquisition: {acquisition_text}." if acquisition_text else "") + "</p>" + warning_html +
         "<div class='table-wrap'><table><thead><tr><th>Tract</th><th>Side</th><th>Lesion overlap</th>"
         "<th>Summary</th><th>FA</th><th>MD (mm²/s)</th><th>Valid tract voxels</th></tr></thead><tbody>" +
+        "".join(rows) + "</tbody></table></div>")
+
+
+def _tensor_diffusion_section(dataset, config, entry):
+    """Render DIPY tensor results without mislabelling them as tractometry."""
+    table_path, metadata_path = tensor_metrics_paths(dataset, config, entry)
+    if not table_path.is_file():
+        return ("<p class='section-intro'>DIPY diffusion-tensor analysis was selected for this participant, "
+                "but no validated tensor summary is available yet. QSIRecon bundle tractometry was not "
+                "selected and is not implied by this missing result.</p>")
+    table = load_tensor_metrics(table_path)
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
+    except (OSError, json.JSONDecodeError):
+        metadata = {"warnings": ["the tensor metadata sidecar could not be read"]}
+    labels = {
+        "FA": "Fractional anisotropy", "MD": "Mean diffusivity",
+        "AD": "Axial diffusivity", "RD": "Radial diffusivity",
+    }
+    rows = []
+    for metric in ("FA", "MD", "AD", "RD"):
+        row = table.loc[table["metric"] == metric].iloc[0]
+        number = "{:.3f}" if metric == "FA" else "{:.6g}"
+        rows.append(
+            "<tr>" + f"<td>{labels[metric]}</td><td>{number.format(row['median'])}</td>" +
+            f"<td>{number.format(row['p05'])}&ndash;{number.format(row['p95'])}</td>" +
+            f"<td>{row['valid_brain_pct']:.1f}%</td><td>{escape(str(row['physical_units']))}</td></tr>")
+    warnings = list(metadata.get("warnings") or [])
+    warning_html = ("<p class='method-note'><strong>Review flags:</strong> " +
+                    escape("; ".join(map(str, warnings))) + ".</p>") if warnings else ""
+    acquisition = []
+    if metadata.get("n_directions") is not None:
+        acquisition.append(f"{metadata['n_directions']} directions")
+    fitted_shells = metadata.get("fitted_shells") or metadata.get("shells")
+    if fitted_shells:
+        acquisition.append("fitted shell " + "/".join(map(str, fitted_shells)))
+    if metadata.get("software"):
+        acquisition.append(str(metadata["software"]))
+    return (
+        "<p class='section-intro'>These values come from a DIPY weighted-least-squares diffusion-tensor "
+        "fit to this participant&rsquo;s QSIPrep-preprocessed acquisition. This is a second direct-dMRI "
+        "method, not QSIRecon bundle tractometry and not a normative disconnectome.</p>"
+        "<p class='method-note'>The table summarizes valid voxels inside the QSIPrep brain mask. Stroke, "
+        "partial volume, crossing fibres and residual distortion can change tensor values; review the saved "
+        "FA/MD QC image before interpretation."
+        + (" Acquisition: " + escape(" · ".join(acquisition)) + "." if acquisition else "") +
+        "</p>" + warning_html +
+        "<div class='table-wrap'><table><thead><tr><th>Tensor measure</th><th>Median</th>"
+        "<th>5th&ndash;95th percentile</th><th>Valid brain voxels</th><th>Units</th></tr></thead><tbody>" +
         "".join(rows) + "</tbody></table></div>")

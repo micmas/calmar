@@ -1,19 +1,65 @@
+import re
 from pathlib import Path
+
 import pandas as pd
 
 from calmar.anatomy_labels import label_table, roi_hemisphere
+from calmar.methods import TOOLS
 from calmar.timing import step_key, step_title
 from calmar.guided import source_cell
 
 
-def test_citation_resources_cover_both_imaging_routes_and_datasets():
+def test_citation_resources_cover_all_imaging_routes_and_collapsible_datasets():
     import json
     notebook = json.loads((Path(__file__).resolve().parents[1]/'lesion-interpretation-pipeline.ipynb').read_text())
     source = ''.join(next(c for c in notebook['cells'] if c['id'] == 'calmar-citations')['source'])
-    for required in ('openadscpu/1.0.0', '10.1038/s43856-021-00062-8',
-                     'github.com/farialab/OpenADS', '10.5281/zenodo.7153326',
-                     '10.1038/s41597-022-01875-5'):
+    module_pins = set(re.findall(
+        r'\b[a-z][a-z0-9_-]*/[0-9][A-Za-z0-9.]*', ' '.join(TOOLS.values())))
+    for required in (*module_pins, '10.1038/s43856-021-00062-8',
+                     'github.com/farialab/OpenADS',
+                     '10.1038/s41592-021-01185-5',
+                     '10.3389/fninf.2014.00008',
+                     '10.1073/pnas.2216399120', '10.1016/j.scib.2024.01.034',
+                     '10.1038/s41598-026-73385-y',
+                     '10.18112/openneuro.ds004884.v1.0.2',
+                     '10.5281/zenodo.7153326', '10.1038/s41597-022-01875-5'):
         assert required in source
+    assert source.count('<details') == source.count('</details>')
+    dataset_heading = source.index('#### Datasets')
+    blocks = re.findall(r'<details\b.*?</details>', source[dataset_heading:], re.DOTALL)
+    dataset = next(block for block in blocks
+                   if '10.18112/openneuro.ds004884.v1.0.2' in block
+                   and '10.5281/zenodo.7153326' in block)
+    assert '<summary' in dataset and 'ARC' in dataset and 'ISLES 2022' in dataset
+    recon_script = (Path(__file__).resolve().parents[1]/'src/analysis_46_dmri_recon.sh').read_text()
+    dipy_pin = re.search(r'^export CALMAR_DIPY_VERSION=([0-9.]+)$',
+                         recon_script, re.MULTILINE).group(1)
+    assert f'`dipy=={dipy_pin}`' in source
+    assert f'Python package {dipy_pin})' in TOOLS['dmri_recon']
+    requirements = [line.split('#', 1)[0].strip() for line in
+                    (Path(__file__).resolve().parents[1]/'requirements.txt').read_text().splitlines()]
+    assert f'dipy=={dipy_pin}' in requirements
+
+
+def test_citation_cell_identifies_the_pinned_approved_kb_export():
+    import json
+    root = Path(__file__).resolve().parents[1]
+    notebook = json.loads((root/'lesion-interpretation-pipeline.ipynb').read_text())
+    source = ''.join(next(c for c in notebook['cells'] if c['id'] == 'calmar-citations')['source'])
+    update_script = (root/'src/analysis_51_update_kb.sh').read_text()
+    pins = dict(re.findall(
+        r'^(EXPECTED_COMMIT|EXPECTED_CONTENT_COMMIT|EXPECTED_CONTENT_DATE|EXPECTED_DIGEST|REFERENCE_EXPORTED_ON)="([^"]+)"$',
+        update_script, re.MULTILINE))
+    assert set(pins) == {'EXPECTED_COMMIT', 'EXPECTED_CONTENT_COMMIT', 'EXPECTED_CONTENT_DATE',
+                         'EXPECTED_DIGEST', 'REFERENCE_EXPORTED_ON'}
+    for value in (pins['EXPECTED_COMMIT'][:7], pins['EXPECTED_CONTENT_COMMIT'],
+                  pins['EXPECTED_CONTENT_DATE'], pins['EXPECTED_DIGEST'],
+                  pins['REFERENCE_EXPORTED_ON']):
+        assert value in source
+    assert 'statuses: approved' in source
+    current = json.loads((root/'stroke-aphasia-kb/export/stroke-aphasia-kb.json').read_text())['version']
+    assert current['contentDigest'] == pins['EXPECTED_DIGEST']
+    assert current['statuses'] == ['approved']
 
 
 def test_timing_labels_use_titles_and_current_cell_numbers():

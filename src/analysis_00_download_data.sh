@@ -6,7 +6,8 @@
 #SBATCH --mem=4G
 #SBATCH --cpus-per-task=2
 
-# Acquisition record for the ISLES 2022 dataset (Zenodo record 7153326).
+# Acquisition record for the ISLES 2022 dataset (official release 2.3,
+# Zenodo record 7153326).
 # The dataset was originally materialized by lesion-segmentation-benchmark.ipynb
 # (section 4); this script preserves the same acquisition so it is reproducible
 # without the notebook. Idempotent: skips if the dataset is already extracted.

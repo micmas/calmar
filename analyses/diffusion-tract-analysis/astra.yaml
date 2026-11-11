@@ -1,17 +1,19 @@
 id: diffusion_tract_analysis
 version: "0.0.14"
-name: Optional lesion-aware diffusion and tractometry
+name: Optional lesion-aware direct diffusion analysis
 description: >
   Opt-in analysis of participant directional diffusion MRI, separate from the
   trace-DWI/ADC OpenADS lesion route and from BCBToolkit/DeepDisco normative
   disconnectomes. Discovery requires readable b-values, b-vectors and JSON
   metadata, at least one b=0 volume and at least 30 distinct diffusion directions
   before a series can contribute to a participant report. QSIPrep performs
-  lesion-aware preprocessing; QSIRecon produces experimental patient-specific
-  bundle tractometry. A missing or low-count bundle is treated as a tracking/QC
-  outcome, not proof of anatomical disconnection. This specification records
-  the implemented workflow; it contains no scientific findings because no new
-  dMRI processing has yet been executed and visually reviewed.
+  lesion-aware preprocessing. The explicitly selected second stage is either
+  QSIRecon experimental patient-specific bundle tractometry or DIPY
+  weighted-least-squares diffusion-tensor maps and whole-brain summaries.
+  These outputs are never combined or relabelled as one another. A missing or
+  low-count bundle is treated as a tracking/QC outcome, not proof of anatomical
+  disconnection. Findings are recorded only after the selected method's saved
+  visual QC has been inspected.
 inputs:
   - id: scheduler_request
     type: data
@@ -36,6 +38,24 @@ inputs:
       anatomical normalization. The exact file, source and sessions are recorded
       per participant; downstream reporting retains a visual-QC warning.
 decisions:
+  analysis_method:
+    label: Direct diffusion reconstruction method
+    rationale: >
+      QSIRecon bundle tractometry and DIPY voxelwise DTI answer different
+      questions. The notebook therefore exposes them as alternative complete
+      analysis paths after shared QSIPrep preprocessing, rather than treating
+      DIPY as an extra QSIRecon metric.
+    default: qsirecon
+    options:
+      qsirecon:
+        label: QSIRecon bundle tractometry (qsirecon)
+        description: Produces participant-specific bundles and bundle FA/MD summaries.
+      dipy_dti:
+        label: DIPY weighted-least-squares tensor maps (dipy_dti)
+        description: >
+          Single-shell voxelwise FA, MD, AD and RD maps with a whole-brain
+          summary and saved FA/MD visual-QC montage; no bundles. Multi-shell
+          sessions are refused rather than fitting one tensor across high-b shells.
   motion_eddy_correction:
     label: QSIPrep head-motion and eddy-current correction
     rationale: >
@@ -53,6 +73,7 @@ decisions:
         label: SHORELine (shoreline; deprecated upstream)
   reconstruction:
     label: QSIRecon bundle reconstruction specification
+    when: [analysis_method.qsirecon]
     rationale: >
       The current acquisitions are mainly single-shell and 40-64 direction;
       SS3T AutoTrack is offered as an experimental tractometry workflow, with
@@ -82,6 +103,7 @@ outputs:
         memory: 48 GB
         time_limit: "12:00:00"
   - id: dmri_recon
+    when: [analysis_method.qsirecon]
     type: data
     format: directory
     description: >
@@ -89,15 +111,16 @@ outputs:
       bundle streamlines, tensor scalar summaries and HTML report.
       Bundle absence remains an experimental tracking result requiring visual QC.
     inputs: [scheduler_request, dmri_preproc]
-    decisions: [reconstruction]
+    decisions: [analysis_method, reconstruction]
     recipe:
-      command: CALMAR_DMRI_RECON_SPEC={decisions.reconstruction} bash src/analysis_46_dmri_recon.sh {inputs.scheduler_request} {output}
+      command: CALMAR_DMRI_METHOD={decisions.analysis_method} CALMAR_DMRI_RECON_SPEC={decisions.reconstruction} bash src/analysis_46_dmri_recon.sh {inputs.scheduler_request} {output}
       container: qsirecon:26.0.1
       resources:
         cpus: 8
         memory: 48 GB
         time_limit: "12:00:00"
   - id: dmri_metrics
+    when: [analysis_method.qsirecon]
     type: table
     format: directory
     description: >
@@ -106,10 +129,12 @@ outputs:
       Lesion-overlap and valid-voxel fields remain explicitly missing until a
       same-grid implementation has been validated; they are never imputed.
     inputs: [scheduler_request, dmri_recon]
+    decisions: [analysis_method]
     recipe:
-      command: bash src/analysis_47_dmri_metrics.sh {inputs.scheduler_request} {output}
+      command: CALMAR_DMRI_METHOD={decisions.analysis_method} bash src/analysis_47_dmri_metrics.sh {inputs.scheduler_request} {output}
       container: python:3.13.15
   - id: participant_report_evidence
+    when: [analysis_method.qsirecon]
     type: report
     format: html
     description: >
@@ -117,3 +142,77 @@ outputs:
       participant measurements, shows missing quantities explicitly, carries QC
       warnings and remains separate from BCB/DeepDisco disconnection evidence.
     inputs: [dmri_metrics]
+  - id: dipy_dti_recon
+    when: [analysis_method.dipy_dti]
+    type: data
+    format: directory
+    description: >
+      Published scheduler receipt pointing to the separately atomic DIPY 1.12.1
+      weighted-least-squares DTI derivative. It contains FA, MD, AD and RD maps
+      on the QSIPrep DWI grid plus the exact source and software record; it does
+      not contain or imply tract bundles.
+    inputs: [scheduler_request, dmri_preproc]
+    decisions: [analysis_method]
+    recipe:
+      command: CALMAR_DMRI_METHOD={decisions.analysis_method} bash src/analysis_46_dmri_recon.sh {inputs.scheduler_request} {output}
+      container: dipy:1.12.1
+      resources:
+        cpus: 8
+        memory: 48 GB
+        time_limit: "12:00:00"
+  - id: dipy_dti_metrics
+    when: [analysis_method.dipy_dti]
+    type: table
+    format: directory
+    description: >
+      Published atomic directory containing validated whole-brain FA, MD, AD
+      and RD median and percentile summaries, method metadata, and the PNG
+      FA/MD montage that must be reviewed before interpretation.
+    inputs: [scheduler_request, dipy_dti_recon]
+    decisions: [analysis_method]
+    recipe:
+      command: CALMAR_DMRI_METHOD={decisions.analysis_method} bash src/analysis_47_dmri_metrics.sh {inputs.scheduler_request} {output}
+      container: python:3.13.15
+  - id: participant_tensor_report_evidence
+    when: [analysis_method.dipy_dti]
+    type: report
+    format: html
+    description: >
+      Optional direct-dMRI report section identifying DIPY DTI as a voxelwise
+      second method, listing the four validated tensor summaries and preserving
+      its visual-QC and stroke-confound warnings.
+    inputs: [dipy_dti_metrics]
+findings:
+  m2051_dipy_dti_validation:
+    label: M2051 DIPY-DTI validation
+    claim: >
+      The DIPY 1.12.1 weighted-least-squares tensor path completed for
+      sub-M2051 ses-284 after the existing QSIPrep derivative and published
+      four maps plus a valid PNG QC montage. Within the QSIPrep brain mask the
+      medians were FA 0.13232 (unitless), MD 0.0010017, AD 0.0012772 and
+      RD 0.0009060 mm2/s; these are descriptive validation values, not
+      normative findings.
+    created_at: 2026-11-11T02:25:00Z
+    scope: >
+      One 64-direction b=0/1000 participant used to validate execution,
+      serialization, physical-unit checks and visual-QC generation. It does
+      not establish clinical validity or compare DIPY with QSIRecon.
+    tags: [validation, diffusion]
+    evidence:
+      - id: m2051_tensor_metrics
+        artifact: dipy_dti_metrics
+        snapshot: data/ds004884/derivatives/calmar-dmri/sub-M2051/ses-284/dwi/dipy_metrics/sub-M2051_ses-284_model-DIPYDTI_desc-tensor_metrics.tsv
+      - id: m2051_tensor_qc
+        artifact: dipy_dti_metrics
+        snapshot: data/ds004884/derivatives/calmar-dmri/sub-M2051/ses-284/dwi/dipy_metrics/sub-M2051_ses-284_model-DIPYDTI_desc-tensor_qc.png
+    notes: >
+      Slurm jobs 157 and 158 completed 0:0. The saved 1470x868 PNG was verified
+      as a real PNG and re-inspected on 2026-11-11; FA/MD alignment and tensor
+      structure were plausible. A broad high-MD region remains visible and
+      requires participant-level interpretation; it was not clipped or relabelled.
+      Job 157 used an earlier analysis_46 script (SHA-256
+      54eb9084274fc4eccdfe02fe48f7d8360f81a39c8bb29f01129d427bd451ec9e) that
+      unnecessarily loaded qsirecon/26.0.1, although its recorded producing
+      binary was the host dipy_fit_dti 1.12.1. The current recipe removes that
+      unused module; this note preserves the environment that produced the
+      cited artifact rather than attributing it retrospectively to the new script.

@@ -173,9 +173,17 @@ def _result_stamps(result):
             path = Path(output['path'])
             if path.is_dir():
                 paths.update(path/name for name in output.get('images', {}))
-                for marker in ('calmar-selection.json', 'calmar-reconstruction.json'):
+                for marker in ('calmar-selection.json', 'calmar-reconstruction.json',
+                               'calmar-dipy-dti.json'):
                     if (path/marker).is_file():
                         paths.add(path/marker)
+                dipy_record = path/'calmar-dipy-dti.json'
+                if dipy_record.is_file():
+                    try:
+                        recorded = json.loads(dipy_record.read_text())
+                        paths.update(path/name for name in (recorded.get('maps') or {}).values())
+                    except (OSError, ValueError, AttributeError):
+                        return None
                 selections = [path/'calmar-selection.json', path.parent/'qsiprep'/'calmar-selection.json']
                 selection = next((candidate for candidate in selections if candidate.is_file()), None)
                 if selection is not None:
@@ -210,9 +218,17 @@ def _result_output_stamps(result):
             path = Path(output['path'])
             if path.is_dir():
                 paths.update(path/name for name in output.get('images', {}))
-                for marker in ('calmar-selection.json', 'calmar-reconstruction.json'):
+                for marker in ('calmar-selection.json', 'calmar-reconstruction.json',
+                               'calmar-dipy-dti.json'):
                     if (path/marker).is_file():
                         paths.add(path/marker)
+                dipy_record = path/'calmar-dipy-dti.json'
+                if dipy_record.is_file():
+                    try:
+                        recorded = json.loads(dipy_record.read_text())
+                        paths.update(path/name for name in (recorded.get('maps') or {}).values())
+                    except (OSError, ValueError, AttributeError):
+                        return None
             else:
                 paths.add(path)
             provenance = Path(str(path) + '.prov.json')
@@ -403,8 +419,29 @@ def _identity_key(stage, payload):
                 'MANUAL_MASK_SPACE', 'MANUAL_MASK_REF', 'DERIVATIVES_SUBDIR',
                 'SYNTHSTROKE_SUBDIR', 'REGISTRATION_SUBDIR', 'OPENADS_SUBDIR',
             }
+            stage_keys = {
+                'dmri_preproc': {
+                    'DMRI_SUBDIR', 'DMRI_MASK_SOURCE', 'DMRI_OUTPUT_RESOLUTION',
+                    'DMRI_HMC_METHOD',
+                    # Keep the historical receipt key stable. Before dMRI
+                    # methods were selectable, preprocessing identities also
+                    # contained this downstream setting. DMRI_METHOD itself is
+                    # intentionally excluded so QSIRecon and DIPY share the
+                    # same validated QSIPrep derivative.
+                    'DMRI_RECON_SPEC',
+                },
+                'dmri_recon': {
+                    'DMRI_SUBDIR', 'DMRI_METHOD', 'DMRI_RECON_SPEC', 'FS_LICENSE',
+                },
+                'dmri_metrics': {'DMRI_SUBDIR', 'DMRI_METHOD'},
+            }.get(stage, set())
             identity['config'] = {k: v for k, v in config.items()
-                                  if k not in presentation and (k.startswith('DMRI_') or k in relevant)}
+                                  if k not in presentation and (k in stage_keys or k in relevant)}
+            # QSIRecon was the only direct-dMRI method before DMRI_METHOD was
+            # introduced.  Keep an explicit default identical to those legacy
+            # receipts, while retaining non-default methods in the identity.
+            if identity['config'].get('DMRI_METHOD') == 'qsirecon':
+                identity['config'].pop('DMRI_METHOD')
         elif stage.startswith('brain_health_'):
             relevant = {
                 'MODALITY', 'STROKE_PHASE', 'SEGMENTATION_METHODS', 'MANUAL_MASK_PATH',

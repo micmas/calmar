@@ -1,0 +1,8 @@
+id: dipy-dti
+description: >
+  Shared lesion-aware QSIPrep followed by single-shell DIPY
+  weighted-least-squares tensor maps and whole-brain tensor summaries instead
+  of bundle tractometry.
+decisions:
+  analysis_method: dipy_dti
+  motion_eddy_correction: tortoise

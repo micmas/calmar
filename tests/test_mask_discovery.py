@@ -4,6 +4,7 @@ import importlib
 import subprocess
 import importlib.metadata
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -176,7 +177,7 @@ class MaskDiscoveryTests(unittest.TestCase):
 
 class SetupTests(unittest.TestCase):
     PACKAGES = ("numpy", "pandas", "scipy", "matplotlib", "nibabel", "nilearn", "ipywidgets", "anywidget",
-                "ipylab", "ipyniivue", "SimpleITK", "pymupdf", "pydicom", "PyYAML", "packaging")
+                "ipylab", "ipyniivue", "Pillow", "SimpleITK", "pymupdf", "pydicom", "PyYAML", "packaging")
 
     def fake_env(self, missing, installs=True, changes=None):
         """A package set with ``missing`` absent; pip (subprocess.run) adds them."""
@@ -228,7 +229,11 @@ class SetupTests(unittest.TestCase):
 
     def test_full_import_cell(self):
         ns = {}
-        exec(cell(8), ns)
+        # The import cell updates a development KB by default. Keep this unit
+        # test read-only so it cannot move the repository's pinned submodule
+        # and make later release-identity tests order-dependent.
+        with patch.dict(os.environ, {"CALMAR_KB_UPDATE": "off"}):
+            exec(cell(8), ns)
         self.assertTrue(ns["_CALMAR_SETUP_READY"])
         self.assertTrue(all(name in ns for name in ("sys", "importlib", "widgets", "cm", "q", "cw", "submit_step", "in_slurm", "show_step")))
 

@@ -46,6 +46,12 @@ logs/
 /analyses/workflow-validation/verification
 /analyses/workflow-validation/*.prov.json
 
+# Notebook runs may materialize these validation products at the repository
+# root when a legacy saved configuration predates the analyses/ layout.
+/alignment-repair/
+/workflow-acceptance/
+/workflow-validation/
+
 # Acceptance products are runtime data; retain only the plan and requests.
 /analyses/workflow-acceptance/*
 !/analyses/workflow-acceptance/astra.yaml
