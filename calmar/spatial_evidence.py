@@ -136,10 +136,19 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('source','target','records','output-dir'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--lesion',type=Path,help='Manifest for an already processed, aligned binary lesion mask')
-    p.add_argument('--kb-root',type=Path,default=DEFAULT_KB)
+    p.add_argument('--kb-root',type=Path,help='Override the normal KB checkout selection')
     a=p.parse_args()
     if a.output_dir.exists():p.error('Output directory exists; preserve it and choose a new destination')
+    from .kb_location import resolve_kb_root, update_kb_to_latest
+    if a.kb_root is None:
+        a.kb_root, reason = resolve_kb_root()
+    else:
+        a.kb_root = a.kb_root.expanduser().resolve()
+        reason = 'command-line override'
+    update_status = update_kb_to_latest(a.kb_root, reason)
+    print(update_status, flush=True)
     data=build(a.source,a.target,a.records,a.lesion,a.kb_root)
+    data['kb_update_status'] = update_status
     a.output_dir.parent.mkdir(parents=True,exist_ok=True)
     temporary=Path(tempfile.mkdtemp(prefix=a.output_dir.name+'.attempt-',dir=a.output_dir.parent))
     try:

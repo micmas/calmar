@@ -42,53 +42,17 @@ def test_citation_resources_cover_all_imaging_routes_and_collapsible_datasets():
     assert f'dipy=={dipy_pin}' in requirements
 
 
-def test_citation_cell_identifies_the_pinned_approved_kb_export():
+def test_citation_cell_and_update_script_use_latest_kb():
     import json
     root = Path(__file__).resolve().parents[1]
     notebook = json.loads((root/'lesion-interpretation-pipeline.ipynb').read_text())
     source = ''.join(next(c for c in notebook['cells'] if c['id'] == 'calmar-citations')['source'])
-    update_script = (root/'src/analysis_51_update_kb.sh').read_text()
-    pins = dict(re.findall(
-        r'^(EXPECTED_COMMIT|EXPECTED_CONTENT_COMMIT|EXPECTED_CONTENT_DATE|EXPECTED_DIGEST|REFERENCE_EXPORTED_ON)="([^"]+)"$',
-        update_script, re.MULTILINE))
-    assert set(pins) == {'EXPECTED_COMMIT', 'EXPECTED_CONTENT_COMMIT', 'EXPECTED_CONTENT_DATE',
-                         'EXPECTED_DIGEST', 'REFERENCE_EXPORTED_ON'}
-    for value in (pins['EXPECTED_COMMIT'][:7], pins['EXPECTED_CONTENT_COMMIT'],
-                  pins['EXPECTED_CONTENT_DATE'], pins['EXPECTED_DIGEST'],
-                  pins['REFERENCE_EXPORTED_ON']):
-        assert value in source
-    assert 'statuses: approved' in source
-    # CI deliberately checks CALMaR against the latest KB main, which can be
-    # newer than this release pin. Verify the pinned export contract itself
-    # without falsely requiring a current development checkout to have the old
-    # digest.
-    for key, value in (("candidates", 159), ("searches", 24),
-                       ("included", 121), ("in_knowledge_base", 41)):
-        assert f'"{key}": {value}' in update_script
-    submodule_pin = subprocess.run(
-        ['git', '-C', str(root), 'ls-tree', 'HEAD', 'stroke-aphasia-kb'],
-        check=True, capture_output=True, text=True).stdout.split()[2]
-    assert submodule_pin == pins['EXPECTED_COMMIT'], \
-        "The shipped KB submodule and release verification script must use the same commit"
-    # When the checkout is at the release pin, tie the literals above to the
-    # actual committed export.  Development CI also runs against moving KB
-    # main, where requiring this historical digest would be a false failure.
-    kb_root = root / 'stroke-aphasia-kb'
-    checked_out = subprocess.run(
-        ['git', '-C', str(kb_root), 'rev-parse', 'HEAD'],
-        check=True, capture_output=True, text=True).stdout.strip()
-    if checked_out == pins['EXPECTED_COMMIT']:
-        export = json.loads((kb_root/'export/stroke-aphasia-kb.json').read_text())
-        version = export['version']
-        assert version['contentDigest'] == pins['EXPECTED_DIGEST']
-        assert version['date'] == pins['EXPECTED_CONTENT_DATE']
-        assert version['statuses'] == ['approved']
-        screening = export['screening']
-        prisma = screening['prisma']
-        assert len(screening['candidates']) == 159
-        assert len(screening['searches']) == 24
-        assert prisma['included']['total'] == 121
-        assert prisma['included']['kb']['in_kb'] == 41
+    script = (root/'src/analysis_51_update_kb.sh').read_text()
+    assert 'latest available `origin/main`' in source
+    assert 'latest version was not verified' in source
+    assert 'CALMAR_KB_UPDATE=latest' in script
+    assert 'update_kb_to_latest(root, reason)' in script
+    assert 'EXPECTED_COMMIT=' not in script
 
 
 def test_timing_labels_use_titles_and_current_cell_numbers():

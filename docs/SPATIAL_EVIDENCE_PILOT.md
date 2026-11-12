@@ -9,6 +9,11 @@ Update a Neurodesk checkout with `git pull --ff-only` followed by
 `git submodule update --init --recursive`. Inspect the interface with
 `python -m calmar.spatial_evidence --help`.
 
+Execution uses the same latest-KB update policy as notebook Setup, including
+an explicit warning if the latest version cannot be verified. The JSON records
+the update status and exact commit. The submodule pin is a tested fallback;
+it does not hold normal runs on an older KB.
+
 ## Inputs and execution
 
 Use two versioned atlas manifests and original evidence records in the format
