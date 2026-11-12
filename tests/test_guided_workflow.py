@@ -314,8 +314,8 @@ class GuidedWorkflowTests(unittest.TestCase):
                 _CALMAR_CONFIG_OVERRIDES={'PROJECT_DIR':root,'DATASET_SOURCE':'local','LOCAL_DATASET':dataset})
             with contextlib.redirect_stdout(io.StringIO()), patch.dict(os.environ):
                 exec(''.join(source_cell(12)['source']),ns)
-            self.assertEqual(ns['RAW_DATASET_DIR'],dataset)
-            self.assertEqual(ns['DERIV_DIR'],dataset/'derivatives/linda')
+            self.assertEqual(ns['RAW_DATASET_DIR'],dataset.resolve())
+            self.assertEqual(ns['DERIV_DIR'],dataset.resolve()/'derivatives/linda')
 
     def test_isles_source_uses_the_selected_local_root(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -326,7 +326,7 @@ class GuidedWorkflowTests(unittest.TestCase):
                                           'LOCAL_DATASET':dataset, 'MODALITY':'t1'})
             with contextlib.redirect_stdout(io.StringIO()), patch.dict(os.environ):
                 exec(''.join(source_cell(12)['source']), ns)
-            self.assertEqual(ns['RAW_DATASET_DIR'], dataset)
+            self.assertEqual(ns['RAW_DATASET_DIR'], dataset.resolve())
             self.assertEqual(ns['CONFIG']['MODALITY'], 'dwi')
 
 

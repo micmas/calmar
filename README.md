@@ -44,6 +44,7 @@ troubleshooting: [docs/SETUP.md](docs/SETUP.md).
 | [docs/PIPELINE.md](docs/PIPELINE.md) | what each stage computes, the tools and the reasons behind the defaults |
 | [docs/RUNNING_JOBS.md](docs/RUNNING_JOBS.md) | Slurm submission, caching and provenance, tests and validation |
 | [docs/QC_RUBRIC.md](docs/QC_RUBRIC.md) | the stage-aware rating scale and issue tags used in QC |
+| [docs/SPATIAL_EVIDENCE_PILOT.md](docs/SPATIAL_EVIDENCE_PILOT.md) | experimental atlas correspondence, direct lesion measurements and white-matter evidence use cases |
 | [docs/REPOSITORY_LAYOUT.md](docs/REPOSITORY_LAYOUT.md) | what is where, the module map, layout history |
 | [docs/CT_ROUTE.md](docs/CT_ROUTE.md), [docs/DOMAIN_SEVERITY_INPUT.md](docs/DOMAIN_SEVERITY_INPUT.md), [docs/SAMPLE_APPLICABILITY_FIELDS.md](docs/SAMPLE_APPLICABILITY_FIELDS.md) | design proposals not yet implemented |
 | [docs/CHANGELOG.md](docs/CHANGELOG.md) | what changed |

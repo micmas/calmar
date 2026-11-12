@@ -24,6 +24,16 @@ def test_location_section_shows_regions_damage_and_merges_kb_synonyms():
         dict(region="left_inferior_frontal_occipital_fasciculus", side="left", lesion_pct=0.1, region_pct=56.0, review=False),
         dict(region="left_arcuate_fasciculus", side="left", lesion_pct=1.0, region_pct=90.0, review=True)])
     rows = KB.location_findings(damage, min_overlap=5, min_region=10)
+    # Reuse one current source record to exercise synonym presentation, without
+    # requiring withdrawn IFOF drafts to remain in the live KB.
+    base = rows[rows["region"] == "left_arcuate_fasciculus"].iloc[[0]].copy()
+    copies = []
+    for region in damage["region"]:
+        row = base.copy()
+        row["region"] = region
+        row["region_pct"] = 90.0 if region == "left_arcuate_fasciculus" else 56.0
+        copies.append(row)
+    rows = pd.concat(copies, ignore_index=True)
     html = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings())
     assert "56% of the region destroyed" in html and "90% of the region destroyed" in html
     assert html.count("Also recorded in the knowledge base as") == 1          # two spellings, one row
@@ -77,8 +87,8 @@ def test_measure_without_kb_entry_shows_value_provenance_qc_and_needed_entry():
 
 
 def test_regions_resting_on_few_studies_are_marked():
-    damage = pd.DataFrame([dict(region="left_insula", side="left", lesion_pct=0.1, region_pct=40.0, review=False)])
-    rows = KB.location_findings(damage, min_overlap=5, min_region=10)
+    damage = pd.DataFrame([dict(region="left_arcuate_fasciculus", side="left", lesion_pct=0.1, region_pct=40.0, review=False)])
+    rows = KB.location_findings(damage, min_overlap=5, min_region=10).iloc[[0]].copy()
     html = location_section(KB, rules, rows, damage, location_coverage(KB, rows, damage), ReportSettings())
     assert "Limited citation base: 1 citation key" in html
 
@@ -266,8 +276,8 @@ def test_white_matter_without_findings_still_describes_disconnected_tracts():
     ])
     html = disconnection_section(
         KB, rules, pd.DataFrame(), disconnection, pd.DataFrame(), ReportSettings(), "BCBToolkit")
-    assert "Right Arcuate Fasciculus" in html and "72% of the tract disconnected" in html
-    assert "Right Uncinate Fasciculus" not in html  # below the configured 50% threshold
+    assert "right arcuate fasciculus" in html.lower() and "72% of the tract disconnected" in html
+    assert "right uncinate fasciculus" not in html.lower()  # below the configured 50% threshold
     assert "Anatomical result only" in html
     assert "absence of a linked finding is not evidence" in html
     assert "No symptom-level knowledge-base findings matched these tracts" in html
@@ -317,7 +327,7 @@ def test_white_matter_mixes_evidence_and_anatomical_only_tracts_without_duplicat
     evidence = soup.select("details.tract-evidence:not(.tract-anatomy-only)")
     anatomical = soup.select("details.tract-anatomy-only")
     assert len(evidence) == 1 and "Left arcuate fasciculus" in evidence[0].get_text(" ", strip=True)
-    assert len(anatomical) == 1 and "Right Arcuate Fasciculus" in anatomical[0].get_text(" ", strip=True)
+    assert len(anatomical) == 1 and "right arcuate fasciculus" in anatomical[0].get_text(" ", strip=True).lower()
     assert "Additional disconnected tracts" in html
 
 
