@@ -1,0 +1,3235 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="NiReports: https://www.nipreps.org/" />
+<title>Visual report for participant 'M2001' - QSIPrep</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+</head>
+<body style="font-family: helvetica;">
+<nav class="navbar fixed-top navbar-expand-lg bg-light">
+<div class="container-fluid">
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="#DWI Grouping">DWI Grouping</a></li>
+        <li class="nav-item"><a class="nav-link" href="#Summary">Summary</a></li>
+        <li class="nav-item"><a class="nav-link" href="#Anatomical">Anatomical</a></li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" id="navbarDiffusion" role="button" data-bs-toggle="dropdown" aria-expanded="false" href="#Diffusion">
+            Diffusion
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#acquisition-epb0p2_datatype-figures_desc-summary_direction-AP_run-4_session-1225_subject-M2001_suffix-dwi">Reports for: session <span class="bids-entity">1225</span>, acquisition <span class="bids-entity">epb0p2</span>, direction <span class="bids-entity">AP</span>, run <span class="bids-entity">4</span>.</a></li>
+            </ul>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" id="navbarAbout" role="button" data-bs-toggle="dropdown" aria-expanded="false" href="#About">
+            About
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#boilerplate">Methods</a></li>
+                <li><a class="dropdown-item" href="#errors">Errors</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+</div>
+</nav>
+<noscript>
+    <h1 class="text-danger"> The navigation menu uses Javascript. Without it this report might not work as expected </h1>
+</noscript>
+
+    <div id="DWI Grouping" class="mt-5">
+    <h1 class="sub-report-title pt-5 ps-4">DWI Grouping</h1>
+        <div id="datatype-figures_desc-grouping_subject-M2001_suffix-['T1w', 'T2w', 'dwi']" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3">How QSIPrep grouped and processed this subject's DWI scans</h3>                    <style>
+.qsi-grouping{color-scheme:light;box-sizing:border-box;margin:0 auto;max-width:960px;
+  padding:28px 24px;background:#f8fafc;color:#0f172a;line-height:1.4;
+  font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.qsi-grouping *{box-sizing:border-box}
+.qsi-grouping code{font-family:ui-monospace,Menlo,monospace;color:inherit}
+.qsi-grouping h1{font-size:20px;font-weight:700;line-height:1.2;margin:0 0 2px}
+.qsi-grouping h2{font-size:15px;font-weight:700;line-height:1.2;margin:26px 0 10px;
+  color:#334155}
+.qsi-grouping .tagline{color:#475569;font-size:13.5px;margin:2px 0 8px}
+.qsi-grouping .legend{font-size:12px;color:#64748b;margin:0}
+.qsi-grouping .chip{display:inline-block;border:1.5px solid;border-radius:99px;
+  padding:1px 9px;font-size:11.5px}
+.qsi-grouping .chip.small{padding:0 7px;font-size:10.5px}
+.qsi-grouping .est-rail{display:flex;gap:14px;flex-wrap:wrap}
+.qsi-grouping .est{flex:1 1 280px;max-width:440px;border:2px solid;border-radius:10px;
+  background:#fff;overflow:hidden;transition:box-shadow .1s}
+.qsi-grouping .est-head{padding:8px 12px;font-size:13.5px;display:flex;
+  align-items:center;gap:8px}
+.qsi-grouping .est-body{padding:8px 12px 10px}
+.qsi-grouping .badge{display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;padding:0;line-height:1;border:2px solid;border-radius:50%;
+  font-weight:700;font-size:11px;background:#fff;flex:none}
+.qsi-grouping .badge.inline{width:16px;height:16px;font-size:9.5px;
+  vertical-align:-3px;margin:0 2px}
+.qsi-grouping .method{font-weight:600;font-size:12.5px;margin:0 0 3px}
+.qsi-grouping .explain{font-size:11.5px;color:#475569;margin:0 0 6px;line-height:1.45}
+.qsi-grouping .blips{display:flex;gap:8px;align-items:center;font-size:11.5px;
+  font-weight:600;background:#f1f5f9;border-radius:6px;padding:4px 10px;margin:0 0 6px;
+  width:fit-content}
+.qsi-grouping .blips .vs{color:#64748b}
+.qsi-grouping .srcs{font-size:11px;color:#475569;margin:0 0 4px}
+.qsi-grouping .why{font-size:11px;margin:6px 0 0;line-height:1.45}
+.qsi-grouping .why code{font-size:10.5px;background:#f1f5f9;padding:0 3px;
+  border-radius:3px;color:inherit}
+.qsi-grouping .unused{font-weight:400;font-size:11px;color:#64748b}
+.qsi-grouping .output{background:#fff;border:1.5px solid #cbd5e1;border-radius:12px;
+  margin:0 0 18px;padding:0 0 6px;overflow:hidden}
+.qsi-grouping .output-details{display:block}
+.qsi-grouping summary.out-head{cursor:pointer;list-style:none}
+.qsi-grouping summary.out-head::-webkit-details-marker{display:none}
+.qsi-grouping .out-toggle{font-size:14px;transition:transform .12s}
+.qsi-grouping .output-details:not([open]) .out-toggle{transform:rotate(-90deg)}
+.qsi-grouping .out-head{background:#0f172a;color:#fff;padding:9px 14px;display:flex;
+  gap:9px;align-items:center;flex-wrap:wrap}
+.qsi-grouping .out-name{font-weight:650;font-size:13px;
+  font-family:ui-monospace,Menlo,monospace;min-width:0;overflow-wrap:anywhere}
+.qsi-grouping .out-count{margin-left:auto;font-size:11.5px;color:#94a3b8}
+.qsi-grouping .out-why{padding:7px 14px 2px;color:#475569}
+.qsi-grouping .dgroup{margin:8px 12px;border:1px solid #e2e8f0;border-left:5px solid;
+  border-radius:7px;padding:7px 10px;background:#fcfdfe}
+.qsi-grouping .dg-head{font-size:12.5px;display:flex;gap:7px;align-items:baseline;
+  flex-wrap:wrap}
+.qsi-grouping .dg-head b{min-width:0;overflow-wrap:anywhere}
+.qsi-grouping .dg-sig{color:#64748b;font-size:11.5px}
+.qsi-grouping .dg-corr{margin-left:auto;font-size:11.5px}
+.qsi-grouping .prov-word{font-size:10.5px}
+.qsi-grouping .losing{color:#94a3b8;font-size:10.5px}
+.qsi-grouping .nocorr{color:#b91c1c;font-weight:600}
+.qsi-grouping .pol{font-size:11px}
+.qsi-grouping .scan{display:flex;align-items:center;gap:7px;font-size:11.5px;
+  padding:2.5px 0 0 20px;flex-wrap:wrap}
+.qsi-grouping .scan code{background:none;color:#334155;min-width:0;overflow-wrap:anywhere}
+.qsi-grouping .shells{color:#0e7490;font-size:10.5px;background:#ecfeff;
+  border-radius:4px;padding:0 5px}
+.qsi-grouping .borrow{font-size:11.5px;color:#475569;margin:4px 14px;background:#f8fafc;
+  border:1px dashed #cbd5e1;border-radius:7px;padding:6px 10px}
+.qsi-grouping .cunit{border:1.5px dashed #94a3b8;border-radius:9px;margin:8px 12px;
+  padding:0 0 4px;background:#f8fafc}
+.qsi-grouping .cunit .dgroup{margin:6px 10px;background:#fff}
+.qsi-grouping .cu-head{font-size:11px;color:#475569;padding:7px 12px 0}
+.qsi-grouping .cu-note{color:#94a3b8;margin-left:6px}
+.qsi-grouping .final-concat{font-size:11.5px;font-weight:600;color:#334155;
+  margin:6px 14px 8px}
+.qsi-grouping .note{font-size:12px;border-radius:8px;padding:8px 12px;margin:0 0 8px;
+  line-height:1.5}
+.qsi-grouping .note.warning{background:#fffbeb;border:1px solid #fcd34d}
+.qsi-grouping .note.error{background:#fef2f2;border:1px solid #fca5a5}
+.qsi-grouping .none{font-size:13px;color:#b91c1c}
+.qsi-grouping .hl{box-shadow:0 0 0 2.5px #0ea5e9}
+.qsi-grouping .scheme-block{margin:10px 12px 0;padding:10px 2px 4px;
+  border-top:1px solid #e2e8f0}
+.qsi-grouping .scheme-label{font-size:11.5px;font-weight:600;color:#0369a1;margin:0 0 8px}
+.qsi-grouping .scheme-missing{font-size:12px;color:#94a3b8;padding:6px 0}
+.qsi-grouping .plan-controls{display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+  margin:0 0 10px}
+.qsi-grouping .plan-controls label{font-size:11.5px;color:#334155;
+  font-family:ui-monospace,Menlo,monospace;display:flex;gap:6px;align-items:center}
+.qsi-grouping .plan-controls select{font:inherit;font-size:12px;color:#0f172a;
+  border:1.5px solid #cbd5e1;border-radius:7px;background:#fff;padding:2px 6px}
+.qsi-grouping .plan-controls input[type=checkbox]{accent-color:#0369a1;margin:0}
+.qsi-grouping .plan-controls label.noop{opacity:.5}
+.qsi-grouping .ignore-group{display:flex;align-items:center;gap:4px 10px;flex-wrap:wrap;
+  font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#334155;
+  border:1px solid #e2e8f0;border-radius:7px;padding:2px 9px}
+.qsi-grouping .ignore-group .flag-name{color:#334155}
+.qsi-grouping .ignore-group label{gap:4px}
+.qsi-grouping .policy-cli{min-height:15px}
+.qsi-grouping .plan-panel{display:none}
+.qsi-grouping .plan-panel.on{display:block}
+.qsi-grouping .plan-cli{font-size:11.5px;color:#64748b;
+  font-family:ui-monospace,Menlo,monospace;margin:0 0 10px}
+.qsi-grouping .plan-status{min-height:17px;font-size:11.5px;color:#64748b;margin:0 0 8px}
+.qsi-grouping .plan-status.error{color:#b91c1c;font-weight:600}
+.qsi-grouping .plan-prose{margin:2px 0 14px}
+.qsi-grouping .plan-prose summary{font-size:11.5px;color:#0369a1;cursor:pointer}
+.qsi-grouping .plan-out{font-size:11.5px;font-weight:650;color:#334155;
+  font-family:ui-monospace,Menlo,monospace;margin:8px 0 2px}
+.qsi-grouping .plan-steps{font-size:12px;color:#334155;margin:2px 0 6px;
+  padding-left:22px;line-height:1.5}
+.qsi-grouping .plan-steps li.issue{list-style:none;margin-left:-16px;color:#92400e}
+.qsi-grouping .plan-steps li.issue-error{color:#b91c1c}
+
+/* Styling for the interactive q-space sampling-scheme viewer
+ * (qspace_viewer.js). Only the reusable .qspace-viewer / .qs-* rules live
+ * here; the host page provides its own layout, tabs, and theme. */
+
+.qspace-viewer { position: relative; }
+.qs-summary { font-size: 11.5px; color: #475569; margin: 0 0 9px;
+  font-variant-numeric: tabular-nums; }
+.qs-controls {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin: 0 0 10px;
+}
+.qs-seg { display: inline-flex; align-items: center; gap: 6px; }
+.qs-seg-label { font-size: 11.5px; color: #64748b; }
+.qs-seg-btn, .qs-btn {
+  border: 1px solid #cbd5e1; background: #fff; color: #334155;
+  font-size: 11.5px; padding: 3px 10px; border-radius: 7px; cursor: pointer;
+}
+.qs-seg-btn.on { background: #0f172a; color: #fff; border-color: #0f172a; }
+.qs-btn:hover { background: #f1f5f9; }
+.qs-check { font-size: 11.5px; color: #475569; display: inline-flex;
+  align-items: center; gap: 3px; cursor: pointer; }
+.qs-legend { display: flex; gap: 5px; flex-wrap: wrap; margin-left: auto; }
+.qs-leg {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid #e2e8f0; background: #fff; color: #334155;
+  border-radius: 99px; padding: 2px 9px 2px 6px; font-size: 11px; cursor: pointer;
+}
+.qs-leg.off { opacity: 0.4; text-decoration: line-through; }
+.qs-sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+.qs-stage { display: flex; gap: 12px; }
+.qs-cell { flex: 1 1 0; min-width: 0; }
+.qs-title { text-align: center; font-size: 11.5px; color: #64748b; margin: 0 0 2px; }
+.qs-canvas {
+  width: 100%; height: 340px; display: block;
+  background: #fcfdfe; border: 1px solid #eef2f6; border-radius: 10px;
+  touch-action: none; cursor: grab;
+}
+.qs-canvas:active { cursor: grabbing; }
+.qs-tip {
+  position: absolute; pointer-events: none; z-index: 5;
+  background: #0f172a; color: #fff; font-size: 11px; line-height: 1.35;
+  padding: 5px 8px; border-radius: 6px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+}
+.qs-note { font-size: 11px; color: #475569; margin: 9px 0 0; line-height: 1.4;
+  background: #f1f5f9; border-radius: 6px; padding: 5px 9px; }
+
+/* Pipeline-plan viewer. Only .pipeline-viewer / .pp-* rules live here - the
+ * host page owns layout, tabs, and theme, so nothing can leak out. */
+.pipeline-viewer{position:relative;font-family:ui-sans-serif,system-ui,-apple-system,
+  'Segoe UI',Roboto,sans-serif}
+.pipeline-viewer .pp-output{margin:0 0 14px}
+.pipeline-viewer .pp-head{font-size:12px;font-weight:650;color:#334155;
+  font-family:ui-monospace,Menlo,monospace;margin:0 0 4px}
+.pipeline-viewer .pp-scroll{overflow-x:auto;padding:2px 0}
+.pipeline-viewer .pp-svg{display:block}
+.pipeline-viewer .pp-node{cursor:default}
+.pipeline-viewer .pp-node:hover rect{filter:brightness(0.96)}
+.pipeline-viewer .pp-tip{display:none;position:absolute;z-index:20;max-width:340px;
+  background:#0f172a;color:#f8fafc;border-radius:7px;padding:7px 10px;
+  font-size:11px;line-height:1.45;pointer-events:none;
+  box-shadow:0 4px 12px rgba(15,23,42,.35)}
+.pipeline-viewer .pp-tip b{color:#fbbf24}
+.pipeline-viewer.output-plan{margin:8px 12px}
+.pipeline-viewer.output-plan .pp-head{display:none}
+.pipeline-viewer.output-plan .pp-output{margin:0}
+</style><div class="qsi-grouping"><header><h1>How QSIPrep processed sub-M2001&rsquo;s diffusion data</h1><p class="tagline">1 DWI scan &rarr; 1 preprocessed output file, using 0 fieldmap estimations</p><p class="legend">Colors show where each decision came from:&nbsp; <span class="chip" style="background:#dcfce7;border-color:#16a34a">you curated it</span> <span class="chip" style="background:#ede9fe;border-color:#7c3aed">command-line flag</span> <span class="chip" style="background:#fef3c7;border-color:#d97706">QSIPrep guessed</span> <span class="chip" style="background:#dbeafe;border-color:#2563eb">from IntendedFor (deprecated)</span></p></header><section><h2>Step 1 &mdash; Fieldmaps: how distortion was measured</h2><p class="none">No fieldmap estimations: susceptibility distortion was NOT corrected.</p></section><section><h2>Step 2 &mdash; Outputs: which scans were combined, and how each was corrected</h2><div class="output"><details class="output-details" open><summary class="out-head"><span class="out-icon">&#128190;</span><span class="out-name">sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4</span><span class="out-count">one output file &middot; 1 scan combined</span><span class="out-toggle" aria-hidden="true">&#9662;</span></summary><p class="why out-why"><span class="chip small" style="background:#fef3c7;border-color:#d97706">inferred</span> Combined automatically: same session and compatible shim settings. Set <code>MultipartID</code> (or use <code>--separate-all-dwis</code>) to change this.</p><div class="dgroup" style="border-left-color:#94a3b8"><div class="dg-head"><span class="pol">&#9660;</span> <b>sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4</b><span class="dg-sig">phase encoding j- (negative along the j axis) &middot; readout 0.038&thinsp;s</span><span class="dg-corr"><span class="nocorr">&#9888; no distortion correction</span></span></div><div class="scan"><code>sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_dwi.nii.gz</code><span class="shells">b=1000</span></div></div><div class="pipeline-viewer output-plan" data-output-name="sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4"><p class="scheme-label">&#9881; Analysis plan for this output</p></div><div class="scheme-block"><p class="scheme-label">&#9673; Sampling scheme</p><div class="qspace-viewer"><script type="application/json">{"panels": [{"title": "sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4", "coords": [[0.0, 0.0, 0.0], [31.587137732453694, -0.18663035426451935, -1.4892936377222592], [21.160823681889134, -0.6642680452949697, -23.48996766970955], [2.5017853743996508, -20.360862302196338, 24.066103036615626], [18.241377323245082, -24.56311821646429, -7.994048188246054], [8.885747242860333, 17.535809931708314, 24.76970981600309], [28.805313697580175, 8.72121393620177, 9.705377989599373], [24.228043275592853, 3.7067902504727726, -19.981547096859142], [6.959477428945365, 29.20148384284607, -9.941789867473563], [29.047259561359656, 4.305915375968274, -11.735212396884855], [16.23383697346379, -26.61844058169073, 5.284102724588158], [11.61153571759567, -26.532173647121336, 12.697050770001669], [15.536807731609477, -19.55713781208794, 19.39393266204665], [16.71197335568125, 13.242733403040324, 23.35250345982203], [20.18285769270546, -21.033320646631143, 12.257715534674476], [16.954235447226747, 2.7372960031406905, -26.552981434125243], [26.37273160749565, 16.812154311955382, 4.672296865675382], [29.027463703207, -1.013538450582907, 12.505163761582653], [10.548504459353468, -16.637058997911858, 24.73735971553957], [4.276727553164919, -30.264799706077685, 8.108712376203757], [24.573016145540617, -13.322011703980747, -14.788233363894417], [15.85107488547701, 26.467726428407108, -6.9428122256762785], [23.97053900572534, -5.58198928017602, -19.855846559867448], [29.635632942810584, -7.750584431189689, -7.852220035187501], [6.415407557513396, 24.407787137796824, -19.05525272464262], [-0.15614441648166608, 4.986121300670492, -31.226827815854108], [6.6279442390533125, -30.43157822987497, -5.476274337996591], [24.10405036853765, -19.399182042962533, -6.531969112067202], [6.718575116793739, -10.719457189662169, 28.98195852767718], [3.7502399455234863, -23.978855795971583, -20.2719074316158], [27.68305297876302, 13.162569664355058, -7.7714554637468005], [16.50405359952518, -8.313027135827236, -25.661440493393975], [13.631661932464434, -3.8606034358633625, 28.271426360213944], [8.195611766305186, 5.627842306248461, -30.019312091318813], [12.14605551049393, 5.22066743472518, 28.726604606618583], [30.437744671312295, 8.570784387907562, -0.2931010808047285], [30.625330982113482, -6.462082775777481, 4.50887035619788], [14.148599461572159, -28.21934364715097, -1.867230089999623], [24.509074891252016, -19.891864902416767, 1.90248632363284], [21.442550998633536, 12.569041770318053, -19.550844879544208], [23.182372921704975, -0.24958086696219325, 21.506176025156122], [22.315845597265636, 17.380478853040845, 14.139365610804468], [5.784596409863008, 23.819034283026674, 19.97980784414605], [24.325378181972834, -11.935858914422539, 16.30372330975351], [4.338170608101991, -25.728670516449153, 17.866615797738532], [17.563037142362365, -19.51182237321773, -17.630298788194146], [4.439363493227379, 11.808608861377364, 28.997390442658798], [17.788064820659947, 25.368866564275194, 6.324934793655979], [26.944281671794478, -14.385675417754983, 8.188844492112425], [10.325911734854214, -18.646243732076442, -23.360061303429834], [4.474085301936028, -13.595738458244922, -28.198188009604447], [22.66809170583179, 22.0072072976332, -1.3565064364941286], [14.65361520390105, 22.293646408091252, 16.978363625773834], [14.976610244110649, 21.489162971344417, -17.7177041427212], [4.033200550555352, 15.561947839007814, -27.231574597220778], [13.34047940551613, 12.891214618336008, -25.609547516990613], [11.457849023311487, -26.118168255852094, -13.658636160905669], [23.648176421047776, 8.624226880364407, 19.141203431445998], [8.870062345665898, 28.415120257091996, 10.672560611961874], [22.295322415251142, 22.350820388187095, -1.833109114046406], [1.1011778136568136, -29.120055193096732, -12.280452311051087], [19.35421445463494, -9.094204586218632, 23.296151671917833], [7.422403255617415, -5.6681929691922095, -30.21224265136569], [22.155170269352478, 19.082385066966864, -12.042048198250994], [8.496628976776613, 30.43837712684433, 1.1454813236757726]]}], "meta": [{"b": 0, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}, {"b": 1000, "file": 0, "pe": "j-"}], "files": ["sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_dwi.nii.gz"], "pes": ["j-"], "axisLabels": ["L", "P", "S"], "axisLabelsNeg": ["R", "A", "I"], "b0Threshold": 100.0}</script></div></div></details></div></section><section><h2>Step 3 &mdash; Processing: how the data was corrected</h2><div class="plan-panel on"><p class="plan-cli">--hmc-method tortoise --sdc-method drbuddi</p><div class="pipeline-viewer"><script type="application/json">{"schemaVersion": 1, "subject": "M2001", "selection": {"label": "TORTOISE + DRBUDDI", "cli": "--hmc-method tortoise --sdc-method drbuddi", "hmc": "tortoise"}, "outputs": [{"name": "sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4", "group": "auto+concat+ses-1225+0", "strategy": "none", "runs": ["sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4"]}], "runs": [{"key": "sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4", "unit": "sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4", "files": ["sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_dwi.nii.gz"], "stages": [{"index": 0, "role": "hmc", "tool": "tortoise", "label": "TORTOISE", "method": null, "estimation": null, "letter": null, "target": null, "channels": null, "consumes": null, "sources": [], "borrowed": [], "text": "TORTOISE DIFFPREP corrects head motion and eddy currents."}]}], "estimations": [], "issues": [{"severity": "warning", "code": "no-sdc", "message": "Output 'sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4' has no fieldmap and no fieldmap-less correction was requested: no susceptibility distortion correction will be performed. Pass --sdc-anat-reference synb0 to correct it with a synthetic b=0 from the T1w (SynB0 + TOPUP).", "scope": "auto+concat+ses-1225+0", "run": null}]}</script></div><details class="plan-prose"><summary>Step-by-step description</summary><p class="plan-out">sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4</p><ol class="plan-steps"><li>The series is denoised.</li><li>TORTOISE DIFFPREP corrects head motion and eddy currents.</li><li>No fieldmap is available and fieldmap-less SDC is disabled (--sdc-anat-reference none): susceptibility distortion is NOT corrected.</li><li>The corrected series is written as one output file.</li><li class="issue ">WARNING [no-sdc]: Output &#x27;sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4&#x27; has no fieldmap and no fieldmap-less correction was requested: no susceptibility distortion correction will be performed. Pass --sdc-anat-reference synb0 to correct it with a synthetic b=0 from the T1w (SynB0 + TOPUP).</li></ol></details></div></section></div><script>/* QSIPrep q-space sampling-scheme viewer.
+ *
+ * Dependency-free (no Plotly/Three/D3), self-contained, offline-ready. One
+ * `<div class="qspace-viewer">` per scheme, carrying its data as an embedded
+ * `<script type="application/json">`. The same widget serves both reports:
+ *   - group report  : one panel, the concatenated *acquired* scheme.
+ *   - subject report : two linked panels, before vs after preprocessing.
+ *
+ * Each point is q = sqrt(b) * bvec. Color is driven by a categorical key that
+ * the caller supplies per point (input-file index and phase-encoding dir);
+ * the "Color by" control just switches which key maps to the palette, so
+ * adding more keys later is a data change, not a code change.
+ */
+(function () {
+  "use strict";
+
+  // Okabe-Ito colorblind-safe categorical palette.
+  var PALETTE = ["#0072B2", "#D55E00", "#009E73", "#E69F00",
+                 "#CC79A7", "#56B4E9", "#F0E442", "#000000"];
+  var B0_COLOR = "#9aa7b8";      // b=0 volumes sit at the origin
+  var AXIS_COLOR = "#c3ccd8";
+
+  // b-values are displayed rounded to the nearest 100 so small acquisition
+  // deviations (e.g. 1585, 4985) do not read as distinct shells.
+  function roundB(b) { return Math.round(b / 100) * 100; }
+
+  function elem(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  function init(root) {
+    if (root.dataset.qsReady) return;
+    root.dataset.qsReady = "1";
+    var src = root.querySelector('script[type="application/json"]');
+    if (!src) return;
+    var data = JSON.parse(src.textContent);
+
+    var panels = data.panels;              // [{title, coords:[[x,y,z],...]}]
+    var meta = data.meta;                  // [{b,file,pe}] indexed like coords
+    var files = data.files || [];          // file index -> label
+    var pes = data.pes || [];              // pe order for the legend
+    var axisLabels = data.axisLabels || ["x", "y", "z"];      // +ends
+    var axisLabelsNeg = data.axisLabelsNeg || null;           // -ends (optional)
+    // A volume counts as b=0 (direction meaningless) at or below this value;
+    // the emitter passes qsiprep's real b0 threshold. Default: only exactly 0.
+    var b0Threshold = data.b0Threshold != null ? data.b0Threshold : 0;
+    function isB0(m) { return m.b <= b0Threshold; }
+    // Unique diffusion-weighted shells, for the concentric reference rings.
+    var shells = Array.from(new Set(meta.filter(function (m) { return !isB0(m); })
+                                        .map(function (m) { return m.b; })))
+                      .sort(function (a, b) { return a - b; });
+    // maxR and per-shell ring radius are measured per panel (see viewGeometry),
+    // so panels at different radial scales (e.g. sqrt(b) vs b) each auto-fit,
+    // and the rings match whatever radial convention the caller used.
+
+    // Which categorical key colors the points, and how to read it per point.
+    var MODES = {
+      file: { label: "input file", cats: files,
+              of: function (m) { return m.file; } },
+      pe:   { label: "phase encoding", cats: pes,
+              of: function (m) { return pes.indexOf(m.pe); } }
+    };
+
+    var st = {
+      mode: files.length ? "file" : "pe",
+      az: 0.5, el: 0.35, scale: 1,
+      hidden: { file: {}, pe: {} },        // per-mode toggled-off categories
+      spin: false,
+      antipodal: false,
+      hover: null                          // {view, cl}
+    };
+
+    // Coincident samples: volumes sharing a q-coordinate (identical b and
+    // direction) — e.g. the AP and PA copy of every direction in an appa
+    // scheme. They fall on one pixel, so we cluster them and draw a split
+    // marker; otherwise the last one drawn silently hides the rest.
+    // Membership is direction/b identity, so it holds across panels (rotation
+    // and sqrt/linear scaling preserve coincidence) — compute once.
+    var clusters = (function () {
+      var scale = 1e-6, c0 = panels[0].coords;
+      c0.forEach(function (c) {
+        var r = Math.hypot(c[0], c[1], c[2]); if (r > scale) scale = r;
+      });
+      scale *= 1e-3;                                   // 0.1% of the max radius
+      var byKey = {};
+      c0.forEach(function (c, i) {
+        var k = Math.round(c[0] / scale) + "|" + Math.round(c[1] / scale) +
+                "|" + Math.round(c[2] / scale);
+        (byKey[k] || (byKey[k] = [])).push(i);
+      });
+      return Object.keys(byKey).map(function (k) { return { idx: byKey[k] }; });
+    })();
+    var hasCoincident = clusters.some(function (cl) { return cl.idx.length > 1; });
+
+    // One-line scheme summary.
+    var summaryText = (function () {
+      var nB0 = meta.filter(isB0).length;
+      var nCoin = clusters.filter(function (cl) { return cl.idx.length > 1; }).length;
+      var parts = [meta.length + " volumes"];
+      if (nB0) parts.push(nB0 + " × b=0");
+      if (shells.length && shells.length <= 6) {
+        var rounded = Array.from(new Set(shells.map(roundB)));
+        parts.push("b=" + rounded.join("/"));
+      } else if (shells.length) {
+        parts.push(shells.length + " b-values (max " +
+                   roundB(shells[shells.length - 1]) + ")");
+      }
+      if (files.length > 1) parts.push(files.length + " series");
+      if (nCoin) parts.push(nCoin + " shared coordinate" + (nCoin > 1 ? "s" : ""));
+      return parts.join("  ·  ");
+    })();
+
+    // Per-panel geometry: max radius (for auto-fit) and the measured radius of
+    // each shell (for the reference rings). Computed once per panel.
+    function viewGeometry(panel) {
+      var mr = 1e-6, sum = {}, cnt = {};
+      panel.coords.forEach(function (c, i) {
+        var r = Math.hypot(c[0], c[1], c[2]);
+        if (r > mr) mr = r;
+        var b = meta[i].b;
+        if (b > b0Threshold) { sum[b] = (sum[b] || 0) + r; cnt[b] = (cnt[b] || 0) + 1; }
+      });
+      var sr = {};
+      shells.forEach(function (b) { if (cnt[b]) sr[b] = sum[b] / cnt[b]; });
+      return { maxR: mr, shellRadius: sr };
+    }
+
+    // ---- DOM scaffold -----------------------------------------------------
+    root.innerHTML = "";
+    root.appendChild(elem("div", "qs-summary", summaryText));
+    var controls = elem("div", "qs-controls");
+    root.appendChild(controls);
+
+    // Color-by segmented control (only when there's a real choice).
+    if (files.length > 1 && pes.length > 1) {
+      var seg = elem("div", "qs-seg");
+      seg.appendChild(elem("span", "qs-seg-label", "Color by"));
+      ["file", "pe"].forEach(function (m) {
+        var b = elem("button", "qs-seg-btn", MODES[m].label);
+        b.dataset.mode = m;
+        b.onclick = function () { st.mode = m; syncSeg(); buildLegend(); render(); };
+        seg.appendChild(b);
+      });
+      controls.appendChild(seg);
+    }
+
+    var spinWrap = elem("label", "qs-check");
+    var spinBox = elem("input");
+    spinBox.type = "checkbox";
+    spinBox.onchange = function () { st.spin = spinBox.checked; if (st.spin) tick(); };
+    spinWrap.appendChild(spinBox);
+    spinWrap.appendChild(document.createTextNode(" spin"));
+    controls.appendChild(spinWrap);
+
+    var antiWrap = elem("label", "qs-check");
+    var antiBox = elem("input");
+    antiBox.type = "checkbox";
+    antiBox.onchange = function () { st.antipodal = antiBox.checked; render(); };
+    antiWrap.appendChild(antiBox);
+    antiWrap.appendChild(document.createTextNode(" antipodal"));
+    controls.appendChild(antiWrap);
+
+    var resetBtn = elem("button", "qs-btn", "reset view");
+    resetBtn.onclick = function () { st.az = 0.5; st.el = 0.35; st.scale = 1; render(); };
+    controls.appendChild(resetBtn);
+
+    var legend = elem("div", "qs-legend");
+    controls.appendChild(legend);
+
+    // One canvas per panel; all share rotation/zoom/visibility.
+    var stage = elem("div", "qs-stage");
+    root.appendChild(stage);
+    var views = panels.map(function (p) {
+      var cell = elem("div", "qs-cell");
+      cell.appendChild(elem("div", "qs-title", p.title || ""));
+      var canvas = elem("canvas", "qs-canvas");
+      cell.appendChild(canvas);
+      stage.appendChild(cell);
+      var g = viewGeometry(p);
+      return { panel: p, canvas: canvas, ctx: canvas.getContext("2d"), proj: [],
+               maxR: g.maxR, shellRadius: g.shellRadius };
+    });
+
+    var tip = elem("div", "qs-tip");
+    tip.style.display = "none";
+    root.appendChild(tip);
+
+    // Self-documenting note: only shown when the scheme actually has coincidence.
+    if (hasCoincident) {
+      root.appendChild(elem("div", "qs-note",
+        "&#9680; a split marker is one q-space coordinate sampled by more than " +
+        "one series / phase-encoding direction &mdash; hover to list them"));
+    }
+
+    // ---- controls state ---------------------------------------------------
+    function syncSeg() {
+      controls.querySelectorAll(".qs-seg-btn").forEach(function (b) {
+        b.classList.toggle("on", b.dataset.mode === st.mode);
+      });
+    }
+
+    function buildLegend() {
+      legend.innerHTML = "";
+      var mode = MODES[st.mode];
+      mode.cats.forEach(function (label, i) {
+        var off = st.hidden[st.mode][i];
+        var item = elem("button", "qs-leg" + (off ? " off" : ""));
+        var sw = elem("span", "qs-sw");
+        sw.style.background = PALETTE[i % PALETTE.length];
+        item.appendChild(sw);
+        item.appendChild(document.createTextNode(label));
+        item.onclick = function () {
+          st.hidden[st.mode][i] = !st.hidden[st.mode][i];
+          buildLegend();
+          render();
+        };
+        legend.appendChild(item);
+      });
+    }
+
+    // ---- projection + drawing --------------------------------------------
+    function project(c, cx, cy, s) {
+      // Rotate azimuth about vertical (y), then elevation about horizontal (x).
+      var ca = Math.cos(st.az), sa = Math.sin(st.az);
+      var x1 = c[0] * ca + c[2] * sa;
+      var z1 = -c[0] * sa + c[2] * ca;
+      var y1 = c[1];
+      var ce = Math.cos(st.el), se = Math.sin(st.el);
+      var y2 = y1 * ce - z1 * se;
+      var z2 = y1 * se + z1 * ce;
+      return { x: cx + s * x1, y: cy - s * y2, depth: z2 };
+    }
+
+    function render() {
+      var mode = MODES[st.mode];
+      views.forEach(function (v) {
+        var dpr = window.devicePixelRatio || 1;
+        var w = v.canvas.clientWidth, h = v.canvas.clientHeight;
+        if (v.canvas.width !== w * dpr || v.canvas.height !== h * dpr) {
+          v.canvas.width = w * dpr; v.canvas.height = h * dpr;
+        }
+        var ctx = v.ctx;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        var cx = w / 2, cy = h / 2;
+        var half = Math.min(w, h) / 2 - 22;
+        if (half <= 1) return;                 // canvas too small to draw
+        var s = half / v.maxR * st.scale;
+
+        drawShells(ctx, cx, cy, s, v.shellRadius);
+        drawAxes(ctx, cx, cy, s, v.maxR);
+
+        // Antipodal mirror: faint -g copy of each diffusion-weighted sample, so
+        // a half-sphere acquisition reads as the full shell it is equivalent to.
+        if (st.antipodal) {
+          ctx.globalAlpha = 0.16;
+          ctx.fillStyle = "#94a3b8";
+          clusters.forEach(function (cl) {
+            if (isB0(meta[cl.idx[0]])) return;
+            var shown = cl.idx.some(function (i) {
+              return !st.hidden[st.mode][mode.of(meta[i])];
+            });
+            if (!shown) return;
+            var c = v.panel.coords[cl.idx[0]];
+            var pr = project([-c[0], -c[1], -c[2]], cx, cy, s);
+            ctx.beginPath(); ctx.arc(pr.x, pr.y, 2.4, 0, 6.2832); ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+        }
+
+        // Build the visible, depth-sorted list of clusters. Coincident samples
+        // share one screen position, so we draw per cluster, not per point.
+        var drawList = [];
+        clusters.forEach(function (cl) {
+          var vis = cl.idx.filter(function (i) {
+            var m = meta[i];
+            return isB0(m) || !st.hidden[st.mode][mode.of(m)];
+          });
+          if (!vis.length) return;
+          var pr = project(v.panel.coords[cl.idx[0]], cx, cy, s);
+          drawList.push({ cl: cl, vis: vis, x: pr.x, y: pr.y, depth: pr.depth });
+        });
+        drawList.sort(function (a, b) { return a.depth - b.depth; });
+        v.proj = drawList;
+
+        var dmax = v.maxR * s || 1;
+        drawList.forEach(function (d) {
+          var t = (d.depth * s + dmax) / (2 * dmax);      // 0 far .. 1 near
+          var b0 = isB0(meta[d.vis[0]]);
+          var baseR = b0 ? 3.2 : 2.6 + 2.8 * t;
+          ctx.globalAlpha = b0 ? 0.92 : 0.5 + 0.5 * t;
+
+          if (b0) {
+            // Neutral labeled marker; direction is undefined at b=0.
+            ctx.fillStyle = B0_COLOR;
+            ctx.beginPath(); ctx.arc(d.x, d.y, baseR, 0, 6.2832); ctx.fill();
+            ctx.lineWidth = 1; ctx.strokeStyle = "#64748b"; ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = "#475569";
+            ctx.font = "9px ui-sans-serif,system-ui,sans-serif";
+            ctx.fillText("b=0" + (d.vis.length > 1 ? " ×" + d.vis.length : ""),
+                         d.x + baseR + 2, d.y - baseR);
+          } else {
+            var cats = [];
+            d.vis.forEach(function (i) {
+              var c = mode.of(meta[i]);
+              if (cats.indexOf(c) < 0) cats.push(c);
+            });
+            if (cats.length <= 1) {
+              ctx.fillStyle = PALETTE[cats[0] % PALETTE.length];
+              ctx.beginPath(); ctx.arc(d.x, d.y, baseR, 0, 6.2832); ctx.fill();
+            } else {
+              // Split marker; grow with wedge count so thin slices stay legible.
+              var rr = baseR + 1.4 + 0.8 * Math.min(cats.length - 2, 4);
+              var a = -Math.PI / 2, step = 2 * Math.PI / cats.length;
+              cats.forEach(function (c) {
+                ctx.fillStyle = PALETTE[c % PALETTE.length];
+                ctx.beginPath(); ctx.moveTo(d.x, d.y);
+                ctx.arc(d.x, d.y, rr, a, a + step); ctx.closePath(); ctx.fill();
+                a += step;
+              });
+            }
+          }
+          if (st.hover && st.hover.view === v && st.hover.cl === d.cl) {
+            ctx.globalAlpha = 1;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#0f172a";
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, baseR + 3, 0, 6.2832);
+            ctx.stroke();
+          }
+        });
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    var LOG10 = Math.log(10);
+    function niceStep(x) {
+      var p = Math.pow(10, Math.floor(Math.log(x) / LOG10));
+      var f = x / p;
+      return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+    }
+    function interpRadius(bs, sr, b) {
+      if (b <= bs[0]) return sr[bs[0]] * b / bs[0];
+      for (var i = 1; i < bs.length; i++) {
+        if (b <= bs[i]) {
+          var t = (b - bs[i - 1]) / (bs[i] - bs[i - 1]);
+          return sr[bs[i - 1]] + t * (sr[bs[i]] - sr[bs[i - 1]]);
+        }
+      }
+      return sr[bs[bs.length - 1]] * b / bs[bs.length - 1];
+    }
+    // Which b-values get a labeled ring. Few shells -> one ring each. Many
+    // distinct b-values (Cartesian/DSI grid) -> a handful of round-number
+    // rings, radius interpolated from the points so the convention still holds.
+    function ringTicks(shellRadius) {
+      var bs = Object.keys(shellRadius).map(Number)
+                     .sort(function (a, b) { return a - b; });
+      if (!bs.length) return [];
+      if (bs.length <= 8) {
+        return bs.map(function (b) { return { b: b, r: shellRadius[b] }; });
+      }
+      var maxb = bs[bs.length - 1], step = niceStep(maxb / 4), ticks = [];
+      for (var b = step; b <= maxb + 1e-6; b += step) ticks.push(b);
+      if (ticks[ticks.length - 1] < maxb * 0.98) ticks.push(maxb);
+      return ticks.map(function (b) {
+        return { b: b, r: interpRadius(bs, shellRadius, b) };
+      });
+    }
+
+    // Concentric b-value reference rings. Orthographic projection maps each
+    // shell sphere to a circle of the same radius regardless of rotation, so
+    // these stay fixed while the axes turn through them.
+    function drawShells(ctx, cx, cy, s, shellRadius) {
+      ctx.font = "10px ui-sans-serif,system-ui,sans-serif";
+      ctx.textBaseline = "middle";
+      ringTicks(shellRadius).forEach(function (t) {
+        var r = t.r * s;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, 6.2832);
+        ctx.strokeStyle = "rgba(148,163,184,0.32)";
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Label up-and-right of the ring, with a white halo for legibility.
+        var lx = cx + r * 0.7071 + 4, ly = cy - r * 0.7071;
+        var label = "b=" + roundB(t.b);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(252,253,254,0.95)";
+        ctx.strokeText(label, lx, ly);
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillText(label, lx, ly);
+      });
+      ctx.textBaseline = "alphabetic";
+    }
+
+    function drawAxes(ctx, cx, cy, s, maxR) {
+      var units = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+      ctx.strokeStyle = AXIS_COLOR;
+      ctx.lineWidth = 1;
+      ctx.font = "600 11px ui-sans-serif,system-ui,sans-serif";
+      units.forEach(function (e, k) {
+        var pos = project([e[0] * maxR, e[1] * maxR, e[2] * maxR], cx, cy, s);
+        var neg = project([-e[0] * maxR, -e[1] * maxR, -e[2] * maxR], cx, cy, s);
+        ctx.beginPath();
+        ctx.moveTo(neg.x, neg.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(axisLabels[k], pos.x + 3, pos.y - 3);
+        if (axisLabelsNeg) ctx.fillText(axisLabelsNeg[k], neg.x + 3, neg.y - 3);
+      });
+    }
+
+    // ---- interaction ------------------------------------------------------
+    var drag = null;
+    stage.addEventListener("pointerdown", function (e) {
+      drag = { x: e.clientX, y: e.clientY };
+      st.spin = false; spinBox.checked = false;
+      stage.setPointerCapture(e.pointerId);
+    });
+    stage.addEventListener("pointermove", function (e) {
+      if (drag) {
+        st.az += (e.clientX - drag.x) * 0.01;
+        st.el += (e.clientY - drag.y) * 0.01;
+        st.el = Math.max(-1.5, Math.min(1.5, st.el));
+        drag.x = e.clientX; drag.y = e.clientY;
+        render();
+      } else {
+        hoverAt(e);
+      }
+    });
+    stage.addEventListener("pointerup", function () { drag = null; });
+    stage.addEventListener("pointerleave", function () {
+      drag = null; st.hover = null; tip.style.display = "none"; render();
+    });
+    stage.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      st.scale *= e.deltaY < 0 ? 1.1 : 0.9;
+      st.scale = Math.max(0.4, Math.min(4, st.scale));
+      render();
+    }, { passive: false });
+
+    function hoverAt(e) {
+      var found = null;
+      for (var vi = 0; vi < views.length; vi++) {
+        var v = views[vi];
+        var rect = v.canvas.getBoundingClientRect();
+        if (e.clientX < rect.left || e.clientX > rect.right ||
+            e.clientY < rect.top || e.clientY > rect.bottom) continue;
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        for (var j = v.proj.length - 1; j >= 0; j--) {      // nearest = topmost
+          var d = v.proj[j];
+          if (Math.hypot(d.x - mx, d.y - my) < 8) {
+            found = { view: v, d: d, sx: e.clientX, sy: e.clientY };
+            break;
+          }
+        }
+        if (found) break;
+      }
+      var changed = (found && (!st.hover || st.hover.cl !== found.d.cl)) ||
+                    (!found && st.hover);
+      st.hover = found ? { view: found.view, cl: found.d.cl } : null;
+      if (found) {
+        // List every (visible) sample at this coordinate.
+        var lines = found.d.vis.map(function (i) {
+          var m = meta[i];
+          return (files[m.file] || "?") + " &middot; PE " + m.pe +
+                 " &middot; b=" + (isB0(m) ? 0 : roundB(m.b));
+        });
+        var head = found.d.vis.length > 1
+          ? "<b>" + found.d.vis.length + " samples here</b><br>" : "";
+        tip.innerHTML = head + lines.join("<br>");
+        var box = root.getBoundingClientRect();
+        tip.style.left = (found.sx - box.left + 12) + "px";
+        tip.style.top = (found.sy - box.top + 12) + "px";
+        tip.style.display = "block";
+      } else {
+        tip.style.display = "none";
+      }
+      if (changed) render();
+    }
+
+    function tick() {
+      if (!st.spin) return;
+      st.az += 0.006;
+      render();
+      requestAnimationFrame(tick);
+    }
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { render(); }).observe(stage);
+    }
+    // A canvas laid out to zero width at first paint — e.g. when the host page's
+    // stylesheet is still loading — renders blank. Re-render once the page has
+    // fully loaded so the backing store picks up the settled width.
+    if (document.readyState !== "complete") {
+      window.addEventListener("load", render);
+    }
+
+    syncSeg();
+    buildLegend();
+    render();
+  }
+
+  function boot() {
+    document.querySelectorAll(".qspace-viewer").forEach(init);
+  }
+
+  // The host-page API: interactive hosts re-scan after swapping in new
+  // viewer markup (init is idempotent per element); the embedded boot path
+  // stays for static pages.
+  window.QSIPrepQSpace = { init: init, boot: boot };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script><script>/* Interactive pipeline-plan viewer.
+ *
+ * Renders the execution-plan payload embedded by qsiprep/viz/pipeline.py as
+ * an SVG flow diagram: one lane per output file, each processing run's stages
+ * drawn in plan order (so eddy+TOPUP shows the field estimated first and
+ * consumed during motion correction), fieldmap estimations feeding their
+ * stages, and the assembly step joining multi-run outputs. Hovering a node
+ * shows the full step sentence and file lists.
+ *
+ * No dependencies. Boots idempotently on every .pipeline-viewer element, so
+ * any number of viewers can share one page.
+ */
+(function () {
+  'use strict';
+
+  var NODE_W = 128;
+  var NODE_H = 46;
+  var GAP_X = 44;
+  var ROW_H = 96;
+  var PAD = 14;
+  var CHIP_H = 24;
+
+  var STYLE = {
+    files: { fill: '#f1f5f9', stroke: '#94a3b8', text: '#334155' },
+    hmc: { fill: '#dbeafe', stroke: '#2563eb', text: '#1e3a8a' },
+    'hmc-with-field': { fill: '#dbeafe', stroke: '#2563eb', text: '#1e3a8a' },
+    estimate: { fill: '#fef3c7', stroke: '#d97706', text: '#92400e' },
+    'estimate+apply': { fill: '#dcfce7', stroke: '#16a34a', text: '#14532d' },
+    refine: { fill: '#ede9fe', stroke: '#7c3aed', text: '#4c1d95' },
+    assemble: { fill: '#e2e8f0', stroke: '#475569', text: '#1e293b' },
+    output: { fill: '#0f172a', stroke: '#0f172a', text: '#ffffff' },
+  };
+
+  var ROLE_PHRASES = {
+    estimate: 'estimates the field',
+    hmc: 'motion correction',
+    'hmc-with-field': 'motion + field applied',
+    'estimate+apply': 'estimates & corrects',
+    refine: 'refines the correction',
+  };
+
+  function el(name, attrs, text) {
+    var node = document.createElementNS('http://www.w3.org/2000/svg', name);
+    for (var key in attrs) node.setAttribute(key, attrs[key]);
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function truncate(text, max) {
+    return text.length > max ? text.slice(0, max - 1) + '…' : text;
+  }
+
+  function plural(n, word) {
+    // 'series' is invariant; everything else takes a plain s.
+    if (word === 'series' || n === 1) return n + ' ' + word;
+    return n + ' ' + word + 's';
+  }
+
+  /* ------------------------------------------------------------------ */
+
+  function render(root, data) {
+    // Re-entrant: an interactive host calls this again with a new payload
+    // whenever the user changes the method controls. Outputs are drawn into
+    // per-output hosts (.output-plan, matched by output name within the same
+    // grouping fragment) when the page carries them; anything unmatched
+    // lands in `root`.
+    var scope = root.closest('.qsi-grouping') || document;
+    var hosts = {};
+    scope.querySelectorAll('.output-plan').forEach(function (host) {
+      hosts[host.dataset.outputName] = host;
+      host.querySelectorAll('.pp-output, .pp-tip').forEach(function (el) {
+        el.remove();
+      });
+    });
+    root.querySelectorAll('.pp-output, .pp-tip').forEach(function (el) {
+      el.remove();
+    });
+
+    var runsByKey = {};
+    data.runs.forEach(function (run) { runsByKey[run.key] = run; });
+
+    var tips = {};
+    function tipFor(target) {
+      var key = target.dataset.outputName || '';
+      if (!tips[key]) {
+        var tip = document.createElement('div');
+        tip.className = 'pp-tip';
+        target.appendChild(tip);
+        tips[key] = tip;
+      }
+      return tips[key];
+    }
+
+    data.outputs.forEach(function (output) {
+      var target = hosts[output.name] || root;
+      target.appendChild(renderOutput(data, output, runsByKey, tipFor(target), target));
+    });
+  }
+
+  function init(root) {
+    if (root.dataset.ppReady) return;
+    root.dataset.ppReady = '1';
+    var script = root.querySelector('script[type="application/json"]');
+    if (!script) return;
+    var data;
+    try {
+      data = JSON.parse(script.textContent);
+    } catch (err) {
+      return;
+    }
+    render(root, data);
+  }
+
+  function issuesFor(data, output) {
+    return data.issues.filter(function (issue) {
+      return (
+        issue.scope === output.group ||
+        issue.scope === null ||
+        output.runs.indexOf(issue.run) >= 0
+      );
+    });
+  }
+
+  function renderOutput(data, output, runsByKey, tip, root) {
+    var box = document.createElement('div');
+    box.className = 'pp-output';
+    var head = document.createElement('div');
+    head.className = 'pp-head';
+    head.textContent = output.name;
+    box.appendChild(head);
+
+    var runs = output.runs.map(function (key) { return runsByKey[key]; });
+    var multi = runs.length > 1;
+    // Columns: files, then the longest stage chain, then assemble (if
+    // multi-run), then the output node.
+    var maxStages = 0;
+    runs.forEach(function (run) {
+      if (run.stages.length > maxStages) maxStages = run.stages.length;
+    });
+    var tailCols = multi ? 2 : 1;
+    var nCols = 1 + maxStages + tailCols;
+    var width = PAD * 2 + nCols * NODE_W + (nCols - 1) * GAP_X;
+    var height = PAD * 2 + CHIP_H + runs.length * ROW_H;
+
+    var svg = el('svg', {
+      viewBox: '0 0 ' + width + ' ' + height,
+      width: width,
+      height: height,
+      class: 'pp-svg',
+      role: 'group',
+      'aria-label': 'Processing plan for ' + output.name,
+    });
+    svg.appendChild(el('title', {}, 'Processing plan for ' + output.name));
+
+    function colX(col) {
+      return PAD + col * (NODE_W + GAP_X);
+    }
+    function rowY(row) {
+      return PAD + CHIP_H + row * ROW_H + (ROW_H - NODE_H) / 2;
+    }
+
+    runs.forEach(function (run, row) {
+      var y = rowY(row);
+      var filesNode = drawNode(svg, colX(0), y, 'files', truncate(run.key, 20),
+        plural(run.files.length, 'series') + ' · denoise');
+      hover(filesNode, tip, root,
+        '<b>' + esc(run.key) + '</b><br>' +
+        'Each series is denoised, then the unit is concatenated.<br>' +
+        esc(run.files.join(', ')));
+
+      var prev = { x: colX(0), y: y };
+      run.stages.forEach(function (stage, idx) {
+        var x = colX(1 + idx);
+        var style = stage.role === 'estimate' ? 'estimate' : stage.role;
+        var subtitle = ROLE_PHRASES[stage.role] || stage.role;
+        if (stage.channels) {
+          // DRBUDDI: name the registration channels (b=0 / +FA / +T2w).
+          subtitle = stage.channels + ' registration';
+        } else if (stage.target) {
+          subtitle += ' · ' + stage.target;
+        }
+        var node = drawNode(svg, x, y, style, stage.label, subtitle);
+        var edgeLabel = null;
+        var next = run.stages[idx + 1];
+        if (next && next.consumes === stage.index) edgeLabel = 'field';
+        drawEdge(svg, prev.x + NODE_W, prev.y + NODE_H / 2, x, y + NODE_H / 2, null);
+        if (edgeLabel === null && stage.consumes !== null && stage.consumes !== undefined) {
+          // The edge INTO this node carries the estimated field.
+          drawEdgeLabel(svg, x - GAP_X / 2, y + NODE_H / 2 - 6, 'field');
+        }
+        if (stage.estimation) drawFieldmapChip(svg, x, y, stage, tip, root);
+        var detail = '<b>' + esc(stage.label) + '</b><br>' + esc(stage.text || subtitle);
+        if (stage.sources.length) {
+          detail += '<br>fieldmap sources: ' + esc(stage.sources.join(', '));
+        }
+        if (stage.borrowed.length) {
+          detail += '<br>borrowed b=0: ' + esc(stage.borrowed.join(', '));
+        }
+        hover(node, tip, root, detail);
+        prev = { x: x, y: y };
+      });
+      run._endX = prev.x + NODE_W;
+      run._endY = prev.y + NODE_H / 2;
+    });
+
+    var outCol = nCols - 1;
+    var midY = PAD + CHIP_H + (runs.length * ROW_H - NODE_H) / 2;
+    if (multi) {
+      var asmX = colX(nCols - 2);
+      var verb = output.strategy === 'average' ? 'average' : 'concatenate';
+      var asmNode = drawNode(svg, asmX, midY, 'assemble', verb,
+        plural(runs.length, 'run') + ' combined');
+      hover(asmNode, tip, root,
+        'The corrected results of the ' + runs.length +
+        ' runs are resampled onto one grid and ' +
+        (output.strategy === 'average' ? 'averaged' : 'concatenated') + '.');
+      runs.forEach(function (run) {
+        drawElbow(svg, run._endX, run._endY, asmX, midY + NODE_H / 2);
+      });
+      drawEdge(svg, asmX + NODE_W, midY + NODE_H / 2, colX(outCol), midY + NODE_H / 2);
+    } else {
+      drawEdge(svg, runs[0]._endX, runs[0]._endY, colX(outCol), midY + NODE_H / 2);
+    }
+    var outNode = drawNode(svg, colX(outCol), midY, 'output', 'output file',
+      truncate(output.name, 20));
+    hover(outNode, tip, root, '<b>' + esc(output.name) + '_dwi.nii.gz</b>');
+
+    var outputIssues = issuesFor(data, output);
+    if (outputIssues.length) {
+      var hasError = outputIssues.some(function (issue) { return issue.severity === 'error'; });
+      var badge = el('circle', {
+        cx: colX(outCol) + NODE_W - 4,
+        cy: midY + 4,
+        r: 8,
+        fill: hasError ? '#dc2626' : '#f59e0b',
+        stroke: '#fff',
+        'stroke-width': 1.5,
+        class: 'pp-node',
+      });
+      svg.appendChild(badge);
+      hover(badge, tip, root, outputIssues.map(function (issue) {
+        return '<b>' + esc(issue.severity.toUpperCase()) + '</b> [' +
+          esc(issue.code) + '] ' + esc(issue.message);
+      }).join('<br>'));
+    }
+
+    var scroller = document.createElement('div');
+    scroller.className = 'pp-scroll';
+    scroller.appendChild(svg);
+    box.appendChild(scroller);
+    return box;
+  }
+
+  /* -------------------------- drawing helpers ----------------------- */
+
+  function drawNode(svg, x, y, styleName, title, subtitle) {
+    var style = STYLE[styleName] || STYLE.files;
+    var group = el('g', { class: 'pp-node' });
+    group.appendChild(el('rect', {
+      x: x, y: y, width: NODE_W, height: NODE_H, rx: 9,
+      fill: style.fill, stroke: style.stroke, 'stroke-width': 1.6,
+    }));
+    group.appendChild(el('text', {
+      x: x + NODE_W / 2, y: y + 19, 'text-anchor': 'middle',
+      'font-size': 12.5, 'font-weight': 650, fill: style.text,
+    }, truncate(title, 17)));
+    if (subtitle) {
+      group.appendChild(el('text', {
+        x: x + NODE_W / 2, y: y + 35, 'text-anchor': 'middle',
+        'font-size': 9.5, fill: style.text, opacity: 0.85,
+      }, truncate(subtitle, 24)));
+    }
+    svg.appendChild(group);
+    return group;
+  }
+
+  function drawEdge(svg, x1, y1, x2, y2) {
+    svg.appendChild(el('line', {
+      x1: x1 + 2, y1: y1, x2: x2 - 6, y2: y2,
+      stroke: '#94a3b8', 'stroke-width': 1.6,
+    }));
+    svg.appendChild(el('path', {
+      d: 'M' + (x2 - 7) + ',' + (y2 - 4) + ' L' + (x2 - 1) + ',' + y2 +
+        ' L' + (x2 - 7) + ',' + (y2 + 4) + ' Z',
+      fill: '#94a3b8',
+    }));
+  }
+
+  function drawElbow(svg, x1, y1, x2, y2) {
+    var mid = x1 + GAP_X / 2;
+    svg.appendChild(el('path', {
+      d: 'M' + (x1 + 2) + ',' + y1 + ' H' + mid + ' V' + y2 + ' H' + (x2 - 6),
+      fill: 'none', stroke: '#94a3b8', 'stroke-width': 1.6,
+    }));
+    svg.appendChild(el('path', {
+      d: 'M' + (x2 - 7) + ',' + (y2 - 4) + ' L' + (x2 - 1) + ',' + y2 +
+        ' L' + (x2 - 7) + ',' + (y2 + 4) + ' Z',
+      fill: '#94a3b8',
+    }));
+  }
+
+  function drawEdgeLabel(svg, x, y, text) {
+    svg.appendChild(el('text', {
+      x: x, y: y, 'text-anchor': 'middle', 'font-size': 9,
+      fill: '#b45309', 'font-weight': 650,
+    }, text));
+  }
+
+  function drawFieldmapChip(svg, x, y, stage, tip, root) {
+    var chipY = y - CHIP_H + 3;
+    var group = el('g', { class: 'pp-node' });
+    group.appendChild(el('line', {
+      x1: x + NODE_W / 2, y1: chipY + 16, x2: x + NODE_W / 2, y2: y,
+      stroke: '#d97706', 'stroke-width': 1.2, 'stroke-dasharray': '3,2',
+    }));
+    group.appendChild(el('rect', {
+      x: x + 12, y: chipY, width: NODE_W - 24, height: 17, rx: 8,
+      fill: '#fffbeb', stroke: '#d97706', 'stroke-width': 1.2,
+    }));
+    var label = (stage.letter ? stage.letter + ' · ' : '') + stage.estimation;
+    group.appendChild(el('text', {
+      x: x + NODE_W / 2, y: chipY + 12, 'text-anchor': 'middle',
+      'font-size': 9, fill: '#92400e', 'font-weight': 650,
+    }, truncate(label, 20)));
+    svg.appendChild(group);
+    var detail = '<b>fieldmap ' + esc(stage.estimation) + '</b>';
+    if (stage.sources.length) detail += '<br>' + esc(stage.sources.join(', '));
+    hover(group, tip, root, detail);
+  }
+
+  /* --------------------------- interaction -------------------------- */
+
+  function esc(text) {
+    var div = document.createElement('div');
+    div.textContent = text == null ? '' : String(text);
+    return div.innerHTML;
+  }
+
+  function hover(node, tip, root, html) {
+    var label = document.createElement('div');
+    label.innerHTML = html;
+    node.setAttribute('tabindex', '0');
+    node.setAttribute('role', 'img');
+    node.setAttribute('aria-label', label.textContent);
+    function show() {
+      tip.innerHTML = html;
+      tip.style.display = 'block';
+    }
+    function hide() {
+      tip.style.display = 'none';
+    }
+    node.addEventListener('mouseenter', show);
+    node.addEventListener('mousemove', function (event) {
+      var bounds = root.getBoundingClientRect();
+      var x = event.clientX - bounds.left + 14;
+      var y = event.clientY - bounds.top + 14;
+      var maxX = root.clientWidth - tip.offsetWidth - 8;
+      tip.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+      tip.style.top = y + 'px';
+    });
+    node.addEventListener('mouseleave', function () {
+      hide();
+    });
+    node.addEventListener('focus', function () {
+      show();
+      tip.style.left = '8px';
+      tip.style.top = '8px';
+    });
+    node.addEventListener('blur', hide);
+    node.addEventListener('click', function () {
+      node.focus();
+      show();
+    });
+    node.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        hide();
+        node.blur();
+      }
+    });
+  }
+
+  function boot() {
+    document.querySelectorAll('.pipeline-viewer').forEach(init);
+  }
+
+  // The host-page API: interactive hosts re-render a container from a new
+  // payload; the embedded-script boot path stays for static pages.
+  window.QSIPrepPipeline = { render: render };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script><script>
+document.querySelectorAll('.qsi-grouping').forEach(root => {
+  // Hover an estimation card or letter chip -> highlight everything that
+  // estimation touches (its card, its chips, the groups it corrects).
+  // Bound per container so the explorer can re-bind after swapping content.
+  const bindHover = container => {
+    container.querySelectorAll('[data-est]').forEach(el => {
+      const eid = el.dataset.est;
+      el.addEventListener('mouseenter', () => {
+        container.querySelectorAll('[data-est]').forEach(other => {
+          if (other.dataset.est === eid) other.classList.add('hl');
+        });
+      });
+      el.addEventListener('mouseleave', () => {
+        container.querySelectorAll('.hl').forEach(other => other.classList.remove('hl'));
+      });
+    });
+  };
+  bindHover(root);
+
+  // Method-control plumbing shared by both interactive modes: gate the SDC
+  // options on the HMC method and spell the selection's canonical key
+  // (sorted name=value parts - the same spelling Python produces).
+  const SDC_OPTIONS = {
+    eddy: ['topup', 'drbuddi', 'topup+drbuddi'],
+    shoreline: ['drbuddi'],
+    tortoise: ['drbuddi'],
+  };
+  const methodControls = section => {
+    const hmc = section.querySelector('.ctl-hmc');
+    const model = section.querySelector('.ctl-model');
+    const modelWrap = section.querySelector('.ctl-model-wrap');
+    const sdc = section.querySelector('.ctl-sdc');
+    return {
+      controls: [hmc, model, sdc],
+      sync: () => {
+        const options = SDC_OPTIONS[hmc.value];
+        if (!options.includes(sdc.value)) sdc.value = options[0];
+        [...sdc.options].forEach(option => {
+          option.hidden = !options.includes(option.value);
+          option.disabled = option.hidden;
+        });
+        modelWrap.style.display = hmc.value === 'shoreline' ? '' : 'none';
+      },
+      key: () => {
+        const parts = ['hmc-method=' + hmc.value, 'sdc-method=' + sdc.value];
+        if (hmc.value === 'shoreline') parts.push('shoreline-model=' + model.value);
+        return parts.sort().join('&');
+      },
+    };
+  };
+
+  // Interactive processing plan over one fixed grouping: the method controls
+  // pick a flag combination; the provider maps its canonical key to a plan
+  // payload and the diagram re-renders. Today the provider reads the embedded
+  // index; a live host swaps in one that fetches /plan?<key> instead.
+  root.querySelectorAll('.plan-interactive').forEach(section => {
+    const index = JSON.parse(
+      section.querySelector('script.plan-payloads').textContent);
+    const provider = key => Promise.resolve(index[key]);
+    const methods = methodControls(section);
+    const host = section.querySelector('.plan-host');
+    const cli = section.querySelector('.plan-cli');
+    const update = () => {
+      methods.sync();
+      const key = methods.key();
+      provider(key).then(payload => {
+        if (!payload) return;
+        window.QSIPrepPipeline.render(host, payload);
+        cli.textContent = payload.selection.label + '  (' + payload.selection.cli + ')';
+        section.querySelectorAll('.plan-prose').forEach(details => {
+          details.style.display = details.dataset.planKey === key ? '' : 'none';
+        });
+      });
+    };
+    methods.controls.forEach(control => control.addEventListener('change', update));
+    update();
+  });
+
+  // Explorer: both flag axes are live. The policy controls spell a canonical
+  // policy key; its grouping *signature* addresses one embedded rendering
+  // and one set of compiled plans, so no-op flag combinations share content.
+  const indexScript = root.querySelector('script.explorer-index');
+  if (indexScript) {
+    const index = JSON.parse(indexScript.textContent);
+    const view = root.querySelector('.grouping-view');
+    const notes = root.querySelector('.grouping-notes');
+    const policyCtls = [...root.querySelectorAll('.ctl-policy')];
+    const policyCli = root.querySelector('.policy-cli');
+    const section = root.querySelector('.plan-explorer');
+    const methods = methodControls(section);
+    const host = section.querySelector('.plan-host');
+    const cli = section.querySelector('.plan-cli');
+    const prose = section.querySelector('.prose-host');
+    const status = section.querySelector('.plan-status');
+
+    const policyKey = (overrideCtl, overrideValue) => {
+      const parts = [...(index.fixedPolicyParts || [])];
+      policyCtls.forEach(ctl => {
+        let value;
+        if (ctl === overrideCtl) value = overrideValue;
+        else if (ctl.type === 'checkbox') value = ctl.checked ? ctl.dataset.part : '';
+        else value = ctl.value;
+        // A select option may compose several flags (--sdc-anat-reference X --force
+        // sdc-anat-reference): its value carries both key parts joined with '&'.
+        if (value) parts.push(...value.split('&'));
+      });
+      return parts.sort().join('&');
+    };
+    // Grey out any policy control whose every alternative state maps to the
+    // grouping already shown: the flag exists, but for this dataset it
+    // changes nothing.
+    const markNoops = sig => {
+      policyCtls.forEach(ctl => {
+        const alts = ctl.type === 'checkbox'
+          ? [policyKey(ctl, ctl.checked ? '' : ctl.dataset.part)]
+          : [...ctl.options].filter(option => option.value !== ctl.value)
+              .map(option => policyKey(ctl, option.value));
+        const noop = alts.every(key => (index.policies[key] || {}).sig === sig);
+        const label = ctl.closest('label');
+        label.classList.toggle('noop', noop);
+        label.title = noop ? 'No effect for this dataset' : '';
+      });
+    };
+
+    // The view provider: resolve a (policy key, selection key) pair to the
+    // grouping rendering plus the compiled plan payload. The embedded index
+    // is the first and only source on a static page; when the page carries a
+    // live endpoint (the served mode), misses are fetched from the real
+    // compiler and cached back into the index. The fetch query IS the
+    // combined canonical key - the same spelling either provider consumes.
+    const resolveView = (pkey, policy, skey) => {
+      const sig = policy.sig;
+      const cachedGrouping = sig && index.groupings[sig];
+      const cachedPayload = sig && (index.plans[sig] || {})[skey];
+      if (cachedGrouping && cachedPayload) {
+        return Promise.resolve({policy, grouping: cachedGrouping, payload: cachedPayload});
+      }
+      if (!index.api) return Promise.resolve(null);
+      const query = [pkey, skey].filter(Boolean).join('&');
+      return fetch(index.api + '?' + query)
+        .then(response => {
+          if (!response.ok) throw new Error('view failed: ' + response.status);
+          return response.json();
+        })
+        .then(data => {
+          const actual = data.policy;
+          index.policies[pkey] = actual;
+          index.groupings[actual.sig] = data.grouping;
+          (index.plans[actual.sig] = index.plans[actual.sig] || {})[skey] = data.payload;
+          return {policy: actual, grouping: data.grouping, payload: data.payload};
+        });
+    };
+
+    let shownSig = null;
+    let latest = 0;
+    const update = () => {
+      methods.sync();
+      const pkey = policyKey();
+      const policy = index.policies[pkey];
+      if (!policy) {
+        status.textContent = 'This grouping combination is unavailable.';
+        status.classList.add('error');
+        return;
+      }
+      const ticket = ++latest;
+      status.textContent = index.api ? 'Updating…' : '';
+      status.classList.remove('error');
+      resolveView(pkey, policy, methods.key()).then(resolved => {
+        if (!resolved || ticket !== latest) return;
+        const actual = resolved.policy;
+        markNoops(actual.sig);
+        policyCli.textContent = actual.cli || '(defaults)';
+        if (actual.sig !== shownSig) {
+          shownSig = actual.sig;
+          view.innerHTML = resolved.grouping.view;
+          notes.innerHTML = resolved.grouping.notes;
+          bindHover(view);
+          if (window.QSIPrepQSpace) window.QSIPrepQSpace.boot();
+        }
+        window.QSIPrepPipeline.render(host, resolved.payload);
+        cli.textContent = resolved.payload.selection.label + '  ('
+          + resolved.payload.selection.cli + (actual.cli ? ' ' + actual.cli : '') + ')';
+        prose.innerHTML = resolved.payload.prose || '';
+        status.textContent = '';
+      }).catch(error => {
+        if (ticket !== latest) return;
+        status.textContent = 'Could not update the analysis plan. '
+          + 'The previous result is still shown.';
+        status.classList.add('error');
+        console.error(error);
+      });
+    };
+    [...policyCtls, ...methods.controls].forEach(
+      control => control.addEventListener('change', update));
+    update();
+  }
+});
+</script>
+        </div>
+    </div>
+    <div id="Summary" class="mt-5">
+    <h1 class="sub-report-title pt-5 ps-4">Summary</h1>
+        <div id="datatype-figures_desc-summary_subject-M2001_suffix-['T1w', 'T2w']" class="ps-4 pe-4 mb-2">
+                    <ul class="elem-desc">
+		<li>Subject ID: sub-M2001</li>
+		<li>Structural images: 1 T1-weighted </li>
+		<li>Diffusion-weighted series: inputs 1, outputs 1</li>
+	<ul>
+		<li>Output Name: sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4</li>
+			<li>Scan group: sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4 (PE Dir j-)</li><ul>
+				<li>DWI Files: </li>
+					<li> sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_dwi.nii.gz </li>
+</ul>
+</ul>
+
+		<li>Resampling targets: ACPC</li>
+		<li>Transform targets: ['ACPC', 'MNI152NLin2009cAsym']</li>
+	</ul>
+        </div>
+    </div>
+    <div id="Anatomical" class="mt-5">
+    <h1 class="sub-report-title pt-5 ps-4">Anatomical</h1>
+        <div id="datatype-figures_desc-conform_extension-['.html']_subject-M2001_suffix-['T1w', 'T2w']" class="ps-4 pe-4 mb-2">
+                    <h3 class="elem-title">Anatomical Conformation</h3>
+		<ul class="elem-desc">
+			<li>Input T1w images: 1</li>
+			<li>Output orientation: LPS</li>
+			<li>Output dimensions: 193x229x193</li>
+			<li>Output voxel size: 1mm x 1mm x 1mm</li>
+			<li>Discarded images: 0</li>
+
+		</ul>
+        </div>
+        <div id="datatype-figures_subject-M2001_suffix-dseg" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3">Brain mask and brain tissue segmentation of the T1w</h3><p class="elem-caption">This panel shows the final, preprocessed anatomical reference image,
+with contours delineating the detected brain mask and brain tissue segmentations.
+</p>                    <div class="reportlet">
+<img class="svg-reportlet" src="3b1bd1b1e26e2862-sub-M2001_dseg.svg" style="width: 100%" />
+</div>
+<small>Get figure file: <a href="3b1bd1b1e26e2862-sub-M2001_dseg.svg" target="_blank">sub-M2001/figures/sub-M2001_dseg.svg</a></small>
+
+        </div>
+        <div id="datatype-figures_regex_search-True_space-.*_subject-M2001_suffix-['T1w', 'T2w']" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3">Spatial normalization of the anatomical reference</h3><p class="elem-desc">Results of nonlinear alignment of the anatomical reference one or more template
+space(s). Hover on the panels with the mouse pointer to transition between both
+spaces.
+</p><p class="elem-caption">Spatial normalization of the anatomical reference to the <code>MNI152NLin2009cAsym</code> template.</p>                    <div class="reportlet">
+<object class="svg-reportlet" type="image/svg+xml" data="./sub-M2001/figures/sub-M2001_space-MNI152NLin2009cAsym_T1w.svg" style="">
+Problem loading figure sub-M2001/figures/sub-M2001_space-MNI152NLin2009cAsym_T1w.svg. If the link below works, please try reloading the report in your browser.</object>
+</div>
+<small>Get figure file: <a href="a07cb4e80eb619a8-sub-M2001_space-MNI152NLin2009cAsym_T1w.svg" target="_blank">sub-M2001/figures/sub-M2001_space-MNI152NLin2009cAsym_T1w.svg</a></small>
+
+        </div>
+    </div>
+    <div id="Diffusion" class="mt-5">
+    <h1 class="sub-report-title pt-5 ps-4">Diffusion</h1>
+        <div id="acquisition-epb0p2_datatype-figures_desc-summary_direction-AP_run-4_session-1225_subject-M2001_suffix-dwi" class="ps-4 pe-4 mb-2">
+<h2 class="sub-report-group mt-4">Reports for: session <span class="bids-entity">1225</span>, acquisition <span class="bids-entity">epb0p2</span>, direction <span class="bids-entity">AP</span>, run <span class="bids-entity">4</span>.</h2>                    <h3 class="elem-title">Summary</h3>
+		<ul class="elem-desc">
+			<li>Phase-encoding (PE) direction: Anterior-Posterior</li>
+			<li>Susceptibility distortion correction: None</li>
+			<li>Coregistration DOF: 6</li>
+			<li>DWI bias correction: n4 (applied)</li>
+			<li>Denoising Method: dwidenoise</li>
+			<li>Denoising Window: auto</li>
+			<li>HMC Model: tortoise</li>
+			<li>Gradient correction: none</li>
+			<li>DWI series resampled to spaces: ACPC</li>
+			<li>Confounds collected: </li>
+			<li>Impute slice threshold: <undefined></li>
+		</ul>
+			<h3 class="elem-title">Note on orientation: qform matrix overwritten</h3>
+
+			/home/jovyan/neurodesktop-storage/calmar/data/ds004884/derivatives/calmar-dmri/sub-M2001/ses-1225/qsiprep.attempt.xm03m220/bids/sub-M2001/ses-1225/dwi/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_dwi.nii.gz:
+
+				 <p class="elem-desc">The qform has been copied from sform.</p>
+        </div>
+        <div id="acquisition-epb0p2_datatype-figures_desc-denoising_direction-AP_run-4_session-1225_subject-M2001_suffix-dwi" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3">DWI Denoising</h3><p class="elem-caption">"Effect of denoising on a low and high-<em>b</em> image."
+</p>                    <div class="reportlet">
+<object class="svg-reportlet" type="image/svg+xml" data="./sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-denoising_dwi.svg" style="">
+Problem loading figure sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-denoising_dwi.svg. If the link below works, please try reloading the report in your browser.</object>
+</div>
+<small>Get figure file: <a href="304036b146827deb-sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-denoising_dwi.svg" target="_blank">sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-denoising_dwi.svg</a></small>
+
+        </div>
+        <div id="acquisition-epb0p2_datatype-figures_desc-coreg_direction-AP_run-4_session-1225_subject-M2001_suffix-dwi" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3">Alignment of dMRI and anatomical MRI data (coregistration)</h3><p class="elem-caption">This panel shows the alignment of the reference EPI (dMRI b=0) image to the
+anatomical reference image.
+The reference EPI has been contrast enhanced and susceptibility-distortion
+corrected (if applicable) for improved anatomical fidelity, and has been
+resampled into the anatomical space.
+The boundary of the anatomical white matter mask appears as a red contour
+over both images.
+</p>                    <div class="reportlet">
+<object class="svg-reportlet" type="image/svg+xml" data="./sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-coreg_dwi.svg" style="">
+Problem loading figure sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-coreg_dwi.svg. If the link below works, please try reloading the report in your browser.</object>
+</div>
+<small>Get figure file: <a href="1bdf4135496a5907-sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-coreg_dwi.svg" target="_blank">sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-coreg_dwi.svg</a></small>
+
+        </div>
+        <div id="acquisition-epb0p2_datatype-figures_desc-biascorrpost.*_direction-AP_regex_search-True_run-4_session-1225_subject-M2001_suffix-dwi" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3"><em>B<sub>1</sub></em> Bias Correction (Post-Resampling)</h3><p class="elem-caption">"Effect of correcting <em>B<sub>1</sub></em> bias on a low and high-<em>b</em> resampled image."
+</p>                    <div class="reportlet">
+<object class="svg-reportlet" type="image/svg+xml" data="./sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-biascorrpost_dwi.svg" style="">
+Problem loading figure sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-biascorrpost_dwi.svg. If the link below works, please try reloading the report in your browser.</object>
+</div>
+<small>Get figure file: <a href="bb6985dbcb9ce4f1-sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-biascorrpost_dwi.svg" target="_blank">sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-biascorrpost_dwi.svg</a></small>
+
+        </div>
+        <div id="acquisition-epb0p2_datatype-figures_desc-['b0ref', 'resampledb0ref']_direction-AP_run-4_session-1225_subject-M2001_suffix-dwi" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3"><em>b</em>=0 Reference Image</h3><p class="elem-caption">b=0 template and final mask output. The t1 and signal intersection mask is blue,
+their xor is red and the entire mask is plotted in cyan.
+</p>                    <div class="reportlet">
+<object class="svg-reportlet" type="image/svg+xml" data="./sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-resampledb0ref_dwi.svg" style="">
+Problem loading figure sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-resampledb0ref_dwi.svg. If the link below works, please try reloading the report in your browser.</object>
+</div>
+<small>Get figure file: <a href="773eab7542f5b657-sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-resampledb0ref_dwi.svg" target="_blank">sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-resampledb0ref_dwi.svg</a></small>
+
+        </div>
+        <div id="acquisition-epb0p2_datatype-figures_desc-samplingscheme_direction-AP_run-4_session-1225_subject-M2001_suffix-dwi" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3">DWI Sampling Scheme</h3><p class="elem-caption">Interactive DWI sampling scheme in q-space, before and after preprocessing.
+Drag to rotate, scroll to zoom; each input scan is a separate color.
+</p>                    <style>/* Styling for the interactive q-space sampling-scheme viewer
+ * (qspace_viewer.js). Only the reusable .qspace-viewer / .qs-* rules live
+ * here; the host page provides its own layout, tabs, and theme. */
+
+.qspace-viewer { position: relative; }
+.qs-summary { font-size: 11.5px; color: #475569; margin: 0 0 9px;
+  font-variant-numeric: tabular-nums; }
+.qs-controls {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin: 0 0 10px;
+}
+.qs-seg { display: inline-flex; align-items: center; gap: 6px; }
+.qs-seg-label { font-size: 11.5px; color: #64748b; }
+.qs-seg-btn, .qs-btn {
+  border: 1px solid #cbd5e1; background: #fff; color: #334155;
+  font-size: 11.5px; padding: 3px 10px; border-radius: 7px; cursor: pointer;
+}
+.qs-seg-btn.on { background: #0f172a; color: #fff; border-color: #0f172a; }
+.qs-btn:hover { background: #f1f5f9; }
+.qs-check { font-size: 11.5px; color: #475569; display: inline-flex;
+  align-items: center; gap: 3px; cursor: pointer; }
+.qs-legend { display: flex; gap: 5px; flex-wrap: wrap; margin-left: auto; }
+.qs-leg {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid #e2e8f0; background: #fff; color: #334155;
+  border-radius: 99px; padding: 2px 9px 2px 6px; font-size: 11px; cursor: pointer;
+}
+.qs-leg.off { opacity: 0.4; text-decoration: line-through; }
+.qs-sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+.qs-stage { display: flex; gap: 12px; }
+.qs-cell { flex: 1 1 0; min-width: 0; }
+.qs-title { text-align: center; font-size: 11.5px; color: #64748b; margin: 0 0 2px; }
+.qs-canvas {
+  width: 100%; height: 340px; display: block;
+  background: #fcfdfe; border: 1px solid #eef2f6; border-radius: 10px;
+  touch-action: none; cursor: grab;
+}
+.qs-canvas:active { cursor: grabbing; }
+.qs-tip {
+  position: absolute; pointer-events: none; z-index: 5;
+  background: #0f172a; color: #fff; font-size: 11px; line-height: 1.35;
+  padding: 5px 8px; border-radius: 6px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+}
+.qs-note { font-size: 11px; color: #475569; margin: 9px 0 0; line-height: 1.4;
+  background: #f1f5f9; border-radius: 6px; padding: 5px 9px; }
+</style><div class="qspace-viewer"><script type="application/json">{"panels": [{"title": "Acquired (original b-vectors)", "coords": [[-0.0, 0.0, 0.0], [-31.622032402876698, -0.15797777372518762, -0.14869342428229027], [-22.319923522587857, 0.011547102104737509, 22.40135890097433], [1.253781223590347, 21.11228053184353, 23.509564934045727], [-18.589464361642936, -24.354911237987505, 7.827522809737273], [7.669175926427684, -16.699187081214685, 25.735595804956496], [28.28956033998584, -8.286633299595616, 11.446942138769362], [-25.2224204945029, 4.287448231045778, 18.586212418472535], [-7.53787133177394, 29.483689181061713, 8.596078644368248], [-29.61813758155921, 4.573614920523297, 10.091975661811594], [15.868342228337658, 26.85578536584774, 5.192543433412449], [10.863889775464703, 27.00239816648657, 12.36310609050475], [14.467640500319236, 20.281024907835384, 19.47735626416695], [15.547960099476668, -12.326220492241886, 24.62367204788348], [19.460422739618433, 21.525124850198104, 12.56825154819576], [-18.29177013383095, 3.538471612593732, 25.551699826390404], [26.158816413325827, -16.51230560966837, 6.5620185390495065], [28.3516896023301, 1.5968048933966479, 13.915168372159664], [9.224928370945552, 17.515947909902692, 24.6595268683018], [3.75940795537111, 30.544324885815097, 7.2739307870552015], [-25.256369556667092, -12.943272747539165, 13.949461903595745], [-16.25768939915426, 26.622976629007123, 5.186969328227055], [-24.94206535324715, -5.024383508960278, 18.77894955180498], [-29.979131254807786, -7.628558898614395, 6.561766403749579], [-7.45283530044196, 25.018677298023306, 17.847157539559607], [-1.4450899659120562, 6.044563471801657, 31.00604727187556], [-6.817574285121839, -30.25078992608596, 6.197611613731588], [-24.339157389791694, -19.293024556713263, 5.948497374043902], [5.219759364452899, 11.776351980761394, 28.880298582293484], [-4.706004283352875, -23.269837883802566, 20.889427195272997], [-28.073122100743625, 13.322050986834165, 5.867007160463583], [-17.69833307932377, -7.56464164167797, 25.09073938819469], [12.241880766738971, 4.90455845583954, 28.741636377322003], [-9.676332531108924, 6.55505325790034, 29.383666645493616], [10.781836870807878, -4.186373803926914, 29.431722138962268], [-30.45489220981159, 8.382243674177523, -1.4958380512171003], [30.345341124638047, 6.799387592618045, 5.73834474345187], [-14.110827488423432, -28.219254655570932, 2.1349974885209417], [24.285632952762597, 20.113037535125198, 2.381964146316237], [-22.48192188575231, 13.111192764305853, 17.96273399625305], [22.112634253789405, 1.171251047576134, 22.575619090994845], [21.67413612085073, -16.767336748934287, 15.782529637630065], [4.9502634821682285, -23.073686581544838, 21.049913990174627], [23.463952982239157, 12.662629173841387, 17.00296247284723], [3.371004784770397, 26.36085171112333, 17.138868801797305], [-18.32780047965854, -18.9939160957831, 17.41616722830198], [3.131632962185328, -10.78124214563811, 29.56277545812082], [17.568750381112892, -25.035711099559393, 8.034437116907744], [26.44863580629441, 14.845379144429982, 8.948987766452985], [-11.333493160673555, -17.95632741872949, 23.433357386604854], [-5.699702803807173, -12.636780898914875, 28.42226515359204], [-22.790574266765407, 21.917690328170774, -0.45229997729302873], [13.931201307198076, -21.64857923150484, 18.364657562709425], [-15.899118038481483, 22.03573378170041, 16.17542834982928], [-5.410967433502915, 16.390006204649016, 26.496964506243692], [-14.596643123331816, 13.64499555009558, 24.510244918563373], [-12.011388734163125, -25.719449433797593, 13.936874165290728], [22.804769593335724, -7.95135926794599, 20.41368094163618], [8.420881334188818, -28.021349627107025, 11.99552927681559], [-22.420198830178595, 22.300694539420242, 0.11707892521966409], [-1.6158387302485784, -28.733724074420092, 13.10580657620582], [18.216391684165846, 9.932562567979328, 23.864351548747976], [-8.829030747836885, -4.687403162853998, 30.001274433640596], [-22.74509283625037, 19.405766159905788, 10.299368505758409], [8.494389346743453, -30.349752175716166, 2.5957450758003744]]}, {"title": "After preprocessing (rotated b-vectors)", "coords": [[-0.0, 0.0, 0.0], [-31.47196789629813, -2.9333259115222945, 0.9543744491555188], [-21.118343541169025, -5.446104311751988, 22.898810535234375], [0.6751548185956314, 17.23020552126305, 26.50781367362176], [-16.126433058786066, -26.824894622151312, 4.512557888177403], [10.265569152542882, -19.74916617431837, 22.46304804120764], [29.40104728028514, -7.426282737850909, 8.968207427582415], [-24.545011963265466, -0.9031499782495153, 19.917999862366994], [-9.49436552589166, 27.005236154833053, 13.43779154349696], [-29.36130282596885, 0.3086376671769018, 11.739618398348767], [13.852795582051286, 27.021654067989118, 8.827811470076155], [9.21170280741538, 25.60844261717615, 16.104415384349377], [13.698581103625619, 18.209076238085295, 21.926659974667754], [17.695772798464635, -14.576240910339815, 21.78056084940138], [18.22732922096755, 20.94892483175327, 15.12967365346801], [-17.24230209898866, -2.1085993649444816, 26.424530733543403], [27.71331186500987, -14.9487167415536, 2.916884597511547], [28.775260359381228, 1.920138473759666, 12.972950957701679], [8.960756785187293, 14.219498359168666, 26.786390413133336], [1.5995367941975844, 29.25474252606586, 11.899601878432032], [-23.39612486654969, -17.138856806493763, 12.604797643821577], [-18.107686659289442, 23.94792587440524, 9.93018304354968], [-23.494240855511737, -10.069977535844977, 18.617631443807237], [-28.89533235836559, -11.180517588742486, 6.328964800306097], [-8.5897931551506, 21.18244290934064, 21.852220907230688], [-0.40977363130440686, 1.0018237929908134, 31.60424723573404], [-4.005893650504267, -31.329821301879196, 1.5476123623310845], [-22.356560238368065, -22.061918495887305, 3.6682373423788297], [5.651075560217718, 7.561668066404634, 30.18089657405927], [-1.7534693647694275, -26.55723406512264, 17.077431460311587], [-28.747056494096167, 9.709452473051114, 8.906866804193516], [-15.765435663023158, -12.908387683397319, 24.183146522284844], [13.196906307644696, 1.4439127397044809, 28.701163450386996], [-8.724877751098841, 1.0271036730617313, 30.377978255990644], [12.521348931102926, -7.736785832619544, 27.988532795468476], [-31.07543377287355, 5.781917328229313, 0.9417278683369734], [29.93222169964671, 8.485673582050726, 5.661753623192809], [-11.631699664867968, -29.34582790401105, -1.8777535175971312], [22.645707839642053, 21.569509173450676, 4.682754201669792], [-22.5697565710279, 8.117552839630525, 20.608528093807532], [23.02502576270721, -0.39654910408264804, 21.67233117959691], [23.723073070062267, -17.029530226998656, 12.133050327388723], [7.850465789266759, -25.53387282983637, 16.92307665336282], [23.156040319400983, 11.894725903985664, 17.953086066761472], [2.040122173818753, 23.57173649508538, 20.98118538467473], [-15.833732322333114, -23.016981056661677, 14.81592068594802], [5.45232451190954, -14.923389427317781, 27.341627868122192], [19.932498905438866, -24.324277076891565, 3.3203966028210545], [25.55260185334183, 15.557893166591946, 10.247755726255388], [-8.660533622636333, -22.3116128886175, 20.66850480059359], [-3.2427715406413693, -17.35385279136999, 26.236009900402735], [-24.502946080918843, 19.615805652150453, 3.8504278588084726], [16.54194748895474, -22.919024762721474, 14.180348096824718], [-16.835579832406378, 17.75897819074172, 20.029526754658047], [-5.425834744405841, 11.529661502924018, 28.941790328154422], [-14.442525580618426, 8.323761171116912, 26.87244800492163], [-9.16664446171894, -28.5339374643008, 10.08895657767801], [24.354359191817213, -8.975135345480311, 18.064111738043387], [11.265326397082777, -28.68746193374102, 7.079685405869112], [-24.13756165735799, 19.937039936158865, 4.460108667133616], [1.3873383274530044, -30.449847656601055, 8.419149379369296], [18.49298647509851, 7.678083523730541, 24.47563032649031], [-6.930865456903929, -10.055374453838086, 29.169376921534614], [-23.723614135769925, 15.478141472685799, 14.05764097186614], [11.06719357405716, -29.51141962500247, -2.567750170162997]]}], "meta": [{"b": 0, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}, {"b": 1000, "file": 0, "pe": "unknown"}], "files": ["dwi"], "pes": ["unknown"], "axisLabels": ["L", "P", "S"], "axisLabelsNeg": ["R", "A", "I"], "b0Threshold": 100.0}</script></div><script>/* QSIPrep q-space sampling-scheme viewer.
+ *
+ * Dependency-free (no Plotly/Three/D3), self-contained, offline-ready. One
+ * `<div class="qspace-viewer">` per scheme, carrying its data as an embedded
+ * `<script type="application/json">`. The same widget serves both reports:
+ *   - group report  : one panel, the concatenated *acquired* scheme.
+ *   - subject report : two linked panels, before vs after preprocessing.
+ *
+ * Each point is q = sqrt(b) * bvec. Color is driven by a categorical key that
+ * the caller supplies per point (input-file index and phase-encoding dir);
+ * the "Color by" control just switches which key maps to the palette, so
+ * adding more keys later is a data change, not a code change.
+ */
+(function () {
+  "use strict";
+
+  // Okabe-Ito colorblind-safe categorical palette.
+  var PALETTE = ["#0072B2", "#D55E00", "#009E73", "#E69F00",
+                 "#CC79A7", "#56B4E9", "#F0E442", "#000000"];
+  var B0_COLOR = "#9aa7b8";      // b=0 volumes sit at the origin
+  var AXIS_COLOR = "#c3ccd8";
+
+  // b-values are displayed rounded to the nearest 100 so small acquisition
+  // deviations (e.g. 1585, 4985) do not read as distinct shells.
+  function roundB(b) { return Math.round(b / 100) * 100; }
+
+  function elem(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  function init(root) {
+    if (root.dataset.qsReady) return;
+    root.dataset.qsReady = "1";
+    var src = root.querySelector('script[type="application/json"]');
+    if (!src) return;
+    var data = JSON.parse(src.textContent);
+
+    var panels = data.panels;              // [{title, coords:[[x,y,z],...]}]
+    var meta = data.meta;                  // [{b,file,pe}] indexed like coords
+    var files = data.files || [];          // file index -> label
+    var pes = data.pes || [];              // pe order for the legend
+    var axisLabels = data.axisLabels || ["x", "y", "z"];      // +ends
+    var axisLabelsNeg = data.axisLabelsNeg || null;           // -ends (optional)
+    // A volume counts as b=0 (direction meaningless) at or below this value;
+    // the emitter passes qsiprep's real b0 threshold. Default: only exactly 0.
+    var b0Threshold = data.b0Threshold != null ? data.b0Threshold : 0;
+    function isB0(m) { return m.b <= b0Threshold; }
+    // Unique diffusion-weighted shells, for the concentric reference rings.
+    var shells = Array.from(new Set(meta.filter(function (m) { return !isB0(m); })
+                                        .map(function (m) { return m.b; })))
+                      .sort(function (a, b) { return a - b; });
+    // maxR and per-shell ring radius are measured per panel (see viewGeometry),
+    // so panels at different radial scales (e.g. sqrt(b) vs b) each auto-fit,
+    // and the rings match whatever radial convention the caller used.
+
+    // Which categorical key colors the points, and how to read it per point.
+    var MODES = {
+      file: { label: "input file", cats: files,
+              of: function (m) { return m.file; } },
+      pe:   { label: "phase encoding", cats: pes,
+              of: function (m) { return pes.indexOf(m.pe); } }
+    };
+
+    var st = {
+      mode: files.length ? "file" : "pe",
+      az: 0.5, el: 0.35, scale: 1,
+      hidden: { file: {}, pe: {} },        // per-mode toggled-off categories
+      spin: false,
+      antipodal: false,
+      hover: null                          // {view, cl}
+    };
+
+    // Coincident samples: volumes sharing a q-coordinate (identical b and
+    // direction) — e.g. the AP and PA copy of every direction in an appa
+    // scheme. They fall on one pixel, so we cluster them and draw a split
+    // marker; otherwise the last one drawn silently hides the rest.
+    // Membership is direction/b identity, so it holds across panels (rotation
+    // and sqrt/linear scaling preserve coincidence) — compute once.
+    var clusters = (function () {
+      var scale = 1e-6, c0 = panels[0].coords;
+      c0.forEach(function (c) {
+        var r = Math.hypot(c[0], c[1], c[2]); if (r > scale) scale = r;
+      });
+      scale *= 1e-3;                                   // 0.1% of the max radius
+      var byKey = {};
+      c0.forEach(function (c, i) {
+        var k = Math.round(c[0] / scale) + "|" + Math.round(c[1] / scale) +
+                "|" + Math.round(c[2] / scale);
+        (byKey[k] || (byKey[k] = [])).push(i);
+      });
+      return Object.keys(byKey).map(function (k) { return { idx: byKey[k] }; });
+    })();
+    var hasCoincident = clusters.some(function (cl) { return cl.idx.length > 1; });
+
+    // One-line scheme summary.
+    var summaryText = (function () {
+      var nB0 = meta.filter(isB0).length;
+      var nCoin = clusters.filter(function (cl) { return cl.idx.length > 1; }).length;
+      var parts = [meta.length + " volumes"];
+      if (nB0) parts.push(nB0 + " × b=0");
+      if (shells.length && shells.length <= 6) {
+        var rounded = Array.from(new Set(shells.map(roundB)));
+        parts.push("b=" + rounded.join("/"));
+      } else if (shells.length) {
+        parts.push(shells.length + " b-values (max " +
+                   roundB(shells[shells.length - 1]) + ")");
+      }
+      if (files.length > 1) parts.push(files.length + " series");
+      if (nCoin) parts.push(nCoin + " shared coordinate" + (nCoin > 1 ? "s" : ""));
+      return parts.join("  ·  ");
+    })();
+
+    // Per-panel geometry: max radius (for auto-fit) and the measured radius of
+    // each shell (for the reference rings). Computed once per panel.
+    function viewGeometry(panel) {
+      var mr = 1e-6, sum = {}, cnt = {};
+      panel.coords.forEach(function (c, i) {
+        var r = Math.hypot(c[0], c[1], c[2]);
+        if (r > mr) mr = r;
+        var b = meta[i].b;
+        if (b > b0Threshold) { sum[b] = (sum[b] || 0) + r; cnt[b] = (cnt[b] || 0) + 1; }
+      });
+      var sr = {};
+      shells.forEach(function (b) { if (cnt[b]) sr[b] = sum[b] / cnt[b]; });
+      return { maxR: mr, shellRadius: sr };
+    }
+
+    // ---- DOM scaffold -----------------------------------------------------
+    root.innerHTML = "";
+    root.appendChild(elem("div", "qs-summary", summaryText));
+    var controls = elem("div", "qs-controls");
+    root.appendChild(controls);
+
+    // Color-by segmented control (only when there's a real choice).
+    if (files.length > 1 && pes.length > 1) {
+      var seg = elem("div", "qs-seg");
+      seg.appendChild(elem("span", "qs-seg-label", "Color by"));
+      ["file", "pe"].forEach(function (m) {
+        var b = elem("button", "qs-seg-btn", MODES[m].label);
+        b.dataset.mode = m;
+        b.onclick = function () { st.mode = m; syncSeg(); buildLegend(); render(); };
+        seg.appendChild(b);
+      });
+      controls.appendChild(seg);
+    }
+
+    var spinWrap = elem("label", "qs-check");
+    var spinBox = elem("input");
+    spinBox.type = "checkbox";
+    spinBox.onchange = function () { st.spin = spinBox.checked; if (st.spin) tick(); };
+    spinWrap.appendChild(spinBox);
+    spinWrap.appendChild(document.createTextNode(" spin"));
+    controls.appendChild(spinWrap);
+
+    var antiWrap = elem("label", "qs-check");
+    var antiBox = elem("input");
+    antiBox.type = "checkbox";
+    antiBox.onchange = function () { st.antipodal = antiBox.checked; render(); };
+    antiWrap.appendChild(antiBox);
+    antiWrap.appendChild(document.createTextNode(" antipodal"));
+    controls.appendChild(antiWrap);
+
+    var resetBtn = elem("button", "qs-btn", "reset view");
+    resetBtn.onclick = function () { st.az = 0.5; st.el = 0.35; st.scale = 1; render(); };
+    controls.appendChild(resetBtn);
+
+    var legend = elem("div", "qs-legend");
+    controls.appendChild(legend);
+
+    // One canvas per panel; all share rotation/zoom/visibility.
+    var stage = elem("div", "qs-stage");
+    root.appendChild(stage);
+    var views = panels.map(function (p) {
+      var cell = elem("div", "qs-cell");
+      cell.appendChild(elem("div", "qs-title", p.title || ""));
+      var canvas = elem("canvas", "qs-canvas");
+      cell.appendChild(canvas);
+      stage.appendChild(cell);
+      var g = viewGeometry(p);
+      return { panel: p, canvas: canvas, ctx: canvas.getContext("2d"), proj: [],
+               maxR: g.maxR, shellRadius: g.shellRadius };
+    });
+
+    var tip = elem("div", "qs-tip");
+    tip.style.display = "none";
+    root.appendChild(tip);
+
+    // Self-documenting note: only shown when the scheme actually has coincidence.
+    if (hasCoincident) {
+      root.appendChild(elem("div", "qs-note",
+        "&#9680; a split marker is one q-space coordinate sampled by more than " +
+        "one series / phase-encoding direction &mdash; hover to list them"));
+    }
+
+    // ---- controls state ---------------------------------------------------
+    function syncSeg() {
+      controls.querySelectorAll(".qs-seg-btn").forEach(function (b) {
+        b.classList.toggle("on", b.dataset.mode === st.mode);
+      });
+    }
+
+    function buildLegend() {
+      legend.innerHTML = "";
+      var mode = MODES[st.mode];
+      mode.cats.forEach(function (label, i) {
+        var off = st.hidden[st.mode][i];
+        var item = elem("button", "qs-leg" + (off ? " off" : ""));
+        var sw = elem("span", "qs-sw");
+        sw.style.background = PALETTE[i % PALETTE.length];
+        item.appendChild(sw);
+        item.appendChild(document.createTextNode(label));
+        item.onclick = function () {
+          st.hidden[st.mode][i] = !st.hidden[st.mode][i];
+          buildLegend();
+          render();
+        };
+        legend.appendChild(item);
+      });
+    }
+
+    // ---- projection + drawing --------------------------------------------
+    function project(c, cx, cy, s) {
+      // Rotate azimuth about vertical (y), then elevation about horizontal (x).
+      var ca = Math.cos(st.az), sa = Math.sin(st.az);
+      var x1 = c[0] * ca + c[2] * sa;
+      var z1 = -c[0] * sa + c[2] * ca;
+      var y1 = c[1];
+      var ce = Math.cos(st.el), se = Math.sin(st.el);
+      var y2 = y1 * ce - z1 * se;
+      var z2 = y1 * se + z1 * ce;
+      return { x: cx + s * x1, y: cy - s * y2, depth: z2 };
+    }
+
+    function render() {
+      var mode = MODES[st.mode];
+      views.forEach(function (v) {
+        var dpr = window.devicePixelRatio || 1;
+        var w = v.canvas.clientWidth, h = v.canvas.clientHeight;
+        if (v.canvas.width !== w * dpr || v.canvas.height !== h * dpr) {
+          v.canvas.width = w * dpr; v.canvas.height = h * dpr;
+        }
+        var ctx = v.ctx;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        var cx = w / 2, cy = h / 2;
+        var half = Math.min(w, h) / 2 - 22;
+        if (half <= 1) return;                 // canvas too small to draw
+        var s = half / v.maxR * st.scale;
+
+        drawShells(ctx, cx, cy, s, v.shellRadius);
+        drawAxes(ctx, cx, cy, s, v.maxR);
+
+        // Antipodal mirror: faint -g copy of each diffusion-weighted sample, so
+        // a half-sphere acquisition reads as the full shell it is equivalent to.
+        if (st.antipodal) {
+          ctx.globalAlpha = 0.16;
+          ctx.fillStyle = "#94a3b8";
+          clusters.forEach(function (cl) {
+            if (isB0(meta[cl.idx[0]])) return;
+            var shown = cl.idx.some(function (i) {
+              return !st.hidden[st.mode][mode.of(meta[i])];
+            });
+            if (!shown) return;
+            var c = v.panel.coords[cl.idx[0]];
+            var pr = project([-c[0], -c[1], -c[2]], cx, cy, s);
+            ctx.beginPath(); ctx.arc(pr.x, pr.y, 2.4, 0, 6.2832); ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+        }
+
+        // Build the visible, depth-sorted list of clusters. Coincident samples
+        // share one screen position, so we draw per cluster, not per point.
+        var drawList = [];
+        clusters.forEach(function (cl) {
+          var vis = cl.idx.filter(function (i) {
+            var m = meta[i];
+            return isB0(m) || !st.hidden[st.mode][mode.of(m)];
+          });
+          if (!vis.length) return;
+          var pr = project(v.panel.coords[cl.idx[0]], cx, cy, s);
+          drawList.push({ cl: cl, vis: vis, x: pr.x, y: pr.y, depth: pr.depth });
+        });
+        drawList.sort(function (a, b) { return a.depth - b.depth; });
+        v.proj = drawList;
+
+        var dmax = v.maxR * s || 1;
+        drawList.forEach(function (d) {
+          var t = (d.depth * s + dmax) / (2 * dmax);      // 0 far .. 1 near
+          var b0 = isB0(meta[d.vis[0]]);
+          var baseR = b0 ? 3.2 : 2.6 + 2.8 * t;
+          ctx.globalAlpha = b0 ? 0.92 : 0.5 + 0.5 * t;
+
+          if (b0) {
+            // Neutral labeled marker; direction is undefined at b=0.
+            ctx.fillStyle = B0_COLOR;
+            ctx.beginPath(); ctx.arc(d.x, d.y, baseR, 0, 6.2832); ctx.fill();
+            ctx.lineWidth = 1; ctx.strokeStyle = "#64748b"; ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = "#475569";
+            ctx.font = "9px ui-sans-serif,system-ui,sans-serif";
+            ctx.fillText("b=0" + (d.vis.length > 1 ? " ×" + d.vis.length : ""),
+                         d.x + baseR + 2, d.y - baseR);
+          } else {
+            var cats = [];
+            d.vis.forEach(function (i) {
+              var c = mode.of(meta[i]);
+              if (cats.indexOf(c) < 0) cats.push(c);
+            });
+            if (cats.length <= 1) {
+              ctx.fillStyle = PALETTE[cats[0] % PALETTE.length];
+              ctx.beginPath(); ctx.arc(d.x, d.y, baseR, 0, 6.2832); ctx.fill();
+            } else {
+              // Split marker; grow with wedge count so thin slices stay legible.
+              var rr = baseR + 1.4 + 0.8 * Math.min(cats.length - 2, 4);
+              var a = -Math.PI / 2, step = 2 * Math.PI / cats.length;
+              cats.forEach(function (c) {
+                ctx.fillStyle = PALETTE[c % PALETTE.length];
+                ctx.beginPath(); ctx.moveTo(d.x, d.y);
+                ctx.arc(d.x, d.y, rr, a, a + step); ctx.closePath(); ctx.fill();
+                a += step;
+              });
+            }
+          }
+          if (st.hover && st.hover.view === v && st.hover.cl === d.cl) {
+            ctx.globalAlpha = 1;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#0f172a";
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, baseR + 3, 0, 6.2832);
+            ctx.stroke();
+          }
+        });
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    var LOG10 = Math.log(10);
+    function niceStep(x) {
+      var p = Math.pow(10, Math.floor(Math.log(x) / LOG10));
+      var f = x / p;
+      return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+    }
+    function interpRadius(bs, sr, b) {
+      if (b <= bs[0]) return sr[bs[0]] * b / bs[0];
+      for (var i = 1; i < bs.length; i++) {
+        if (b <= bs[i]) {
+          var t = (b - bs[i - 1]) / (bs[i] - bs[i - 1]);
+          return sr[bs[i - 1]] + t * (sr[bs[i]] - sr[bs[i - 1]]);
+        }
+      }
+      return sr[bs[bs.length - 1]] * b / bs[bs.length - 1];
+    }
+    // Which b-values get a labeled ring. Few shells -> one ring each. Many
+    // distinct b-values (Cartesian/DSI grid) -> a handful of round-number
+    // rings, radius interpolated from the points so the convention still holds.
+    function ringTicks(shellRadius) {
+      var bs = Object.keys(shellRadius).map(Number)
+                     .sort(function (a, b) { return a - b; });
+      if (!bs.length) return [];
+      if (bs.length <= 8) {
+        return bs.map(function (b) { return { b: b, r: shellRadius[b] }; });
+      }
+      var maxb = bs[bs.length - 1], step = niceStep(maxb / 4), ticks = [];
+      for (var b = step; b <= maxb + 1e-6; b += step) ticks.push(b);
+      if (ticks[ticks.length - 1] < maxb * 0.98) ticks.push(maxb);
+      return ticks.map(function (b) {
+        return { b: b, r: interpRadius(bs, shellRadius, b) };
+      });
+    }
+
+    // Concentric b-value reference rings. Orthographic projection maps each
+    // shell sphere to a circle of the same radius regardless of rotation, so
+    // these stay fixed while the axes turn through them.
+    function drawShells(ctx, cx, cy, s, shellRadius) {
+      ctx.font = "10px ui-sans-serif,system-ui,sans-serif";
+      ctx.textBaseline = "middle";
+      ringTicks(shellRadius).forEach(function (t) {
+        var r = t.r * s;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, 6.2832);
+        ctx.strokeStyle = "rgba(148,163,184,0.32)";
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Label up-and-right of the ring, with a white halo for legibility.
+        var lx = cx + r * 0.7071 + 4, ly = cy - r * 0.7071;
+        var label = "b=" + roundB(t.b);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(252,253,254,0.95)";
+        ctx.strokeText(label, lx, ly);
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillText(label, lx, ly);
+      });
+      ctx.textBaseline = "alphabetic";
+    }
+
+    function drawAxes(ctx, cx, cy, s, maxR) {
+      var units = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+      ctx.strokeStyle = AXIS_COLOR;
+      ctx.lineWidth = 1;
+      ctx.font = "600 11px ui-sans-serif,system-ui,sans-serif";
+      units.forEach(function (e, k) {
+        var pos = project([e[0] * maxR, e[1] * maxR, e[2] * maxR], cx, cy, s);
+        var neg = project([-e[0] * maxR, -e[1] * maxR, -e[2] * maxR], cx, cy, s);
+        ctx.beginPath();
+        ctx.moveTo(neg.x, neg.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(axisLabels[k], pos.x + 3, pos.y - 3);
+        if (axisLabelsNeg) ctx.fillText(axisLabelsNeg[k], neg.x + 3, neg.y - 3);
+      });
+    }
+
+    // ---- interaction ------------------------------------------------------
+    var drag = null;
+    stage.addEventListener("pointerdown", function (e) {
+      drag = { x: e.clientX, y: e.clientY };
+      st.spin = false; spinBox.checked = false;
+      stage.setPointerCapture(e.pointerId);
+    });
+    stage.addEventListener("pointermove", function (e) {
+      if (drag) {
+        st.az += (e.clientX - drag.x) * 0.01;
+        st.el += (e.clientY - drag.y) * 0.01;
+        st.el = Math.max(-1.5, Math.min(1.5, st.el));
+        drag.x = e.clientX; drag.y = e.clientY;
+        render();
+      } else {
+        hoverAt(e);
+      }
+    });
+    stage.addEventListener("pointerup", function () { drag = null; });
+    stage.addEventListener("pointerleave", function () {
+      drag = null; st.hover = null; tip.style.display = "none"; render();
+    });
+    stage.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      st.scale *= e.deltaY < 0 ? 1.1 : 0.9;
+      st.scale = Math.max(0.4, Math.min(4, st.scale));
+      render();
+    }, { passive: false });
+
+    function hoverAt(e) {
+      var found = null;
+      for (var vi = 0; vi < views.length; vi++) {
+        var v = views[vi];
+        var rect = v.canvas.getBoundingClientRect();
+        if (e.clientX < rect.left || e.clientX > rect.right ||
+            e.clientY < rect.top || e.clientY > rect.bottom) continue;
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        for (var j = v.proj.length - 1; j >= 0; j--) {      // nearest = topmost
+          var d = v.proj[j];
+          if (Math.hypot(d.x - mx, d.y - my) < 8) {
+            found = { view: v, d: d, sx: e.clientX, sy: e.clientY };
+            break;
+          }
+        }
+        if (found) break;
+      }
+      var changed = (found && (!st.hover || st.hover.cl !== found.d.cl)) ||
+                    (!found && st.hover);
+      st.hover = found ? { view: found.view, cl: found.d.cl } : null;
+      if (found) {
+        // List every (visible) sample at this coordinate.
+        var lines = found.d.vis.map(function (i) {
+          var m = meta[i];
+          return (files[m.file] || "?") + " &middot; PE " + m.pe +
+                 " &middot; b=" + (isB0(m) ? 0 : roundB(m.b));
+        });
+        var head = found.d.vis.length > 1
+          ? "<b>" + found.d.vis.length + " samples here</b><br>" : "";
+        tip.innerHTML = head + lines.join("<br>");
+        var box = root.getBoundingClientRect();
+        tip.style.left = (found.sx - box.left + 12) + "px";
+        tip.style.top = (found.sy - box.top + 12) + "px";
+        tip.style.display = "block";
+      } else {
+        tip.style.display = "none";
+      }
+      if (changed) render();
+    }
+
+    function tick() {
+      if (!st.spin) return;
+      st.az += 0.006;
+      render();
+      requestAnimationFrame(tick);
+    }
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { render(); }).observe(stage);
+    }
+    // A canvas laid out to zero width at first paint — e.g. when the host page's
+    // stylesheet is still loading — renders blank. Re-render once the page has
+    // fully loaded so the backing store picks up the settled width.
+    if (document.readyState !== "complete") {
+      window.addEventListener("load", render);
+    }
+
+    syncSeg();
+    buildLegend();
+    render();
+  }
+
+  function boot() {
+    document.querySelectorAll(".qspace-viewer").forEach(init);
+  }
+
+  // The host-page API: interactive hosts re-scan after swapping in new
+  // viewer markup (init is idempotent per element); the embedded boot path
+  // stays for static pages.
+  window.QSIPrepQSpace = { init: init, boot: boot };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+        </div>
+        <div id="acquisition-epb0p2_datatype-figures_desc-carpetplot_direction-AP_run-4_session-1225_subject-M2001_suffix-dwi" class="ps-4 pe-4 mb-2">
+<h3 class="run-title mt-3">DWI Summary</h3><p class="elem-caption">A plot of slice-by-volume outliers (if Eddy was used) or cross correlation.
+</p>                    <div class="reportlet">
+<img class="svg-reportlet" src="3b27ee1c3483ea63-sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-carpetplot_dwi.svg" style="width: 100%" />
+</div>
+<small>Get figure file: <a href="3b27ee1c3483ea63-sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-carpetplot_dwi.svg" target="_blank">sub-M2001/ses-1225/figures/sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_desc-carpetplot_dwi.svg</a></small>
+
+        </div>
+    </div>
+    <div id="About" class="mt-5">
+    <h1 class="sub-report-title pt-5 ps-4">About</h1>
+        <div id="datatype-figures_desc-about_subject-M2001_suffix-['T1w', 'T2w', 'dwi']" class="ps-4 pe-4 mb-2">
+                    <ul>
+		<li>qsiprep version: 26.1.1</li>
+		<li>qsiprep command: <code>/app/.pixi/envs/qsiprep/bin/qsiprep /home/jovyan/neurodesktop-storage/calmar/data/ds004884/derivatives/calmar-dmri/sub-M2001/ses-1225/qsiprep.attempt.xm03m220/bids /home/jovyan/neurodesktop-storage/calmar/data/ds004884/derivatives/calmar-dmri/sub-M2001/ses-1225/qsiprep.attempt.xm03m220/produced participant --participant-label M2001 --output-resolution 2.0 --anat-modality T1w --hmc-method tortoise --nprocs 8 --omp-nthreads 4 --mem 44236 --skip-bids-validation --stop-on-first-crash --notrack -w /home/jovyan/neurodesktop-storage/calmar/data/ds004884/derivatives/calmar-dmri/sub-M2001/ses-1225/qsiprep.attempt.xm03m220/work</code></li>
+		<li>MRtrix3: stable 3.0.4 (/opt/mrtrix3-stable)</li>
+		<li>Date preprocessed: 2026-11-12 03:09:21 +0000</li>
+	</ul>
+</div>
+        </div>
+        <div id="boilerplate" class="ps-4 pe-4 mb-2">
+<h2 class="sub-report-group mt-4">Methods</h2><p class="elem-caption"><p>We kindly ask to report results preprocessed with this tool using the following boilerplate.</p>
+<p class="alert alert-info" role="alert">
+<strong>Copyright Waiver</strong>.
+The boilerplate text was automatically generated by <em>QSIPrep</em> with the
+express intention that users should copy and paste this text into their manuscripts <em>unchanged</em>.
+It is released under the
+<a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank">CC0 license</a>.
+</p>
+</p>                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+
+        <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="html-tab" data-bs-toggle="tab" data-bs-target="#html-tab-pane" type="button" role="tab" aria-controls="html-tab-pane"aria-selected="true">HTML</button>
+        </li>
+
+
+        <li class="nav-item" role="presentation">
+        <button class="nav-link " id="md-tab" data-bs-toggle="tab" data-bs-target="#md-tab-pane" type="button" role="tab" aria-controls="md-tab-pane"aria-selected="false">Markdown</button>
+        </li>
+
+
+        <li class="nav-item" role="presentation">
+        <button class="nav-link " id="tex-tab" data-bs-toggle="tab" data-bs-target="#tex-tab-pane" type="button" role="tab" aria-controls="tex-tab-pane"aria-selected="false">LaTeX</button>
+        </li>
+
+</ul>
+<div class="tab-content" id="myTabContent">
+
+        <div class="tab-pane fade show active" id="html-tab-pane" role="tabpanel" aria-labelledby="html-tab" tabindex="0">
+            <div class="boiler-html p-3 m-4 bg-primary" style="--bs-bg-opacity: .04; font-family: 'Bitstream Charter', 'Georgia', Times;"><p>Preprocessing was performed with <em>QSIPrep</em> 26.1.1 <span
+class="citation" data-cites="cieslak2021qsiprep">(Cieslak et al.
+2021)</span>, which is based on <em>Nipype</em> 1.11.0 [<span
+class="citation" data-cites="nipype1">Gorgolewski et al. (2011)</span>;
+<span class="citation" data-cites="nipype2">Esteban et al.
+(2025)</span>; RRID:SCR_002502] and follows the <em>NiPreps</em>
+framework <span class="citation" data-cites="nipreps">(Esteban et al.
+2019)</span>.</p>
+<h4 id="anatomical-data-preprocessing">Anatomical data
+preprocessing</h4>
+<p>The T1-weighted (T1w) image was used as the anatomical reference
+throughout preprocessing. It was corrected for intensity nonuniformity
+with <code>N4BiasFieldCorrection</code> (<em>ANTs</em> 2.6.0) <span
+class="citation" data-cites="n4">(Tustison et al. 2010)</span>. The
+anatomical reference was reoriented into AC-PC alignment with the rigid
+(6-degree-of-freedom) component of an affine registration to the
+MNI152NLin2009cAsym template <span class="citation"
+data-cites="mni">(Fonov et al. 2009)</span>. A nonlinear registration
+from AC-PC space to the template was then estimated with symmetric
+normalization (SyN) in <code>antsRegistration</code> <span
+class="citation" data-cites="ants">(Avants et al. 2008)</span>. ROI
+masks of abnormal tissue were incorporated into the registration. The
+brain was extracted from the T1w image with SynthStrip <span
+class="citation" data-cites="synthstrip">(Hoopes et al. 2022)</span>,
+and the image was segmented with SynthSeg <span class="citation"
+data-cites="synthseg1 synthseg2">(Billot, Greve, et al. 2023; Billot,
+Magdamo, et al. 2023)</span>, both from <em>FreeSurfer</em> 8.2.0.</p>
+<h4 id="diffusion-data-preprocessing">Diffusion data preprocessing</h4>
+<p>DWI data were denoised with Marchenko-Pastur principal component
+analysis (MP-PCA) <span class="citation"
+data-cites="dwidenoise1 dwidenoise2">(Veraart, Novikov, et al. 2016;
+Veraart, Fieremans, et al. 2016)</span> as implemented in
+<code>dwidenoise</code> from <em>MRtrix3</em> 3.0.4 <span
+class="citation" data-cites="mrtrix3">(Tournier et al. 2019)</span>,
+with a window of 5 voxels (chosen automatically). Volumes with
+<em>b</em> &lt; 100 s/mm² were treated as <em>b</em>=0 images.</p>
+<p>Head motion was corrected with DIFFPREP from <em>TORTOISE</em> V4.2.0
+<span class="citation" data-cites="tortoisev4">(Irfanoglu et al.
+2025)</span> in its “quadratic” mode, which corrects rigid head motion
+together with linear and quadratic eddy-current distortions. DIFFPREP
+registered each volume to the first <em>b</em>=0 volume. The transform
+had 14 estimated parameters: 6 for rigid-body motion and 8 for linear
+and quadratic eddy-current distortion along the phase-encoding axis. The
+b-matrix was rotated with the estimated motion.</p>
+<p>No susceptibility distortion correction was performed.</p>
+<p>The <em>b</em>=0 reference was coregistered to the anatomical
+reference with a rigid transform estimated by
+<code>antsRegistration</code> (<em>ANTs</em> 2.6.0). The registration
+was initialized by a global search over rotations with
+<code>antsAI</code>, so that large differences in head orientation
+between the DWI and anatomical scans were recovered.</p>
+<p>Framewise displacement (FD) was calculated from the head-motion
+estimates with the implementation in <em>Nipype</em> <span
+class="citation" data-cites="power_fd_dvars">(following the definitions
+by Power et al. 2014)</span>. FD, the head-motion estimates and the
+slicewise quality measures from head motion correction were saved as
+per-volume confounds.</p>
+<p>The DWI series were resampled into AC-PC space at 2 mm isotropic
+resolution with windowed-sinc (Lanczos) interpolation, or linear
+interpolation where the output voxels were more than 10% smaller than
+the input voxels. The transforms not already applied were combined so
+that this was a single resampling step. Any gradient nonlinearity,
+susceptibility distortion or (with DIFFPREP) eddy-current correction
+applied in this step was Jacobian-modulated (after DRBUDDI,
+<em>TORTOISE</em>’s intensity-correction maps were applied instead);
+head motion and coregistration were not modulated. The
+<em>b</em>-vectors were reoriented with the affine part of each volume’s
+head motion and coregistration transforms. After resampling, B1 field
+inhomogeneity was corrected with <code>dwibiascorrect</code> from
+<em>MRtrix3</em> 3.0.4 <span class="citation"
+data-cites="mrtrix3">(Tournier et al. 2019)</span> using the N4
+algorithm <span class="citation" data-cites="n4">(Tustison et al.
+2010)</span>.</p>
+<p>Many internal operations of <em>QSIPrep</em> use <em>Nilearn</em>
+0.10.1 <span class="citation" data-cites="nilearn">(Abraham et al. 2014,
+RRID:SCR_001362)</span> and <em>DIPY</em> 1.12.1 <span class="citation"
+data-cites="dipy">(Garyfallidis et al. 2014)</span>. For more details of
+the pipeline, see <a
+href="https://qsiprep.readthedocs.io/en/latest/methods/index.html"
+title="QSIPrep&#39;s documentation">the processing pipeline details in
+<em>QSIPrep</em>’s documentation</a>.</p>
+<h3 class="unnumbered" id="references">References</h3>
+<div id="refs" class="references csl-bib-body hanging-indent"
+role="list">
+<div id="ref-nilearn" class="csl-entry" role="listitem">
+Abraham, Alexandre, Fabian Pedregosa, Michael Eickenberg, et al. 2014.
+<span>“Machine Learning for Neuroimaging with Scikit-Learn.”</span>
+<em>Frontiers in Neuroinformatics</em> 8. <a
+href="https://doi.org/10.3389/fninf.2014.00014">https://doi.org/10.3389/fninf.2014.00014</a>.
+</div>
+<div id="ref-ants" class="csl-entry" role="listitem">
+Avants, B, C Epstein, M Grossman, and J Gee. 2008. <span>“Symmetric
+Diffeomorphic Image Registration with Cross-Correlation: Evaluating
+Automated Labeling of Elderly and Neurodegenerative Brain.”</span>
+<em>Medical Image Analysis</em> 12 (1): 26–41. <a
+href="https://doi.org/10.1016/j.media.2007.06.004">https://doi.org/10.1016/j.media.2007.06.004</a>.
+</div>
+<div id="ref-synthseg1" class="csl-entry" role="listitem">
+Billot, Benjamin, Douglas N. Greve, Oula Puonti, et al. 2023.
+<span>“SynthSeg: Segmentation of Brain MRI Scans of Any Contrast and
+Resolution Without Retraining.”</span> <em>Medical Image Analysis</em>
+86: 102789. <a
+href="https://doi.org/10.1016/j.media.2023.102789">https://doi.org/10.1016/j.media.2023.102789</a>.
+</div>
+<div id="ref-synthseg2" class="csl-entry" role="listitem">
+Billot, Benjamin, Colin Magdamo, You Cheng, Steven E. Arnold, Sudeshna
+Das, and Juan Eugenio Iglesias. 2023. <span>“Robust Machine Learning
+Segmentation for Large-Scale Analysis of Heterogeneous Clinical Brain
+MRI Datasets.”</span> <em>Proceedings of the National Academy of
+Sciences</em> 120 (9): e2216399120. <a
+href="https://doi.org/10.1073/pnas.2216399120">https://doi.org/10.1073/pnas.2216399120</a>.
+</div>
+<div id="ref-cieslak2021qsiprep" class="csl-entry" role="listitem">
+Cieslak, Matthew, Philip A. Cook, Xiaosong He, et al. 2021.
+<span>“QSIPrep: An Integrative Platform for Preprocessing and
+Reconstructing Diffusion MRI Data.”</span> <em>Nature Methods</em> 18
+(7): 775–78. <a
+href="https://doi.org/10.1038/s41592-021-01185-5">https://doi.org/10.1038/s41592-021-01185-5</a>.
+</div>
+<div id="ref-nipype2" class="csl-entry" role="listitem">
+Esteban, Oscar, Christopher J. Markiewicz, Christopher Burns, et al.
+2025. <em>Nipy/Nipype: 1.9.1</em>.
+</div>
+<div id="ref-nipreps" class="csl-entry" role="listitem">
+Esteban, Oscar, Jessey Wright, Christopher Johnson Markiewicz, et al.
+2019. <em>NiPreps: Enabling the Division of Labor in Neuroimaging Beyond
+fMRIPrep</em>. Open Science Framework. <a
+href="https://doi.org/10.31219/osf.io/ujxp6">https://doi.org/10.31219/osf.io/ujxp6</a>.
+</div>
+<div id="ref-mni" class="csl-entry" role="listitem">
+Fonov, Vs, Ac Evans, Rc McKinstry, Cr Almli, and Dl Collins. 2009.
+<span>“Unbiased Nonlinear Average Age-Appropriate Brain Templates from
+Birth to Adulthood.”</span> <em>NeuroImage</em>, Organization for human
+brain mapping 2009 annual meeting, vol. 47: S102. <a
+href="https://doi.org/10.1016/S1053-8119(09)70884-5">https://doi.org/10.1016/S1053-8119(09)70884-5</a>.
+</div>
+<div id="ref-dipy" class="csl-entry" role="listitem">
+Garyfallidis, Eleftherios, Matthew Brett, Bagrat Amirbekian, et al.
+2014. <span>“Dipy, a Library for the Analysis of Diffusion MRI
+Data.”</span> <em>Frontiers in Neuroinformatics</em> 8: 8. <a
+href="https://doi.org/10.3389/fninf.2014.00008">https://doi.org/10.3389/fninf.2014.00008</a>.
+</div>
+<div id="ref-nipype1" class="csl-entry" role="listitem">
+Gorgolewski, Krzysztof, Christopher D. Burns, Cindee Madison, et al.
+2011. <span>“Nipype: A Flexible, Lightweight and Extensible Neuroimaging
+Data Processing Framework in Python.”</span> <em>Frontiers in
+Neuroinformatics</em> 5: 13. <a
+href="https://doi.org/10.3389/fninf.2011.00013">https://doi.org/10.3389/fninf.2011.00013</a>.
+</div>
+<div id="ref-synthstrip" class="csl-entry" role="listitem">
+Hoopes, Andrew, Jocelyn S. Mora, Adrian V. Dalca, Bruce Fischl, and
+Malte Hoffmann. 2022. <span>“SynthStrip: Skull-Stripping for Any Brain
+Image.”</span> <em>NeuroImage</em> 260: 119474. <a
+href="https://doi.org/10.1016/j.neuroimage.2022.119474">https://doi.org/10.1016/j.neuroimage.2022.119474</a>.
+</div>
+<div id="ref-tortoisev4" class="csl-entry" role="listitem">
+Irfanoglu, M. Okan, Amritha Nayak, Paul Taylor, Anh Thai, and Carlo
+Pierpaoli. 2025. <span>“TORTOISEV4: ReImagining the NIH Diffusion MRI
+Processing Pipeline.”</span> <em>Imaging Neuroscience</em>, ahead of
+print. <a
+href="https://doi.org/10.1162/IMAG.a.948">https://doi.org/10.1162/IMAG.a.948</a>.
+</div>
+<div id="ref-power_fd_dvars" class="csl-entry" role="listitem">
+Power, Jonathan D., Anish Mitra, Timothy O. Laumann, Abraham Z. Snyder,
+Bradley L. Schlaggar, and Steven E. Petersen. 2014. <span>“Methods to
+Detect, Characterize, and Remove Motion Artifact in Resting State
+fMRI.”</span> <em>NeuroImage</em> 84 (Supplement C): 320–41. <a
+href="https://doi.org/10.1016/j.neuroimage.2013.08.048">https://doi.org/10.1016/j.neuroimage.2013.08.048</a>.
+</div>
+<div id="ref-mrtrix3" class="csl-entry" role="listitem">
+Tournier, J-Donald, Robert Smith, David Raffelt, et al. 2019.
+<span>“MRtrix3: A Fast, Flexible and Open Software Framework for Medical
+Image Processing and Visualisation.”</span> <em>NeuroImage</em> 202:
+116137. <a
+href="https://doi.org/10.1016/j.neuroimage.2019.116137">https://doi.org/10.1016/j.neuroimage.2019.116137</a>.
+</div>
+<div id="ref-n4" class="csl-entry" role="listitem">
+Tustison, Nicholas J, Brian B Avants, Philip A Cook, et al. 2010.
+<span>“N4ITK: Improved N3 Bias Correction.”</span> <em>IEEE Transactions
+on Medical Imaging</em> 29 (6): 1310–20. <a
+href="https://doi.org/10.1109/TMI.2010.2046908">https://doi.org/10.1109/TMI.2010.2046908</a>.
+</div>
+<div id="ref-dwidenoise2" class="csl-entry" role="listitem">
+Veraart, Jelle, Els Fieremans, and Dmitry S. Novikov. 2016.
+<span>“Diffusion MRI Noise Mapping Using Random Matrix Theory.”</span>
+<em>Magnetic Resonance in Medicine</em> 76 (5): 1582–93. <a
+href="https://doi.org/10.1002/mrm.26059">https://doi.org/10.1002/mrm.26059</a>.
+</div>
+<div id="ref-dwidenoise1" class="csl-entry" role="listitem">
+Veraart, Jelle, Dmitry S. Novikov, Daan Christiaens, Benjamin Ades-aron,
+Jan Sijbers, and Els Fieremans. 2016. <span>“Denoising of Diffusion MRI
+Using Random Matrix Theory.”</span> <em>NeuroImage</em> 142: 394–406. <a
+href="https://doi.org/10.1016/j.neuroimage.2016.08.016">https://doi.org/10.1016/j.neuroimage.2016.08.016</a>.
+</div>
+</div></div>
+        </div>
+
+
+        <div class="tab-pane fade " id="md-tab-pane" role="tabpanel" aria-labelledby="md-tab" tabindex="0">
+            <div class="boiler-md p-3 m-4 bg-primary" style="--bs-bg-opacity: .04;"><pre>
+Preprocessing was performed with *QSIPrep* 26.1.1 [@cieslak2021qsiprep],
+which is based on *Nipype* 1.11.0
+[@nipype1; @nipype2; RRID:SCR_002502] and follows the *NiPreps* framework [@nipreps].
+
+
+
+#### Anatomical data preprocessing
+
+The T1-weighted (T1w) image was used as the anatomical reference throughout
+preprocessing.
+It was corrected for intensity nonuniformity with `N4BiasFieldCorrection` (*ANTs* 2.6.0) [@n4]. The anatomical reference was reoriented into AC-PC alignment with the rigid
+(6-degree-of-freedom) component of an affine registration to the
+MNI152NLin2009cAsym template [@mni]. A nonlinear registration from AC-PC space to the template was then estimated
+with symmetric normalization (SyN) in `antsRegistration` [@ants]. ROI masks of abnormal tissue were incorporated into the registration. The brain was extracted from the T1w image with SynthStrip [@synthstrip], and the
+image was segmented with SynthSeg [@synthseg1; @synthseg2], both from *FreeSurfer*
+8.2.0. 
+
+#### Diffusion data preprocessing
+
+DWI data were denoised with Marchenko-Pastur principal component analysis (MP-PCA) [@dwidenoise1; @dwidenoise2] as implemented in `dwidenoise` from *MRtrix3* 3.0.4 [@mrtrix3], with a window of 5 voxels (chosen automatically). Volumes with *b* < 100 s/mm² were treated as *b*=0 images.
+
+
+
+Head motion was corrected with DIFFPREP from *TORTOISE* V4.2.0 [@tortoisev4] in its "quadratic" mode, which corrects rigid head motion together with linear and quadratic eddy-current distortions. DIFFPREP registered each volume to the first *b*=0 volume. The transform had 14 estimated parameters: 6 for rigid-body motion and 8 for linear and quadratic eddy-current distortion along the phase-encoding axis. The b-matrix was rotated with the estimated motion.
+
+
+
+No susceptibility distortion correction was performed.
+
+
+
+The *b*=0 reference was coregistered to the anatomical reference with a rigid transform estimated by `antsRegistration` (*ANTs* 2.6.0). The registration was initialized by a global search over rotations with `antsAI`, so that large differences in head orientation between the DWI and anatomical scans were recovered. 
+
+Framewise displacement (FD) was calculated from the head-motion estimates with the implementation in *Nipype* [following the definitions by @power_fd_dvars]. FD, the head-motion estimates and the slicewise quality measures from head motion correction were saved as per-volume confounds. 
+
+The DWI series were resampled into AC-PC space at 2 mm isotropic resolution with windowed-sinc (Lanczos) interpolation, or linear interpolation where the output voxels were more than 10% smaller than the input voxels. The transforms not already applied were combined so that this was a single resampling step. Any gradient nonlinearity, susceptibility distortion or (with DIFFPREP) eddy-current correction applied in this step was Jacobian-modulated (after DRBUDDI, *TORTOISE*'s intensity-correction maps were applied instead); head motion and coregistration were not modulated. The *b*-vectors were reoriented with the affine part of each volume's head motion and coregistration transforms. After resampling, B1 field inhomogeneity was corrected with `dwibiascorrect` from *MRtrix3* 3.0.4 [@mrtrix3] using the N4 algorithm [@n4]. 
+
+Many internal operations of *QSIPrep* use
+*Nilearn* 0.10.1 [@nilearn, RRID:SCR_001362] and
+*DIPY* 1.12.1 [@dipy].
+For more details of the pipeline, see [the processing pipeline details in *QSIPrep*'s
+documentation](https://qsiprep.readthedocs.io/en/latest/methods/index.html "QSIPrep's documentation").
+
+
+### References
+
+</pre></div>
+        </div>
+
+
+        <div class="tab-pane fade " id="tex-tab-pane" role="tabpanel" aria-labelledby="tex-tab" tabindex="0">
+            <div class="boiler-tex p-3 m-4 bg-primary" style="--bs-bg-opacity: .04;"><pre>Preprocessing was performed with \emph{QSIPrep} 26.1.1
+\citep{cieslak2021qsiprep}, which is based on \emph{Nipype} 1.11.0
+{[}\citet{nipype1}; \citet{nipype2}; RRID:SCR\_002502{]} and follows the
+\emph{NiPreps} framework \citep{nipreps}.
+
+\paragraph{Anatomical data
+preprocessing}\label{anatomical-data-preprocessing}
+
+The T1-weighted (T1w) image was used as the anatomical reference
+throughout preprocessing. It was corrected for intensity nonuniformity
+with \texttt{N4BiasFieldCorrection} (\emph{ANTs} 2.6.0) \citep{n4}. The
+anatomical reference was reoriented into AC-PC alignment with the rigid
+(6-degree-of-freedom) component of an affine registration to the
+MNI152NLin2009cAsym template \citep{mni}. A nonlinear registration from
+AC-PC space to the template was then estimated with symmetric
+normalization (SyN) in \texttt{antsRegistration} \citep{ants}. ROI masks
+of abnormal tissue were incorporated into the registration. The brain
+was extracted from the T1w image with SynthStrip \citep{synthstrip}, and
+the image was segmented with SynthSeg \citep{synthseg1, synthseg2}, both
+from \emph{FreeSurfer} 8.2.0.
+
+\paragraph{Diffusion data
+preprocessing}\label{diffusion-data-preprocessing}
+
+DWI data were denoised with Marchenko-Pastur principal component
+analysis (MP-PCA) \citep{dwidenoise1, dwidenoise2} as implemented in
+\texttt{dwidenoise} from \emph{MRtrix3} 3.0.4 \citep{mrtrix3}, with a
+window of 5 voxels (chosen automatically). Volumes with \emph{b}
+\textless{} 100 s/mm² were treated as \emph{b}=0 images.
+
+Head motion was corrected with DIFFPREP from \emph{TORTOISE} V4.2.0
+\citep{tortoisev4} in its ``quadratic'' mode, which corrects rigid head
+motion together with linear and quadratic eddy-current distortions.
+DIFFPREP registered each volume to the first \emph{b}=0 volume. The
+transform had 14 estimated parameters: 6 for rigid-body motion and 8 for
+linear and quadratic eddy-current distortion along the phase-encoding
+axis. The b-matrix was rotated with the estimated motion.
+
+No susceptibility distortion correction was performed.
+
+The \emph{b}=0 reference was coregistered to the anatomical reference
+with a rigid transform estimated by \texttt{antsRegistration}
+(\emph{ANTs} 2.6.0). The registration was initialized by a global search
+over rotations with \texttt{antsAI}, so that large differences in head
+orientation between the DWI and anatomical scans were recovered.
+
+Framewise displacement (FD) was calculated from the head-motion
+estimates with the implementation in \emph{Nipype} \citep[following the
+definitions by][]{power_fd_dvars}. FD, the head-motion estimates and the
+slicewise quality measures from head motion correction were saved as
+per-volume confounds.
+
+The DWI series were resampled into AC-PC space at 2 mm isotropic
+resolution with windowed-sinc (Lanczos) interpolation, or linear
+interpolation where the output voxels were more than 10\% smaller than
+the input voxels. The transforms not already applied were combined so
+that this was a single resampling step. Any gradient nonlinearity,
+susceptibility distortion or (with DIFFPREP) eddy-current correction
+applied in this step was Jacobian-modulated (after DRBUDDI,
+\emph{TORTOISE}'s intensity-correction maps were applied instead); head
+motion and coregistration were not modulated. The \emph{b}-vectors were
+reoriented with the affine part of each volume's head motion and
+coregistration transforms. After resampling, B1 field inhomogeneity was
+corrected with \texttt{dwibiascorrect} from \emph{MRtrix3} 3.0.4
+\citep{mrtrix3} using the N4 algorithm \citep{n4}.
+
+Many internal operations of \emph{QSIPrep} use \emph{Nilearn} 0.10.1
+\citep[RRID:SCR\_001362]{nilearn} and \emph{DIPY} 1.12.1 \citep{dipy}.
+For more details of the pipeline, see
+\href{https://qsiprep.readthedocs.io/en/latest/methods/index.html}{the
+processing pipeline details in \emph{QSIPrep}'s documentation}.
+
+\subsubsection{References}\label{references}
+
+\bibliography{/home/jovyan/neurodesktop-storage/calmar/data/ds004884/derivatives/calmar-dmri/sub-M2001/ses-1225/qsiprep.attempt.xm03m220/produced/logs/CITATION.bib}</pre>
+<h3>Bibliography</h3>
+<pre>@article{afni,
+	title        = {Software tools for analysis and visualization of fMRI data},
+	author       = {Cox, Robert W. and Hyde, James S.},
+	year         = {1997},
+	journal      = {NMR in Biomedicine},
+	volume       = {10},
+	number       = {4-5},
+	pages        = {171--178},
+	doi          = {10.1002/(SICI)1099-1492(199706/08)10:4/5<171::AID-NBM453>3.0.CO;2-L},
+}
+
+@article{anderssoneddy,
+	title        = {An integrated approach to correction for off-resonance effects and subject movement in diffusion MR imaging},
+	author       = {Andersson, Jesper L.R. and Sotiropoulos, Stamatios N.},
+	year         = {2016},
+	journal      = {NeuroImage},
+	volume       = {125},
+	pages        = {1063--1078},
+	doi          = {10.1016/j.neuroimage.2015.10.019},
+	pmcid        = {PMC4692656},
+	pmid         = {26481672},
+}
+
+@article{ants,
+	title        = {Symmetric diffeomorphic image registration with cross-correlation: Evaluating automated labeling of elderly and neurodegenerative brain},
+	shorttitle   = {Symmetric diffeomorphic image registration with cross-correlation},
+	author       = {Avants, B and Epstein, C and Grossman, M and Gee, J},
+	year         = {2008},
+	journal      = {Medical Image Analysis},
+	volume       = {12},
+	number       = {1},
+	pages        = {26--41},
+	doi          = {10.1016/j.media.2007.06.004},
+	pmcid        = {PMC2276735},
+	pmid         = {17659998},
+}
+
+@article{bbr,
+	title        = {Accurate and robust brain image alignment using boundary-based registration},
+	author       = {Greve, Douglas N. and Fischl, Bruce},
+	year         = {2009},
+	journal      = {NeuroImage},
+	volume       = {48},
+	number       = {1},
+	pages        = {63--72},
+	doi          = {10.1016/j.neuroimage.2009.06.060},
+	pmcid        = {PMC2733527},
+	pmid         = {19573611},
+}
+
+@article{brett2001,
+	title        = {Spatial Normalization of Brain Images with Focal Lesions Using Cost Function Masking},
+	author       = {Brett, Matthew and Leff, Alexander P. and Rorden, Chris and Ashburner, John},
+	year         = {2001},
+	journal      = {NeuroImage},
+	volume       = {14},
+	number       = {2},
+	pages        = {486--500},
+	doi          = {10.1006/nimg.2001.0845},
+	pmid         = {11467921},
+}
+
+@article{cieslak2021qsiprep,
+	title        = {QSIPrep: an integrative platform for preprocessing and reconstructing diffusion MRI data},
+	shorttitle   = {QSIPrep},
+	author       = {Cieslak, Matthew and Cook, Philip A. and He, Xiaosong and Yeh, Fang-Cheng and Dhollander, Thijs and Adebimpe, Azeez and Aguirre, Geoffrey K. and Bassett, Danielle S. and Betzel, Richard F. and Bourque, Josiane and Cabral, Laura M. and Davatzikos, Christos and Detre, John A. and Earl, Eric and Elliott, Mark A. and Fadnavis, Shreyas and Fair, Damien A. and Foran, Will and Fotiadis, Panagiotis and Garyfallidis, Eleftherios and Giesbrecht, Barry and Gur, Ruben C. and Gur, Raquel E. and Kelz, Max B. and Keshavan, Anisha and Larsen, Bart S. and Luna, Beatriz and Mackey, Allyson P. and Milham, Michael P. and Oathes, Desmond J. and Perrone, Anders and Pines, Adam R. and Roalf, David R. and Richie-Halford, Adam and Rokem, Ariel and Sydnor, Valerie J. and Tapera, Tinashe M. and Tooley, Ursula A. and Vettel, Jean M. and Yeatman, Jason D. and Grafton, Scott T. and Satterthwaite, Theodore D.},
+	year         = {2021},
+	journal      = {Nature Methods},
+	volume       = {18},
+	number       = {7},
+	pages        = {775--778},
+	doi          = {10.1038/s41592-021-01185-5},
+	pmcid        = {PMC8596781},
+	pmid         = {34155395},
+}
+
+@article{cordero2019complex,
+	title        = {Complex diffusion-weighted image estimation via matrix recovery under general noise models},
+	author       = {Cordero-Grande, Lucilio and Christiaens, Daan and Hutter, Jana and Price, Anthony N. and Hajnal, Jo V.},
+	year         = {2019},
+	journal      = {NeuroImage},
+	volume       = {200},
+	pages        = {391--404},
+	doi          = {10.1016/j.neuroimage.2019.06.039},
+	pmcid        = {PMC6711461},
+	pmid         = {31226495},
+}
+
+@article{dipy,
+	title        = {Dipy, a library for the analysis of diffusion MRI data},
+	author       = {Garyfallidis, Eleftherios and Brett, Matthew and Amirbekian, Bagrat and Rokem, Ariel and Van Der Walt, Stefan and Descoteaux, Maxime and Nimmo-Smith, Ian and {Dipy Contributors}},
+	year         = {2014},
+	journal      = {Frontiers in Neuroinformatics},
+	volume       = {8},
+	pages        = {8},
+	doi          = {10.3389/fninf.2014.00008},
+	pmcid        = {PMC3931231},
+	pmid         = {24600385},
+}
+
+@article{drbuddi,
+	title        = {DR-BUDDI (Diffeomorphic Registration for Blip-Up blip-Down Diffusion Imaging) method for correcting echo planar imaging distortions},
+	author       = {Irfanoglu, M. Okan and Modi, Pooja and Nayak, Amritha and Hutchinson, Elizabeth B. and Sarlls, Joelle and Pierpaoli, Carlo},
+	year         = {2015},
+	journal      = {NeuroImage},
+	volume       = {106},
+	pages        = {284--299},
+	doi          = {10.1016/j.neuroimage.2014.11.042},
+	pmcid        = {PMC4286283},
+	pmid         = {25433212},
+}
+
+@article{dwidenoise1,
+	title        = {Denoising of diffusion MRI using random matrix theory},
+	author       = {Veraart, Jelle and Novikov, Dmitry S. and Christiaens, Daan and Ades-aron, Benjamin and Sijbers, Jan and Fieremans, Els},
+	year         = {2016},
+	journal      = {NeuroImage},
+	volume       = {142},
+	pages        = {394--406},
+	doi          = {10.1016/j.neuroimage.2016.08.016},
+	pmcid        = {PMC5159209},
+	pmid         = {27523449},
+}
+
+@article{dwidenoise2,
+	title        = {Diffusion MRI noise mapping using random matrix theory},
+	shorttitle   = {Diffusion MRI noise mapping},
+	author       = {Veraart, Jelle and Fieremans, Els and Novikov, Dmitry S.},
+	year         = {2016},
+	journal      = {Magnetic Resonance in Medicine},
+	volume       = {76},
+	number       = {5},
+	pages        = {1582--1593},
+	doi          = {10.1002/mrm.26059},
+	pmcid        = {PMC4879661},
+	pmid         = {26599599},
+}
+
+@misc{dwidenoise2software,
+	title        = {dwidenoise2},
+	author       = {Smith, Robert E.},
+	year         = {2026},
+	publisher    = {Zenodo},
+	doi          = {10.5281/zenodo.21601472},
+}
+
+@article{eddyrepol,
+	title        = {Incorporating outlier detection and replacement into a non-parametric framework for movement and distortion correction of diffusion MR images},
+	author       = {Andersson, Jesper L. R and Graham, Mark S. and Zsoldos, Enikő and Sotiropoulos, Stamatios N.},
+	year         = {2016},
+	journal      = {NeuroImage},
+	volume       = {141},
+	pages        = {556--572},
+	doi          = {10.1016/j.neuroimage.2016.06.058},
+	pmid         = {27393418},
+}
+
+@article{eddys2v,
+	title        = {Towards a comprehensive framework for movement and distortion correction of diffusion MR images: Within volume movement},
+	shorttitle   = {Towards a comprehensive framework for movement and distortion correction of diffusion {MR} images},
+	author       = {Andersson, Jesper L.R. and Graham, Mark S. and Drobnjak, Ivana and Zhang, Hui and Filippini, Nicola and Bastiani, Matteo},
+	year         = {2017},
+	journal      = {NeuroImage},
+	volume       = {152},
+	pages        = {450--466},
+	doi          = {10.1016/j.neuroimage.2017.02.085},
+	pmcid        = {PMC5445723},
+	pmid         = {28284799},
+}
+
+@article{eddysus,
+	title        = {Susceptibility-induced distortion that varies due to motion: Correction in diffusion MR without acquiring additional data},
+	shorttitle   = {Susceptibility-induced distortion that varies due to motion},
+	author       = {Andersson, Jesper L.R. and Graham, Mark S. and Drobnjak, Ivana and Zhang, Hui and Campbell, Jon},
+	year         = {2018},
+	journal      = {NeuroImage},
+	volume       = {171},
+	pages        = {277--295},
+	doi          = {10.1016/j.neuroimage.2017.12.040},
+	pmcid        = {PMC5883370},
+	pmid         = {29277648},
+}
+
+@article{fieldmapless1,
+	title        = {Evaluation of Field Map and Nonlinear Registration Methods for Correction of Susceptibility Artifacts in Diffusion MRI},
+	author       = {Wang, Sijia and Peterson, Daniel J. and Gatenby, J. C. and Li, Wenbin and Grabowski, Thomas J. and Madhyastha, Tara M.},
+	year         = {2017},
+	journal      = {Frontiers in Neuroinformatics},
+	volume       = {11},
+	doi          = {10.3389/fninf.2017.00017},
+	pmcid        = {PMC5318394},
+	pmid         = {28270762},
+}
+
+@mastersthesis{fieldmapless2,
+	title        = {Evaluating nonlinear coregistration of BOLD EPI and T1w images},
+	author       = {Huntenburg, Julia M.},
+	year         = {2014},
+	address      = {Berlin},
+	school       = {Freie Universität},
+}
+
+@article{fieldmapless3,
+	title        = {Characterization and Correction of Geometric Distortions in 814 Diffusion Weighted Images},
+	author       = {Treiber, Jeffrey Mark and White, Nathan S. and Steed, Tyler Christian and Bartsch, Hauke and Holland, Dominic and Farid, Nikdokht and McDonald, Carrie R. and Carter, Bob S. and Dale, Anders Martin and Chen, Clark C.},
+	year         = {2016},
+	journal      = {PLOS ONE},
+	volume       = {11},
+	number       = {3},
+	pages        = {e0152472},
+	doi          = {10.1371/journal.pone.0152472},
+	pmcid        = {PMC4814112},
+	pmid         = {27027775},
+}
+
+@article{flirt,
+	title        = {A global optimisation method for robust affine registration of brain images},
+	author       = {Jenkinson, Mark and Smith, Stephen},
+	year         = {2001},
+	journal      = {Medical Image Analysis},
+	volume       = {5},
+	number       = {2},
+	pages        = {143--156},
+	doi          = {10.1016/S1361-8415(01)00036-6},
+	pmid         = {11516708},
+}
+
+@inproceedings{foi2011,
+	title        = {Noise estimation and removal in MR imaging: The variance-stabilization approach},
+	shorttitle   = {Noise estimation and removal in MR imaging},
+	author       = {Foi, Alessandro},
+	year         = {2011},
+	booktitle    = {2011 IEEE International Symposium on Biomedical Imaging: From Nano to Macro},
+	pages        = {1809--1814},
+	doi          = {10.1109/ISBI.2011.5872758},
+}
+
+@article{fs_reconall,
+	title        = {Cortical Surface-Based Analysis},
+	shorttitle   = {Cortical surface-based analysis},
+	author       = {Dale, Anders M. and Fischl, Bruce and Sereno, Martin I.},
+	year         = {1999},
+	journal      = {NeuroImage},
+	volume       = {9},
+	number       = {2},
+	pages        = {179--194},
+	doi          = {10.1006/nimg.1998.0395},
+	pmid         = {9931268},
+}
+
+@article{fs_template,
+	title        = {Highly accurate inverse consistent registration: A robust approach},
+	shorttitle   = {Highly accurate inverse consistent registration},
+	author       = {Reuter, Martin and Rosas, H. Diana and Fischl, Bruce},
+	year         = {2010},
+	journal      = {NeuroImage},
+	volume       = {53},
+	number       = {4},
+	pages        = {1181--1196},
+	doi          = {10.1016/j.neuroimage.2010.07.020},
+	pmcid        = {PMC2946852},
+	pmid         = {20637289},
+}
+
+@article{fsl_fast,
+	title        = {Segmentation of brain MR images through a hidden Markov random field model and the expectation-maximization algorithm},
+	author       = {Zhang, Y. and Brady, M. and Smith, S.},
+	year         = {2001},
+	journal      = {IEEE Transactions on Medical Imaging},
+	volume       = {20},
+	number       = {1},
+	pages        = {45--57},
+	doi          = {10.1109/42.906424},
+	pmid         = {11293691},
+}
+
+@article{fsllsr,
+	title        = {How to correct susceptibility distortions in spin-echo echo-planar images: application to diffusion tensor imaging},
+	shorttitle   = {How to correct susceptibility distortions in spin-echo echo-planar images},
+	author       = {Andersson, Jesper L.R. and Skare, Stefan and Ashburner, John},
+	year         = {2003},
+	journal      = {NeuroImage},
+	volume       = {20},
+	number       = {2},
+	pages        = {870--888},
+	doi          = {10.1016/S1053-8119(03)00336-7},
+	pmid         = {14568458},
+}
+
+@article{gavish2014,
+	title        = {The Optimal Hard Threshold for Singular Values is $4/\sqrt{3}$},
+	author       = {Gavish, Matan and Donoho, David L.},
+	year         = {2014},
+	journal      = {IEEE Transactions on Information Theory},
+	volume       = {60},
+	number       = {8},
+	pages        = {5040--5053},
+	doi          = {10.1109/TIT.2014.2323359},
+}
+
+@article{gavish2017,
+	title        = {Optimal Shrinkage of Singular Values},
+	author       = {Gavish, Matan and Donoho, David L.},
+	year         = {2017},
+	journal      = {IEEE Transactions on Information Theory},
+	volume       = {63},
+	number       = {4},
+	pages        = {2137--2152},
+	doi          = {10.1109/TIT.2017.2653801},
+}
+
+@article{hcppipelines,
+	title        = {The minimal preprocessing pipelines for the Human Connectome Project},
+	author       = {Glasser, Matthew F. and Sotiropoulos, Stamatios N. and Wilson, J. Anthony and Coalson, Timothy S. and Fischl, Bruce and Andersson, Jesper L. and Xu, Junqian and Jbabdi, Saad and Webster, Matthew and Polimeni, Jonathan R. and Van Essen, David C. and Jenkinson, Mark},
+	year         = {2013},
+	journal      = {NeuroImage},
+	series       = {Mapping the connectome},
+	volume       = {80},
+	pages        = {105--124},
+	doi          = {10.1016/j.neuroimage.2013.04.127},
+	pmcid        = {PMC3720813},
+	pmid         = {23668970},
+}
+
+@article{hutton2002,
+	title        = {Image Distortion Correction in fMRI: A Quantitative Evaluation},
+	shorttitle   = {Image Distortion Correction in fMRI},
+	author       = {Hutton, Chloe and Bork, Andreas and Josephs, Oliver and Deichmann, Ralf and Ashburner, John and Turner, Robert},
+	year         = {2002},
+	journal      = {NeuroImage},
+	volume       = {16},
+	number       = {1},
+	pages        = {217--240},
+	doi          = {10.1006/nimg.2001.1054},
+	pmid         = {11969330},
+}
+
+@article{jezzard1995,
+	title        = {Correction for geometric distortion in echo planar images from {B0} field variations},
+	author       = {Jezzard, Peter and Balaban, Robert S.},
+	year         = {1995},
+	journal      = {Magnetic Resonance in Medicine},
+	volume       = {34},
+	number       = {1},
+	pages        = {65--73},
+	doi          = {10.1002/mrm.1910340111},
+	pmid         = {7674900},
+}
+
+@article{koay2006,
+	title        = {Analytically exact correction scheme for signal extraction from noisy magnitude MR signals},
+	author       = {Koay, Cheng Guan and Basser, Peter J.},
+	year         = {2006},
+	journal      = {Journal of Magnetic Resonance},
+	volume       = {179},
+	number       = {2},
+	pages        = {317--322},
+	doi          = {10.1016/j.jmr.2006.01.016},
+	pmid         = {16488635},
+}
+
+@article{lanczos,
+	title        = {Evaluation of Noisy Data},
+	author       = {Lanczos, C.},
+	year         = {1964},
+	journal      = {Journal of the Society for Industrial and Applied Mathematics Series B Numerical Analysis},
+	volume       = {1},
+	number       = {1},
+	pages        = {76--85},
+	doi          = {10.1137/0701007},
+}
+
+@article{ma2020,
+	title        = {Denoise magnitude diffusion magnetic resonance images via variance-stabilizing transformation and optimal singular-value manipulation},
+	author       = {Ma, Xiaodong and U{\u{g}}urbil, Kamil and Wu, Xiaoping},
+	year         = {2020},
+	journal      = {NeuroImage},
+	volume       = {215},
+	pages        = {116852},
+	doi          = {10.1016/j.neuroimage.2020.116852},
+	pmcid        = {PMC7292714},
+	pmid         = {32407993},
+}
+
+@article{manjon2013,
+	title        = {Diffusion Weighted Image Denoising Using Overcomplete Local PCA},
+	author       = {Manj{\'o}n, Jos{\'e} V. and Coup{\'e}, Pierrick and Concha, Luis and Buades, Antonio and Collins, D. Louis and Robles, Montserrat},
+	year         = {2013},
+	journal      = {PLoS ONE},
+	volume       = {8},
+	number       = {9},
+	pages        = {e73021},
+	doi          = {10.1371/journal.pone.0073021},
+	pmcid        = {PMC3765487},
+	pmid         = {24019889},
+}
+
+@article{mapmri,
+	title        = {Mean apparent propagator ({MAP}) {MRI}: A novel diffusion imaging method for mapping tissue microstructure},
+	author       = {{\"O}zarslan, Evren and Koay, Cheng Guan and Shepherd, Timothy M. and Komlosh, Michal E. and {\.I}rfano{\u{g}}lu, M. Okan and Pierpaoli, Carlo and Basser, Peter J.},
+	year         = {2013},
+	journal      = {NeuroImage},
+	volume       = {78},
+	pages        = {16--32},
+	doi          = {10.1016/j.neuroimage.2013.04.016},
+}
+
+@article{mcflirt,
+	title        = {Improved Optimization for the Robust and Accurate Linear Registration and Motion Correction of Brain Images},
+	author       = {Jenkinson, Mark and Bannister, Peter and Brady, Michael and Smith, Stephen},
+	year         = {2002},
+	journal      = {NeuroImage},
+	volume       = {17},
+	number       = {2},
+	pages        = {825--841},
+	doi          = {10.1006/nimg.2002.1132},
+}
+
+@article{merlet3dshore,
+	title        = {Continuous diffusion signal, EAP and ODF estimation via Compressive Sensing in diffusion MRI},
+	author       = {Merlet, Sylvain. L and Deriche, Rachid},
+	year         = {2013},
+	journal      = {Medical Image Analysis},
+	volume       = {17},
+	number       = {5},
+	pages        = {556--572},
+	doi          = {10.1016/j.media.2013.02.010},
+	pmid         = {23602920},
+}
+
+@article{mindboggle,
+	title        = {Mindboggling morphometry of human brains},
+	author       = {Klein, Arno and Ghosh, Satrajit S. and Bao, Forrest S. and Giard, Joachim and Häme, Yrjö and Stavsky, Eliezer and Lee, Noah and Rossa, Brian and Reuter, Martin and Chaibub Neto, Elias and Keshavan, Anisha},
+	year         = {2017},
+	journal      = {PLOS Computational Biology},
+	volume       = {13},
+	number       = {2},
+	pages        = {e1005350},
+	doi          = {10.1371/journal.pcbi.1005350},
+	pmcid        = {PMC5322885},
+	pmid         = {28231282},
+}
+
+@article{mni,
+	title        = {Unbiased nonlinear average age-appropriate brain templates from birth to adulthood},
+	author       = {Fonov, Vs and Evans, Ac and McKinstry, Rc and Almli, Cr and Collins, Dl},
+	year         = {2009},
+	journal      = {NeuroImage},
+	series       = {Organization for human brain mapping 2009 annual meeting},
+	volume       = {47},
+	pages        = {S102},
+	doi          = {10.1016/S1053-8119(09)70884-5},
+}
+
+@article{mrdegibbs,
+	title        = {Gibbs‐ringing artifact removal based on local subvoxel‐shifts},
+	author       = {Kellner, Elias and Dhital, Bibek and Kiselev, Valerij G. and Reisert, Marco},
+	year         = {2016},
+	journal      = {Magnetic Resonance in Medicine},
+	volume       = {76},
+	number       = {5},
+	pages        = {1574--1581},
+	doi          = {10.1002/mrm.26054},
+	pmid         = {26745823},
+}
+
+@article{mrtrix3,
+	title        = {MRtrix3: A fast, flexible and open software framework for medical image processing and visualisation},
+	shorttitle   = {MRtrix3},
+	author       = {Tournier, J-Donald and Smith, Robert and Raffelt, David and Tabbara, Rami and Dhollander, Thijs and Pietsch, Maximilian and Christiaens, Daan and Jeurissen, Ben and Yeh, Chun-Hung and Connelly, Alan},
+	year         = {2019},
+	journal      = {NeuroImage},
+	volume       = {202},
+	pages        = {116137},
+	doi          = {10.1016/j.neuroimage.2019.116137},
+	pmid         = {31473352},
+}
+
+@article{nordic,
+	title        = {NOise reduction with DIstribution Corrected (NORDIC) PCA in dMRI with complex-valued parameter-free locally low-rank processing},
+	author       = {Moeller, Steen and Pisharady, Pramod Kumar and Ramanna, Sudhir and Lenglet, Christophe and Wu, Xiaoping and Dowdle, Logan and Yacoub, Essa and U{\u{g}}urbil, Kamil and Akçakaya, Mehmet},
+	year         = {2021},
+	journal      = {NeuroImage},
+	volume       = {226},
+	pages        = {117539},
+	doi          = {10.1016/j.neuroimage.2020.117539},
+}
+
+@article{n4,
+	title        = {N4ITK: Improved N3 Bias Correction},
+	shorttitle   = {N4itk},
+	author       = {Tustison, Nicholas J and Avants, Brian B and Cook, Philip A and {Yuanjie Zheng} and Egan, Alexander and Yushkevich, Paul A and Gee, James C},
+	year         = {2010},
+	journal      = {IEEE Transactions on Medical Imaging},
+	volume       = {29},
+	number       = {6},
+	pages        = {1310--1320},
+	doi          = {10.1109/TMI.2010.2046908},
+	pmcid        = {PMC3071855},
+	pmid         = {20378467},
+}
+
+@article{nilearn,
+	title        = {Machine learning for neuroimaging with scikit-learn},
+	author       = {Abraham, Alexandre and Pedregosa, Fabian and Eickenberg, Michael and Gervais, Philippe and Mueller, Andreas and Kossaifi, Jean and Gramfort, Alexandre and Thirion, Bertrand and Varoquaux, Gaël},
+	year         = {2014},
+	journal      = {Frontiers in Neuroinformatics},
+	volume       = {8},
+	doi          = {10.3389/fninf.2014.00014},
+	pmcid        = {PMC3930868},
+	pmid         = {24600388},
+}
+
+@misc{nipreps,
+	title        = {NiPreps: enabling the division of labor in neuroimaging beyond fMRIPrep},
+	shorttitle   = {NiPreps},
+	author       = {Esteban, Oscar and Wright, Jessey and Markiewicz, Christopher Johnson and Thompson, William Hedley and Goncalves, Mathias and Ciric, Rastko and Blair, Ross W. and Feingold, Franklin and Rokem, Ariel and Ghosh, Satrajit S and Poldrack, Russell},
+	year         = {2019},
+	publisher    = {Open Science Framework},
+	doi          = {10.31219/osf.io/ujxp6},
+}
+
+@article{nipype1,
+	title        = {Nipype: A Flexible, Lightweight and Extensible Neuroimaging Data Processing Framework in Python},
+	shorttitle   = {Nipype},
+	author       = {Gorgolewski, Krzysztof and Burns, Christopher D. and Madison, Cindee and Clark, Dav and Halchenko, Yaroslav O. and Waskom, Michael L. and Ghosh, Satrajit S.},
+	year         = {2011},
+	journal      = {Frontiers in Neuroinformatics},
+	volume       = {5},
+	pages        = {13},
+	doi          = {10.3389/fninf.2011.00013},
+	pmcid        = {PMC3159964},
+	pmid         = {21897815},
+}
+
+@misc{nipype2,
+	title        = {nipy/nipype: 1.9.1},
+	shorttitle   = {nipy/nipype},
+	author       = {Esteban, Oscar and Markiewicz, Christopher J. and Burns, Christopher and Goncalves, Mathias and Jarecka, Dorota and Ziegler, Erik and Berleant, Shoshana and Ellis, David Gage and Pinsard, Basile and Madison, Cindee and Waskom, Michael and Notter, Michael Philipp and Clark, Daniel and Manhães-Savio, Alexandre and Halchenko, Yaroslav O. and Clark, Dav and Jordan, Kesshi and Dayan, Michael and Norgaard, Martin and Loney, Fred and Papadopoulos Orfanos, Dimitri and Salo, Taylor and Johnson, Hans and Dewey, Blake E and Bougacha, Salma and Keshavan, Anisha and Yvernault, Benjamin and Christian, Horea and Hamalainen, Carlo and Ćirić, Rastko and Dubois, Mathieu and Joseph, Michael and Cipollini, Ben and Tilley II, Steven and Visconti di Oleggio Castello, Matteo and De La Vega, Alejandro and Wong, Jason and Kaczmarzyk, Jakub and Huntenburg, Julia M. and Clark, Michael G. and Kent, James D. and Benderoff, Erin and Erickson, Drew and Dias, Maria de Fatima and Moloney, Brendan and Hanke, Michael and Giavasis, Steven and Nichols, B. Nolan and Tungaraza, Rosalia and Dell'Orco, Andrea and Frohlich, Caroline and Wassermann, Demian and de Hollander, Gilles and Kepler, Gal and Koudoro, Serge and Eshaghi, Arman and Millman, Jarrod and Mancini, Matteo and Close, Thomas and Nielson, Dylan M. and Varoquaux, Gael and Waller, Lea and Watanabe, Aimi and Mordom, David and Cluce, Jon and Guillon, Jérémy and Robert-Fitzgerald, Timothy and Chetverikov, Andrey and Rokem, Ariel and Acland, Benjamin and Bernardoni, Fabio and Forbes, Jessica and Markello, Ross and Gillman, Ashley and Kong, Xiang-Zhen and Geisler, Daniel and Salvatore, John and Espana, Lezlie and Gramfort, Alexandre and Doll, Anna and Buchanan, Colin and DuPre, Elizabeth and Liu, Siqi and Schaefer, Alexander and Kleesiek, Jens and Butry, Lionel and Sikka, Sharad and Schwartz, Yannick and Ghayoor, Ali and Vaillant, Ghislain and Lee, John A. and Mattfeld, Aaron and Richie-Halford, Adam and Liem, Franz and Perez-Guevara, Martin Felipe and Heinsfeld, Anibal Sólon and Haselgrove, Christian and Durnez, Joke and Lampe, Leonie and Poldrack, Russell and Glatard, Tristan and Baratz, Zvi and Tabas, Alejandro and Cumba, Chad and Pérez-García, Fernando and Genovese, Maurilio and Blair, Ross and Iqbal, Shariq and Welch, David and Condamine, Eric and Contier, Oliver and Triplett, William and Craddock, R. Cameron and Correa, Carlos and Stadler, Jörg and Warner, Joshua and Sisk, Lucinda M. and Falkiewicz, Marcel and Sharp, Paul and Rothmei, Simon and Kim, Sin and Weinstein, Alejandro and Kahn, Ari E. and Kastman, Erik and Bottenhorn, Katherine and Grignard, Martin and Perkins, L. Nathan and Anijärv, Toomas Erik and Zhou, Dale and Bielievtsov, Dmytro and Cooper, Gavin and Stojic, Hrvoje and Hui Qian, Tan and Linkersdörfer, Janosch and Renfro, Mandy and Hinds, Oliver and Stanley, Olivia and Velasco, Pablo and Küttner, René and Pauli, Wolfgang M. and Wu, Jianxiao and Xie, Xihe and Glen, Daniel and Kimbler, Adam and Meyers, Benjamin and Tarbert, Claire and Ginsburg, Daniel and Haehn, Daniel and Margulies, Daniel S. and Ma, Feilong and Malone, Ian B. and Snoek, Lukas and Brett, Matthew and Cieslak, Matthew and Hallquist, Michael and Molina-Romero, Miguel and Bilgel, Murat and Lee, Nat and Kuntke, Paul and Jalan, Raunak and Inati, Souheil and Gerhard, Stephan and Mathotaarachchi, Sulantha and Saase, Victor and Van, Andrew and Petre, Bogdan and Steele, Christopher John and Ort, Eduard and Lerma-Usabiaga, Garikoitz and Schwabacher, Isaac and Arias, Jaime and Lai, Jeff and Pellman, John and Huguet, Jordi and Junhao WEN and Leinweber, Katrin and Chawla, Kshitij and Weninger, Leon and Modat, Marc and Bannert, Michael M. and Mukhometzianov, Rinat and Harms, Robbert and Andberg, Sami Kristian and Matsubara, K and González Orozco, Abel A. and Routier, Alexandre and Marina, Ana and Davison, Andrew and Floren, Andrew and Park, Anne and Frederick, Blaise and Cheung, Brian and McDermottroe, Conor and McNamee, Daniel and Shachnev, Dmitry and Vogel, Dorian and Flandin, Guillaume and Jones, Henry and Gonzalez, Ivan and Varada, Jan and Schlamp, Kai and Podranski, Kornelius and Huang, Lijie and Noel, Maxime and Pannetier, Nicolas and Numssen, Ole and Khanuja, Ranjeet and Urchs, Sebastian and Shim, Sunjae and Nickson, Thomas and Broderick, William and Tambini, Arielle and Mihai, Paul Glad and Gorgolewski, Krzysztof J. and Ghosh, Satrajit},
+	year         = {2025},
+}
+
+@article{olesen2023,
+	title        = {Tensor denoising of multidimensional MRI data},
+	author       = {Olesen, Jonas L. and Ianus, Andrada and {\O}stergaard, Leif and Shemesh, Noam and Jespersen, Sune N.},
+	year         = {2023},
+	journal      = {Magnetic Resonance in Medicine},
+	volume       = {89},
+	number       = {3},
+	pages        = {1160--1172},
+	doi          = {10.1002/mrm.29478},
+	pmid         = {36372982},
+}
+
+@article{patch2self,
+	title        = {Patch2Self: Denoising diffusion MRI with self-supervised learning​},
+	shorttitle   = {Patch2Self},
+	author       = {Fadnavis, Shreyas and Batson, Joshua and Garyfallidis, Eleftherios},
+	year         = {2020},
+	journal      = {Advances in Neural Information Processing Systems},
+	volume       = {33},
+}
+
+@article{patron2024,
+	title        = {Denoising diffusion MRI: Considerations and implications for analysis},
+	shorttitle   = {Denoising diffusion MRI},
+	author       = {Manzano Patron, Jose Pedro and Moeller, Steen and Andersson, Jesper L. R. and U{\u{g}}urbil, Kamil and Yacoub, Essa and Sotiropoulos, Stamatios N.},
+	year         = {2024},
+	journal      = {Imaging Neuroscience},
+	volume       = {2},
+	pages        = {1--29},
+	doi          = {10.1162/imag_a_00060},
+}
+
+@article{pfgibbs,
+	title        = {Removal of partial Fourier‐induced Gibbs (RPG) ringing artifacts in MRI},
+	author       = {Lee, Hong‐Hsi and Novikov, Dmitry S. and Fieremans, Els},
+	year         = {2021},
+	journal      = {Magnetic Resonance in Medicine},
+	volume       = {86},
+	number       = {5},
+	pages        = {2733--2750},
+	doi          = {10.1002/mrm.28830},
+	pmcid        = {PMC9212190},
+	pmid         = {34227142},
+}
+
+@article{pizzolato2020,
+	title        = {Adaptive phase correction of diffusion-weighted images},
+	author       = {Pizzolato, Marco and Gilbert, Guillaume and Thiran, Jean-Philippe and Descoteaux, Maxime and Deriche, Rachid},
+	year         = {2020},
+	journal      = {NeuroImage},
+	volume       = {206},
+	pages        = {116274},
+	doi          = {10.1016/j.neuroimage.2019.116274},
+	pmid         = {31629828},
+}
+
+@article{pncprocessing,
+	title        = {Neuroimaging of the Philadelphia Neurodevelopmental Cohort},
+	author       = {Satterthwaite, Theodore D. and Elliott, Mark A. and Ruparel, Kosha and Loughead, James and Prabhakaran, Karthik and Calkins, Monica E. and Hopson, Ryan and Jackson, Chad and Keefe, Jack and Riley, Marisa and Mentch, Frank D. and Sleiman, Patrick and Verma, Ragini and Davatzikos, Christos and Hakonarson, Hakon and Gur, Ruben C. and Gur, Raquel E.},
+	year         = {2014},
+	journal      = {NeuroImage},
+	volume       = {86},
+	pages        = {544--553},
+	doi          = {10.1016/j.neuroimage.2013.07.064},
+	pmcid        = {PMC3947233},
+	pmid         = {23921101},
+}
+
+@article{power2017simple,
+	title        = {A simple but useful way to assess fMRI scan qualities},
+	author       = {Power, Jonathan D.},
+	year         = {2017},
+	journal      = {NeuroImage},
+	volume       = {154},
+	pages        = {150--158},
+	doi          = {10.1016/j.neuroimage.2016.08.009},
+	pmcid        = {PMC5296400},
+	pmid         = {27510328},
+}
+
+@article{power_fd_dvars,
+	title        = {Methods to detect, characterize, and remove motion artifact in resting state fMRI},
+	author       = {Power, Jonathan D. and Mitra, Anish and Laumann, Timothy O. and Snyder, Abraham Z. and Schlaggar, Bradley L. and Petersen, Steven E.},
+	year         = {2014},
+	journal      = {NeuroImage},
+	volume       = {84},
+	number       = {Supplement C},
+	pages        = {320--341},
+	doi          = {10.1016/j.neuroimage.2013.08.048},
+	pmcid        = {PMC3849338},
+	pmid         = {23994314},
+}
+
+@article{rohde2004,
+	title        = {Comprehensive approach for correction of motion and distortion in diffusion-weighted MRI},
+	author       = {Rohde, Guenther K. and Barnett, Alan S. and Basser, Peter J. and Marenco, Stefano and Pierpaoli, Carlo},
+	year         = {2004},
+	journal      = {Magnetic Resonance in Medicine},
+	volume       = {51},
+	number       = {1},
+	pages        = {103--114},
+	doi          = {10.1002/mrm.10677},
+	pmid         = {14705050},
+}
+
+@article{synthseg1,
+	title        = {SynthSeg: Segmentation of brain MRI scans of any contrast and resolution without retraining},
+	shorttitle   = {SynthSeg},
+	author       = {Billot, Benjamin and Greve, Douglas N. and Puonti, Oula and Thielscher, Axel and Van Leemput, Koen and Fischl, Bruce and Dalca, Adrian V. and Iglesias, Juan Eugenio},
+	year         = {2023},
+	journal      = {Medical Image Analysis},
+	volume       = {86},
+	pages        = {102789},
+	doi          = {10.1016/j.media.2023.102789},
+	pmcid        = {PMC10154424},
+	pmid         = {36857946},
+}
+
+@article{synthseg2,
+	title        = {Robust machine learning segmentation for large-scale analysis of heterogeneous clinical brain MRI datasets},
+	author       = {Billot, Benjamin and Magdamo, Colin and Cheng, You and Arnold, Steven E. and Das, Sudeshna and Iglesias, Juan Eugenio},
+	year         = {2023},
+	journal      = {Proceedings of the National Academy of Sciences},
+	volume       = {120},
+	number       = {9},
+	pages        = {e2216399120},
+	doi          = {10.1073/pnas.2216399120},
+	pmcid        = {PMC9992854},
+	pmid         = {36802420},
+}
+
+@article{synthstrip,
+	title        = {SynthStrip: skull-stripping for any brain image},
+	shorttitle   = {SynthStrip},
+	author       = {Hoopes, Andrew and Mora, Jocelyn S. and Dalca, Adrian V. and Fischl, Bruce and Hoffmann, Malte},
+	year         = {2022},
+	journal      = {NeuroImage},
+	volume       = {260},
+	pages        = {119474},
+	doi          = {10.1016/j.neuroimage.2022.119474},
+	pmcid        = {PMC9465771},
+	pmid         = {35842095},
+}
+
+@article{topup,
+	title        = {How to correct susceptibility distortions in spin-echo echo-planar images: application to diffusion tensor imaging},
+	shorttitle   = {How to correct susceptibility distortions in spin-echo echo-planar images},
+	author       = {Andersson, Jesper L.R. and Skare, Stefan and Ashburner, John},
+	year         = {2003},
+	journal      = {NeuroImage},
+	volume       = {20},
+	number       = {2},
+	pages        = {870--888},
+	doi          = {10.1016/S1053-8119(03)00336-7},
+	pmid         = {14568458},
+}
+
+@misc{unpile,
+	title        = {unpile: susceptibility distortion correction for EPI by fieldmap refinement and fieldmap-less fitting},
+	author       = {Cieslak, Matthew},
+	year         = {2026},
+	url          = {https://github.com/PennLINC/unpile-rs},
+}
+
+
+@article{tortoisev4,
+	title        = {TORTOISEV4: ReImagining the NIH Diffusion MRI Processing Pipeline},
+	shorttitle   = {Tortoisev4},
+	author       = {Irfanoglu, M. Okan and Nayak, Amritha and Taylor, Paul and Thai, Anh and Pierpaoli, Carlo},
+	year         = {2025},
+	journal      = {Imaging Neuroscience},
+	doi          = {10.1162/IMAG.a.948},
+}
+
+
+@article{yeh2019,
+	title        = {Differential tractography as a track-based biomarker for neuronal injury},
+	author       = {Yeh, Fang-Cheng and Zaydan, Islam M. and Suski, Valerie R. and Lacomis, David and Richardson, R. Mark and Maroon, Joseph C. and Barrios-Martinez, Jessica},
+	year         = {2019},
+	journal      = {NeuroImage},
+	volume       = {202},
+	pages        = {116131},
+	doi          = {10.1016/j.neuroimage.2019.116131},
+	pmid         = {31472253},
+}
+
+@article{zhu2022,
+	title        = {Denoise Functional Magnetic Resonance Imaging With Random Matrix Theory Based Principal Component Analysis},
+	author       = {Zhu, Wenchao and Ma, Xiaodong and Zhu, Xiao-Hong and U{\u{g}}urbil, Kamil and Chen, Wei and Wu, Xiaoping},
+	year         = {2022},
+	journal      = {IEEE Transactions on Biomedical Engineering},
+	volume       = {69},
+	number       = {11},
+	pages        = {3377--3388},
+	doi          = {10.1109/TBME.2022.3168592},
+	pmcid        = {PMC9613202},
+	pmid         = {35439123},
+}
+
+@misc{svht_denoise,
+	title        = {svht\_denoise},
+	author       = {Rorden, Chris},
+	year         = {2026},
+	url          = {https://github.com/rordenlab/svht_denoise},
+}
+
+@article{synb0disco,
+	title        = {Synthesized b0 for diffusion distortion correction ({Synb0}-{DisCo})},
+	shorttitle   = {Synb0-DisCo},
+	author       = {Schilling, Kurt G. and Blaber, Justin and Huo, Yuankai and Newton, Allen and Hansen, Colin and Nath, Vishwesh and Shafer, Andrea T. and Williams, Owen and Resnick, Susan M. and Rogers, Baxter and Anderson, Adam W. and Landman, Bennett A.},
+	year         = {2019},
+	journal      = {Magnetic Resonance Imaging},
+	volume       = {64},
+	pages        = {62--70},
+	doi          = {10.1016/j.mri.2019.05.008},
+	pmcid        = {PMC6834894},
+	pmid         = {31075422},
+}
+
+@article{synb0discoValidation,
+	title        = {Distortion correction of diffusion weighted {MRI} without reverse phase-encoding scans or field-maps},
+	author       = {Schilling, Kurt G. and Blaber, Justin and Hansen, Colin and Cai, Leon and Rogers, Baxter and Anderson, Adam W. and Smith, Seth and Kanakaraj, Prasanna and Rex, Tonia and Resnick, Susan M. and Shafer, Andrea T. and Cutting, Laurie E. and Woodward, Neil and Zald, David and Landman, Bennett A.},
+	year         = {2020},
+	journal      = {PLOS ONE},
+	volume       = {15},
+	number       = {7},
+	pages        = {e0236418},
+	doi          = {10.1371/journal.pone.0236418},
+	pmcid        = {PMC7392214},
+	pmid         = {32735601},
+}
+
+@article{niimath,
+  title = {niimath and fslmaths: Replication as a method to enhance popular neuroimaging tools},
+  author = {Rorden, Christopher and Webster, Matthew and Drake, Chris and Jenkinson, Mark and Clayden, Jonathan D. and Li, Ningfei and Hanayik, Taylor},
+  journal = {Aperture Neuro},
+  volume = {4},
+  year = {2024},
+  doi = {10.52294/001c.94384}
+}
+
+@article{romeo,
+  title = {Phase unwrapping with a rapid opensource minimum spanning tree algorithm ({ROMEO})},
+  author = {Dymerska, Barbara and Eckstein, Korbinian and Bachrata, Beata and Siow, Bernard and Trattnig, Siegfried and Shmueli, Karin and Robinson, Simon Daniel},
+  journal = {Magnetic Resonance in Medicine},
+  volume = {85},
+  number = {4},
+  pages = {2294--2308},
+  year = {2021},
+  doi = {10.1002/mrm.28563}
+}
+</pre>
+</div>
+        </div>
+
+        </div>
+        <div id="errors" class="ps-4 pe-4 mb-2">
+<h2 class="sub-report-group mt-4">Errors</h2>                    <p class="alert alert-success" role="alert">No errors to report!</p>
+        </div>
+    </div>
+
+
+<script type="text/javascript">
+function toggle(id) {
+    var element = document.getElementById(id);
+    if(element.style.display == 'block')
+        element.style.display = 'none';
+    else
+        element.style.display = 'block';
+}
+</script>
+</body>
+</html>

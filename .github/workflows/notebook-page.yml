@@ -16,6 +16,7 @@ on:
     branches: [main]
     paths:
       - lesion-interpretation-pipeline.ipynb
+      - demo/**
       - .github/workflows/notebook-page.yml
   workflow_dispatch:
 
@@ -30,6 +31,8 @@ concurrency:
 
 env:
   NOTEBOOK: lesion-interpretation-pipeline.ipynb
+  # Set PUBLISH_DEMO to "0" to publish NOTEBOOK again; retain demo/ for the archived run.
+  PUBLISH_DEMO: "1"
 
 jobs:
   build:
@@ -55,8 +58,17 @@ jobs:
         run: python -m pip install "markdown-it-py>=3.0"
       - name: Build the page
         run: |
-          python _kb/scripts/build_notebook_page.py --calmar . --notebook "$NOTEBOOK" \
-            --out _site --strict --source-commit "$GITHUB_SHA"
+          if [ "$PUBLISH_DEMO" = "1" ]; then
+            python -c 'import json; m=json.load(open("demo/publication.json")); assert m["state"] == "ready" and not m["page"]["unknown"] and not m["page"]["errors"]'
+            python _kb/scripts/build_notebook_page.py --calmar . --notebook demo/lesion-interpretation-demo.ipynb \
+              --out _demo_validation --strict --source-commit "$GITHUB_SHA"
+            mkdir -p _site
+            cp -a demo/. _site/
+            python -c 'import json,os; p="_site/build.json"; d=json.load(open(p)); d["notebook_commit"]=os.environ["GITHUB_SHA"]; open(p,"w").write(json.dumps(d,indent=2)+"\n")'
+          else
+            python _kb/scripts/build_notebook_page.py --calmar . --notebook "$NOTEBOOK" \
+              --out _site --strict --source-commit "$GITHUB_SHA"
+          fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

@@ -1,0 +1,16 @@
+{
+  "notebook": "demo/lesion-interpretation-demo.ipynb",
+  "notebook_commit": "",
+  "built": "2026-11-13T10:34:43.174051+00:00",
+  "cells": 111,
+  "outputs": 1497,
+  "widgets": 29,
+  "panels_without_state": 0,
+  "figures": 0,
+  "datasets": [
+    "ISLES 2022",
+    "ds004884"
+  ],
+  "controller_job": "34",
+  "human_qc": "skipped"
+}
