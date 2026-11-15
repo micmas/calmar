@@ -1,0 +1,315 @@
+{
+  "cases": [
+    {
+      "id": "sub-M2001",
+      "session": "ses-1076",
+      "dataset": "ds004884",
+      "subtitle": "Chronic stroke \u00b7 T1w",
+      "background_label": "T1w",
+      "background": "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz",
+      "masks": [
+        {
+          "label": "SynthStroke",
+          "url": "volumes/4930c600fe266de5-SynthStroke_in_MNI.nii.gz"
+        },
+        {
+          "label": "LINDA",
+          "url": "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz"
+        },
+        {
+          "label": "Expert mask",
+          "url": "volumes/13e440187bf2bcce-ExpertMask_in_MNI.nii.gz"
+        }
+      ],
+      "disconnectome": "volumes/ca0dab9b7ed0b019-Disconnectome_synthstroke.nii.gz",
+      "report": "assets/fa48b08559463ea1-interpretation_sub-M2001_ses-1076_synthstroke.html",
+      "thumbnail": "assets/sub-M2001-overlay.png",
+      "pdfs": [
+        {
+          "label": "HarvardOxford \u00b7 linda",
+          "url": "assets/6815a2bdd393860f-sub-M2001_ses-1076_HarvardOxford_linda.pdf"
+        },
+        {
+          "label": "HarvardOxford \u00b7 manual",
+          "url": "assets/352cfa64ece7306e-sub-M2001_ses-1076_HarvardOxford_manual.pdf"
+        },
+        {
+          "label": "HarvardOxford \u00b7 synthstroke",
+          "url": "assets/e03de5acaa62b9d6-sub-M2001_ses-1076_HarvardOxford_synthstroke.pdf"
+        },
+        {
+          "label": "AAL \u00b7 linda",
+          "url": "assets/6beb3f32bc0bfe5a-sub-M2001_ses-1076_AAL_linda.pdf"
+        },
+        {
+          "label": "AAL \u00b7 manual",
+          "url": "assets/3e56a375bd8601a7-sub-M2001_ses-1076_AAL_manual.pdf"
+        },
+        {
+          "label": "AAL \u00b7 synthstroke",
+          "url": "assets/115cb21a68a84c89-sub-M2001_ses-1076_AAL_synthstroke.pdf"
+        },
+        {
+          "label": "Destrieux \u00b7 linda",
+          "url": "assets/d60a52c94a5ba227-sub-M2001_ses-1076_Destrieux_linda.pdf"
+        },
+        {
+          "label": "Destrieux \u00b7 manual",
+          "url": "assets/a922c0c6e6b320ca-sub-M2001_ses-1076_Destrieux_manual.pdf"
+        },
+        {
+          "label": "Destrieux \u00b7 synthstroke",
+          "url": "assets/86f834afcf9bf312-sub-M2001_ses-1076_Destrieux_synthstroke.pdf"
+        },
+        {
+          "label": "Schaefer400 \u00b7 linda",
+          "url": "assets/a176dcef8730fcd2-sub-M2001_ses-1076_Schaefer400_linda.pdf"
+        },
+        {
+          "label": "Schaefer400 \u00b7 manual",
+          "url": "assets/8b6a6844beb26921-sub-M2001_ses-1076_Schaefer400_manual.pdf"
+        },
+        {
+          "label": "Schaefer400 \u00b7 synthstroke",
+          "url": "assets/09ba6808b2a57ee8-sub-M2001_ses-1076_Schaefer400_synthstroke.pdf"
+        },
+        {
+          "label": "JHU \u00b7 linda",
+          "url": "assets/1f93d277ad7518d6-sub-M2001_ses-1076_JHU_linda.pdf"
+        },
+        {
+          "label": "JHU \u00b7 manual",
+          "url": "assets/13c78f17d8dedd29-sub-M2001_ses-1076_JHU_manual.pdf"
+        },
+        {
+          "label": "JHU \u00b7 synthstroke",
+          "url": "assets/b24e36e18388aede-sub-M2001_ses-1076_JHU_synthstroke.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 linda",
+          "url": "assets/3c576350628e0c35-sub-M2001_ses-1076_XTRACT_linda.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 manual",
+          "url": "assets/6e0b1abad0ab0f16-sub-M2001_ses-1076_XTRACT_manual.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 synthstroke",
+          "url": "assets/c3b1de65aca388a3-sub-M2001_ses-1076_XTRACT_synthstroke.pdf"
+        }
+      ]
+    },
+    {
+      "id": "sub-M2004",
+      "session": "ses-524",
+      "dataset": "ds004884",
+      "subtitle": "Chronic stroke \u00b7 T1w",
+      "background_label": "T1w",
+      "background": "volumes/bc75488091faafea-Subject_in_MNI.nii.gz",
+      "masks": [
+        {
+          "label": "SynthStroke",
+          "url": "volumes/ad134660018bf3d6-SynthStroke_in_MNI.nii.gz"
+        },
+        {
+          "label": "LINDA",
+          "url": "volumes/4d5b94e891e5f7fa-Lesion_in_MNI.nii.gz"
+        },
+        {
+          "label": "Expert mask",
+          "url": "volumes/fd9ae82cb3e11523-ExpertMask_in_MNI.nii.gz"
+        }
+      ],
+      "disconnectome": "volumes/c3bfbd0e8cc01002-Disconnectome_synthstroke.nii.gz",
+      "report": "assets/7ed408f5dcec0455-interpretation_sub-M2004_ses-524_synthstroke.html",
+      "thumbnail": "assets/sub-M2004-overlay.png",
+      "pdfs": [
+        {
+          "label": "HarvardOxford \u00b7 linda",
+          "url": "assets/6efa119e2a4ff5c5-sub-M2004_ses-524_HarvardOxford_linda.pdf"
+        },
+        {
+          "label": "HarvardOxford \u00b7 manual",
+          "url": "assets/817603b3f199e0f6-sub-M2004_ses-524_HarvardOxford_manual.pdf"
+        },
+        {
+          "label": "HarvardOxford \u00b7 synthstroke",
+          "url": "assets/6f2149b691b1ef72-sub-M2004_ses-524_HarvardOxford_synthstroke.pdf"
+        },
+        {
+          "label": "AAL \u00b7 linda",
+          "url": "assets/1726abe2b4b93269-sub-M2004_ses-524_AAL_linda.pdf"
+        },
+        {
+          "label": "AAL \u00b7 manual",
+          "url": "assets/29e911d06a3df5a2-sub-M2004_ses-524_AAL_manual.pdf"
+        },
+        {
+          "label": "AAL \u00b7 synthstroke",
+          "url": "assets/23071633a464b788-sub-M2004_ses-524_AAL_synthstroke.pdf"
+        },
+        {
+          "label": "Destrieux \u00b7 linda",
+          "url": "assets/5e710a54ef25f9eb-sub-M2004_ses-524_Destrieux_linda.pdf"
+        },
+        {
+          "label": "Destrieux \u00b7 manual",
+          "url": "assets/4a9d42888b0129b9-sub-M2004_ses-524_Destrieux_manual.pdf"
+        },
+        {
+          "label": "Destrieux \u00b7 synthstroke",
+          "url": "assets/a2b0b51332fffb11-sub-M2004_ses-524_Destrieux_synthstroke.pdf"
+        },
+        {
+          "label": "Schaefer400 \u00b7 linda",
+          "url": "assets/4cece7173e5a81ae-sub-M2004_ses-524_Schaefer400_linda.pdf"
+        },
+        {
+          "label": "Schaefer400 \u00b7 manual",
+          "url": "assets/5742c78e13e3010d-sub-M2004_ses-524_Schaefer400_manual.pdf"
+        },
+        {
+          "label": "Schaefer400 \u00b7 synthstroke",
+          "url": "assets/f7fe9444c5304af7-sub-M2004_ses-524_Schaefer400_synthstroke.pdf"
+        },
+        {
+          "label": "JHU \u00b7 linda",
+          "url": "assets/0b506b2cdb78553f-sub-M2004_ses-524_JHU_linda.pdf"
+        },
+        {
+          "label": "JHU \u00b7 manual",
+          "url": "assets/612cb10caf8f3e3b-sub-M2004_ses-524_JHU_manual.pdf"
+        },
+        {
+          "label": "JHU \u00b7 synthstroke",
+          "url": "assets/32e103f4e2269070-sub-M2004_ses-524_JHU_synthstroke.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 linda",
+          "url": "assets/4bd6cb1432bae226-sub-M2004_ses-524_XTRACT_linda.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 manual",
+          "url": "assets/5a44f7b2aa2d0be2-sub-M2004_ses-524_XTRACT_manual.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 synthstroke",
+          "url": "assets/c836fffe933defd5-sub-M2004_ses-524_XTRACT_synthstroke.pdf"
+        }
+      ]
+    },
+    {
+      "id": "sub-strokecase0001",
+      "session": "ses-0001",
+      "dataset": "ISLES-2022",
+      "subtitle": "Acute stroke \u00b7 DWI + ADC",
+      "background_label": "DWI",
+      "background": "volumes/fa180867cbe67db6-Subject_in_MNI.nii.gz",
+      "masks": [
+        {
+          "label": "OpenADS",
+          "url": "volumes/7e673ca77b280bd6-OpenADS_in_MNI.nii.gz"
+        },
+        {
+          "label": "Expert mask",
+          "url": "volumes/81c53dcc2c12985f-ExpertMask_in_MNI.nii.gz"
+        }
+      ],
+      "disconnectome": "volumes/43198ffa4d7aab7c-Disconnectome_openads.nii.gz",
+      "report": "assets/ced8a935707d2f8e-interpretation_sub-strokecase0001_ses-0001_openads.html",
+      "thumbnail": "assets/sub-strokecase0001-overlay.png",
+      "pdfs": [
+        {
+          "label": "HarvardOxford \u00b7 manual",
+          "url": "assets/7b20651c89d7d039-sub-strokecase0001_ses-0001_HarvardOxford_manual.pdf"
+        },
+        {
+          "label": "HarvardOxford \u00b7 openads",
+          "url": "assets/ca9ec5ab8c4a7eda-sub-strokecase0001_ses-0001_HarvardOxford_openads.pdf"
+        },
+        {
+          "label": "AAL \u00b7 manual",
+          "url": "assets/7a5dceac3f9394a1-sub-strokecase0001_ses-0001_AAL_manual.pdf"
+        },
+        {
+          "label": "AAL \u00b7 openads",
+          "url": "assets/ea1a98b2605bfc43-sub-strokecase0001_ses-0001_AAL_openads.pdf"
+        },
+        {
+          "label": "Destrieux \u00b7 manual",
+          "url": "assets/b15fef5b716dd058-sub-strokecase0001_ses-0001_Destrieux_manual.pdf"
+        },
+        {
+          "label": "Destrieux \u00b7 openads",
+          "url": "assets/7e6b4dc8c744b267-sub-strokecase0001_ses-0001_Destrieux_openads.pdf"
+        },
+        {
+          "label": "Schaefer400 \u00b7 manual",
+          "url": "assets/cb811f3168e4abe7-sub-strokecase0001_ses-0001_Schaefer400_manual.pdf"
+        },
+        {
+          "label": "Schaefer400 \u00b7 openads",
+          "url": "assets/c7cdfdac2f10a4bc-sub-strokecase0001_ses-0001_Schaefer400_openads.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 manual",
+          "url": "assets/139a5bdb5ac49889-sub-strokecase0001_ses-0001_XTRACT_manual.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 openads",
+          "url": "assets/71e0f911dae53370-sub-strokecase0001_ses-0001_XTRACT_openads.pdf"
+        }
+      ]
+    },
+    {
+      "id": "sub-strokecase0002",
+      "session": "ses-0001",
+      "dataset": "ISLES-2022",
+      "subtitle": "Acute stroke \u00b7 DWI + ADC",
+      "background_label": "DWI",
+      "background": "volumes/f414410c88fd2f64-Subject_in_MNI.nii.gz",
+      "masks": [
+        {
+          "label": "OpenADS",
+          "url": "volumes/524480056ee82c68-OpenADS_in_MNI.nii.gz"
+        },
+        {
+          "label": "Expert mask",
+          "url": "volumes/b16cd256358ae213-ExpertMask_in_MNI.nii.gz"
+        }
+      ],
+      "disconnectome": "volumes/77297c33d9679713-Disconnectome_openads.nii.gz",
+      "report": "assets/0f2c8785f12bf62a-interpretation_sub-strokecase0002_ses-0001_openads.html",
+      "thumbnail": "assets/sub-strokecase0002-overlay.png",
+      "pdfs": [
+        {
+          "label": "AAL \u00b7 manual",
+          "url": "assets/0215c16ebcdf68eb-sub-strokecase0002_ses-0001_AAL_manual.pdf"
+        },
+        {
+          "label": "AAL \u00b7 openads",
+          "url": "assets/e4bbbbae993a7064-sub-strokecase0002_ses-0001_AAL_openads.pdf"
+        },
+        {
+          "label": "JHU \u00b7 manual",
+          "url": "assets/372146ae96488b87-sub-strokecase0002_ses-0001_JHU_manual.pdf"
+        },
+        {
+          "label": "JHU \u00b7 openads",
+          "url": "assets/a44d436d4bdb1845-sub-strokecase0002_ses-0001_JHU_openads.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 manual",
+          "url": "assets/71f1ad2d7c5bdbf7-sub-strokecase0002_ses-0001_XTRACT_manual.pdf"
+        },
+        {
+          "label": "XTRACT \u00b7 openads",
+          "url": "assets/c176afccf25b8c80-sub-strokecase0002_ses-0001_XTRACT_openads.pdf"
+        }
+      ]
+    }
+  ],
+  "completed": "2026-11-13T10:34:36.787400+00:00",
+  "controller_job": "34",
+  "niivue": "0.69.0"
+}

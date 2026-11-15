@@ -2,7 +2,7 @@
   "generator": "calmar-demo-publication-v1",
   "state": "ready",
   "controller_job": "34",
-  "created_at": "2026-11-13T10:34:43.174051+00:00",
+  "created_at": "2026-11-15T23:49:41.543246+00:00",
   "source_notebook_sha256": "b52345fc23e59a8e0794796a557be9b1ca8de0aa5c654e192b21c77eed2f57c0",
   "page_builder_sha256": "426df3fb5316edc3628c92da7c28bc5586ced01520a48acc6268ad3c98d4c7a6",
   "participants": [
@@ -42,6 +42,17 @@
       "ds004884"
     ],
     "unknown": []
+  },
+  "reader": {
+    "cases": 4,
+    "renderer": "niivue/0.69.0",
+    "source_hashes": {
+      "src/python/demo_reader.py": "fa003805c3e7d51931c16ffaac2606aa6668649c318a7a023058e20db9434aed",
+      "src/web/demo/index.html": "0081cc26f9de5c877581ea3e316dac279110e7eac50186a686fc33a722d2d25b",
+      "src/web/demo/reader.css": "4d5131c2dfb17ff6d15e1af54e4f2e4a6ed33d4fd3917782c69dd2d24c2f24fa",
+      "src/web/demo/reader.js": "93dc114485bb560449b5c1422dd2dbc2e1f373b6aa81dd9531ab03f6c82d3199"
+    },
+    "volume_files": 18
   },
   "files": {
     "assets/004cdc630315858e-sub-M2001_ses-1225_acq-epb0p2_dir-AP_run-4_space-ACPC_desc-GQIODF_peaks.png": "99b052f2bc9d1fea9a573ae77510107d34eb0998346ff5590d447060ad2bf6cc",
@@ -130,8 +141,36 @@
     "assets/fa48b08559463ea1-interpretation_sub-M2001_ses-1076_synthstroke.html": "138766d304eaaeb31e68989e931ce7858a4c10d2f3228a5ab6b7fdb065adcb46",
     "assets/fb106069f1781856-sub-M2004_ses-780_acq-epb0p2_dir-AP_run-3_space-ACPC_desc-wmFOD_odfs.png": "f198d21e2f79576f227c4cae7a0fbf99cbd626b09f22db8c4043f24a3fa30780",
     "assets/fd2a18be2c3cba4d-sub-M2004_ses-780_desc-direct_tractometry.tsv": "d4f61245a48722152971c9e7848fcb587f2cc79bd940e946cfd3d10ab5510e0a",
-    "build.json": "b7548cb29fb43b5537bc641d4442d20afc32a8febb95d040beef667694a16888",
-    "index.html": "37e20853ca46f0d17331dbbac166426d578c06cd6d2a610472c9038432b8f9b7",
-    "lesion-interpretation-demo.ipynb": "3d1f6dbf2cdcedea3aca40ed11508a4d7a1f9b6704d2bbc47ccfdf785dd5c423"
+    "assets/sub-M2001-overlay.png": "de285701a74338aab12bf53d35aee353f7c7b538d7aed143eb3aa9b16c43fbee",
+    "assets/sub-M2004-overlay.png": "ec88be817d73c554fd3839afd18696714eb9ff409c20e863f0d67b6cd5722799",
+    "assets/sub-strokecase0001-overlay.png": "5c7c264606d13316ae52b96787968f65ba754c458a82825487780c1336be4a17",
+    "assets/sub-strokecase0002-overlay.png": "d73deda91f953c614e2ee145878390cba42928f2f5043fa873863d6e7a1c1d39",
+    "build.json": "fb57274f2304a7940e1468fbd1b11542c9a0408d09f2d2152ad9a15d338ec50d",
+    "cases.json": "4b5c87ce718d18a358373619a539858905b14f8d476c77f6013b1e9b00077521",
+    "index.html": "b7058f3af135e87cfe6d56fa55d60a1af51c9c130e2ca8ad0e3311a95d59ddae",
+    "lesion-interpretation-demo.ipynb": "6d104ecd1a2509da49e117f833c55780b414760d87d96303f759486fa64c0f8a",
+    "notebook.html": "24bf04db13920c575b98cbae9cce55d1e50c0879732e0b2db64eb818cd5e48e6",
+    "reader.css": "4d5131c2dfb17ff6d15e1af54e4f2e4a6ed33d4fd3917782c69dd2d24c2f24fa",
+    "reader.js": "93dc114485bb560449b5c1422dd2dbc2e1f373b6aa81dd9531ab03f6c82d3199",
+    "vendor/LICENSE-niivue.txt": "604be23eceeef93996165e2cd46eefd4d713f98f1b4a5414ab109516dc1b30bf",
+    "vendor/niivue.js": "d6c2be4feb1ad53b2ac76b4196da8d8fd2263b662b511c55ca0fd127eb6a6532",
+    "volumes/13e440187bf2bcce-ExpertMask_in_MNI.nii.gz": "13e440187bf2bcce1f33ce26f596c0684484b0e408b2dd255b328b8bd37730fb",
+    "volumes/43198ffa4d7aab7c-Disconnectome_openads.nii.gz": "43198ffa4d7aab7c30743534c627afe91a6bfa97ada22705a290d0040dc388c6",
+    "volumes/4930c600fe266de5-SynthStroke_in_MNI.nii.gz": "4930c600fe266de538982426fde29dcf4dd6f8438bcf7fd3b5bf743306088287",
+    "volumes/4d5b94e891e5f7fa-Lesion_in_MNI.nii.gz": "4d5b94e891e5f7fa60d4661196d6958e082e183a234293328b59a88ca897ae91",
+    "volumes/524480056ee82c68-OpenADS_in_MNI.nii.gz": "524480056ee82c686f2470cc40e1fa7358dfa635f5566530496e087fb739b10f",
+    "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz": "598afe60f7c9438d69e222fde2e82be6998694652cdbea20685f629153debe37",
+    "volumes/77297c33d9679713-Disconnectome_openads.nii.gz": "77297c33d96797132e71f3145b694607b94270b70572ed70b7d6d599bb45ed14",
+    "volumes/7e673ca77b280bd6-OpenADS_in_MNI.nii.gz": "7e673ca77b280bd6ef79fed07636b7391ee02ac6fa7a199bd440b57dd661714a",
+    "volumes/81c53dcc2c12985f-ExpertMask_in_MNI.nii.gz": "81c53dcc2c12985f46d6bf5945a46e7f0ac1b631fb78b46ead586a6d41ded7a0",
+    "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz": "9a34b924574088b019ea95d8d88cdd6d874f46b67e4e7afadebfdb02b79f2805",
+    "volumes/ad134660018bf3d6-SynthStroke_in_MNI.nii.gz": "ad134660018bf3d61bf4dfafdbc7a86a2225745cc4a39ca9c418123077c711de",
+    "volumes/b16cd256358ae213-ExpertMask_in_MNI.nii.gz": "b16cd256358ae213e794d0bf736d173526f4b67293b63a3d4a59f2c6cc1b83d3",
+    "volumes/bc75488091faafea-Subject_in_MNI.nii.gz": "bc75488091faafea1f2d8d5949bcd2861bf5b8c30758fb677798c686050841f1",
+    "volumes/c3bfbd0e8cc01002-Disconnectome_synthstroke.nii.gz": "c3bfbd0e8cc010029da43562fad5da2701a3524cacffc1010a99c400c58d59d3",
+    "volumes/ca0dab9b7ed0b019-Disconnectome_synthstroke.nii.gz": "ca0dab9b7ed0b01922a99961a3589a0ed54ac2f45320d6167d556779d2acb876",
+    "volumes/f414410c88fd2f64-Subject_in_MNI.nii.gz": "f414410c88fd2f64519cda8ddd28db3d7ee8b30f594ea1749dd4b885e528de7f",
+    "volumes/fa180867cbe67db6-Subject_in_MNI.nii.gz": "fa180867cbe67db65e6b90346dc00ccaa65dcffe1bfe023768c94c2b29985b83",
+    "volumes/fd9ae82cb3e11523-ExpertMask_in_MNI.nii.gz": "fd9ae82cb3e11523503a4d4bb4f6454738e4bf124e9fe17743e4af165e779c1b"
   }
 }
