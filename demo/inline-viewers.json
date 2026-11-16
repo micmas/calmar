@@ -1,0 +1,1611 @@
+{
+  "bd24fccfe82e45ffb767e8343e730101": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "colormap": "yellow",
+        "opacity": 0.35,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/bca6f1aee247405c-sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "source": "data/ds004884/derivatives/hdbet/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "label": "HD-BET brain mask",
+        "color": "#ffff00",
+        "saved_opacity": 0.35,
+        "centre": null
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "ff441e95e7bd4338a6b1846d19f8a58f": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "Prediction3_native.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz",
+        "label": "LINDA lesion",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.25937512228966675,
+          0.4941406244219489,
+          0.5722656249724131
+        ]
+      },
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "colormap": "yellow",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/bca6f1aee247405c-sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "source": "data/ds004884/derivatives/hdbet/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "label": "Brain mask",
+        "color": "#ffff00",
+        "saved_opacity": 0.35,
+        "centre": null
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "0491c2768f654540b6c68ebbe5db3b05": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "prediction_lesion_mask.nii.gz",
+        "colormap": "green",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/75f59667a82fc31f-prediction_lesion_mask.nii.gz",
+        "source": "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/prediction_lesion_mask.nii.gz",
+        "label": "SynthStroke lesion",
+        "color": "#00ff00",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.2406250000000001,
+          0.45117187499999994,
+          0.576171875
+        ]
+      },
+      {
+        "name": "Prediction3_native.nii.gz",
+        "colormap": "red",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz",
+        "label": "LINDA lesion",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.25937512228966675,
+          0.4941406244219489,
+          0.5722656249724131
+        ]
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "096dcd49faef4a9ab138618d1055e8ee": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "ManualLesion_in_T1_sitk.nii.gz",
+        "colormap": "blue",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/214fb80020f021be-ManualLesion_in_T1_sitk.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/_manual_mask_compare/ManualLesion_in_T1_sitk.nii.gz",
+        "label": "Manual lesion",
+        "color": "#0000ff",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.265625125272365,
+          0.45898437440733186,
+          0.5683593749716243
+        ]
+      },
+      {
+        "name": "Prediction3_native.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz",
+        "label": "LINDA lesion",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.25937512228966675,
+          0.4941406244219489,
+          0.5722656249724131
+        ]
+      },
+      {
+        "name": "prediction_lesion_mask.nii.gz",
+        "colormap": "green",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/75f59667a82fc31f-prediction_lesion_mask.nii.gz",
+        "source": "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/prediction_lesion_mask.nii.gz",
+        "label": "SynthStroke lesion",
+        "color": "#00ff00",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.2406250000000001,
+          0.45117187499999994,
+          0.576171875
+        ]
+      },
+      {
+        "name": "T2_in_T1_sitk.nii.gz",
+        "colormap": "gray",
+        "opacity": 0.0,
+        "url": "volumes/884c8143ab6088e1-T2_in_T1_sitk.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/_manual_mask_compare/T2_in_T1_sitk.nii.gz",
+        "label": "Registered reference scan",
+        "color": "#999999",
+        "saved_opacity": 1.0,
+        "centre": null
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "df3133f53e4c42c8850437a02eeb58dd": {
+    "layers": [
+      {
+        "name": "Subject_in_MNI.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Subject_in_MNI.nii.gz",
+        "label": "Subject in MNI",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "Disconnectome_linda.nii.gz",
+        "colormap": "magenta",
+        "opacity": 0.6,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/67b1b6b14f5af739-Disconnectome_linda.nii.gz",
+        "source": "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_linda.nii.gz",
+        "label": "BCBToolkit map \u00b7 linda",
+        "color": "#ff00ff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "Lesion_in_MNI.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Lesion_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 linda",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.5022935779816514,
+          0.5412087912087912
+        ]
+      },
+      {
+        "name": "Disconnectome_synthstroke.nii.gz",
+        "colormap": "magenta",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/ca0dab9b7ed0b019-Disconnectome_synthstroke.nii.gz",
+        "source": "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_synthstroke.nii.gz",
+        "label": "BCBToolkit map \u00b7 synthstroke",
+        "color": "#ff00ff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "SynthStroke_in_MNI.nii.gz",
+        "colormap": "green",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4930c600fe266de5-SynthStroke_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/SynthStroke_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 synthstroke",
+        "color": "#00ff00",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.2664835164835165,
+          0.44724770642201833,
+          0.5521978021978022
+        ]
+      },
+      {
+        "name": "Disconnectome_expert.nii.gz",
+        "colormap": "magenta",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/69ecc40541f770c9-Disconnectome_expert.nii.gz",
+        "source": "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_expert.nii.gz",
+        "label": "BCBToolkit map \u00b7 manual",
+        "color": "#ff00ff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "ExpertMask_in_MNI.nii.gz",
+        "colormap": "blue",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/13e440187bf2bcce-ExpertMask_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/ExpertMask_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 manual",
+        "color": "#0000ff",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.45642201834862384,
+          0.5412087912087912
+        ]
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "de64fcf931144959a6a6c706f0ccdb03": {
+    "layers": [
+      {
+        "name": "Subject_in_MNI.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Subject_in_MNI.nii.gz",
+        "label": "Subject in MNI",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_whole_brain.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.6,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/9f11edb42c6fad1c-DeepDisco_linda_whole_brain.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_whole_brain.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 whole_brain",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_association.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/61440ca9cbfe0fc2-DeepDisco_linda_association.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_association.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 association",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_projection.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/25db9c7faa2785cf-DeepDisco_linda_projection.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_projection.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 projection",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_commissural.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/05f927389c95d4bf-DeepDisco_linda_commissural.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_commissural.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 commissural",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "Lesion_in_MNI.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Lesion_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 linda",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.5022935779816514,
+          0.5412087912087912
+        ]
+      },
+      {
+        "name": "DeepDisco_synthstroke_whole_brain.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/001388b8b6e0677f-DeepDisco_synthstroke_whole_brain.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_whole_brain.nii.gz",
+        "label": "DeepDisco map \u00b7 synthstroke \u00b7 whole_brain",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_synthstroke_association.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/a51872cae03ff510-DeepDisco_synthstroke_association.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_association.nii.gz",
+        "label": "DeepDisco map \u00b7 synthstroke \u00b7 association",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_synthstroke_projection.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/b28f02e9380277b9-DeepDisco_synthstroke_projection.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_projection.nii.gz",
+        "label": "DeepDisco map \u00b7 synthstroke \u00b7 projection",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_synthstroke_commissural.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/bd3564ffdc70a690-DeepDisco_synthstroke_commissural.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_commissural.nii.gz",
+        "label": "DeepDisco map \u00b7 synthstroke \u00b7 commissural",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "SynthStroke_in_MNI.nii.gz",
+        "colormap": "green",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4930c600fe266de5-SynthStroke_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/SynthStroke_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 synthstroke",
+        "color": "#00ff00",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.2664835164835165,
+          0.44724770642201833,
+          0.5521978021978022
+        ]
+      },
+      {
+        "name": "DeepDisco_expert_whole_brain.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/6dee2bdf53288152-DeepDisco_expert_whole_brain.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_whole_brain.nii.gz",
+        "label": "DeepDisco map \u00b7 manual \u00b7 whole_brain",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_expert_association.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/e60c843912d4ed8d-DeepDisco_expert_association.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_association.nii.gz",
+        "label": "DeepDisco map \u00b7 manual \u00b7 association",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_expert_projection.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/9f2461b41b7c7960-DeepDisco_expert_projection.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_projection.nii.gz",
+        "label": "DeepDisco map \u00b7 manual \u00b7 projection",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_expert_commissural.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/779f8edd5786c923-DeepDisco_expert_commissural.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_commissural.nii.gz",
+        "label": "DeepDisco map \u00b7 manual \u00b7 commissural",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "ExpertMask_in_MNI.nii.gz",
+        "colormap": "blue",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/13e440187bf2bcce-ExpertMask_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/ExpertMask_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 manual",
+        "color": "#0000ff",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.45642201834862384,
+          0.5412087912087912
+        ]
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "22624da063ef42ee959bf14c0c0a1103": {
+    "layers": [
+      {
+        "name": "Subject_in_MNI.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Subject_in_MNI.nii.gz",
+        "label": "Subject in MNI",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "Lesion_in_MNI.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Lesion_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 linda",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.5022935779816514,
+          0.5412087912087912
+        ]
+      },
+      {
+        "name": "Disconnectome_linda.nii.gz",
+        "colormap": "magenta",
+        "opacity": 0.6,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/67b1b6b14f5af739-Disconnectome_linda.nii.gz",
+        "source": "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_linda.nii.gz",
+        "label": "BCBToolkit map \u00b7 linda",
+        "color": "#ff00ff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_whole_brain.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/9f11edb42c6fad1c-DeepDisco_linda_whole_brain.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_whole_brain.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 whole_brain",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_association.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/61440ca9cbfe0fc2-DeepDisco_linda_association.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_association.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 association",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_projection.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/25db9c7faa2785cf-DeepDisco_linda_projection.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_projection.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 projection",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_commissural.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/05f927389c95d4bf-DeepDisco_linda_commissural.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_commissural.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 commissural",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "e2955f3087ab4b0e9c5f443eb60d1a3e": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "colormap": "yellow",
+        "opacity": 0.35,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/bca6f1aee247405c-sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "source": "data/ds004884/derivatives/hdbet/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "label": "HD-BET brain mask",
+        "color": "#ffff00",
+        "saved_opacity": 0.35,
+        "centre": null
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "106090823ff347e38d11764654990aa1": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "Prediction3_native.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz",
+        "label": "LINDA lesion",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.25937512228966675,
+          0.4941406244219489,
+          0.5722656249724131
+        ]
+      },
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "colormap": "yellow",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/bca6f1aee247405c-sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "source": "data/ds004884/derivatives/hdbet/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+        "label": "Brain mask",
+        "color": "#ffff00",
+        "saved_opacity": 0.35,
+        "centre": null
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "a5b4f460bf654645906f2a97cd9c7a07": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "prediction_lesion_mask.nii.gz",
+        "colormap": "green",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/75f59667a82fc31f-prediction_lesion_mask.nii.gz",
+        "source": "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/prediction_lesion_mask.nii.gz",
+        "label": "SynthStroke lesion",
+        "color": "#00ff00",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.2406250000000001,
+          0.45117187499999994,
+          0.576171875
+        ]
+      },
+      {
+        "name": "Prediction3_native.nii.gz",
+        "colormap": "red",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz",
+        "label": "LINDA lesion",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.25937512228966675,
+          0.4941406244219489,
+          0.5722656249724131
+        ]
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "8a865b6f398c43f88ad9895349786e63": {
+    "layers": [
+      {
+        "name": "sub-strokecase0001_ses-0001_dwi.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/afdc5bb8ead4121b-sub-strokecase0001_ses-0001_dwi.nii.gz",
+        "source": "data/ISLES-2022/sub-strokecase0001/ses-0001/dwi/sub-strokecase0001_ses-0001_dwi.nii.gz",
+        "label": "sub-strokecase0001 ses-0001 dwi",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "sub-strokecase0001_ses-0001_space-DWI_desc-lesion_mask.nii.gz",
+        "colormap": "copper",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/51aeb6f03ba190f3-sub-strokecase0001_ses-0001_space-DWI_desc-lesion_mask.nii.gz",
+        "source": "data/ISLES-2022/derivatives/openads/sub-strokecase0001/ses-0001/anat/sub-strokecase0001_ses-0001_space-DWI_desc-lesion_mask.nii.gz",
+        "label": "OpenADS lesion",
+        "color": "#ffcb7f",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.38839286357657915,
+          0.2633928685364641,
+          0.6643835502588553
+        ]
+      },
+      {
+        "name": "ManualLesion_in_T1.nii.gz",
+        "colormap": "blue",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/0a2d7a14276c1356-ManualLesion_in_T1.nii.gz",
+        "source": "data/ISLES-2022/derivatives/openads/sub-strokecase0001/ses-0001/anat/_manual_mask_compare/ManualLesion_in_T1.nii.gz",
+        "label": "Manual lesion",
+        "color": "#0000ff",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.40625,
+          0.45089285714285715,
+          0.5958904109589042
+        ]
+      },
+      {
+        "name": "sub-strokecase0001_ses-0001_adc.nii.gz",
+        "colormap": "gray",
+        "opacity": 0.0,
+        "url": "volumes/9026d12f9595e438-sub-strokecase0001_ses-0001_adc.nii.gz",
+        "source": "data/ISLES-2022/sub-strokecase0001/ses-0001/dwi/sub-strokecase0001_ses-0001_adc.nii.gz",
+        "label": "ADC map",
+        "color": "#999999",
+        "saved_opacity": 1.0,
+        "centre": null
+      }
+    ],
+    "subject": "sub-strokecase0001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "4c6e08646f974c89b919bcf594170134": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "ManualLesion_in_T1_sitk.nii.gz",
+        "colormap": "blue",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/214fb80020f021be-ManualLesion_in_T1_sitk.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/_manual_mask_compare/ManualLesion_in_T1_sitk.nii.gz",
+        "label": "Manual lesion",
+        "color": "#0000ff",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.265625125272365,
+          0.45898437440733186,
+          0.5683593749716243
+        ]
+      },
+      {
+        "name": "Prediction3_native.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz",
+        "label": "LINDA lesion",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.25937512228966675,
+          0.4941406244219489,
+          0.5722656249724131
+        ]
+      },
+      {
+        "name": "prediction_lesion_mask.nii.gz",
+        "colormap": "green",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/75f59667a82fc31f-prediction_lesion_mask.nii.gz",
+        "source": "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/prediction_lesion_mask.nii.gz",
+        "label": "SynthStroke lesion",
+        "color": "#00ff00",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.2406250000000001,
+          0.45117187499999994,
+          0.576171875
+        ]
+      },
+      {
+        "name": "T2_in_T1_sitk.nii.gz",
+        "colormap": "gray",
+        "opacity": 0.0,
+        "url": "volumes/884c8143ab6088e1-T2_in_T1_sitk.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/_manual_mask_compare/T2_in_T1_sitk.nii.gz",
+        "label": "Registered reference scan",
+        "color": "#999999",
+        "saved_opacity": 1.0,
+        "centre": null
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "63d302d931e7485a973f90956d793dde": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "BrainMask.nii.gz",
+        "colormap": "yellow",
+        "opacity": 0.3,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/a61240b38fd390ef-BrainMask.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/BrainMask.nii.gz",
+        "label": "Brain mask",
+        "color": "#ffff00",
+        "saved_opacity": 0.3,
+        "centre": null
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "e11311e0773046379fd37a73503b2f76": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "Prediction3_native.nii.gz",
+        "colormap": "red",
+        "opacity": 0.35,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz",
+        "label": "LINDA prediction",
+        "color": "#ff0000",
+        "saved_opacity": 0.35,
+        "centre": [
+          0.25937512228966675,
+          0.4941406244219489,
+          0.5722656249724131
+        ]
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "a30cc2d1472d48c1827a0f35d0d39d0f": {
+    "layers": [
+      {
+        "name": "sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "source": "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+        "label": "sub-M2001 ses-1076 acq-tfl3 run-4 T1w",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "Prediction3_native.nii.gz",
+        "colormap": "red",
+        "opacity": 0.45,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz",
+        "label": "LINDA lesion",
+        "color": "#ff0000",
+        "saved_opacity": 0.45,
+        "centre": [
+          0.25937512228966675,
+          0.4941406244219489,
+          0.5722656249724131
+        ]
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "native image space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "011d4686bcff44adb2be2abcd4714655": {
+    "layers": [
+      {
+        "name": "Subject_in_MNI.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Subject_in_MNI.nii.gz",
+        "label": "Subject in MNI",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "Disconnectome_linda.nii.gz",
+        "colormap": "magenta",
+        "opacity": 0.6,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/67b1b6b14f5af739-Disconnectome_linda.nii.gz",
+        "source": "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_linda.nii.gz",
+        "label": "BCBToolkit map \u00b7 linda",
+        "color": "#ff00ff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "Lesion_in_MNI.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Lesion_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 linda",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.5022935779816514,
+          0.5412087912087912
+        ]
+      },
+      {
+        "name": "Disconnectome_synthstroke.nii.gz",
+        "colormap": "magenta",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/ca0dab9b7ed0b019-Disconnectome_synthstroke.nii.gz",
+        "source": "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_synthstroke.nii.gz",
+        "label": "BCBToolkit map \u00b7 synthstroke",
+        "color": "#ff00ff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "SynthStroke_in_MNI.nii.gz",
+        "colormap": "green",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4930c600fe266de5-SynthStroke_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/SynthStroke_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 synthstroke",
+        "color": "#00ff00",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.2664835164835165,
+          0.44724770642201833,
+          0.5521978021978022
+        ]
+      },
+      {
+        "name": "Disconnectome_expert.nii.gz",
+        "colormap": "magenta",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/69ecc40541f770c9-Disconnectome_expert.nii.gz",
+        "source": "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_expert.nii.gz",
+        "label": "BCBToolkit map \u00b7 manual",
+        "color": "#ff00ff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "ExpertMask_in_MNI.nii.gz",
+        "colormap": "blue",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/13e440187bf2bcce-ExpertMask_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/ExpertMask_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 manual",
+        "color": "#0000ff",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.45642201834862384,
+          0.5412087912087912
+        ]
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "fd75c0ba01dc4ec3a388f5ac1189d8ce": {
+    "layers": [
+      {
+        "name": "Subject_in_MNI.nii.gz",
+        "colormap": "gray",
+        "opacity": 1.0,
+        "url": "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Subject_in_MNI.nii.gz",
+        "label": "Subject in MNI",
+        "color": "#888888",
+        "saved_opacity": null,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_whole_brain.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.6,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/9f11edb42c6fad1c-DeepDisco_linda_whole_brain.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_whole_brain.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 whole_brain",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_association.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/61440ca9cbfe0fc2-DeepDisco_linda_association.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_association.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 association",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_projection.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/25db9c7faa2785cf-DeepDisco_linda_projection.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_projection.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 projection",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_linda_commissural.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/05f927389c95d4bf-DeepDisco_linda_commissural.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_commissural.nii.gz",
+        "label": "DeepDisco map \u00b7 linda \u00b7 commissural",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "Lesion_in_MNI.nii.gz",
+        "colormap": "red",
+        "opacity": 0.5,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Lesion_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 linda",
+        "color": "#ff0000",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.5022935779816514,
+          0.5412087912087912
+        ]
+      },
+      {
+        "name": "DeepDisco_synthstroke_whole_brain.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/001388b8b6e0677f-DeepDisco_synthstroke_whole_brain.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_whole_brain.nii.gz",
+        "label": "DeepDisco map \u00b7 synthstroke \u00b7 whole_brain",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_synthstroke_association.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/a51872cae03ff510-DeepDisco_synthstroke_association.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_association.nii.gz",
+        "label": "DeepDisco map \u00b7 synthstroke \u00b7 association",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_synthstroke_projection.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/b28f02e9380277b9-DeepDisco_synthstroke_projection.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_projection.nii.gz",
+        "label": "DeepDisco map \u00b7 synthstroke \u00b7 projection",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_synthstroke_commissural.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/bd3564ffdc70a690-DeepDisco_synthstroke_commissural.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_commissural.nii.gz",
+        "label": "DeepDisco map \u00b7 synthstroke \u00b7 commissural",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "SynthStroke_in_MNI.nii.gz",
+        "colormap": "green",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/4930c600fe266de5-SynthStroke_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/SynthStroke_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 synthstroke",
+        "color": "#00ff00",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.2664835164835165,
+          0.44724770642201833,
+          0.5521978021978022
+        ]
+      },
+      {
+        "name": "DeepDisco_expert_whole_brain.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/6dee2bdf53288152-DeepDisco_expert_whole_brain.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_whole_brain.nii.gz",
+        "label": "DeepDisco map \u00b7 manual \u00b7 whole_brain",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_expert_association.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/e60c843912d4ed8d-DeepDisco_expert_association.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_association.nii.gz",
+        "label": "DeepDisco map \u00b7 manual \u00b7 association",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_expert_projection.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/9f2461b41b7c7960-DeepDisco_expert_projection.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_projection.nii.gz",
+        "label": "DeepDisco map \u00b7 manual \u00b7 projection",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "DeepDisco_expert_commissural.nii.gz",
+        "colormap": "cyan",
+        "opacity": 0.0,
+        "cal_min": 0.1,
+        "cal_max": 1.0,
+        "url": "volumes/779f8edd5786c923-DeepDisco_expert_commissural.nii.gz",
+        "source": "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_commissural.nii.gz",
+        "label": "DeepDisco map \u00b7 manual \u00b7 commissural",
+        "color": "#00ffff",
+        "saved_opacity": 0.6,
+        "centre": null
+      },
+      {
+        "name": "ExpertMask_in_MNI.nii.gz",
+        "colormap": "blue",
+        "opacity": 0.0,
+        "cal_min": 0.5,
+        "cal_max": 1.0,
+        "url": "volumes/13e440187bf2bcce-ExpertMask_in_MNI.nii.gz",
+        "source": "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/ExpertMask_in_MNI.nii.gz",
+        "label": "Lesion \u00b7 manual",
+        "color": "#0000ff",
+        "saved_opacity": 0.5,
+        "centre": [
+          0.28846153846153844,
+          0.45642201834862384,
+          0.5412087912087912
+        ]
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "plane": 3
+  },
+  "report-sub-M2001": {
+    "layers": [
+      {
+        "url": "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz",
+        "name": "Registered_T1w.nii.gz",
+        "label": "Registered T1w",
+        "colormap": "gray",
+        "opacity": 1
+      },
+      {
+        "url": "volumes/4930c600fe266de5-SynthStroke_in_MNI.nii.gz",
+        "name": "SynthStroke.nii.gz",
+        "label": "SynthStroke",
+        "colormap": "green",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0.5,
+        "color": "#00cc66"
+      },
+      {
+        "url": "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz",
+        "name": "LINDA.nii.gz",
+        "label": "LINDA",
+        "colormap": "red",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0,
+        "color": "#ef5555"
+      },
+      {
+        "url": "volumes/13e440187bf2bcce-ExpertMask_in_MNI.nii.gz",
+        "name": "Expert mask.nii.gz",
+        "label": "Expert mask",
+        "colormap": "blue",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0,
+        "color": "#5599ff"
+      }
+    ],
+    "subject": "sub-M2001",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ]
+  },
+  "report-sub-M2004": {
+    "layers": [
+      {
+        "url": "volumes/bc75488091faafea-Subject_in_MNI.nii.gz",
+        "name": "Registered_T1w.nii.gz",
+        "label": "Registered T1w",
+        "colormap": "gray",
+        "opacity": 1
+      },
+      {
+        "url": "volumes/ad134660018bf3d6-SynthStroke_in_MNI.nii.gz",
+        "name": "SynthStroke.nii.gz",
+        "label": "SynthStroke",
+        "colormap": "green",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0.5,
+        "color": "#00cc66"
+      },
+      {
+        "url": "volumes/4d5b94e891e5f7fa-Lesion_in_MNI.nii.gz",
+        "name": "LINDA.nii.gz",
+        "label": "LINDA",
+        "colormap": "red",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0,
+        "color": "#ef5555"
+      },
+      {
+        "url": "volumes/fd9ae82cb3e11523-ExpertMask_in_MNI.nii.gz",
+        "name": "Expert mask.nii.gz",
+        "label": "Expert mask",
+        "colormap": "blue",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0,
+        "color": "#5599ff"
+      }
+    ],
+    "subject": "sub-M2004",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ]
+  },
+  "report-sub-strokecase0001": {
+    "layers": [
+      {
+        "url": "volumes/fa180867cbe67db6-Subject_in_MNI.nii.gz",
+        "name": "Registered_DWI.nii.gz",
+        "label": "Registered DWI",
+        "colormap": "gray",
+        "opacity": 1
+      },
+      {
+        "url": "volumes/7e673ca77b280bd6-OpenADS_in_MNI.nii.gz",
+        "name": "OpenADS.nii.gz",
+        "label": "OpenADS",
+        "colormap": "green",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0.5,
+        "color": "#00cc66"
+      },
+      {
+        "url": "volumes/81c53dcc2c12985f-ExpertMask_in_MNI.nii.gz",
+        "name": "Expert mask.nii.gz",
+        "label": "Expert mask",
+        "colormap": "red",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0,
+        "color": "#ef5555"
+      }
+    ],
+    "subject": "sub-strokecase0001",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ]
+  },
+  "report-sub-strokecase0002": {
+    "layers": [
+      {
+        "url": "volumes/f414410c88fd2f64-Subject_in_MNI.nii.gz",
+        "name": "Registered_DWI.nii.gz",
+        "label": "Registered DWI",
+        "colormap": "gray",
+        "opacity": 1
+      },
+      {
+        "url": "volumes/524480056ee82c68-OpenADS_in_MNI.nii.gz",
+        "name": "OpenADS.nii.gz",
+        "label": "OpenADS",
+        "colormap": "green",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0.5,
+        "color": "#00cc66"
+      },
+      {
+        "url": "volumes/b16cd256358ae213-ExpertMask_in_MNI.nii.gz",
+        "name": "Expert mask.nii.gz",
+        "label": "Expert mask",
+        "colormap": "red",
+        "cal_min": 0.5,
+        "cal_max": 1,
+        "opacity": 0,
+        "color": "#ef5555"
+      }
+    ],
+    "subject": "sub-strokecase0002",
+    "space": "MNI template space",
+    "crosshair": [
+      0.5,
+      0.5,
+      0.5
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+/* Shared CALMaR palette and navigation. Source: explorer/project-shell.* in stroke-aphasia-kb. */
+:root, :root[data-theme="light"] {
+  --grape: #52489c;
+  --blue: #4062bb;
+  --cyan: #59c3c3;
+  --platinum: #ebebeb;
+  --pink: #f45b69;
+
+  --ink: #2b2b3a;
+  --ink-2: #5a5a66;
+  --cyan-ink: #1f7f7f;
+  --neutral: #bdbdbd;
+  --surface: #ffffff;
+  --panel: #f7f7f7;
+  --line: #ebebeb;
+  --line-strong: #d6d6d6;
+
+  --blue-tint: color-mix(in oklab, var(--blue) 9%, var(--surface));
+  --pink-tint: color-mix(in oklab, var(--pink) 11%, var(--surface));
+  --grape-tint: color-mix(in oklab, var(--grape) 9%, var(--surface));
+  --cyan-tint: color-mix(in oklab, var(--cyan) 22%, var(--surface));
+
+  /* Sequential ramp for one magnitude: Smart Blue, light → dark. */
+  --seq-1: color-mix(in oklab, var(--blue) 12%, var(--surface));
+  --seq-2: color-mix(in oklab, var(--blue) 26%, var(--surface));
+  --seq-3: color-mix(in oklab, var(--blue) 44%, var(--surface));
+  --seq-4: color-mix(in oklab, var(--blue) 66%, var(--surface));
+  --seq-5: var(--blue);
+  --seq-6: color-mix(in oklab, var(--blue) 80%, black);
+
+  --radius: 6px;
+  --font: Inter, "Helvetica Neue", Arial, system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sidebar: 260px;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    --grape: #7a6fc4;
+    --blue: #5b7fd6;
+    --cyan: #3fa9a9;
+    --pink: #e04a58;
+    --ink: #ececf1;
+    --ink-2: #b4b4c0;
+    --cyan-ink: #6fd0d0;
+    --neutral: #6f6f7a;
+    --surface: #1a1a24;
+    --panel: #23232f;
+    --line: #2f2f3c;
+    --line-strong: #43434f;
+    --seq-6: color-mix(in oklab, var(--blue) 70%, white);
+    color-scheme: dark;
+  }
+.project-nav { box-sizing: border-box; display: flex; align-items: center; flex-wrap: wrap; gap: .75rem 1.5rem; width: 100%; padding: .7rem max(16px, calc((100vw - 1200px) / 2)); border-bottom: 1px solid var(--line-strong); background: var(--panel); color: var(--ink); font: 500 14px/1.5 Inter, "Helvetica Neue", Arial, sans-serif; position: relative; z-index: 20; text-align: left; }
+.project-nav a { color: var(--ink); text-decoration: none; font: inherit; letter-spacing: normal; }
+.project-nav a:hover { text-decoration: underline; }
+.project-nav .project-home { font-weight: 700; color: var(--grape); }
+.project-nav .project-links { display: flex; flex-wrap: wrap; gap: .6rem 1.25rem; align-items: center; }
+.project-nav a[aria-current="location"] { text-decoration: underline; text-underline-offset: 5px; }
+.project-nav .project-theme { margin-left: auto; display: flex; align-items: center; gap: .5rem; font: inherit; color: var(--ink-2); white-space: nowrap; }
+.project-nav select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 4px; padding: .3rem .4rem; max-width: 130px; }
+.project-nav :focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+:root[data-theme] { background: var(--surface); }
+:root[data-theme] body { color: var(--ink); background: var(--surface); }
+:root[data-theme] .calmar-report { --calmar-grape: var(--grape); --calmar-blue: var(--blue); --calmar-cyan: var(--cyan); --calmar-pink: var(--pink); --calmar-ink: var(--ink); --calmar-ink-2: var(--ink-2); --calmar-cyan-ink: var(--cyan-ink); --calmar-panel: var(--panel); --calmar-line: var(--line); --calmar-line-strong: var(--line-strong); }
+:root[data-theme] .report-header, :root[data-theme] .report-content { background: var(--surface); }
+:root[data-theme] .display-label { color: var(--ink-2); }
+body.calmar-report > .project-nav { padding: .7rem 0; margin-bottom: 1.5rem; }
+.project-qc .navbar.fixed-top { position: sticky; top: 0; }
+.project-qc .bg-light, .project-qc .card, .project-qc .dropdown-menu { background: var(--panel) !important; color: var(--ink); }
+.project-qc .nav-link, .project-qc .dropdown-item, .project-qc .table { color: var(--ink); }
+@media (max-width: 650px) { .project-nav { gap: .6rem; } .project-nav .project-links { order: 3; width: 100%; justify-content: space-between; gap: .4rem; font-size: 13px; } .project-nav .project-theme { font-size: 13px; } }
+@media print { .project-nav { display: none !important; } }
+
+.editorial-button { background: #52489c; color: #fff; }
+.calmar-report .report-header h1 > span[style] { color: var(--ink) !important; }
+.calmar-report .report-header small, .calmar-report .no-print > span { color: var(--ink-2) !important; }
+.calmar-report > [role="note"][style] { background: var(--pink-tint) !important; border-color: var(--pink) !important; color: var(--ink) !important; }
+@media print {
+  :root[data-theme] { --ink: #2b2b3a; --ink-2: #5a5a66; --surface: #fff; --panel: #f7f7f7; --grape: #52489c; --blue: #4062bb; --line: #ebebeb; --line-strong: #d6d6d6; color-scheme: light; }
+}

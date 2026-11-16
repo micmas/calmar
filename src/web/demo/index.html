@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CALMaR · Explore the lesion interpretation demo</title>
+<meta name="description" content="Explore four completed stroke imaging examples, inspect lesion maps in 3D and read the supporting interpretation reports.">
+<link rel="stylesheet" href="reader.css"><link rel="icon" href="data:,">
+</head>
+<body>
+<a class="skip" href="#explore">Skip to the image viewer</a>
+<header><a class="brand" href="#">CALMaR<span>Lesion interpretation</span></a><nav aria-label="Main"><a href="#explore">Explore</a><a href="#reports">Reports</a><a href="#workflow">Workflow</a><a href="notebook.html">Notebook ↗</a></nav></header>
+<main>
+<section class="hero"><p class="eyebrow">An open-data demonstration</p><h1>From a lesion map<br>to a clearer picture.</h1><p class="lead">Explore the images, compare lesion masks and follow the evidence into a participant report. Four examples from the completed CALMaR workflow.</p>
+<div class="hero-actions"><a class="primary" href="#explore">Explore the images <span>↓</span></a><a href="#reports">Go to the reports ↗</a></div>
+<div class="run-facts"><span><b>{{PARTICIPANTS}}</b> participants</span><span><b>{{DATASETS}}</b> open datasets</span><span><b>{{PDFS}}</b> atlas maps</span><span class="run-date">Completed {{COMPLETED}}</span></div>
+</section>
+<section id="explore" class="explore"><div class="section-head"><div><p class="eyebrow">01 / Explore</p><h2>A closer look at the lesion</h2></div><p>Switch participants and masks. Click a slice to move the crosshair; scroll over it to move through the brain.</p></div>
+<div class="viewer-shell"><div class="toolbar"><label>Participant<select id="participant" disabled><option>Loading participants…</option></select></label><label>Lesion mask<select id="mask" disabled><option>Loading masks…</option></select></label><label>View<select id="plane" disabled><option value="3">Three planes</option><option value="0">Axial</option><option value="1">Coronal</option><option value="2">Sagittal</option><option value="4">3D</option></select></label><button id="reset" disabled>Reset view</button></div>
+<div class="canvas-wrap"><canvas id="brain" aria-label="Interactive brain and lesion viewer"></canvas><img id="fallback" src="assets/sub-M2001-overlay.png" alt="Saved lesion overlay for sub-M2001"><div id="viewer-status" role="status"></div></div>
+<div class="viewer-controls"><label class="range-label"><span class="dot lesion"></span>Lesion opacity<input id="opacity" type="range" min="0" max="100" value="65" disabled><output id="opacity-value" for="opacity">65%</output></label><label><input type="checkbox" id="disconnection" disabled><span class="dot disconnectome"></span>Show estimated disconnection</label><a id="viewer-report" href="#reports">Read this report ↗</a></div>
+<div class="viewer-caption"><span id="case-caption">Processed anatomy and lesion maps in MNI152 space.</span><span id="location"></span></div>
+</div><p class="viewer-note" id="map-note">Green shows the selected lesion. The optional warm-colour map is the BCBToolkit disconnection estimate for the report’s lesion mask.</p><noscript><style>.toolbar,.viewer-controls,#viewer-status{display:none}</style><p>Enable JavaScript to use the image viewer. All saved overlays, reports and atlas PDFs remain available below.</p></noscript>
+</section>
+<section id="reports"><div class="section-head"><div><p class="eyebrow">02 / Read the results</p><h2>Four cases. The full evidence.</h2></div><p>Each report brings together lesion location, atlas overlap and literature associations. Open the report for its sources and limitations.</p></div><div class="case-grid"><!-- CASE_CARDS --></div>
+<aside class="review-note"><strong>About this demonstration</strong><p>Human QC was skipped for this run. The reports include approved, in-review and draft knowledge-base findings, with their status shown in each report. These are research examples, not diagnoses.</p></aside></section>
+<section id="workflow"><div class="section-head"><div><p class="eyebrow">03 / Follow the workflow</p><h2>How the pieces fit together</h2></div><a href="notebook.html">Read the complete notebook ↗</a></div><ol class="steps"><li><span>01</span><h3>Prepare the images</h3><p>Brain extraction and registration put anatomy and lesion masks into a common reference space.</p></li><li><span>02</span><h3>Map the lesion</h3><p>Automated and expert masks show alternative delineations. Atlas maps locate the affected regions.</p></li><li><span>03</span><h3>Estimate disconnection</h3><p>Reference tractography estimates where connections may be disrupted by the lesion.</p></li><li><span>04</span><h3>Connect to evidence</h3><p>The report links anatomical measurements to cited findings, keeping uncertainty and evidence status visible.</p></li></ol>
+<div class="notebook-link"><div><h3>Want to inspect or reproduce the run?</h3><p>The full record includes the methods, code and saved outputs. Processing and QC tools run in Neurodesk.</p></div><a class="primary" href="notebook.html">Open the notebook <span>↗</span></a></div></section>
+</main><footer><span class="brand">CALMaR</span><p>Open data: <a href="https://openneuro.org/datasets/ds004884">ds004884</a> and <a href="https://isles22.grand-challenge.org/">ISLES 2022</a></p><a href="https://github.com/micmas/calmar">Source on GitHub ↗</a></footer>
+<script type="module" src="reader.js"></script></body></html>

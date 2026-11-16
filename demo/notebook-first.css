@@ -1,0 +1,111 @@
+/* Reading layout; palette and project navigation come from the shared theme. */
+.notebook-first { font: 17px/1.65 var(--font, system-ui, sans-serif); }
+.notebook-first * { box-sizing: border-box; }
+.notebook-first .nb-layout { display: grid; grid-template-columns: 245px minmax(0, 920px); gap: 48px; max-width: 1280px; padding: 36px 28px 80px; margin: auto; }
+.notebook-first .nb-main { min-width: 0; max-width: none; padding: 0; }
+.notebook-first .app-header { position: static; background: var(--surface); padding: 16px max(28px, calc((100vw - 1224px) / 2)); border-bottom: 1px solid var(--line); }
+.notebook-first .hero { padding: 8px 0 26px; border: 0; }
+.notebook-first .hero h1 { font: 500 clamp(2.2rem, 4.3vw, 3.8rem)/1.12 Georgia, serif; letter-spacing: -.035em; max-width: 760px; color: var(--ink); margin: .3em 0 .5em; }
+.notebook-first .hero .lead { font-size: 1.1rem; line-height: 1.7; max-width: 740px; color: var(--ink-2); }
+.notebook-first .hero .eyebrow { font-size: .78rem; color: var(--grape); text-transform: uppercase; letter-spacing: .12em; }
+.notebook-first .facts { font-size: .84rem; background: var(--panel); padding: 16px 20px; border: 1px solid var(--line); border-radius: 8px; overflow-wrap: anywhere; }
+.notebook-first .facts li { margin: 5px 0; }
+.notebook-byline { font-size: .88rem; color: var(--ink-2); }
+.run-notice { padding: 15px 18px; border-left: 3px solid var(--pink); background: var(--pink-tint); font-size: .9rem; }
+.notebook-links { display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: .9rem; }
+.notebook-first a { color: var(--blue); text-underline-offset: 3px; }
+.notebook-first .nb { font-size: 1rem; line-height: 1.75; }
+.notebook-first .nb .md { max-width: 100%; margin: 1.5rem 0; }
+.notebook-first .nb h2 { font: 500 2rem/1.25 Georgia, serif; margin: 3rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--line-strong); scroll-margin-top: 24px; }
+.notebook-first .nb h3 { font-size: 1.4rem; line-height: 1.4; margin: 2rem 0 .7rem; scroll-margin-top: 24px; }
+.notebook-first .nb h4 { font-size: 1.16rem; line-height: 1.5; margin: 2rem 0 .6rem; scroll-margin-top: 24px; }
+.notebook-first .nb p, .notebook-first .nb li { max-width: 80ch; }
+.notebook-first .nb-toc { position: sticky; top: 20px; align-self: start; max-height: calc(100vh - 40px); overflow: auto; padding: 0 12px 16px 0; font-size: .83rem; background: var(--surface); }
+.notebook-first .nb-toc a { line-height: 1.4; padding: 7px 10px; color: var(--ink-2); border-radius: 4px; }
+.notebook-first .nb-toc a.active { background: var(--grape-tint); color: var(--grape); }
+.notebook-first .nb-toc .toc-title { color: var(--ink); }
+.notebook-first .cell { margin: 1rem 0 2rem; padding: 0; border: 0; }
+.notebook-first details.code, .execution-log, .kernel-settings, .launch-disclosure { margin: 10px 0; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; font-size: .85rem; }
+.notebook-first summary { cursor: pointer; padding: 12px 15px; line-height: 1.45; color: var(--ink); }
+.notebook-first pre { max-width: 100%; max-height: 500px; overflow: auto; font: .78rem/1.6 var(--mono); background: var(--panel); color: var(--ink); padding: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.notebook-first code { overflow-wrap: anywhere; color: inherit; }
+.notebook-first .out-html, .saved-html { overflow-wrap: anywhere; margin: 10px 0; }
+.notebook-first .out-html { overflow: visible; }
+.notebook-first .saved-html:empty { display: none; }
+.notebook-first .saved-html > div[style], .notebook-first .calmar-report { background: var(--surface) !important; color: var(--ink) !important; font-size: 1rem !important; }
+.notebook-first .calmar-report [style*="background"], .notebook-first .saved-html [role="note"] { background: var(--panel) !important; color: var(--ink) !important; }
+.notebook-first .calmar-report [style*="font-size"] { font-size: .9rem !important; }
+.notebook-first .table-scroll { max-width: 100%; overflow: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: 6px; }
+.notebook-first table { border-collapse: collapse; font-size: .82rem; line-height: 1.55; width: 100%; margin: 0; }
+.notebook-first th, .notebook-first td { border: 0; border-bottom: 1px solid var(--line); padding: 10px 12px; vertical-align: top; text-align: left; color: var(--ink) !important; background: var(--surface) !important; min-width: 70px; }
+.notebook-first th { font-weight: 600; background: var(--panel) !important; }
+.notebook-first img { max-width: 100%; height: auto; display: block; margin: 18px auto; }
+.saved-report-overlay { margin: 18px; }
+.saved-report-overlay figcaption { font-size: .8rem; color: var(--ink-2); }
+.saved-widget { border-top: 1px solid var(--line); padding: 14px 0; }
+.saved-value { display: inline-block; padding: 6px 10px; margin: 4px 6px 4px 0; font-size: .82rem; background: var(--panel); border-radius: 4px; color: var(--ink-2); }
+.saved-value b { color: var(--ink); font-weight: 500; }
+.kernel-action { display: inline-block; border: 1px dashed var(--line-strong); border-radius: 4px; margin: 5px 8px 5px 0; padding: 6px 10px; font-size: .8rem; color: var(--ink-2); }
+.kernel-action small { display: block; font-size: .73rem; }
+.kernel-settings > .saved-box { padding: 0 15px 15px; }
+.saved-note { font-size: .88rem; color: var(--ink-2); padding: 12px 15px; background: var(--panel); border-left: 2px solid var(--line-strong); }
+.saved-accordion { border: 1px solid var(--line-strong); margin: 12px 0; border-radius: 6px; }
+.saved-accordion > summary { background: var(--panel); font-weight: 550; }
+.saved-accordion > .saved-html, .saved-accordion > .saved-box { padding: 5px 18px 18px; }
+.saved-tab-buttons { display: none; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line-strong); margin: 16px 0; }
+.tabs-ready > .saved-tab-buttons { display: flex; }
+.saved-tab-buttons button { border: 0; border-bottom: 3px solid transparent; background: var(--panel); color: var(--ink-2); padding: 12px 16px; font: inherit; font-size: .9rem; cursor: pointer; }
+.saved-tab-buttons button[aria-selected="true"] { border-color: var(--grape); color: var(--grape); background: var(--grape-tint); }
+[hidden] { display: none !important; }
+.inline-viewer { margin: 22px 0; border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; background: var(--panel); }
+.viewer-heading { padding: 15px 18px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.viewer-heading strong { font-size: .95rem; }
+.viewer-heading span { font-size: .78rem; color: var(--ink-2); }
+.viewer-slot > p { padding: 4px 18px; font-size: .9rem; color: var(--ink-2); }
+.notebook-first .open-viewer { margin: 4px 18px 10px; background: var(--grape); color: white; border: 0; border-radius: 5px; font: inherit; font-size: .9rem; padding: 10px 16px; cursor: pointer; min-height: 44px; }
+.open-viewer:not([data-enhanced]) { display: none; }
+.viewer-status { margin: 10px 18px 16px; font-size: .8rem; color: var(--ink-2); }
+.viewer-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line); }
+.viewer-toolbar label { margin-right: auto; }
+.viewer-toolbar button, .viewer-toolbar select { font: inherit; font-size: .85rem; padding: 8px 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 4px; min-height: 44px; }
+.canvas-frame { position: relative; width: 100%; height: clamp(290px, 50vw, 490px); background: #000; overflow: hidden; }
+.canvas-frame canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.viewer-coordinates { display: block; padding: 8px 16px; font: .76rem/1.5 var(--mono); color: var(--ink-2); }
+.viewer-layers { padding: 0 16px 10px; }
+.layer-row { display: grid; grid-template-columns: minmax(150px, 1fr) 120px 44px; align-items: center; gap: 4px 12px; border-top: 1px solid var(--line); padding: 10px 0; }
+.layer-row label { font-size: .82rem; display: flex; align-items: center; gap: 8px; overflow-wrap: anywhere; }
+.layer-row input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--grape); }
+.layer-row input[type="range"] { width: 100%; accent-color: var(--grape); min-height: 32px; }
+.layer-row output, .layer-scale { font-size: .72rem; color: var(--ink-2); }
+.layer-scale { grid-column: 1 / -1; }
+.layer-swatch { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.viewer-help { font-size: .78rem; margin: 0; padding: 0 16px 8px; color: var(--ink-2); }
+.notebook-first :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+.notebook-first button:disabled { opacity: .55; cursor: progress; }
+.notebook-first .launch { background: var(--panel); padding: 18px; }
+.notebook-first .caveat { font-size: .85rem; }
+@media (max-width: 1000px) { .notebook-first .nb-layout { grid-template-columns: 200px minmax(0, 1fr); gap: 26px; padding: 26px 20px; } }
+@media (max-width: 860px) {
+  .notebook-first .nb-layout { display: block; padding: 18px 18px 60px; }
+  .notebook-first .nb-toc { position: relative; top: auto; max-height: none; margin-bottom: 22px; padding: 0; border: 1px solid var(--line); border-radius: 6px; }
+  .notebook-first .nb-toc nav { max-height: 55vh; overflow: auto; padding: 0 10px 15px; }
+  .notebook-first .app-header { padding: 14px 18px; }
+  .notebook-first .app-header .nav { gap: 12px; font-size: .8rem; }
+  .notebook-first .hero h1 { font-size: 2.6rem; }
+}
+@media (max-width: 520px) {
+  .notebook-first { font-size: 16px; }
+  .notebook-first .nb-layout { padding: 16px 14px 48px; }
+  .notebook-first .hero h1 { font-size: 2.3rem; }
+  .notebook-first .hero .lead { font-size: 1rem; }
+  .notebook-first .nb h2 { font-size: 1.7rem; }
+  .notebook-first .nb h3 { font-size: 1.25rem; }
+  .layer-row { grid-template-columns: minmax(100px, 1fr) 80px 36px; gap: 4px 8px; }
+  .saved-accordion > .saved-html, .saved-accordion > .saved-box { padding: 4px 10px 10px; }
+  .viewer-heading, .viewer-toolbar { padding: 12px; }
+}
+@media print {
+  .notebook-first .nb-layout { display: block; }
+  .notebook-first .nb-toc, .open-viewer, .viewer-toolbar, .saved-tab-buttons { display: none; }
+  .saved-tab-panel[hidden] { display: block !important; }
+}

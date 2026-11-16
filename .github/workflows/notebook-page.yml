@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: micmas/stroke-aphasia-kb
-          ref: main
+          ref: ae09ecbd0c30bbc344d95f3af7021cc197917c31
           path: _kb
           persist-credentials: false
           sparse-checkout-cone-mode: false
