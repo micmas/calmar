@@ -49,6 +49,9 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             scripts/build_notebook_page.py
+            scripts/style_project_site.py
+            explorer/project-shell.css
+            explorer/project-shell.js
             explorer/styles.css
             explorer/notebook.css
       - uses: actions/setup-python@v5
@@ -69,6 +72,8 @@ jobs:
             python _kb/scripts/build_notebook_page.py --calmar . --notebook "$NOTEBOOK" \
               --out _site --strict --source-commit "$GITHUB_SHA"
           fi
+      - name: Apply shared project navigation and themes
+        run: python _kb/scripts/style_project_site.py _site
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

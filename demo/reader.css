@@ -5,3 +5,20 @@ header{height:82px;padding:0 max(24px,calc((100vw - 1200px)/2));display:flex;ali
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
 .project-byline{font-size:14px;color:var(--muted);margin:22px 0}.demo-caution{border-left:3px solid #b79158;padding:12px 18px;background:#f1eee4;color:#5e584a;font-size:14px;max-width:850px}.contribute>p:not(.eyebrow){max-width:65ch;line-height:1.7}.contribute details{margin-top:32px;border-top:1px solid var(--line);padding-top:20px;max-width:800px}.contribute summary{cursor:pointer;font-weight:600}.contribute details p{color:var(--muted);line-height:1.7}
+
+/* Align the demo with the KB and review portal; imaging colours keep their legends. */
+:root { --muted: var(--ink-2); --green: var(--grape); --paper: var(--surface); --white: var(--surface); font-family: Inter, "Helvetica Neue", Arial, sans-serif; font-size: 15px; }
+body > header { position: static; height: auto; min-height: 72px; flex-wrap: wrap; padding-block: 16px; }
+.hero h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(2.2rem, 4.5vw, 3.5rem); line-height: 1.14; letter-spacing: -.025em; }
+h2 { font-size: 1.6rem; letter-spacing: -.02em; color: var(--grape); }
+h3 { color: var(--grape); }
+.primary { background: #52489c; color: #fff; }
+.primary:hover { background: #403779; }
+.toolbar select, .toolbar button { background: var(--surface); color: var(--ink); }
+.viewer-shell { border-color: var(--line-strong); }
+.review-note, .demo-caution { background: var(--pink-tint); border-color: var(--pink); color: var(--ink); }
+.review-note p { color: var(--ink-2); }
+.notebook-link { background: var(--grape-tint); }
+.steps li > span { color: var(--ink-2); }
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline-color: var(--blue); }
+.hero-actions { flex-wrap: wrap; }
