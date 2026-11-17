@@ -1,0 +1,122 @@
+{
+  "data/ds004884/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz": {
+    "url": "volumes/51797b0a9d0d35b3-sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz",
+    "sha256": "51797b0a9d0d35b33a39b0d98e511e828ae6c4ce927c41a5aa57f77c60958d7e"
+  },
+  "data/ds004884/derivatives/hdbet/sub-M2001/ses-1076/anat/sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz": {
+    "url": "volumes/bca6f1aee247405c-sub-M2001_ses-1076_acq-tfl3_run-4_T1w_brain_mask.nii.gz",
+    "sha256": "bca6f1aee247405cb9f6ec5b68ee73eee8d692dacd0107f30c48fd6fb502df25"
+  },
+  "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Prediction3_native.nii.gz": {
+    "url": "volumes/4517821ba5c49def-Prediction3_native.nii.gz",
+    "sha256": "4517821ba5c49def781066683e6966d4db893f570741cdc8cb004a43afd365be"
+  },
+  "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/prediction_lesion_mask.nii.gz": {
+    "url": "volumes/75f59667a82fc31f-prediction_lesion_mask.nii.gz",
+    "sha256": "75f59667a82fc31fb465e73667b39e95a2c291f080abfb6601755d5771c856fe"
+  },
+  "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/_manual_mask_compare/ManualLesion_in_T1_sitk.nii.gz": {
+    "url": "volumes/214fb80020f021be-ManualLesion_in_T1_sitk.nii.gz",
+    "sha256": "214fb80020f021bee44d64f254f9ed58ab34eafe95cba75908ec31f5be4ea879"
+  },
+  "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/_manual_mask_compare/T2_in_T1_sitk.nii.gz": {
+    "url": "volumes/884c8143ab6088e1-T2_in_T1_sitk.nii.gz",
+    "sha256": "884c8143ab6088e13f974fc7a5f82d399a16b29fcffb9ef645c8860a8d186e96"
+  },
+  "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Subject_in_MNI.nii.gz": {
+    "url": "volumes/598afe60f7c9438d-Subject_in_MNI.nii.gz",
+    "sha256": "598afe60f7c9438d69e222fde2e82be6998694652cdbea20685f629153debe37"
+  },
+  "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_linda.nii.gz": {
+    "url": "volumes/67b1b6b14f5af739-Disconnectome_linda.nii.gz",
+    "sha256": "67b1b6b14f5af7398019ca4cd7093693f9bc7777176551b59c550a4ced1dd5d9"
+  },
+  "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/Lesion_in_MNI.nii.gz": {
+    "url": "volumes/9a34b924574088b0-Lesion_in_MNI.nii.gz",
+    "sha256": "9a34b924574088b019ea95d8d88cdd6d874f46b67e4e7afadebfdb02b79f2805"
+  },
+  "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_synthstroke.nii.gz": {
+    "url": "volumes/ca0dab9b7ed0b019-Disconnectome_synthstroke.nii.gz",
+    "sha256": "ca0dab9b7ed0b01922a99961a3589a0ed54ac2f45320d6167d556779d2acb876"
+  },
+  "data/ds004884/derivatives/synthstroke/sub-M2001/ses-1076/anat/SynthStroke_in_MNI.nii.gz": {
+    "url": "volumes/4930c600fe266de5-SynthStroke_in_MNI.nii.gz",
+    "sha256": "4930c600fe266de538982426fde29dcf4dd6f8438bcf7fd3b5bf743306088287"
+  },
+  "data/ds004884/derivatives/bcbtoolkit/sub-M2001/ses-1076/anat/Disconnectome_expert.nii.gz": {
+    "url": "volumes/69ecc40541f770c9-Disconnectome_expert.nii.gz",
+    "sha256": "69ecc40541f770c9252c57d22eb459eef9d225c877b4497528656bf4e16f2b0b"
+  },
+  "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/ExpertMask_in_MNI.nii.gz": {
+    "url": "volumes/13e440187bf2bcce-ExpertMask_in_MNI.nii.gz",
+    "sha256": "13e440187bf2bcce1f33ce26f596c0684484b0e408b2dd255b328b8bd37730fb"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_whole_brain.nii.gz": {
+    "url": "volumes/9f11edb42c6fad1c-DeepDisco_linda_whole_brain.nii.gz",
+    "sha256": "9f11edb42c6fad1cdf581d6f9d3693c6b7bcc54871cf524bf5f8d36350353cd4"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_association.nii.gz": {
+    "url": "volumes/61440ca9cbfe0fc2-DeepDisco_linda_association.nii.gz",
+    "sha256": "61440ca9cbfe0fc25de0cef459eda913def82565264c8dd28279526ad9a36f15"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_projection.nii.gz": {
+    "url": "volumes/25db9c7faa2785cf-DeepDisco_linda_projection.nii.gz",
+    "sha256": "25db9c7faa2785cfdf7b0d505eaaf9c2c94d69ad71671beb2b89a36b170d14a5"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_linda_commissural.nii.gz": {
+    "url": "volumes/05f927389c95d4bf-DeepDisco_linda_commissural.nii.gz",
+    "sha256": "05f927389c95d4bf00704f6e91c26a79b3f843b059990708fd57d29e8dfa0580"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_whole_brain.nii.gz": {
+    "url": "volumes/001388b8b6e0677f-DeepDisco_synthstroke_whole_brain.nii.gz",
+    "sha256": "001388b8b6e0677fe1b7b101511d14548dea5f8c33e407cd865cbc5aa336cd74"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_association.nii.gz": {
+    "url": "volumes/a51872cae03ff510-DeepDisco_synthstroke_association.nii.gz",
+    "sha256": "a51872cae03ff510ef6c38791926e32bb62a1ede6eebb5daa34b0bab6d386c83"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_projection.nii.gz": {
+    "url": "volumes/b28f02e9380277b9-DeepDisco_synthstroke_projection.nii.gz",
+    "sha256": "b28f02e9380277b9256828fc5b585fa7ee836da788b84213c68ff99d2c282ef1"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_synthstroke_commissural.nii.gz": {
+    "url": "volumes/bd3564ffdc70a690-DeepDisco_synthstroke_commissural.nii.gz",
+    "sha256": "bd3564ffdc70a690c054682df580a567ec0dfa9581c9d6ff72459561b994548d"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_whole_brain.nii.gz": {
+    "url": "volumes/6dee2bdf53288152-DeepDisco_expert_whole_brain.nii.gz",
+    "sha256": "6dee2bdf53288152f3d065b7d30bdee478465d0a708cee4244df56e49a48d74b"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_association.nii.gz": {
+    "url": "volumes/e60c843912d4ed8d-DeepDisco_expert_association.nii.gz",
+    "sha256": "e60c843912d4ed8d1d40c418bb236f71396a3e1a809282c5b470de1d2a9d3eb0"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_projection.nii.gz": {
+    "url": "volumes/9f2461b41b7c7960-DeepDisco_expert_projection.nii.gz",
+    "sha256": "9f2461b41b7c796046295a5f88b2b7e1f32d741627daa240337d0e8e8934afd7"
+  },
+  "data/ds004884/derivatives/deepdisco/sub-M2001/ses-1076/anat/DeepDisco_expert_commissural.nii.gz": {
+    "url": "volumes/779f8edd5786c923-DeepDisco_expert_commissural.nii.gz",
+    "sha256": "779f8edd5786c923ff8f26e1c14733f756437d9b12ed65b47af7fe09f138daea"
+  },
+  "data/ISLES-2022/sub-strokecase0001/ses-0001/dwi/sub-strokecase0001_ses-0001_dwi.nii.gz": {
+    "url": "volumes/afdc5bb8ead4121b-sub-strokecase0001_ses-0001_dwi.nii.gz",
+    "sha256": "afdc5bb8ead4121bda6a250632ba559da3af9e5bc0afad5a30ecc9425ae5dd9e"
+  },
+  "data/ISLES-2022/derivatives/openads/sub-strokecase0001/ses-0001/anat/sub-strokecase0001_ses-0001_space-DWI_desc-lesion_mask.nii.gz": {
+    "url": "volumes/51aeb6f03ba190f3-sub-strokecase0001_ses-0001_space-DWI_desc-lesion_mask.nii.gz",
+    "sha256": "51aeb6f03ba190f366bd74697664a04f59dcc6f35ab645ae4a69e1ac36efc055"
+  },
+  "data/ISLES-2022/derivatives/openads/sub-strokecase0001/ses-0001/anat/_manual_mask_compare/ManualLesion_in_T1.nii.gz": {
+    "url": "volumes/0a2d7a14276c1356-ManualLesion_in_T1.nii.gz",
+    "sha256": "0a2d7a14276c13561edec6aef513e6a9193538b551440c7855af1826683c37cb"
+  },
+  "data/ISLES-2022/sub-strokecase0001/ses-0001/dwi/sub-strokecase0001_ses-0001_adc.nii.gz": {
+    "url": "volumes/9026d12f9595e438-sub-strokecase0001_ses-0001_adc.nii.gz",
+    "sha256": "9026d12f9595e438705f7e3bbe3319345cf6ba55b339fd8b21fabcbbc9c7fc15"
+  },
+  "data/ds004884/derivatives/linda/sub-M2001/ses-1076/anat/BrainMask.nii.gz": {
+    "url": "volumes/a61240b38fd390ef-BrainMask.nii.gz",
+    "sha256": "a61240b38fd390efeb5f5d093e6837f72d3631028032fcef82bbf07cb884c769"
+  }
+}
