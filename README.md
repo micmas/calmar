@@ -137,4 +137,6 @@ primary citations for each tool and the ARC and ISLES 2022 datasets.
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+Project-owned CALMaR software, documentation and website material are
+non-commercial only — see [`LICENSE`](LICENSE) and [scope](LICENSING.md).
+Third-party components retain their terms; prior MIT releases retain their grants.

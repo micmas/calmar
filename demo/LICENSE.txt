@@ -1,0 +1,68 @@
+CALMaR and Stroke KB Noncommercial License 1.0
+
+Copyright (c) 2025–2026 Michele Masson-Trottier and other respective rights holders.
+
+1. Scope
+
+These terms apply to project-owned software, website code and design,
+documentation, search strategies, original knowledge-base text, and compilation
+or database rights distributed with this licence (the Material), to the extent
+the rights holders have authority to license them. Separately identified
+third-party material is excluded and retains its own terms.
+
+2. Noncommercial permission
+
+Permission is granted, free of charge, to use, reproduce, study, modify and
+redistribute the Material and adaptations solely for noncommercial purposes,
+subject to these terms. Noncommercial means not primarily intended for or
+directed towards commercial advantage or monetary compensation.
+
+3. Commercial use prohibited
+
+No permission is granted for commercial use. This includes selling or licensing
+the Material or adaptations, incorporating them into commercial products or
+services, offering paid access or paid hosted services based on them, or using
+them in commercially directed research, development, consultancy or other
+revenue-generating activities. A user's educational, charitable, research or
+health-care status does not by itself exempt a commercial use. A separate
+written licence from all relevant rights holders is required for any commercial
+use; this licence promises no such permission.
+
+4. Attribution and redistribution
+
+Retain this licence, copyright notices, source attributions and third-party
+notices with copies or substantial portions of the Material. Identify your
+modifications and do not imply endorsement. Redistribute project-owned portions
+and your adaptations under these same noncommercial terms; do not offer a
+commercial sublicense. Do not remove or obscure the noncommercial restriction.
+
+5. Third-party material, facts and prior grants
+
+Papers, quotations, abstracts, bibliographic metadata, datasets, atlases, model
+weights, dependencies and other third-party works retain their respective
+licences and permissions. These terms neither relicense those works nor grant
+rights that their owners have not granted. Facts and uses that do not require
+permission under applicable law are not restricted by these terms.
+
+This licence applies to versions distributed under it. It does not revoke
+permissions previously granted for earlier versions, including earlier MIT
+releases. Earlier permissions do not automatically cover new material or later
+changes that were not distributed under those earlier terms.
+
+6. Other rights and termination
+
+No trademark, endorsement or patent rights are granted. Rights under this
+licence terminate if you breach its conditions; reinstatement requires written
+permission from the relevant rights holders. Statutory exceptions and
+limitations, including fair use or fair dealing where applicable, are preserved.
+
+7. No warranty or liability
+
+THE MATERIAL IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, THE RIGHTS HOLDERS
+ARE NOT LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE
+MATERIAL OR ITS USE, WHETHER IN CONTRACT, TORT OR OTHERWISE.
+
+This is a custom source-available noncommercial licence, not the MIT licence
+and not an OSI-approved open-source licence.
