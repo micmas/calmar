@@ -137,6 +137,8 @@ inventory = {{s:{{'MNI':root/(s+'.nii.gz')}} for s in ('linda','synthstroke','ma
 mask_inventory_for = lambda e: inventory
 available_mni_sources = lambda e: list(inventory)
 deriv_path_for = lambda e: root
+study = SimpleNamespace(qc_dir=deriv_path_for, template_dir=deriv_path_for, masks=mask_inventory_for)
+APHASIA_KB_ROOT = Path({str(ROOT / "stroke-aphasia-kb")!r})
 row = dict(subject='sub-ui', session='', region='Example ROI', lesion_in_roi_percent=25.,
            roi_coverage_percent=10., overlap_voxels=2, total_lesion_voxels=8)
 OVERLAP_DFS = {{f'{{atlas}}_{{s}}':pd.DataFrame([row]) for atlas in ('Atlas A','Atlas B') for s in inventory}}

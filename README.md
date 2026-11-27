@@ -1,6 +1,6 @@
 # CALMaR — Co-designed, Automated Lesion Mapping and Reporting
 
-CALMaR is an open-source Jupyter notebook pipeline for stroke lesion
+CALMaR is a source-available Jupyter notebook pipeline for stroke lesion
 segmentation, quality control and clinician-facing interpretation of
 structural brain MRI. It runs inside
 [Neurodesktop](https://www.neurodesk.org/), which provides every
@@ -12,7 +12,7 @@ Given a BIDS dataset, it will:
 2. **QC every mask** in an interactive, stage-aware dashboard with an edit audit trail.
 3. **Analyse regional overlap** against five atlases (HarvardOxford, AAL, Destrieux, Schaefer400, JHU).
 4. **Compute disconnectomes** (BCBToolkit, DeepDisco) and optionally direct dMRI tractometry (QSIPrep / QSIRecon).
-5. **Optionally measure background brain health** (SynthSeg volumetry, DeepWMH white-matter hyperintensities).
+5. **Optionally describe background brain health** with brain tissue and ventricle volumes from T1 MRI and white-matter hyperintensity estimates from same-session FLAIR.
 6. **Decode the lesion** against Neurosynth meta-analytic maps.
 7. **Interpret it clinically** with the aphasia knowledge base: predicted impairments, outcome predictions and stage-aware therapy evidence, every claim cited.
 
@@ -21,6 +21,10 @@ use a local model through Ollama; paper text and patient-derived lesion
 data never leave the machine.
 
 ## Quick start
+
+Start with the guided notebook and one participant, or browse the
+[saved notebook demo](https://calmar.aphasia-kb.app/) to see both imaging
+routes, brain-health measurements and example reports.
 
 ```bash
 # In a Neurodesktop JupyterLab session, clone into storage that persists:
@@ -83,15 +87,15 @@ a curated, source-traceable literature base in which each finding links
 a brain region, predictor or therapy to an outcome with the verbatim
 passages that support it. CALMaR records a tested KB release as the git
 submodule `stroke-aphasia-kb/`, but the notebooks prefer a sibling
-working copy at `../stroke-aphasia-kb/` when one is present. During
-Setup, the selected checkout is fetched and fast-forwarded to the latest
-`origin/main` before any KB module is imported. If the network is unavailable,
-Setup continues with a prominent “latest not verified” warning. A checkout that already
-contains current `main` may retain local commits or uncommitted drafts;
-a stale dirty or divergent checkout stops with instructions rather than
-mixing KB versions. Setup and every participant report identify the
-selected root, its full commit and, for uncommitted content, a SHA-256
-digest and changed-path inventory.
+working copy at `../stroke-aphasia-kb/` when one is present. Imaging, QC
+and atlas results can run independently of the KB. The participant report
+settings fetch the latest `origin/main` and fast-forward the selected
+checkout before loading its modules. If the network is unavailable,
+the settings continue with a “latest not verified” warning. A checkout
+that already contains current `main` may retain local commits or
+uncommitted drafts. A stale dirty or divergent checkout pauses report
+setup with instructions. The settings and each report record the KB root,
+full commit and, for uncommitted changes, a SHA-256 digest and changed paths.
 
 Selection order is `CALMAR_KB_ROOT`, the sibling working copy, then the
 CALMaR submodule. Set the environment variable before starting

@@ -77,7 +77,7 @@ class AlignmentDisplayTests(unittest.TestCase):
             path.unlink()
             self.assertFalse(q.mni_mask_matches_reference(root, path))
 
-    def test_new_subject_and_all_mask_settings(self):
+    def test_demo_defaults_to_t1_without_a_local_cohort(self):
         root = Path(__file__).resolve().parents[1]
         n = json.loads((root / "lesion-interpretation-pipeline.ipynb").read_text())
         source = "".join(next(c for c in n["cells"] if c.get("id") == "calmar-step-12")["source"])
@@ -87,15 +87,8 @@ class AlignmentDisplayTests(unittest.TestCase):
         ns = {"Path": Path}
         exec(compile(ast.Module(body=[assignment], type_ignores=[]), "config", "exec"), ns)
         config = ns["CONFIG"]
-        self.assertCountEqual(config["SUBJECT_FILTER"],
-                              ["sub-M2002", "sub-M2051", "sub-M2061", "sub-M2075", "sub-M2103"])
-        self.assertCountEqual(config["SESSION_FILTER"],
-                              ["ses-1440", "ses-284", "ses-252", "ses-602", "ses-222"])
-        self.assertEqual(config["MAX_SUBJECTS"], 5)
-        acute = config["ADDITIONAL_COHORTS"][0]
-        self.assertEqual(acute["MODALITY"], "dwi")
-        self.assertCountEqual(acute["SUBJECT_FILTER"],
-                              ["sub-strokecase0004", "sub-strokecase0009"])
+        self.assertEqual(config["MODALITY"], "t1")
+        self.assertEqual(config["ADDITIONAL_COHORTS"], [])
         self.assertEqual(config["BCB_MASKS"], "all")
         self.assertEqual(config["DEEPDISCO_MASK_SOURCE"], "all")
         self.assertTrue(config["DEEPDISCO_RUN_ALL"])

@@ -192,6 +192,18 @@ class ReportInterfaceTests(unittest.TestCase):
             self.assertEqual(panel.domains['repetition'].value, 'mild')
             self.assertEqual(ns['INTERP_DOMAIN_LEVEL_SOURCES'], {})
 
+    def test_open_report_form_cannot_restore_a_failed_kb_selection(self):
+        ns = dict(SUBJECTS=[dict(subject='sub-a'), dict(subject='sub-b')],
+                  available_mni_sources=lambda entry: ['manual'],
+                  RAW_DATASET_DIR=KB_ROOT, APHASIA_KB_ROOT=KB_ROOT)
+        panel = ReportInputs(ns)
+        self.addCleanup(panel.close)
+        ns['APHASIA_KB_ROOT'] = None
+        panel.choose_participant('sub-b')
+        self.assertIsNone(ns['APHASIA_KB_ROOT'])
+        self.assertFalse(panel.approve())
+        self.assertIn('Complete the participant report settings', panel.message.value)
+
     def test_report_keeps_evidence_and_qc_notice_and_adds_decoding_once(self):
         body = '<main><h4>Regions (Atlas A)</h4><table><tr><td>ROI</td></tr></table><h4>Outcomes</h4><p>Citation X</p><hr><div class="legend"><h5>How to read the evidence</h5><p>Legend</p></div></main>'
         sections = report_sections(body)

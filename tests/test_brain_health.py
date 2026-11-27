@@ -71,7 +71,7 @@ def test_brain_health_panel_uses_the_shared_optional_action_controls(tmp_path):
         assert panel.rows[0][3].value == "skip"
         heading = panel.rows[0][6].value
         assert "○ Not analysed" in heading
-        assert "T1 volumetry" in heading
+        assert "T1 brain volumes" in heading
         assert "&nbsp;Details</summary>" in heading
         assert "aria-label='Details for sub-1 · ses-a'" in heading
         assert panel.analyse.description == "Apply choices and continue"

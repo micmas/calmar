@@ -55,6 +55,8 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             await page.keyboard.press('Shift+Enter')
         async def output(text):
             await page.locator('.jp-OutputArea-output').get_by_text(text, exact=True).wait_for(timeout=30000)
+        async def expect_qc_stage(label):
+            await expect(page.locator('.widget-html-content > b').filter(has_text=label).first).to_be_visible()
         try:
             await open_run('navigation.ipynb')
             button = page.get_by_role('button', name='Continue to batch', exact=True)
@@ -101,13 +103,13 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             await sessions.locator('input').fill(session_value)
             await expect(random).to_be_enabled()
             await expect(random).not_to_be_checked()
-            await route.select_option('dwi')
-            await expect(source).to_have_value('isles2022')
+            await route.select_option(label='DWI + ADC — OpenADS')
+            await expect(source.locator('option:checked')).to_have_text('ISLES 2022 (local)')
             await local.wait_for(state='visible')
             await expect(cohort.locator('input')).to_have_value('')
             await expect(sessions.locator('input')).to_have_value('')
             await page.get_by_text('ISLES 2022:', exact=False).wait_for()
-            await route.select_option('t1')
+            await route.select_option(label='T1w — LINDA / SynthStroke')
             await expect(cohort.locator('input')).to_have_value(participant_value)
             await expect(sessions.locator('input')).to_have_value(session_value)
             for mode in ('Single T1 file', 'Local BIDS', 'Flat T1 folder', 'OpenNeuro', 'Single T1 file'):
@@ -160,8 +162,7 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             record = json.loads(files[0].read_text())
             assert [record['stages'][s]['rating'] for s in ('skull_strip','lesion','expert_mni_warp')] == [3,2,1]
             assert record['marked_for_rerun'] is True
-            view = page.locator('.widget-toggle-buttons').filter(has_text='View:').last
-            assert 'Skull strip' in await view.locator('.mod-active').inner_text()
+            await expect_qc_stage('Skull strip / brain extraction')
             await page.get_by_role('button', name='Skip QC', exact=True).click()
             await page.screenshot(path=str(artifacts/'qc.png'), full_page=True)
             await page.get_by_role('button', name='Continue after QC', exact=True).click()
@@ -183,12 +184,11 @@ async def exercise(base, token, root, artifacts, *, notebook_prefix='', auth_tok
             await output('EXISTING_QC_CONTINUED')
             subject = page.get_by_role('combobox', name='Participant:', exact=True)
             assert 'sub-1' in await subject.locator('option:checked').inner_text()
-            view = page.locator('.widget-toggle-buttons').filter(has_text='View:').last
-            assert 'LINDA lesion' in await view.locator('.mod-active').inner_text()
+            await expect_qc_stage('LINDA lesion mask')
             await redo.click()
             await page.get_by_text('Redoing QC from stage 1.', exact=False).wait_for()
             assert 'sub-0' in await subject.locator('option:checked').inner_text()
-            assert 'Skull strip' in await view.locator('.mod-active').inner_text()
+            await expect_qc_stage('Skull strip / brain extraction')
             assert all(path.read_bytes() == original for path, original in saved.items())
             await page.get_by_role('button', name='Skip QC', exact=True).click()
             await use_existing.click()

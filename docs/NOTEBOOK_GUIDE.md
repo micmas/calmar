@@ -53,6 +53,11 @@ the kernel first: rerunning downstream cells cannot recover failed
 imports. The import cell detects a stale in-memory `packaging` version;
 downstream decoding checks that setup completed before proceeding.
 
+The participant report settings connect to the aphasia knowledge base.
+If that checkout is missing or incompatible, segmentation, QC and atlas
+results are still available. Select a compatible checkout and rerun the
+report settings to generate an interpretation.
+
 After pulling a change to the repository layout, restart the kernel and
 rerun Setup so old module instances and viewer registries are not mixed
 with the reorganised package.
@@ -89,17 +94,15 @@ construct a `MANUAL_MASK_PATH` template. For a nonstandard copy, choose
 
 ## The example cohort
 
-The current example cohort is configured, in discovery order, for
-**sub-M2001 / ses-1076**, **sub-M2075 / ses-602** and
-**sub-M2077 / ses-250**, with BCBToolkit and DeepDisco enabled for
-LINDA, SynthStroke and manual masks, and all four DeepDisco models. The
-default dataset is OpenNeuro ds004884, pinned to tag 1.0.2, under
-`data/ds004884/`; missing content is fetched through DataLad. The cohort
-size is three, random sampling is disabled and overwrite is false. At
-selection time, participants 1 and 3 have no local processing outputs
-and participant 2 has existing outputs; a new checkout's local files
-determine which steps are cached. Existing outputs do not by themselves
-establish completed QC or end-to-end verification.
+The detailed notebook's **Configuration** cell lists the current example
+participants and sessions under `SUBJECT_FILTER`, `SESSION_FILTER` and
+`ADDITIONAL_COHORTS`. OpenNeuro ds004884 is pinned to tag 1.0.2 under
+`data/ds004884/`; missing content is fetched through DataLad. The example
+T1 run can start with OpenNeuro alone. To add an acute cohort in the detailed
+notebook, enable the commented example in `ADDITIONAL_COHORTS` and point it
+at your local ISLES 2022 copy. For an acute-only run, use the guided form's
+ISLES route. Local files and job receipts determine which steps are cached.
+Check the saved QC decisions separately.
 
 ## Stop points and continuation
 
@@ -127,6 +130,14 @@ it requires an explicit **Use saved results where available** choice and remains
 in the processing summary. New, partial, and changed analyses default to not
 selected; a fully current result defaults to unchanged reuse. The bottom buttons
 are consistently **Apply choices and continue** and **Skip all and continue**.
+
+**Structural brain health.** In the optional brain-health section, the
+T1 route can measure brain tissue and ventricle volumes with SynthSeg.
+Same-session FLAIR can measure candidate white-matter hyperintensity
+burden with DeepWMH. Review the saved tissue boundaries around the lesion
+on T1 and the alignment of the stroke outline on FLAIR. The report shows
+the saved measurements. A diagnosis of atrophy or small-vessel disease
+requires additional clinical evidence.
 
 **Single-subject test.** Before brain extraction,
 **Choose the single-subject test participant** lists the cohort and each

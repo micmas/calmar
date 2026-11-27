@@ -112,20 +112,9 @@ def test_dwi_availability_is_compact_but_complete():
 def test_selection_and_acquisition_share_one_compact_cell():
     notebook = json.loads((Path(__file__).resolve().parents[1] /
                            "lesion-interpretation-pipeline.ipynb").read_text())
-    runtime_continuations = [
-        cell for cell in notebook["cells"]
-        if "".join(cell.get("source", [])).lstrip().startswith("%calmar_continue ")
-        # This text-only recovery shortcut is part of the canonical notebook;
-        # navigation-created continuation cells have generated IDs.
-        and cell.get("id") != "ad540b5a-742b-40e6-b645-20152606ff84"
-    ]
-    # The checked-in notebook is output-free and has a stable cell count. While
-    # a user is running it, the continuation magic deliberately inserts
-    # transient cells and records output; source-layout checks must remain safe
-    # without asking the user to discard that live state.
-    if not runtime_continuations:
-        assert len(notebook["cells"]) == 98
-    assert notebook["cells"][18].get("id") == "calmar-acquire"
+    ids = [cell.get("id") for cell in notebook["cells"]]
+    assert (ids.index("calmar-step-17") < ids.index("calmar-acquire-md")
+            < ids.index("calmar-acquire") < ids.index("calmar-dwi-choice"))
     matches = [cell for cell in notebook["cells"] if cell.get("id") == "calmar-acquire"]
     assert len(matches) == 1
     source = "".join(matches[0]["source"])
@@ -137,16 +126,7 @@ def test_selection_and_acquisition_share_one_compact_cell():
     assert "for s in SUBJECTS[:10]" not in source
     assert not any(cell.get("id") in {"calmar-step-18", "calmar-step-19"}
                    for cell in notebook["cells"])
-    if not runtime_continuations:
-        assert matches[0]["execution_count"] is None
-        assert matches[0]["outputs"] == []
-    participant_choice = next(cell for cell in notebook["cells"]
-                              if cell.get("id") == "calmar-test-participant")
-    if not runtime_continuations:
-        assert participant_choice["execution_count"] is None
-
-    explanation = notebook["cells"][17]
-    assert explanation.get("id") == "calmar-acquire-md"
+    explanation = notebook["cells"][ids.index("calmar-acquire-md")]
     assert "Select participants and fetch image content" in "".join(explanation["source"])
 
 

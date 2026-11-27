@@ -1,0 +1,70 @@
+id: unattended_demo
+version: "0.0.14"
+name: Unattended four-participant notebook demo
+description: >
+  Execute a separate copy of the lesion interpretation notebook with sub-M2001
+  ses-1076 as the single-case demonstration, followed by the cohort batch including
+  sub-M2004 ses-524 and ISLES-2022 sub-strokecase0001 and sub-strokecase0002 ses-0001.
+  Completed single-case results are reused during cohort summaries. Human QC is
+  explicitly skipped for this demonstration. Preserve
+  the skip choice in shared participant QC records, so later reports disclose it.
+  Preserve
+  the source notebook and existing derivatives. Save the executed notebook every
+  cell and every minute, plus static QC images, atlas PDFs and four HTML reports.
+  Existing notebook methods are retained: HD-BET fast, LINDA one thread,
+  SynthStroke synth-plus with TTA, registration seed 1729, threshold 0.5,
+  all BCB masks with Tractotron and all four DeepDisco models. Neuroimaging tools
+  run only through the existing version-pinned Slurm scripts; the controller uses
+  Python 3.13.15 with nbclient 0.11.0. Snapshot notebook and runner per attempt.
+inputs:
+  - id: notebook
+    type: data
+    source: lesion-interpretation-pipeline.ipynb
+    description: >
+      Source notebook and its existing scientific settings. Selected ds004884
+      inputs come from tag 1.0.2 via retained analysis_22_acquisition.sh jobs;
+      extracted ISLES-2022 inputs are already present under data/ISLES-2022.
+      Analysis steps preserve their own publication sidecars and job receipts.
+decisions:
+  optional:
+    label: Available optional analyses
+    rationale: The archived demonstration includes all eligible diffusion and brain-health analyses.
+    default: all
+    options:
+      all:
+        label: All eligible optional analyses
+      main:
+        label: Main lesion and disconnectome workflow only
+outputs:
+  - id: demo_run
+    type: report
+    format: json
+    description: >
+      Published completion manifest linking the autosaved executed notebook,
+      final HTML export and attempt snapshots. Imaging derivatives and report
+      files retain stage provenance.
+      State is completed only after all cells and four reports succeed.
+    inputs: [notebook]
+    decisions: [optional]
+    recipe:
+      command: >
+        sbatch src/analysis_58_unattended_demo.sh --source {inputs.notebook}
+        --optional {decisions.optional} --completion {output}
+      container: python:3.13.15
+  - id: demo_site
+    type: report
+    format: directory
+    description: >
+      Validated static demo page, executed notebook and linked report assets for
+      the existing calmar.aphasia-kb.app GitHub Pages site. Includes no raw MRI
+      volume downloads. Human QC is labelled skipped. Packaging verifies the
+      completion manifest provenance; publication requires successful packaging
+      and uses a separate checkout, preserving unrelated local changes. The
+      Pages workflow PUBLISH_DEMO flag can be set to 0 to restore normal notebook
+      publication. Failed packaging attempts remain isolated in attempt folders.
+    inputs: [demo_run]
+    recipe:
+      command: >
+        sbatch src/analysis_60_package_demo_site.sh
+        --completion {inputs.demo_run} --output {output}
+      container: python:3.13.15

@@ -60,7 +60,7 @@ def _run_cells(f, **extra):
     ns = dict(SUBJECTS=[f.entry], TEST_SUBJECT_IDX=0, PROJECT_DIR=KB_ROOT.parent, CONFIG={"LESION_THRESHOLD": .5},
               study=f.study, REPORTS_DIR=f.reports, RAW_DATASET_DIR=f.dataset, ATLAS_DIR=f.root,
               cw=f.helpers, display=Mock(), HTML=HTML)
-    with patch.dict("os.environ", {"CALMAR_KB_ROOT": str(KB_ROOT)}):
+    with patch.dict("os.environ", {"CALMAR_KB_ROOT": str(KB_ROOT), "CALMAR_KB_UPDATE": "off"}):
         exec("".join(source_cell(77)["source"]), ns)
     ns.update(INTERP_MASK_SOURCE="linda", INTERP_KB_ATLASES=["HarvardOxford"], **extra)
     with patch("calmar.atlas_overlap.prepare_report_overlap") as prepare, \

@@ -30,6 +30,30 @@ def text(value):
     return ''.join(value) if isinstance(value, list) else str(value or '')
 
 
+def add_demo_guide(soup, hero):
+    hero.select_one('.lead').string = (
+        'Follow four saved examples from stroke MRI to a participant report. '
+        'See how CALMaR finds the stroke lesion, checks the result, and measures brain volumes '
+        'or white-matter changes when the right scans are available. Open an inline viewer '
+        'to inspect the saved images and overlays in your browser.')
+    links = hero.select_one('.notebook-links')
+    if links is None:
+        links = soup.new_tag('p', attrs={'class': 'notebook-links'})
+        hero.append(links)
+    links.clear()
+    for href, label in (
+        ('#single-subject-test', 'Walk through the first case'),
+        ('#optional-background-brain-health', 'See brain-health results'),
+        ('#generated-participant-report', 'Read participant reports'),
+        ('explorer.html', 'Browse by participant'),
+    ):
+        link = soup.new_tag('a', href=href)
+        link.string = label
+        if links.contents:
+            links.append(' ')
+        links.append(link)
+
+
 def explorer_source(checkout):
     demo = checkout / 'demo'
     prior = json.loads((demo / 'publication.json').read_text())
@@ -345,7 +369,6 @@ def build_notebook_first(project, staging, notebook, state, record, assets, remo
     info['widget_state'] = True
     info['inline_viewers'] = len(renderer.viewers)
     hero = soup.select_one('.hero')
-    hero.select_one('.lead').string = 'Read the executed CALMaR notebook step by step: the methods, saved figures and results stay together. Open an image viewer where it appears to inspect the saved scans and overlays in your browser.'
     for fact in hero.select('.facts li'):
         if fact.get_text().startswith('Results'):
             fact.clear()
@@ -356,9 +379,7 @@ def build_notebook_first(project, staging, notebook, state, record, assets, remo
     notice = soup.new_tag('div', attrs={'class': 'run-notice'})
     notice.append(BeautifulSoup('<strong>Saved demonstration · human QC was skipped.</strong> Viewer interactions change the display only. Processing, edits and review decisions require a running Neurodesk session. Evidence may include draft or unreviewed findings; this is a research example.', 'html.parser'))
     hero.append(notice)
-    links = soup.new_tag('p', attrs={'class': 'notebook-links'})
-    links.append(BeautifulSoup('<a href="#single-subject-test">Start with the single-subject test ↓</a> <a href="#generated-participant-report">Read the reports ↓</a> <a href="explorer.html">Participant explorer ↗</a>', 'html.parser'))
-    hero.append(links)
+    add_demo_guide(soup, hero)
     launch = soup.select_one('#launch')
     disclosure = soup.new_tag('details', attrs={'class': 'launch-disclosure'})
     title = soup.new_tag('summary')
