@@ -72,11 +72,11 @@ replace the three-participant end-to-end run or browser QC. Optional
 browser checks need Playwright (the commented line in `requirements.txt`) and
 `python -m playwright install chromium`.
 
-GitHub CI checks CALMaR against the latest KB `main` and prints the exact
-KB SHA. This is an intentional development compatibility gate: a KB
-change that adds or resolves an atlas-mapping identifier may require the
-corresponding issue-#19 allowlist update in CALMaR before unrelated PRs
-can merge.
+GitHub CI checks the report interface and approved atlas coverage against
+the latest KB `main` and records the exact revision. It reports drafts
+with missing mappings so they can be curated in the KB. The complete
+regression suite, including the release mapping check and report-content
+fixtures, runs against CALMaR's pinned KB revision.
 
 ## Validating a checkout
 

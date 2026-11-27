@@ -35,8 +35,11 @@ jobs:
           cache: pip
       - name: Install test dependencies
         run: python -m pip install -r requirements.txt
-      - name: Run unit and notebook checks against latest KB main
-        run: python -m pytest -q tests
+      - name: Check report compatibility against latest KB main
+        run: |
+          python -m pytest -q tests/test_kb_location.py \
+            tests/test_kb_atlas_mapping.py::test_mapping_files_are_consistent \
+            tests/test_kb_atlas_mapping.py::test_report_contract_with_the_current_kb
       - name: Run all checks against the pinned release KB
         run: |
           kb_pin="$(git ls-tree HEAD stroke-aphasia-kb | awk '{print $3}')"

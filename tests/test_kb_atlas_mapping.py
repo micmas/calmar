@@ -38,6 +38,26 @@ def test_mapping_files_are_consistent():
     assert atlas_mapping.problems() == []
 
 
+def test_report_contract_with_the_current_kb():
+    """Check the report interface independently of the changing draft inventory."""
+    from calmar.participant_report import ReportSettings, load_kb, rules_html
+
+    assert rules_html(KB_ROOT)
+    kb = load_kb(KB_ROOT, ReportSettings(evidence="all"))
+    findings = kb.findings
+    required = {"source_kind", "source_id", "source_status", "target_kind", "target", "citation", "phase"}
+    assert required <= set(findings.columns)
+
+    approved = findings[findings["source_status"] == "approved"]
+    assert not atlas_mapping.coverage(approved)["missing"], "Approved atlas mapping is incomplete"
+    if approved.empty:
+        warnings.warn("This KB revision has no approved findings.", stacklevel=1)
+    pending = findings[findings["source_status"] != "approved"]
+    missing = atlas_mapping.coverage(pending)["missing"]
+    if missing:
+        warnings.warn(f"{len(missing)} unapproved atlas identifiers still need curation.", stacklevel=1)
+
+
 def test_every_location_finding_is_mapped_or_explained():
     """A new paper naming a new region must be added to kb_regions.yaml
     (mapped, or under `unmapped` with the reason): nothing is dropped silently."""
