@@ -14,12 +14,17 @@ def renderer(tmp_path, state=None):
 
 
 def test_demo_guide_links_to_brain_health_without_duplicating_navigation():
-    page = BeautifulSoup('<header><p class="lead"></p></header>', 'html.parser')
+    page = BeautifulSoup(
+        '<header><p class="lead"></p></header><h2 id="optional-background-brain-health"></h2>',
+        'html.parser')
     add_demo_guide(page, page.header)
     add_demo_guide(page, page.header)
     assert len(page.select('.notebook-links')) == 1
     link = page.select_one('.notebook-links a[href="#optional-background-brain-health"]')
     assert link.string == 'See brain-health results'
+    page.find(id='optional-background-brain-health').decompose()
+    add_demo_guide(page, page.header)
+    assert page.select_one('.notebook-links a[href="#optional-background-brain-health"]') is None
 
 
 @pytest.mark.parametrize('path', [

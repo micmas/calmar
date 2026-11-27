@@ -47,6 +47,8 @@ def add_demo_guide(soup, hero):
         ('#generated-participant-report', 'Read participant reports'),
         ('explorer.html', 'Browse by participant'),
     ):
+        if href.startswith('#') and soup.find(id=href[1:]) is None:
+            continue
         link = soup.new_tag('a', href=href)
         link.string = label
         if links.contents:

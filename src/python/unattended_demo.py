@@ -121,9 +121,6 @@ print('Demo: single-case workflow approved for', SUBJECTS[TEST_SUBJECT_IDX]['sub
     cells["calmar-step-39"].source = replace_once(cells["calmar-step-39"].source,
         'raise StopExecution("Choose Continue to batch or Jump to reporting.")',
         '_batch_checkpoint._resume()\n    assert not _batch_checkpoint.paused\n    print("Demo: continuing to the batch; completed test steps are reused.")')
-    for cell in nb.cells:
-        if cell.cell_type == "code" and cell.source.strip() == "%calmar_continue report":
-            cell.source = 'print("Demo: following the full batch workflow before reporting.")'
     cells["calmar-step-51"].source = replace_once(cells["calmar-step-51"].source,
         'raise StopExecution("Use existing QC, review/redo QC, or choose Skip QC. Use the buttons above to continue.")',
         'assert get_ipython()._calmar_qc_checkpoint.choose("skipped")\n'
