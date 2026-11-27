@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import gzip
 import json
-import logging
 from pathlib import Path
 import re
 import subprocess
@@ -47,15 +46,21 @@ def _same_grid(image, reference):
             np.allclose(image.affine, reference.affine, atol=1e-3, rtol=0))
 
 
+def _require_file(path):
+    if not path.is_file():
+        raise BundleQCUnavailable(f"Required bundle QC input is missing: {path.name}")
+    return path
+
+
 def _on_grid(path, reference):
-    image = nib.load(path)
+    image = nib.load(_require_file(path))
     if not _same_grid(image, reference):
         raise BundleQCUnavailable(f"Image grids differ for {path.name} and its reference.")
     return image.get_fdata(dtype=np.float32)
 
 
 def _inputs(preproc, recon, output):
-    selection = json.loads((preproc / "calmar-selection.json").read_text())
+    selection = json.loads(_require_file(preproc / "calmar-selection.json").read_text())
     if not selection.get("lesion_mask") or not selection.get("anatomical_t1w"):
         raise BundleQCUnavailable("QSIPrep does not record the native lesion and T1 inputs.")
     lesion, t1 = (Path(selection[key]) for key in ("lesion_mask", "anatomical_t1w"))
@@ -63,8 +68,11 @@ def _inputs(preproc, recon, output):
     reference = nib.load(reference_path)
     if len(reference.shape) != 3 or not np.isfinite(reference.affine).all():
         raise BundleQCUnavailable("QSIPrep diffusion reference must have a finite three-dimensional grid.")
+    background = reference.get_fdata(dtype=np.float32)
+    if not (np.isfinite(background) & (background > 0)).any():
+        raise BundleQCUnavailable("The QSIPrep diffusion reference has no usable intensities for visual QC.")
     mask_path = reference_path.with_name(reference_path.name.replace("desc-preproc_dwiref", "desc-brain_mask"))
-    source_lesion = _on_grid(lesion, nib.load(t1))
+    source_lesion = _on_grid(lesion, nib.load(_require_file(t1)))
     if not np.isfinite(source_lesion).all() or not np.isin(source_lesion, [0, 1]).all():
         raise BundleQCUnavailable("The selected lesion must be a finite binary mask on the native T1 grid.")
     if not source_lesion.any():
@@ -89,7 +97,7 @@ def _inputs(preproc, recon, output):
     fa = _on_grid(fa_path, reference)
     md = _on_grid(md_path, reference)
     md_sidecar = md_path.with_name(md_path.name.removesuffix(".nii.gz") + ".json")
-    units = json.loads(md_sidecar.read_text()).get("Units")
+    units = json.loads(_require_file(md_sidecar).read_text()).get("Units")
     normalized = str(units).translate(str.maketrans({"µ": "μ", "²": "2", "^": "", " ": ""}))
     scale = {"μm2/ms": 0.001, "um2/ms": 0.001, "mm2/s": 1.0}.get(normalized)
     if scale is None:
@@ -225,10 +233,8 @@ def measure_bundles(preproc, recon, table, output, nodes):
     """Write exploratory profile and QC artifacts, and enrich matching tract rows."""
     try:
         reference, lesion, fa, md, valid, provenance = _inputs(preproc, recon, output)
-    except (OSError, json.JSONDecodeError, nib.filebasedimages.ImageFileError,
-            subprocess.CalledProcessError) as exc:
-        logging.getLogger(__name__).warning("Bundle QC input preparation failed: %s", exc)
-        raise BundleQCUnavailable("Could not read the diffusion-space inputs or apply the lesion transform.") from exc
+    except (json.JSONDecodeError, nib.filebasedimages.ImageFileError) as exc:
+        raise BundleQCUnavailable("A diffusion-space image or metadata file could not be decoded.") from exc
     tracks = {}
     for path in recon.rglob("*_space-ACPC_*_streamlines.tck*"):
         match = re.search(r"_bundle-([^_]+)_streamlines\.tck(?:\.gz)?$", path.name)
@@ -253,7 +259,8 @@ def measure_bundles(preproc, recon, table, output, nodes):
             try:
                 occupied, profile, count, outside, skipped = _sample_bundle(
                     files[0], reference, nodes, superior_first=bundle == ASLANT)
-            except (OSError, nib.streamlines.tractogram_file.DataError):
+            except (OSError, EOFError, nib.streamlines.tractogram_file.DataError,
+                    nib.streamlines.tractogram_file.HeaderError):
                 status.update(status="unreadable streamline file", source=str(files[0]))
                 continue
             status.update(source=str(files[0]), streamline_count=count, outside_grid_samples=outside,

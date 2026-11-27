@@ -1,3 +1,4 @@
+import gzip
 from pathlib import Path
 
 import nibabel as nib
@@ -46,6 +47,8 @@ def test_bundle_qc_keeps_absence_distinct_from_measured_zero(tmp_path, monkeypat
         track = tmp_path / f"sub-example_space-ACPC_model-ss3t_bundle-AssociationArcuateFasciculus{suffix}_streamlines.tck"
         line = np.array([[x, 0, 2], [x, 4, 2]], dtype=np.float32)
         nib.streamlines.save(nib.streamlines.Tractogram([line], affine_to_rasmm=np.eye(4)), track)
+    truncated = tmp_path / "sub-example_space-ACPC_model-ss3t_bundle-AssociationFrontalAslantTractL_streamlines.tck.gz"
+    truncated.write_bytes(gzip.compress(b"mrtrix tracks\n")[:-4])
     table = pd.DataFrame([
         {"tract": "Association_ArcuateFasciculusL", "hemisphere": "left", "lesion_overlap_pct": np.nan,
          "valid_voxel_pct": np.nan},
@@ -56,6 +59,8 @@ def test_bundle_qc_keeps_absence_distinct_from_measured_zero(tmp_path, monkeypat
 
     assert table["lesion_overlap_pct"].tolist() == [20, 0]
     assert table["valid_voxel_pct"].tolist() == [80, 100]
-    assert [bundle["status"] for bundle in result["bundles"]] == ["measured"] * 2 + ["no streamline file"] * 4
+    assert [bundle["status"] for bundle in result["bundles"]] == [
+        "measured", "measured", "unreadable streamline file", "no streamline file",
+        "no streamline file", "no streamline file"]
     assert profiles.loc[2, "valid_voxels"] == 0 and pd.isna(profiles.loc[2, "md_median_mm2_s"])
     assert profiles.loc[1, "lesion_voxels"] == 1

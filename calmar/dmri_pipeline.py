@@ -1194,8 +1194,8 @@ def normalize_metrics(request, output):
             "fa_map", "md_map", "md_sidecar"))
         qc_inputs.extend(geometry["lesion_transform_chain"])
         qc_inputs.extend(bundle["source"] for bundle in bundle_metadata["bundles"] if "source" in bundle)
-    tracked = [table_path, metadata_path]
-    tracked.extend(metrics_dir / bundle_metadata[key]
+    tracked = [table_path.name, metadata_path.name]
+    tracked.extend(bundle_metadata[key]
                    for key in ("qc_png", "profile_png", "profile_tsv", "aligned_lesion")
                    if bundle_metadata.get(key))
     qc = {"png": str(metrics_dir / png) if png else None,
