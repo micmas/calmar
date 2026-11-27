@@ -166,8 +166,10 @@ def _result_stamps(result):
         mask, reference, _ = manual_inputs(request, entry)
         paths.update(p for p in (mask, reference) if p is not None)
     for entry in result.get('results', []):
-        if (entry.get('qc') or {}).get('png'):
-            paths.add(Path(entry['qc']['png']))
+        qc = entry.get('qc') or {}
+        paths.update(map(Path, qc.get('input_files', ())))
+        if qc.get('png'):
+            paths.add(Path(qc['png']))
         for output in entry.get('outputs', []):
             if not output.get('path'): continue
             path = Path(output['path'])
@@ -437,6 +439,10 @@ def _identity_key(stage, payload):
             }.get(stage, set())
             identity['config'] = {k: v for k, v in config.items()
                                   if k not in presentation and (k in stage_keys or k in relevant)}
+            if (stage == 'dmri_metrics' and config.get('DMRI_METHOD', 'qsirecon') == 'qsirecon'
+                    and config.get('DMRI_BUNDLE_QC')):
+                identity['config']['DMRI_BUNDLE_QC'] = True
+                identity['config']['DMRI_PROFILE_NODES'] = config.get('DMRI_PROFILE_NODES', 21)
             # QSIRecon was the only direct-dMRI method before DMRI_METHOD was
             # introduced.  Keep an explicit default identical to those legacy
             # receipts, while retaining non-default methods in the identity.

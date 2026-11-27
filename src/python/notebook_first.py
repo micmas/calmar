@@ -6,6 +6,7 @@ copied. Unsaved repair previews and kernel callbacks are explicitly unavailable.
 """
 import base64
 import copy
+from datetime import datetime
 import hashlib
 import html
 import importlib.util
@@ -43,6 +44,7 @@ def add_demo_guide(soup, hero):
     links.clear()
     for href, label in (
         ('#single-subject-test', 'Walk through the first case'),
+        ('#optional-diffusion-tract-microstructure-analysis', 'See white-matter results'),
         ('#optional-background-brain-health', 'See brain-health results'),
         ('#generated-participant-report', 'Read participant reports'),
         ('explorer.html', 'Browse by participant'),
@@ -63,6 +65,23 @@ def explorer_source(checkout):
     if not source.is_file() or 'reader.js' not in source.read_text() or 'id="explore"' not in source.read_text():
         raise ValueError('The reconciled checkout has no participant explorer')
     return source
+
+
+def refresh_explorer_links(source, record, assets):
+    """Point retained editorial links at the artifacts from the current run."""
+    targets = {}
+    for path in map(Path, record['reports'] + record['atlas_pdfs']):
+        target = assets.mapping[path]
+        if path.name in targets and targets[path.name] != target:
+            raise ValueError(f'Ambiguous explorer artifact name: {path.name}')
+        targets[path.name] = target
+    soup = BeautifulSoup(source.read_text(), 'html.parser')
+    for link in soup.select('a[href^="assets/"]'):
+        url = urlsplit(link['href'])
+        match = re.fullmatch(r'assets/[0-9a-f]{16}-(.+)', unquote(url.path))
+        if match and match[1] in targets:
+            link['href'] = url._replace(path=targets[match[1]]).geturl()
+    return str(soup)
 
 
 class SavedWidgets:
@@ -300,7 +319,7 @@ def build_notebook_first(project, staging, notebook, state, record, assets, remo
             raise ValueError(f'Reconciliation checkout must be clean: {checkout}')
     remote_base = subprocess.check_output(['git', '-C', str(remote_checkout), 'rev-parse', 'HEAD'], text=True).strip()
     # Retain the latest editorial page and palette as the secondary explorer.
-    shutil.copy2(explorer_source(remote_checkout), staging / 'explorer.html')
+    (staging / 'explorer.html').write_text(refresh_explorer_links(explorer_source(remote_checkout), record, assets))
     shutil.copy2(remote_checkout / 'demo/reader.css', staging / 'reader.css')
     shutil.copy2(remote_checkout / 'demo/reader.js', staging / 'reader.js')
     cases = json.loads((staging / 'cases.json').read_text())['cases']
@@ -376,7 +395,9 @@ def build_notebook_first(project, staging, notebook, state, record, assets, remo
             fact.clear()
             fact.append(BeautifulSoup(f'<span class="k">Results</span> {figure_count} saved figures · {len(renderer.viewers)} inline viewers · 4 participants', 'html.parser'))
     byline = soup.new_tag('p', attrs={'class': 'notebook-byline'})
-    byline.string = 'A research project led by Michèle Masson-Trottier, developed in the open. Demo completed 13 November 2026.'
+    completed = datetime.fromisoformat(record['completed_at'])
+    byline.string = ('A research project led by Michèle Masson-Trottier, developed in the open. '
+                     f'Demo completed {completed.day} {completed:%B %Y}.')
     hero.append(byline)
     notice = soup.new_tag('div', attrs={'class': 'run-notice'})
     notice.append(BeautifulSoup('<strong>Saved demonstration · human QC was skipped.</strong> Viewer interactions change the display only. Processing, edits and review decisions require a running Neurodesk session. Evidence may include draft or unreviewed findings; this is a research example.', 'html.parser'))

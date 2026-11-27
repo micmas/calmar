@@ -75,15 +75,41 @@ decisions:
     label: QSIRecon bundle reconstruction specification
     when: [analysis_method.qsirecon]
     rationale: >
-      The current acquisitions are mainly single-shell and 40-64 direction;
-      SS3T AutoTrack is offered as an experimental tractometry workflow, with
-      explicit stroke tracking-failure caveats.
+      SS3T AutoTrack provides the baseline for the existing acquisitions.
+      Multi-shell acquisitions can be evaluated with a matched comparison
+      before adding a separate multi-shell workflow.
     default: ss3t_fod_autotrack
     options:
       ss3t_fod_autotrack:
         label: SS3T FOD AutoTrack (ss3t_fod_autotrack)
       dsi_studio_autotrack:
         label: DSI Studio GQI AutoTrack (dsi_studio_autotrack)
+  bundle_qc:
+    label: Diffusion-space lesion overlap and along-streamline FA/MD
+    when: [analysis_method.qsirecon]
+    rationale: >
+      Bundle QC records how much of a reconstructed bundle overlaps the
+      registered lesion and how much has usable tensor data. The three
+      bilateral language-related bundles give a focused exploratory pilot.
+    default: "on"
+    options:
+      "on":
+        label: Six language bundles with overlap, coverage, and profiles
+      "off":
+        label: Bundle-wide QSIRecon scalar summaries only
+  profile_nodes:
+    label: Number of normalized positions along each streamline
+    when: [analysis_method.qsirecon]
+    rationale: >
+      Use 21 evenly spaced positions for a compact exploratory profile.
+      A finer sampling grid can test sensitivity to bin density without
+      increasing the resolution of the diffusion images.
+    default: nodes_21
+    options:
+      nodes_21:
+        label: 21 normalized positions
+      nodes_41:
+        label: 41 normalized positions
 outputs:
   - id: dmri_preproc
     type: data
@@ -125,14 +151,24 @@ outputs:
     format: directory
     description: >
       Published scheduler receipt pointing to the atomic directory containing
-      normalized per-bundle FA/MD TSV and metadata.
-      Lesion-overlap and valid-voxel fields remain explicitly missing until a
-      same-grid implementation has been validated; they are never imputed.
-    inputs: [scheduler_request, dmri_recon]
-    decisions: [analysis_method]
+      normalized per-bundle FA/MD TSV and metadata. With bundle QC enabled,
+      ANTs 2.6.5 resamples the native T1 lesion with nearest-neighbor interpolation
+      using QSIPrep's orig-to-anat and anat-to-ACPC transforms. Both percentages
+      use unique in-grid voxels sampled from reconstructed streamlines as the
+      denominator. Overlap counts lesion voxels and coverage counts brain-mask
+      voxels with physically plausible FA and MD. Along-streamline nodes start
+      at the superior end for the frontal aslant tract and at the more
+      posterior end for the arcuate and inferior fronto-occipital fasciculi. At each node
+      the report retains the median across valid unique voxels and voxel counts.
+      Outputs include the aligned lesion, an overlay PNG and, when bundles
+      can be measured, a profile TSV and PNG. Missing bundles have explicit
+      QC statuses and no imputed measurements. If required inputs for the
+      supplement are unavailable, the bundle-wide scalar summaries still publish.
+    inputs: [scheduler_request, dmri_preproc, dmri_recon]
+    decisions: [analysis_method, bundle_qc, profile_nodes]
     recipe:
-      command: CALMAR_DMRI_METHOD={decisions.analysis_method} bash src/analysis_47_dmri_metrics.sh {inputs.scheduler_request} {output}
-      container: python:3.13.15
+      command: CALMAR_DMRI_METHOD={decisions.analysis_method} CALMAR_DMRI_BUNDLE_QC={decisions.bundle_qc} CALMAR_DMRI_PROFILE_NODES={decisions.profile_nodes} bash src/analysis_47_dmri_metrics.sh {inputs.scheduler_request} {output}
+      container: python:3.13.18
   - id: participant_report_evidence
     when: [analysis_method.qsirecon]
     type: report
@@ -183,6 +219,35 @@ outputs:
       its visual-QC and stroke-confound warnings.
     inputs: [dipy_dti_metrics]
 findings:
+  autotrack_language_bundle_pilot:
+    label: Language-bundle QC and profile pilot
+    claim: >
+      The supplemental metrics ran on four existing SS3T AutoTrack
+      reconstructions and measured 22 of 24 expected bilateral bundles.
+      Two cases lacked a left arcuate streamline file and retained an
+      explicit missing status. The measured bundles had no sampled points
+      outside the diffusion grid. Lesion overlays were visually inspected.
+    created_at: 2026-11-27T01:39:00Z
+    scope: >
+      Four single-shell ds004884 cases, three with lesion anatomy from
+      a different session. This validates execution and artifact
+      interpretation in the pilot cases. Multi-shell methods were outside
+      this run.
+    tags: [validation, diffusion]
+    evidence:
+      - id: m2001_missing_bundle
+        artifact: dmri_metrics
+        snapshot: data/ds004884/derivatives/calmar-dmri/sub-M2001/ses-1225/dwi/metrics-bundle-qc-21/sub-M2001_ses-1225_desc-direct_tractometry.json
+      - id: m2004_bundle_overlay
+        artifact: dmri_metrics
+        snapshot: data/ds004884/derivatives/calmar-dmri/sub-M2004/ses-780/dwi/metrics-bundle-qc-21/bundle_lesion_qc.png
+      - id: m2004_bundle_profiles
+        artifact: dmri_metrics
+        snapshot: data/ds004884/derivatives/calmar-dmri/sub-M2004/ses-780/dwi/metrics-bundle-qc-21/bundle_profiles.tsv
+    notes: >
+      Slurm jobs 32, 33, 34 and 35 completed with exit code 0. For each case
+      the saved PNGs were verified, node counts and FA/MD ranges checked,
+      and the producing ANTs version recorded in the bundle sidecar.
   m2051_dipy_dti_validation:
     label: M2051 DIPY-DTI validation
     claim: >

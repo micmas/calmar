@@ -5,7 +5,7 @@ import pytest
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src/python'))
-from notebook_first import SavedWidgets, add_demo_guide, explorer_source
+from notebook_first import SavedWidgets, add_demo_guide, explorer_source, refresh_explorer_links
 import json
 
 
@@ -94,6 +94,19 @@ def test_rebuild_preserves_secondary_explorer(tmp_path):
     expected.unlink()
     with pytest.raises(ValueError):
         explorer_source(tmp_path)
+
+
+def test_rebuilt_explorer_uses_the_new_report_download(tmp_path):
+    explorer = tmp_path / 'explorer.html'
+    explorer.write_text(
+        '<a href="assets/0000000000000000-report.html#tract">Read report</a>'
+        '<a href="https://example.org/report.html">Source</a>')
+    report = tmp_path / 'fresh-run/report.html'
+    assets = type('Assets', (), {'mapping': {report: 'assets/1111111111111111-report.html'}})()
+    rebuilt = BeautifulSoup(refresh_explorer_links(
+        explorer, {'reports': [str(report)], 'atlas_pdfs': []}, assets), 'html.parser')
+    assert rebuilt.find_all('a')[0]['href'] == 'assets/1111111111111111-report.html#tract'
+    assert rebuilt.find_all('a')[1]['href'] == 'https://example.org/report.html'
 
 
 def test_saved_layer_opacity_and_plane_are_retained(tmp_path):

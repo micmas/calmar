@@ -148,8 +148,9 @@ DIPY DTI is a second analysis method, not a
 post-processing metric for QSIRecon; its outputs are never labelled as
 tracts or disconnection. The single-participant test and batch use the
 same bounded review panel. It shows exactly one selected-method preview
-per participant: the SS3T fibre-orientation peak image for QSIRecon, or
-the FA/MD-on-b0 montage for DIPY. Similar QSIRecon GQI/ODF figures and
+per participant. QSIRecon shows the registered lesion and reconstructed
+bundle overlay when available, with fibre orientations as the fallback.
+DIPY shows the FA/MD-on-b0 montage. Additional QSIRecon QC figures and
 the full QSIPrep/QSIRecon pages are linked rather than repeated inline.
 At most six participant previews are embedded in a group panel; later
 participants remain available in a collapsed report table. A preview already
@@ -160,13 +161,21 @@ QSIPrep-supported method. TORTOISE is the current default because the
 Neurodesk 26.1.1 image ships unreadable FSL-eddy package metadata, which
 prevents QSIPrep's `eddy` workflow from being constructed. The selected
 native-T1 lesion mask is supplied to QSIPrep as a BIDS lesion ROI.
-QSIRecon bundle FA/MD summaries are normalised to
-`derivatives/calmar-dmri/<sub>/<ses>/dwi/metrics/*_desc-direct_tractometry.tsv`;
-uncomputed fields remain explicitly missing. Reports place these
-participant measurements—or the separately selected DIPY tensor summary—in their own section and never numerically
-combine them with BCB/DeepDisco probabilities. Because stroke pathology
-can cause registration or tracking failure, a missing bundle is never
-called proof of disconnection. Failed tool output appears in the
+The notebook enables `DMRI_BUNDLE_QC` for AutoTrack. The metrics stage applies
+the saved QSIPrep transforms using ANTs 2.6.5 and writes the aligned lesion,
+an overlay PNG, and FA/MD profiles for the bilateral arcuate, frontal aslant,
+and inferior fronto-occipital bundles that can be measured. Both overlap and
+coverage use unique in-grid voxels sampled from reconstructed streamlines as
+the denominator. Coverage counts voxels inside the diffusion brain mask
+with usable FA and MD. Each profile reports the median across valid unique
+voxels at 21 normalized positions. The frontal aslant tract starts at its
+superior end and the arcuate and inferior fronto-occipital bundles start at
+their more posterior end.
+QC-enabled outputs live in `dwi/metrics-bundle-qc-21/` and summary-only
+outputs live in `dwi/metrics/`. The metadata records unavailable bundles
+and the report keeps the cross-session and visual review flags visible.
+BCBToolkit and DeepDisco report atlas-voxel coverage above 0.5 and can be
+compared when both maps exist for the same lesion mask. Failed tool output appears in the
 notebook/job error rather than disappearing with the temporary attempt
 directory. The scientific record is `analyses/diffusion-tract-analysis/astra.yaml`.
 
