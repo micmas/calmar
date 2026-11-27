@@ -81,7 +81,7 @@ def resolve_kb_root(project_dir=None, environ=None) -> tuple[Path, str]:
         fetch_note = (
             "\nThe knowledge-base submodule is declared in this checkout but had not been "
             f"fetched, and fetching it failed: {failure}\n"
-            "Run this in a terminal, then run Setup again:\n"
+            "Run this in a terminal, then rerun the participant report settings:\n"
             f"  git -C {project} submodule update --init {_SUBMODULE}")
     attempted = "\n".join(
         f"  - {root.resolve()} ({reason}; expected scripts/aphasia_kb.py and regions/)"
@@ -94,7 +94,7 @@ def resolve_kb_root(project_dir=None, environ=None) -> tuple[Path, str]:
 def update_kb_to_latest(kb_root, reason, environ=None) -> str:
     """Fast-forward a selected KB checkout to the latest ``origin/main``.
 
-    Development notebooks call this once during Setup.  A checkout already
+    Development notebooks call this before loading the report rules. A checkout already
     containing ``origin/main`` may also contain local commits or uncommitted
     drafts; those are preserved.  A stale dirty or divergent checkout is
     rejected instead of silently mixing old KB code with current evidence.

@@ -123,6 +123,7 @@ display(mask_review(cw,'review',[dict(path=str(brain)),
 with BatchTiming(globals(),'Fixture batch') as timer:
     with timer.participant(dict(subject='sub-test',session='ses-1'),'LINDA') as row:
         row['status']='Cached'
+SUBJECTS=[dict(subject='sub-first',session='ses-1'), dict(subject='sub-test',session='ses-1')]
 TEST_SUBJECT_IDX=1
 (root/'saved-qc.json').write_text('unchanged QC fixture')
 gate=pause_before_batch()

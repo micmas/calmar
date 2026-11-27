@@ -2,14 +2,29 @@
 import sys
 from pathlib import Path
 import pytest
+from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src/python'))
-from notebook_first import SavedWidgets, explorer_source
+from notebook_first import SavedWidgets, add_demo_guide, explorer_source
 import json
 
 
 def renderer(tmp_path, state=None):
     return SavedWidgets(tmp_path, tmp_path, state or {}, None, [])
+
+
+def test_demo_guide_links_to_brain_health_without_duplicating_navigation():
+    page = BeautifulSoup(
+        '<header><p class="lead"></p></header><h2 id="optional-background-brain-health"></h2>',
+        'html.parser')
+    add_demo_guide(page, page.header)
+    add_demo_guide(page, page.header)
+    assert len(page.select('.notebook-links')) == 1
+    link = page.select_one('.notebook-links a[href="#optional-background-brain-health"]')
+    assert link.string == 'See brain-health results'
+    page.find(id='optional-background-brain-health').decompose()
+    add_demo_guide(page, page.header)
+    assert page.select_one('.notebook-links a[href="#optional-background-brain-health"]') is None
 
 
 @pytest.mark.parametrize('path', [

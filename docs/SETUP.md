@@ -70,8 +70,8 @@ synchronising a checkout that still has the old history.
 [micmas/stroke-aphasia-kb](https://github.com/micmas/stroke-aphasia-kb)
 at the commit CALMaR was last tested with (`git submodule status` shows
 which). The committed pointer remains the reproducible fallback for a
-CALMaR release; development Setup updates the selected checkout to
-current KB `origin/main` before importing it.
+CALMaR release. The participant report settings update the selected
+checkout to current KB `origin/main` before importing it.
 
 For notebook work, `calmar/kb_location.py` resolves the KB in this order:
 
@@ -79,14 +79,14 @@ For notebook work, `calmar/kb_location.py` resolves the KB in this order:
 2. a sibling working copy at `<calmar checkout>/../stroke-aphasia-kb`;
 3. the CALMaR submodule at `<calmar checkout>/stroke-aphasia-kb`.
 
-A candidate must contain `scripts/aphasia_kb.py` and `regions/`. Setup
-fetches `origin/main` and fast-forwards a clean main checkout (or moves
-the detached submodule checkout) before loading it. A checkout that
+A candidate must contain `scripts/aphasia_kb.py` and `regions/`. The
+report settings fetch `origin/main` and fast-forward a clean main
+checkout or move the detached submodule before loading it. A checkout that
 already contains current main may also contain local commits or
-uncommitted drafts. Setup refuses to overwrite a stale dirty, divergent
-or stale feature-branch checkout. If GitHub is unreachable, Setup keeps
-the local checkout and prominently reports that latest was not verified,
-so unrelated segmentation and QC development remains usable. It then
+uncommitted drafts. The report settings refuse to overwrite a stale dirty,
+divergent or stale feature-branch checkout. If GitHub is unreachable, they
+keep the local checkout and prominently report that latest was not verified.
+Imaging, QC and atlas results can run independently of the KB. Report setup
 prints the selected absolute path, why it was selected, its full Git
 commit, and whether it has uncommitted changes; for dirty content it also
 records a SHA-256 digest and the changed paths. Participant reports record
@@ -107,9 +107,9 @@ CALMAR_KB_ROOT="$HOME/GITHUB/stroke-aphasia-kb" jupyter lab
 ```
 
 CALMaR imports modules from the selected checkout's `scripts/` folder
-and reads entries from that same root. Restart the kernel and rerun
-Setup after changing `CALMAR_KB_ROOT`. KB commands can still run from
-the CALMaR root, for example:
+and reads entries from that same root. After changing `CALMAR_KB_ROOT`,
+rerun the participant report settings in a kernel with that environment.
+You can run KB commands from the CALMaR root.
 
 ```bash
 python stroke-aphasia-kb/scripts/kb_status.py

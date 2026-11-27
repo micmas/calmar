@@ -4,13 +4,12 @@ import importlib
 import subprocess
 import importlib.metadata
 import json
-import os
 from pathlib import Path
 import sys
 import tempfile
 import unittest
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import ipywidgets as widgets
 from IPython.display import HTML
@@ -160,6 +159,7 @@ class MaskDiscoveryTests(unittest.TestCase):
         class StopExecution(Exception):
             pass
         ns = dict(SUBJECTS=self.entries, INTERP_SUBJECT_IDX=0, INTERP_MASK_SOURCE="linda",
+                  APHASIA_KB_ROOT=self.root,
                   INTERP_MASK_LABELS=cm.MASK_LABELS, widgets=widgets, HTML=HTML,
                   available_mni_sources=lambda e: [s for s, spaces in self.inventory(e).items() if "MNI" in spaces],
                   display=lambda *a: None, clear_output=lambda **kw: None,
@@ -229,13 +229,34 @@ class SetupTests(unittest.TestCase):
 
     def test_full_import_cell(self):
         ns = {}
-        # The import cell updates a development KB by default. Keep this unit
-        # test read-only so it cannot move the repository's pinned submodule
-        # and make later release-identity tests order-dependent.
-        with patch.dict(os.environ, {"CALMAR_KB_UPDATE": "off"}):
+        with patch("calmar.kb_location.resolve_kb_root", side_effect=FileNotFoundError) as resolve:
             exec(cell(8), ns)
+        resolve.assert_not_called()
         self.assertTrue(ns["_CALMAR_SETUP_READY"])
+        self.assertIsNone(ns["APHASIA_KB_ROOT"])
         self.assertTrue(all(name in ns for name in ("sys", "importlib", "widgets", "cm", "q", "cw", "submit_step", "in_slurm", "show_step")))
+
+    def test_report_setup_clears_a_previous_kb_when_rules_fail_and_can_retry(self):
+        root = Path("/test-kb")
+        previous_form = SimpleNamespace(close=Mock())
+        ns = {"PROJECT_DIR": ROOT, "TEST_SUBJECT_IDX": 0, "HTML": HTML,
+              "display": lambda value: None, "APHASIA_KB_ROOT": Path("/previous-kb"),
+              "_report_inputs": previous_form}
+        with patch("calmar.kb_location.resolve_kb_root", return_value=(root, "fixture")), \
+                patch("calmar.kb_location.update_kb_to_latest", return_value="pinned") as update, \
+                patch("calmar.kb_location.kb_selection_text", return_value="fixture"), \
+                patch("calmar.participant_report.rules_html",
+                      side_effect=[ImportError("missing aphasia_rules"), "<p>Rules</p>"]):
+            with self.assertRaisesRegex(RuntimeError, "Imaging, QC and atlas results"):
+                exec(cell(77), ns)
+            previous_form.close.assert_called_once()
+            self.assertIsNone(ns["_report_inputs"])
+            self.assertIsNone(ns["APHASIA_KB_ROOT"])
+            with self.assertRaisesRegex(RuntimeError, "Complete participant report settings"):
+                exec(cell(79), ns)
+            exec(cell(77), ns)
+        update.assert_called_with(root, "fixture")
+        self.assertEqual(ns["APHASIA_KB_ROOT"], root)
 
     def test_decode_stops_after_failed_setup(self):
         with self.assertRaisesRegex(RuntimeError, "Setup imports did not complete"):

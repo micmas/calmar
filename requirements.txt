@@ -47,6 +47,8 @@ pymupdf>=1.23           # for annotate_paper.py (PDF highlight annotations)
 # Notebook validation (used by the workflow)
 nbformat>=5.0
 ipykernel>=6.0
+nbclient==0.11.0        # executes the unattended demo notebook
+nbconvert>=7.17,<8      # saves the unattended demo HTML
 
 # ASTRA scientific records in analyses/ are authored and tested at this schema version.
 astra-spec==0.0.14

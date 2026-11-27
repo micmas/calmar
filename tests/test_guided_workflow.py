@@ -30,12 +30,13 @@ class GuidedWorkflowTests(unittest.TestCase):
                 self.assertEqual(output.getvalue(), 'RUN_TEST = False — continuing into batch processing\n')
 
     def test_guided_defaults_preserve_selected_cohort(self):
-        config = defaults()
-        self.assertEqual(config['MAX_SUBJECTS'], 5)
-        self.assertCountEqual(config['SUBJECT_FILTER'],
-                              ['sub-M2002', 'sub-M2051', 'sub-M2061', 'sub-M2075', 'sub-M2103'])
-        self.assertCountEqual(config['ADDITIONAL_COHORTS'][0]['SUBJECT_FILTER'],
-                              ['sub-strokecase0004', 'sub-strokecase0009'])
+        edited_config = {
+            'MAX_SUBJECTS': 2,
+            'SUBJECT_FILTER': ['sub-fixture-a', 'sub-fixture-b'],
+            'ADDITIONAL_COHORTS': [{'SUBJECT_FILTER': ['sub-fixture-dwi']}],
+        }
+        with patch('calmar.guided.source_cell', return_value={'source': [f'CONFIG = {edited_config!r}']}):
+            self.assertEqual(defaults(), edited_config)
 
     def test_navigation_targets_exist_once_in_each_notebook(self):
         for name in ('calmar-guided.ipynb', 'lesion-interpretation-pipeline.ipynb'):
@@ -114,19 +115,15 @@ class GuidedWorkflowTests(unittest.TestCase):
         self.assertEqual(actual, expected)
 
         excluded = {
-            # Text-only recovery shortcut, superseded by guided report buttons.
-            'ad540b5a-742b-40e6-b645-20152606ff84',
             # Advanced LINDA repair/reset controls remain in the detailed notebook.
             'calmar-step-55', 'calmar-step-56', 'calmar-step-57', 'calmar-step-60',
         }
         referenced = {cell_id for references, _ in actual.values() for cell_id in references}
-        # A live detailed notebook may contain the tiny continuation cell that
-        # the navigation widget inserts after a checkpoint. It is execution
-        # state, not a canonical workflow step for the guided notebook.
+        # Check all saved code cells so temporary recovery commands cannot
+        # become part of the detailed notebook's normal execution.
         canonical_code = {
             cell['id'] for cell in canonical['cells']
             if cell.get('cell_type') == 'code'
-            and not ''.join(cell.get('source', [])).lstrip().startswith('%calmar_continue ')
         }
         excluded &= canonical_code
         self.assertTrue(referenced.isdisjoint(excluded))

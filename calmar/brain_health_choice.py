@@ -129,9 +129,9 @@ def _brain_health_heading(entry, inventory, components, state):
         identity += f" · {entry['session']}"
     component_labels = []
     if "atrophy" in components:
-        component_labels.append("T1 volumetry")
+        component_labels.append("T1 brain volumes")
     if "wmh" in components:
-        component_labels.append("FLAIR WMH")
+        component_labels.append("FLAIR white-matter changes")
     details = [("Saved result", state["status"]),
                ("Measures", " + ".join(component_labels))]
     if inventory.get("t1w"):
@@ -215,16 +215,16 @@ class BrainHealthChoice(w.VBox):
         self.rows = []
         children = [w.HTML(
             "<h3>Optional structural brain health</h3>"
-            "<p>Choose one action per participant. The badges show saved-result status and the measurements "
-            "available from the selected scans. <b>These single-scan measures are not diagnostic; stroke "
-            "lesions can bias them, and visual QC is required.</b></p>"
-            "<details style='margin-bottom:10px'><summary style='cursor:pointer'>About these measurements and "
-            "the available actions</summary>"
-            "<p>T1-derived atrophy-sensitive volumes and same-session FLAIR white-matter-hyperintensity burden "
-            "remain separate from the focal stroke interpretation.</p>"
-            "<p>A single scan cannot diagnose atrophy. Stroke cavities and acute FLAIR lesion signal can bias "
-            "both analyses, so CALMaR reports lesion-adjusted values, preserves the raw burden and requires "
-            "visual QC.</p>" + action_help_html() + "</details>")]
+            "<p>These optional checks describe features of the brain beyond the stroke lesion. "
+            "T1 shows brain tissue and ventricle volumes. Same-session FLAIR shows areas of bright "
+            "signal in white matter.</p>"
+            "<p>Each row shows the available scans and saved results. Choose an action for each participant, "
+            "or skip this step to continue lesion mapping.</p>"
+            "<details style='margin-bottom:10px'><summary style='cursor:pointer'>How to review these results and choose an action</summary>"
+            "<p>Review the saved quality-control overlays. Stroke cavities can affect T1 volumes, and the "
+            "stroke itself can produce bright signal on FLAIR. CALMaR keeps the raw FLAIR measure and "
+            "also reports a measure that excludes the stroke area. Diagnosing atrophy or small-vessel "
+            "disease requires additional clinical evidence.</p>" + action_help_html() + "</details>")]
         for key, (entry, inventory, components) in available_entries(namespace).items():
             subject, session = key
             flair_options = inventory.get("flair_candidates") or []

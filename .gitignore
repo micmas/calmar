@@ -63,6 +63,10 @@ logs/
 !/analyses/workflow-acceptance/preview-request.json
 !/analyses/workflow-acceptance/bcb-request.json
 
+# Unattended-demo runs, staging checkouts, and browser verification artifacts.
+/analyses/unattended-demo/*
+!/analyses/unattended-demo/astra.yaml
+
 # Notebook edit locks
 /.*.edit-lock
 

@@ -157,15 +157,13 @@ class ReportInputs:
                    else self.ns.get("RAW_DATASET_DIR"))
         if dataset is None:
             return normalise_domain_levels(None), {}
-        project = self.ns.get("PROJECT_DIR")
-        kb_root = self.ns.get("APHASIA_KB_ROOT")
-        if kb_root is None:
+        # An explicit None means notebook report setup has not succeeded.
+        if "APHASIA_KB_ROOT" not in self.ns:
             from .kb_location import resolve_kb_root
-            kb_root, reason = resolve_kb_root(project)
-            self.ns["APHASIA_KB_ROOT"] = kb_root
-            self.ns["APHASIA_KB_REASON"] = reason
-        kb_root = Path(kb_root) if kb_root is not None else None
-        if kb_root is None or not kb_root.is_dir():
+            root, reason = resolve_kb_root(self.ns.get("PROJECT_DIR"))
+            self.ns.update(APHASIA_KB_ROOT=root, APHASIA_KB_REASON=reason)
+        kb_root = self.ns.get("APHASIA_KB_ROOT")
+        if kb_root is None or not Path(kb_root).is_dir():
             return normalise_domain_levels(None), {}
         _, rules = _kb_modules(kb_root)
         row = participant_row(dataset, entry["subject"])
@@ -286,6 +284,9 @@ class ReportInputs:
         self.source.value = source
 
     def approve(self):
+        if "APHASIA_KB_ROOT" in self.ns and self.ns["APHASIA_KB_ROOT"] is None:
+            self.message.value = "Complete the participant report settings before generating a report."
+            return False
         if self.source.value not in self.ns["available_mni_sources"](self.entries[self.subject.value]):
             self.refresh()
             self.message.value = "The chosen mask is no longer available. Choose an available mask."
