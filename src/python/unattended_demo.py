@@ -26,6 +26,7 @@ from uuid import uuid4
 
 import nbformat
 from nbclient import NotebookClient
+from nbconvert import HTMLExporter
 
 
 SUBJECTS = ["sub-M2001", "sub-M2004", "sub-strokecase0001", "sub-strokecase0002"]
@@ -285,7 +286,6 @@ async def execute(args, project, destination):
             raise RuntimeError('Independent completion proof is missing or invalid.')
         status['reports'] = evidence['reports']
         status['atlas_pdfs'] = evidence['atlas_pdfs']
-        from nbconvert import HTMLExporter
         html, _ = HTMLExporter().from_notebook_node(nb)
         final_html = attempt / "lesion-interpretation-demo.html"
         atomic_text(final_html, html)

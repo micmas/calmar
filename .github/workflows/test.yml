@@ -34,19 +34,22 @@ jobs:
           python-version: "3.11"
           cache: pip
       - name: Install test dependencies
+        id: dependencies
         run: python -m pip install -r requirements.txt
       - name: Check report compatibility against latest KB main
         run: |
-          python -m pytest -q tests/test_kb_location.py \
-            tests/test_kb_atlas_mapping.py::test_mapping_files_are_consistent \
+          python -m pytest -q tests/test_kb_atlas_mapping.py::test_mapping_files_are_consistent \
+            tests/test_kb_atlas_mapping.py::test_generated_table_is_up_to_date \
             tests/test_kb_atlas_mapping.py::test_report_contract_with_the_current_kb
       - name: Run all checks against the pinned release KB
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: |
           kb_pin="$(git ls-tree HEAD stroke-aphasia-kb | awk '{print $3}')"
           git -C stroke-aphasia-kb fetch --depth=1 origin "${kb_pin}"
           git -C stroke-aphasia-kb checkout --detach "${kb_pin}"
           python -m pytest -q tests
       - name: Check analysis script syntax
+        if: ${{ !cancelled() }}
         run: |
           test -n "$(find src -maxdepth 1 -name 'analysis_*.sh' -print -quit)"
           find src -maxdepth 1 -name 'analysis_*.sh' -print0 | xargs -0 -r -n1 bash -n
