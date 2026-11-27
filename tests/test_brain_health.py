@@ -66,8 +66,8 @@ def test_brain_health_panel_uses_the_shared_optional_action_controls(tmp_path):
     shell = SimpleNamespace(input_transformers_post=[], kernel=SimpleNamespace(_abort_queues=lambda: None))
     panel = BrainHealthChoice(namespace, shell)
     try:
-        assert "Choose one action per participant" in panel.children[0].value
-        assert "single-scan measures are not diagnostic" in panel.children[0].value
+        assert "Choose an action for each participant" in panel.children[0].value
+        assert "requires additional clinical evidence" in panel.children[0].value
         assert panel.rows[0][3].value == "skip"
         heading = panel.rows[0][6].value
         assert "○ Not analysed" in heading
