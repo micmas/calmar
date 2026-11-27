@@ -276,7 +276,7 @@ def test_white_matter_without_findings_still_describes_disconnected_tracts():
     ])
     html = disconnection_section(
         KB, rules, pd.DataFrame(), disconnection, pd.DataFrame(), ReportSettings(), "BCBToolkit")
-    assert "right arcuate fasciculus" in html.lower() and "72% of the tract disconnected" in html
+    assert "right arcuate fasciculus" in html.lower() and "72% of atlas tract voxels above 0.5" in html
     assert "right uncinate fasciculus" not in html.lower()  # below the configured 50% threshold
     assert "Anatomical result only" in html
     assert "absence of a linked finding is not evidence" in html
@@ -307,7 +307,7 @@ def test_white_matter_anatomical_context_tolerates_duplicate_damage_rows():
     ])
     html = disconnection_section(
         KB, rules, pd.DataFrame(), disconnection, damage, ReportSettings(), "BCBToolkit")
-    assert "also directly damaged (40% destroyed)" in html
+    assert "direct lesion overlap 40%" in html
 
 
 def test_white_matter_mixes_evidence_and_anatomical_only_tracts_without_duplicates():
@@ -328,7 +328,29 @@ def test_white_matter_mixes_evidence_and_anatomical_only_tracts_without_duplicat
     anatomical = soup.select("details.tract-anatomy-only")
     assert len(evidence) == 1 and "Left arcuate fasciculus" in evidence[0].get_text(" ", strip=True)
     assert len(anatomical) == 1 and "right arcuate fasciculus" in anatomical[0].get_text(" ", strip=True).lower()
-    assert "Additional disconnected tracts" in html
+    assert "Additional tract estimates" in html
+
+
+def test_disconnectome_comparison_joins_the_same_atlas_unit_and_side():
+    from calmar.report_evidence import disconnection_section
+    disconnection = pd.DataFrame([
+        dict(region="right_arcuate_fasciculus", side="right", measured=True,
+             region_pct=72.0, units_hit=["arcuate"], lesion_pct=0.0),
+    ])
+    units = pd.DataFrame([
+        dict(unit="arcuate", side="right", atlas="XTRACT", measured=True, disconnected_pct=72.0),
+        dict(unit="arcuate", side="left", atlas="XTRACT", measured=True, disconnected_pct=66.0),
+    ])
+    alternative = units.copy()
+    alternative["disconnected_pct"] = [38.0, 59.0]
+    alternative.loc[1, "atlas"] = "JHU"
+    html = disconnection_section(
+        KB, rules, pd.DataFrame(), disconnection, pd.DataFrame(), ReportSettings(), "BCBToolkit",
+        units=units, alternate_units=alternative, alternate_label="DeepDisco")
+    assert "XTRACT, right arcuate" in html
+    assert "Compare the two disconnectome maps" in html
+    assert "<td>72.0%</td><td>38.0%</td><td>34.0</td>" in html
+    assert "59.0%" not in html
 
 
 def test_print_notes_when_additional_regions_are_only_in_interactive_html():

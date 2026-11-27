@@ -849,8 +849,54 @@ def _qualifying_disconnections(disconnection, threshold):
     return rows
 
 
-def _anatomical_tract_blocks(kb, disconnection, evidence_anatomies, damage):
-    """Describe disconnected tracts even when the KB has no symptom finding."""
+def _tract_estimate(row, units):
+    """Describe the atlas unit selected for the KB region's map estimate."""
+    label = f"{row['region_pct']:.0f}% of atlas tract voxels above 0.5"
+    hits = row.get("units_hit")
+    if units is None or not isinstance(hits, (tuple, list)) or not hits:
+        return label
+    matched = units[(units["unit"] == hits[0])
+                    & (units["disconnected_pct"] == row["region_pct"])]
+    if row["side"] != "both":
+        matched = matched[matched["side"] == row["side"]]
+    if matched.empty:
+        return label
+    unit = matched.iloc[0]
+    side = "both sides, tied" if matched["side"].nunique() > 1 else unit["side"]
+    return f"{label} · {unit['atlas']}, {side} {str(unit['unit']).replace('_', ' ')}"
+
+
+def _disconnectome_comparison(primary, alternate, map_label, alternate_label, threshold):
+    if primary is None or alternate is None:
+        return ""
+    keys = ["unit", "side", "atlas"]
+    values = "disconnected_pct"
+    joined = primary.loc[primary["measured"], keys + [values]].merge(
+        alternate.loc[alternate["measured"], keys + [values]], on=keys,
+        suffixes=("_primary", "_alternate"), validate="one_to_one")
+    first, second = f"{values}_primary", f"{values}_alternate"
+    shown = joined[joined[[first, second]].max(axis=1) >= threshold].copy()
+    if shown.empty:
+        return "<p class='method-note'>Both maps were available. No shared atlas unit reached the display threshold in either map.</p>"
+    shown = shown.assign(difference=(shown[first] - shown[second]).abs()).sort_values(
+        "difference", ascending=False, kind="stable")
+    rows = "".join(
+        f"<tr><td>{escape(row.unit.replace('_', ' '))}</td><td>{escape(row.side)}</td>"
+        f"<td>{escape(row.atlas)}</td><td>{getattr(row, first):.1f}%</td>"
+        f"<td>{getattr(row, second):.1f}%</td><td>{row.difference:.1f}</td></tr>"
+        for row in shown.itertuples(index=False))
+    return (
+        "<details class='evidence-path'><summary>Compare the two disconnectome maps</summary>"
+        "<p>For each shared atlas unit, the percentages are the fractions of voxels above 0.5 in each map. "
+        "Rows reach the display threshold in at least one map and are sorted by the absolute difference. "
+        "The two tools can produce different estimates on the same lesion and atlas label.</p>"
+        "<div class='table-scroll'><table><thead><tr><th>Atlas unit</th><th>Side</th><th>Atlas</th>"
+        f"<th>{escape(map_label)}</th><th>{escape(alternate_label)}</th><th>Gap (percentage points)</th>"
+        f"</tr></thead><tbody>{rows}</tbody></table></div></details>")
+
+
+def _anatomical_tract_blocks(kb, disconnection, evidence_anatomies, damage, units=None):
+    """Describe qualifying atlas estimates when the KB has no symptom finding."""
     if disconnection.empty:
         return ""
     direct = (damage.groupby("region")["region_pct"].max()
@@ -870,13 +916,13 @@ def _anatomical_tract_blocks(kb, disconnection, evidence_anatomies, damage):
         if direct is not None:
             destroyed = direct.reindex(group["region"].unique()).dropna()
             if len(destroyed) and destroyed.max() > 0:
-                hit = f" · also directly damaged ({destroyed.max():.0f}% destroyed)"
+                hit = f" · direct lesion overlap {destroyed.max():.0f}%"
         tract_id = _html_id("tract", first["region"])
         blocks.append(
             f"<details class='region-evidence tract-evidence tract-anatomy-only' id='{tract_id}' data-print-open>"
             "<summary>"
             f"<span class='region-title'>{escape(names[0])} <span>({escape(str(first['side']))})</span></span>"
-            f"<span class='region-facts'>{first['region_pct']:.0f}% of the tract disconnected{escape(hit)}</span>"
+            f"<span class='region-facts'>{escape(_tract_estimate(first, units) + hit)}</span>"
             "<span class='tract-direction'><span><strong>Anatomical result only</strong></span></span>"
             "<span class='region-notes'><span class='secondary'>No linked symptom-level finding</span></span>"
             "<span class='region-action'><span class='when-closed'>Show context</span>"
@@ -890,8 +936,9 @@ def _anatomical_tract_blocks(kb, disconnection, evidence_anatomies, damage):
 
 
 def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_label, phase=None,
-                          *, map_name=None, mask_label=None, lesion_rows=None):
-    """HTML: tracts disconnected by the lesion (from a disconnectome map), with their findings.
+                          *, map_name=None, mask_label=None, lesion_rows=None,
+                          units=None, alternate_units=None, alternate_label=None):
+    """Render atlas-voxel estimates from a disconnectome with their linked findings.
 
     ``rows``: ``KnowledgeBase.location_findings`` on ``disconnection``
     (``atlas_mapping.region_disconnection``); ``damage``: direct damage, to
@@ -908,10 +955,12 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
     intro = ("<p class='section-intro'>This section shows white-matter tracts that may be interrupted beyond the "
              "visible lesion. Open a tract to inspect its anatomical context and any group-level findings linked "
              "to it.</p>"
-             f"<p class='method-note'>The {escape(map_label)} map gives, for every "
-             "voxel, the probability that its fibres pass through the lesion. A tract counts as disconnected when "
-             f"&ge;{settings.min_disconnected_pct:g}% of its voxels have a probability above 0.5. This catches tracts "
-             "cut by the lesion away from where it lies, which direct overlap misses. Relationship counts summarise "
+             f"<p class='method-note'>The {escape(map_label)} map estimates possible disconnection from the lesion "
+             "and reference connectivity. A tract label appears in this summary when "
+             f"&ge;{settings.min_disconnected_pct:g}% of its atlas voxels have a map value above 0.5. "
+             "The calculation describes atlas voxel coverage under the model. "
+             "For a region linked to several atlas labels or both sides, the report uses the highest measured "
+             "label-side value. Relationship counts summarise "
              "the stored group findings for each tract: association means a group-level study reported a relationship; "
              "inverse association means the stored relationship runs in the opposite direction; null means the study "
              "did not find the association; mixed means results were inconsistent; and other / unclassified means no "
@@ -926,22 +975,23 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
              "the curated <code>stroke-aphasia-kb/atlas_mapping/</code>; each finding retains its citation and review details.</li>"
              "</ol><p>The participant map calculation and the literature claims are separate provenance layers. "
              "Group associations do not predict this participant&rsquo;s outcome.</p></div></details>")
+    intro += _disconnectome_comparison(units, alternate_units, map_label, alternate_label, settings.min_disconnected_pct)
     rows = _symptom_findings(rows, rules)
     evidence_anatomies = (set() if rows is None or rows.empty
                           else set(rows["region"].map(_anatomy_key)))
-    anatomy_only = _anatomical_tract_blocks(kb, qualifying, evidence_anatomies, damage)
+    anatomy_only = _anatomical_tract_blocks(kb, qualifying, evidence_anatomies, damage, units)
     if rows is None or rows.empty:
         if matched_before_filter:
             message = ("Disconnectome-matched tracts were found, but their knowledge-base records contain no "
-                       "symptom-level targets eligible for this report. Their anatomical disconnection is still "
+                       "symptom-level targets eligible for this report. Their atlas-voxel estimates are "
                        "listed below.")
         elif not disconnection_available:
             message = "No tract-disconnection measurements were available for this map."
         elif qualifying.empty:
             message = "No mapped tract reached the disconnection threshold."
         else:
-            message = ("No symptom-level knowledge-base findings matched these tracts. Their map-derived "
-                       "disconnection is still listed below as anatomical context.")
+            message = ("No symptom-level knowledge-base findings matched these tracts. Their atlas-voxel "
+                       "estimates are listed below as anatomical context.")
         return intro + f"<p class='method-note'><em>{message}</em></p>" + anatomy_only
     lesion_rows = _symptom_findings(lesion_rows, rules)
     if lesion_rows is not None and not lesion_rows.empty:
@@ -959,12 +1009,14 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
         g = rows[rows["anatomy"] == key]
         shown = _distinct_findings(g, "predicts")
         count_items = _count_items(_direction_counts(shown))
-        first = g.iloc[0]
+        first = g.loc[g["region_pct"].idxmax()]
+        measured = qualifying.loc[qualifying["region"] == first["region"]] if not qualifying.empty else qualifying
+        estimate = _tract_estimate(measured.iloc[0] if not measured.empty else first, units)
         hit = ""
         if direct is not None:
             destroyed = direct.reindex(g["region"].unique()).dropna()
             if len(destroyed) and destroyed.max() > 0:
-                hit = f" · also directly damaged ({destroyed.max():.0f}% destroyed)"
+                hit = f" · direct lesion overlap {destroyed.max():.0f}%"
         studies = g["citation"].dropna().nunique()
         thin = (f"<span class='thin-evidence'>Limited citation base: {studies} citation "
                 f"key{'s' if studies != 1 else ''}</span>") if studies <= THIN_STUDIES else ""
@@ -1002,7 +1054,7 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
         blocks.append(
             f"<details class='region-evidence tract-evidence' id='{tract_id}' data-print-open><summary>"
             f"<span class='region-title'>{escape(names[key][0])} <span>({escape(first['side'])})</span></span>"
-            f"<span class='region-facts'>{first['region_pct']:.0f}% of the tract disconnected{escape(hit)} · "
+            f"<span class='region-facts'>{escape(estimate + hit)} · "
             f"{len(shown)} distinct finding{'s' if len(shown) != 1 else ''}</span>"
             f"<span class='tract-direction'>{count_items}</span>"
             f"<span class='region-notes'>{thin}</span>"
@@ -1011,7 +1063,7 @@ def disconnection_section(kb, rules, rows, disconnection, damage, settings, map_
             "<span class='when-open'>Hide findings</span></span></summary>"
             f"<div class='region-body'>{also}{shared_detail}"
             f"{_claims(kb, g, target_column='predicts', context=context, phase=phase)}</div></details>")
-    anatomical_note = ("<p class='method-note'><strong>Additional disconnected tracts:</strong> the entries below "
+    anatomical_note = ("<p class='method-note'><strong>Additional tract estimates:</strong> the entries below "
                        "cross the same map threshold but have no eligible symptom-level finding in the current "
                        "knowledge base.</p>" + anatomy_only) if anatomy_only else ""
     return intro + phase_summary(rows, phase) + "".join(blocks) + anatomical_note

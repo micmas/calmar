@@ -221,9 +221,22 @@ def direct_diffusion_dir(dataset, config, entry):
 def tractometry_paths(dataset, config, entry):
     selected = entry.get("dmri_analysis") or entry
     stem = "_".join(filter(None, [selected["subject"], selected.get("session")]))
-    folder = direct_diffusion_dir(dataset, config, entry) / "metrics"
+    metrics = "metrics"
+    if config.get("DMRI_BUNDLE_QC"):
+        metrics = f"metrics-bundle-qc-{config.get('DMRI_PROFILE_NODES', 21)}"
+    folder = direct_diffusion_dir(dataset, config, entry) / metrics
     table = folder / f"{stem}_desc-direct_tractometry.tsv"
     return table, table.with_suffix(".json")
+
+
+def saved_tractometry_paths(dataset, config, entry):
+    """Resolve the current analysis or the legacy summaries while QC is pending."""
+    table, metadata = tractometry_paths(dataset, config, entry)
+    if config.get("DMRI_BUNDLE_QC") and not table.is_file():
+        prior, prior_metadata = tractometry_paths(dataset, {**config, "DMRI_BUNDLE_QC": False}, entry)
+        if prior.is_file():
+            return prior, prior_metadata, True
+    return table, metadata, False
 
 
 def tensor_metrics_paths(dataset, config, entry):
@@ -315,7 +328,7 @@ def direct_diffusion_section(dataset, config, entry):
         "method", config.get("DMRI_METHOD", "qsirecon"))}
     if dmri_method(selected_config) == "dipy_dti":
         return _tensor_diffusion_section(dataset, selected_config, entry)
-    table_path, metadata_path = tractometry_paths(dataset, selected_config, entry)
+    table_path, metadata_path, legacy = saved_tractometry_paths(dataset, selected_config, entry)
     if not table_path.is_file():
         return ("<p class='section-intro'>Directional diffusion MRI was selected for this participant, but no "
                 "validated tractometry table is available yet. The normative BCB/DeepDisco section remains "
@@ -332,15 +345,18 @@ def direct_diffusion_section(dataset, config, entry):
     for _, row in table.iterrows():
         def measured(value, pattern):
             return pattern.format(value) if pd.notna(value) else "not calculated"
+        summary = row["summary_statistic"]
         rows.append(
             "<tr>" +
             f"<td>{escape(str(row['tract']))}</td><td>{escape(str(row['hemisphere']))}</td>" +
             f"<td>{measured(row['lesion_overlap_pct'], '{:.1f}%')}</td>" +
-            f"<td>{escape(str(row['summary_statistic']).title())}</td>" +
+            f"<td>{escape(summary.title()) if pd.notna(summary) else 'n/a'}</td>" +
             f"<td>{measured(row['fa'], '{:.3f}')}</td>" +
             f"<td>{measured(row['md_mm2_s'], '{:.6g}')}</td>" +
             f"<td>{measured(row['valid_voxel_pct'], '{:.1f}%')}</td></tr>")
     warnings = list(metadata.get("warnings") or [])
+    if legacy:
+        warnings.insert(0, "showing saved bundle summaries; the requested lesion QC and profiles are pending")
     qc = metadata.get("qc_status")
     if qc and qc != "passed":
         warnings.insert(0, f"diffusion QC status: {str(qc).replace('_', ' ')}; values are provisional")
@@ -360,6 +376,15 @@ def direct_diffusion_section(dataset, config, entry):
     if metadata.get("anatomical_session"):
         acquisition.append(f"lesion/anatomy session {metadata['anatomical_session']}")
     acquisition_text = escape(" · ".join(acquisition))
+    qc_metadata = metadata.get("bundle_qc")
+    bundle_qc = _bundle_qc_section(table_path.parent, qc_metadata)
+    table_html = (
+        "<div class='table-wrap'><table><thead><tr><th>Tract</th><th>Side</th><th>Bundle lesion overlap</th>"
+        "<th>Summary</th><th>FA</th><th>MD (mm²/s)</th><th>Valid tract voxels</th></tr></thead><tbody>"
+        + "".join(rows) + "</tbody></table></div>")
+    if qc_metadata and qc_metadata.get("status") == "computed":
+        table_html = ("<details class='evidence-path'><summary>All QSIRecon bundle summaries</summary>"
+                      + table_html + "</details>")
     return (
         "<p class='section-intro'>These are measurements from this participant&rsquo;s own directional diffusion "
         "acquisition. They complement, but do not validate or numerically combine with, the BCB/DeepDisco "
@@ -369,9 +394,45 @@ def direct_diffusion_section(dataset, config, entry):
         "and tracking failure can all change these values or prevent reconstruction. A low streamline count or "
         "missing tract must therefore not be read as proof of anatomical disconnection."
         + (f" Acquisition: {acquisition_text}." if acquisition_text else "") + "</p>" + warning_html +
-        "<div class='table-wrap'><table><thead><tr><th>Tract</th><th>Side</th><th>Lesion overlap</th>"
-        "<th>Summary</th><th>FA</th><th>MD (mm²/s)</th><th>Valid tract voxels</th></tr></thead><tbody>" +
-        "".join(rows) + "</tbody></table></div>")
+        bundle_qc + table_html)
+
+
+def _bundle_qc_section(folder, metadata):
+    if not metadata:
+        return ""
+    if metadata.get("status") == "unavailable":
+        return ("<p class='method-note'><strong>Bundle lesion QC and profiles unavailable.</strong> "
+                f"{escape(metadata['reason'])}</p>")
+    from .report_ui import file_link
+
+    statuses = []
+    for item in metadata["bundles"]:
+        voxels = item.get("occupied_voxels")
+        overlap = f"{100 * item['overlap_voxels'] / voxels:.1f}%" if voxels else "—"
+        coverage = f"{100 * item['valid_voxels'] / voxels:.1f}%" if voxels else "—"
+        name = escape(f"{item['hemisphere']} {item['bundle'].lower()}")
+        statuses.append(f"<tr><td>{name}</td><td>{escape(item['status'])}</td>"
+                        f"<td>{overlap}</td><td>{coverage}</td></tr>")
+    links = []
+    for key, label in (("qc_png", "Bundle and lesion overlay"), ("profile_png", "FA and MD profiles"),
+                       ("profile_tsv", "Profile data and voxel counts")):
+        filename = metadata.get(key)
+        if filename and Path(filename).name == filename and (folder / filename).is_file():
+            links.append(file_link(folder / filename, label))
+    return (
+        "<h3>Bundle reconstruction checks and FA/MD profiles</h3>"
+        "<p>Overlap and coverage are calculated for six language-related bundles. Lesion overlap is the share of sampled bundle voxels inside "
+        "the registered lesion. Valid coverage is the share inside the diffusion brain mask with usable "
+        "FA and MD. Tracking can stop near a lesion, so a bundle can have little or zero overlap even "
+        "when its reconstruction is incomplete.</p>"
+        "<div class='table-wrap'><table><thead><tr><th>Bundle</th><th>Reconstruction</th><th>Lesion overlap</th>"
+        "<th>Valid FA/MD coverage</th></tr></thead><tbody>" + "".join(statuses) + "</tbody></table></div>"
+        f"<p>The profiles give median FA and MD over unique valid voxels at each of {metadata['profile_nodes']} "
+        "normalized positions. The frontal aslant tract starts at the upper end. The arcuate and inferior "
+        "fronto-occipital fasciculi start at the more posterior end. Positions are relative to each streamline's length, "
+        "so matching percentages can refer to different anatomical locations.</p><p>"
+        "Use the voxel counts to judge how much data supports each point.</p>"
+        + (f"<p>{' · '.join(links)}</p>" if links else ""))
 
 
 def _tensor_diffusion_section(dataset, config, entry):

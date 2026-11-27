@@ -195,6 +195,9 @@ def package(project, completion, destination, *, preview=None, run_job=None, rea
     if destination.exists():
         raise FileExistsError(f'Preserve the previous bundle; choose a fresh path: {destination}')
     staging = Path(tempfile.mkdtemp(prefix=destination.name + '.attempt.', dir=destination.parent))
+    license_file = project / 'LICENSE'
+    if license_file.is_file():
+        shutil.copy2(license_file, staging / 'LICENSE.txt')
     assets = Assets(project, staging)
     downloads = []
     for path in record['reports'] + record['atlas_pdfs']:

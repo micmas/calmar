@@ -1128,6 +1128,11 @@ def normalize_metrics(request, output):
         "DMRI_OVERWRITE", request["config"].get("OVERWRITE", False)))
     assessment = entry.get("dmri_assessment") or {}
     hmc_method, recon_spec = _derivative_methods(request, entry)
+    bundle_qc = bool(request["config"].get("DMRI_BUNDLE_QC"))
+    if bundle_qc:
+        from .bundle_qc import BundleQCUnavailable, SUPPORTED_RECON, measure_bundles, profile_nodes
+
+        nodes = profile_nodes(request["config"])
     versions = _derivative_versions(request, entry)
     metadata = {
         "subject": entry["subject"], "session": entry.get("session"),
@@ -1143,7 +1148,7 @@ def normalize_metrics(request, output):
             *(assessment.get("warnings") or []),
             *(["diffusion and anatomical lesion mask come from different sessions"]
               if entry.get("anatomical_session") != entry.get("session") else []),
-            "lesion-to-bundle overlap and valid-voxel coverage are not yet calculated",
+            *([] if bundle_qc else ["lesion-to-bundle overlap and valid-voxel coverage were not requested"]),
             "patient-specific bundle absence is not evidence of anatomical disconnection",
         ])),
         "source_tractometry_tables": [str(path) for path in sources],
@@ -1155,6 +1160,23 @@ def normalize_metrics(request, output):
         temporary_metrics.mkdir()
         temporary_table = temporary_metrics / table_path.name
         temporary_metadata = temporary_metrics / metadata_path.name
+        if bundle_qc:
+            try:
+                if recon_spec not in SUPPORTED_RECON:
+                    raise BundleQCUnavailable(f"Bundle lesion QC requires AutoTrack. This run used {recon_spec}.")
+                # An unavailable supplement must leave the validated QSIRecon
+                # summary untouched and must never publish half-written QC.
+                supplemental = folder / "bundle-qc"
+                supplemental.mkdir()
+                enriched = table.copy()
+                metadata["bundle_qc"] = measure_bundles(
+                    _final_dir(request, entry, "qsiprep"), recon, enriched, supplemental, nodes)
+            except BundleQCUnavailable as exc:
+                metadata["bundle_qc"] = {"status": "unavailable", "reason": str(exc)}
+            else:
+                for artifact in supplemental.iterdir():
+                    artifact.rename(temporary_metrics / artifact.name)
+                table = enriched
         table.to_csv(temporary_table, sep="\t", index=False, na_rep="n/a")
         # Validate the serialized artifact, not only the in-memory frame, before
         # a scheduler receipt can call it complete.
@@ -1162,9 +1184,26 @@ def normalize_metrics(request, output):
         temporary_metadata.write_text(json.dumps(metadata, indent=2, default=str) + "\n")
         _publish(temporary_metrics, metrics_dir, "dmri_metrics", os.environ.get("CALMAR_PYTHON", "python"),
                  os.environ["CALMAR_EXECUTION_SCRIPT"], overwrite)
-    qc = {"png": None, "metrics": {"tracts": len(table), "source_tables": len(sources)},
-          "flags": metadata["warnings"], "complete": True}
-    _publish_result(output, "dmri_metrics", request, entry, metrics_dir, started, qc)
+    bundle_metadata = metadata.get("bundle_qc", {})
+    png = bundle_metadata.get("qc_png")
+    geometry = bundle_metadata.get("sources", {})
+    qc_inputs = [str(path) for path in sources]
+    if geometry:
+        qc_inputs.extend(geometry[key] for key in (
+            "native_lesion", "native_t1", "diffusion_reference", "diffusion_brain_mask",
+            "fa_map", "md_map", "md_sidecar"))
+        qc_inputs.extend(geometry["lesion_transform_chain"])
+        qc_inputs.extend(bundle["source"] for bundle in bundle_metadata["bundles"] if "source" in bundle)
+    tracked = [table_path, metadata_path]
+    tracked.extend(metrics_dir / bundle_metadata[key]
+                   for key in ("qc_png", "profile_png", "profile_tsv", "aligned_lesion")
+                   if bundle_metadata.get(key))
+    qc = {"png": str(metrics_dir / png) if png else None,
+          "metrics": {"tracts": len(table), "source_tables": len(sources)},
+          "flags": metadata["warnings"], "input_files": qc_inputs, "complete": True}
+    if bundle_metadata.get("reason"):
+        qc["flags"] = [*qc["flags"], bundle_metadata["reason"]]
+    _publish_result(output, "dmri_metrics", request, entry, metrics_dir, started, qc, tracked_files=tracked)
 
 
 def main():
@@ -1182,6 +1221,10 @@ def main():
         request["config"]["DMRI_RECON_SPEC"] = os.environ["CALMAR_DMRI_RECON_SPEC"]
     if os.environ.get("CALMAR_DMRI_METHOD"):
         request["config"]["DMRI_METHOD"] = os.environ["CALMAR_DMRI_METHOD"]
+    if os.environ.get("CALMAR_DMRI_BUNDLE_QC"):
+        request["config"]["DMRI_BUNDLE_QC"] = os.environ["CALMAR_DMRI_BUNDLE_QC"] == "on"
+    if os.environ.get("CALMAR_DMRI_PROFILE_NODES"):
+        request["config"]["DMRI_PROFILE_NODES"] = int(os.environ["CALMAR_DMRI_PROFILE_NODES"].removeprefix("nodes_"))
     if args.output.exists():
         raise FileExistsError(args.output)
     if args.stage == "dmri_recon_recover":

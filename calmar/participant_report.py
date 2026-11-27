@@ -1090,11 +1090,20 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
                                          min_confidence=("high" if settings.high_conf_only else None))
     # Tracts disconnected by the lesion, from its BCBToolkit or DeepDisco map.
     map_path = disconnectome_map(study, entry, source, settings.disconnectome)
-    disconnection, disconnection_rows, map_label = None, None, None
+    disconnection = disconnection_rows = map_label = units = alternate_units = alternate_label = None
     atlases = tract_atlases(namespace.get("ALL_ATLASES"))
     if map_path is not None and atlases:
         import atlas_mapping
-        disconnection = atlas_mapping.region_disconnection(atlas_mapping.tract_disconnection(map_path, atlases))
+        units = atlas_mapping.tract_disconnection(map_path, atlases)
+        disconnection = atlas_mapping.region_disconnection(units)
+        alternate = "deepdisco" if settings.disconnectome == "bcb" else "bcb"
+        alternate_path = disconnectome_map(study, entry, source, alternate)
+        if alternate_path is not None:
+            try:
+                alternate_units = atlas_mapping.tract_disconnection(alternate_path, atlases)
+                alternate_label = MAP_LABELS[alternate]
+            except (OSError, ValueError) as error:
+                note(f"Disconnectome comparison unavailable: {error}")
         disconnection_rows = kb.location_findings(
             disconnection, min_overlap=101.0, min_region=settings.min_disconnected_pct,
             min_confidence=("high" if settings.high_conf_only else None))
@@ -1210,7 +1219,8 @@ def generate_participant_report(entry, source, settings, *, study, namespace, re
     white_matter = disconnection_section(
         kb, rules, disconnection_rows, disconnection, damage, settings, map_label, phase=stage_id,
         map_name=map_path.name if map_path is not None else None, mask_label=label,
-        lesion_rows=location_rows)
+        lesion_rows=location_rows, units=units, alternate_units=alternate_units,
+        alternate_label=alternate_label)
     from .diffusion import direct_diffusion_section
     direct_diffusion = direct_diffusion_section(dataset_dir, entry_config, entry)
     from .brain_health import brain_health_measure_note, brain_health_measure_records

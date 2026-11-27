@@ -1,12 +1,12 @@
 {
   "notebook": "demo/lesion-interpretation-demo.ipynb",
   "notebook_commit": "",
-  "built": "2026-11-16T05:02:50.635969+00:00",
-  "cells": 111,
-  "outputs": 1497,
+  "built": "2026-11-27T01:41:23.499943+00:00",
+  "cells": 110,
+  "outputs": 199,
   "widgets": 29,
   "panels_without_state": 0,
-  "figures": 40,
+  "figures": 42,
   "datasets": [
     "ISLES 2022",
     "ds004884"
@@ -14,6 +14,6 @@
   "architecture": "notebook-first",
   "inline_viewers": 21,
   "figure_count_basis": "Inline image occurrences, including embedded HTML and saved report figures",
-  "controller_job": "34",
+  "controller_job": "36",
   "human_qc": "skipped"
 }

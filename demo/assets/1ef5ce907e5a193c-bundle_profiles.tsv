@@ -1,0 +1,127 @@
+bundle	hemisphere	node	distance_pct	sampled_voxels	valid_voxels	lesion_voxels	fa_median	md_median_mm2_s
+Arcuate fasciculus	Left	1	0.0	784	746	0	0.06989159	0.0012888457
+Arcuate fasciculus	Left	2	5.0	597	597	0	0.1496038	0.0008379562
+Arcuate fasciculus	Left	3	10.0	492	492	0	0.23224999	0.0008084899
+Arcuate fasciculus	Left	4	15.0	433	433	0	0.31597814	0.00079830847
+Arcuate fasciculus	Left	5	20.0	341	341	0	0.3315431	0.00080148433
+Arcuate fasciculus	Left	6	25.0	267	267	0	0.35445082	0.00079049147
+Arcuate fasciculus	Left	7	30.0	199	199	1	0.354561	0.0007946362
+Arcuate fasciculus	Left	8	35.0	146	146	8	0.36573818	0.0008418611
+Arcuate fasciculus	Left	9	40.0	113	113	23	0.33535066	0.0009087442
+Arcuate fasciculus	Left	10	45.0	95	95	39	0.21071056	0.0010365129
+Arcuate fasciculus	Left	11	50.0	83	83	54	0.1504091	0.0013419777
+Arcuate fasciculus	Left	12	55.0	87	87	69	0.12998104	0.0014708205
+Arcuate fasciculus	Left	13	60.0	72	72	69	0.12656075	0.0017417916
+Arcuate fasciculus	Left	14	65.0	66	66	66	0.12785563	0.0018626392
+Arcuate fasciculus	Left	15	70.0	64	64	64	0.15036097	0.0018222146
+Arcuate fasciculus	Left	16	75.0	69	69	68	0.17585032	0.0015193222
+Arcuate fasciculus	Left	17	80.0	78	78	65	0.19833726	0.0013902378
+Arcuate fasciculus	Left	18	85.0	74	74	39	0.21889213	0.0012377963
+Arcuate fasciculus	Left	19	90.0	77	77	31	0.21135238	0.0011025463
+Arcuate fasciculus	Left	20	95.0	69	69	50	0.13910392	0.0019335285
+Arcuate fasciculus	Left	21	100.0	63	56	31	0.103348985	0.0028310951
+Arcuate fasciculus	Right	1	0.0	792	792	0	0.10710397	0.0010646877
+Arcuate fasciculus	Right	2	5.0	594	594	0	0.2139588	0.0008234403
+Arcuate fasciculus	Right	3	10.0	513	513	0	0.2890516	0.0008203199
+Arcuate fasciculus	Right	4	15.0	489	489	0	0.33924025	0.00080616714
+Arcuate fasciculus	Right	5	20.0	432	432	0	0.3637005	0.0008231959
+Arcuate fasciculus	Right	6	25.0	386	386	0	0.38119274	0.00082244957
+Arcuate fasciculus	Right	7	30.0	348	348	0	0.40303564	0.00081572036
+Arcuate fasciculus	Right	8	35.0	341	341	0	0.41247287	0.000810781
+Arcuate fasciculus	Right	9	40.0	341	341	0	0.4268551	0.000786662
+Arcuate fasciculus	Right	10	45.0	340	340	0	0.4375756	0.0007692258
+Arcuate fasciculus	Right	11	50.0	371	371	0	0.42807257	0.0007552693
+Arcuate fasciculus	Right	12	55.0	400	400	0	0.4082378	0.0007503516
+Arcuate fasciculus	Right	13	60.0	439	439	0	0.38823086	0.0007507586
+Arcuate fasciculus	Right	14	65.0	515	515	0	0.3675561	0.00076815754
+Arcuate fasciculus	Right	15	70.0	629	629	0	0.3407411	0.0007938969
+Arcuate fasciculus	Right	16	75.0	743	743	0	0.3247179	0.0008230891
+Arcuate fasciculus	Right	17	80.0	851	851	0	0.31175452	0.00084061245
+Arcuate fasciculus	Right	18	85.0	948	948	0	0.3005131	0.0008545418
+Arcuate fasciculus	Right	19	90.0	1042	1042	0	0.26617175	0.0008585586
+Arcuate fasciculus	Right	20	95.0	1132	1132	0	0.20331845	0.00088240445
+Arcuate fasciculus	Right	21	100.0	1350	1349	0	0.11242965	0.0012354458
+Frontal aslant tract	Left	1	0.0	588	588	261	0.12773916	0.0015310944
+Frontal aslant tract	Left	2	5.0	518	518	235	0.17714131	0.0013230692
+Frontal aslant tract	Left	3	10.0	486	486	239	0.20053667	0.0012776002
+Frontal aslant tract	Left	4	15.0	460	460	246	0.21450222	0.0012878508
+Frontal aslant tract	Left	5	20.0	444	444	253	0.24230966	0.0012773499
+Frontal aslant tract	Left	6	25.0	424	424	233	0.2685507	0.0012491734
+Frontal aslant tract	Left	7	30.0	419	419	202	0.2866263	0.0012044995
+Frontal aslant tract	Left	8	35.0	395	395	176	0.29479465	0.0011800545
+Frontal aslant tract	Left	9	40.0	382	382	147	0.29542488	0.0011372955
+Frontal aslant tract	Left	10	45.0	364	364	126	0.2819789	0.0011222458
+Frontal aslant tract	Left	11	50.0	349	349	112	0.26888233	0.0011027328
+Frontal aslant tract	Left	12	55.0	338	338	101	0.2670241	0.0010684571
+Frontal aslant tract	Left	13	60.0	324	324	94	0.27480602	0.0010648246
+Frontal aslant tract	Left	14	65.0	323	323	84	0.2777896	0.0010534552
+Frontal aslant tract	Left	15	70.0	322	322	65	0.29491138	0.0010261564
+Frontal aslant tract	Left	16	75.0	352	352	41	0.28508183	0.0010003136
+Frontal aslant tract	Left	17	80.0	377	377	25	0.2664653	0.0009927204
+Frontal aslant tract	Left	18	85.0	410	410	28	0.24301192	0.0009991914
+Frontal aslant tract	Left	19	90.0	443	443	52	0.19081926	0.001100394
+Frontal aslant tract	Left	20	95.0	477	477	72	0.13159788	0.0018744471
+Frontal aslant tract	Left	21	100.0	546	480	69	0.10477902	0.002159701
+Frontal aslant tract	Right	1	0.0	985	978	0	0.15136963	0.000999785
+Frontal aslant tract	Right	2	5.0	942	942	0	0.24535027	0.00081025844
+Frontal aslant tract	Right	3	10.0	868	868	0	0.2857682	0.0008278119
+Frontal aslant tract	Right	4	15.0	846	846	0	0.33133584	0.0008283789
+Frontal aslant tract	Right	5	20.0	843	843	0	0.35548568	0.0008233493
+Frontal aslant tract	Right	6	25.0	765	765	0	0.3567929	0.00082435895
+Frontal aslant tract	Right	7	30.0	726	726	0	0.3674185	0.0008172043
+Frontal aslant tract	Right	8	35.0	667	667	0	0.36653346	0.0008146744
+Frontal aslant tract	Right	9	40.0	629	629	0	0.35515127	0.0008172864
+Frontal aslant tract	Right	10	45.0	611	611	0	0.34520704	0.0008083305
+Frontal aslant tract	Right	11	50.0	577	577	0	0.3410711	0.0007966575
+Frontal aslant tract	Right	12	55.0	599	599	0	0.34482425	0.0007892167
+Frontal aslant tract	Right	13	60.0	588	588	0	0.34003228	0.00079552305
+Frontal aslant tract	Right	14	65.0	600	600	0	0.33333403	0.0008050435
+Frontal aslant tract	Right	15	70.0	627	627	0	0.32587537	0.0008323861
+Frontal aslant tract	Right	16	75.0	662	662	0	0.3354264	0.00084426603
+Frontal aslant tract	Right	17	80.0	686	686	0	0.33870876	0.00084692676
+Frontal aslant tract	Right	18	85.0	730	730	0	0.3207867	0.0008408858
+Frontal aslant tract	Right	19	90.0	732	732	0	0.27647802	0.0008419503
+Frontal aslant tract	Right	20	95.0	772	772	0	0.20974152	0.00087775954
+Frontal aslant tract	Right	21	100.0	847	847	0	0.11670102	0.0012959156
+Inferior fronto-occipital fasciculus	Left	1	0.0	514	496	0	0.13273619	0.0010539042
+Inferior fronto-occipital fasciculus	Left	2	5.0	390	390	0	0.29671326	0.0008447069
+Inferior fronto-occipital fasciculus	Left	3	10.0	366	366	0	0.34549376	0.0008599431
+Inferior fronto-occipital fasciculus	Left	4	15.0	411	411	0	0.37135774	0.0008722437
+Inferior fronto-occipital fasciculus	Left	5	20.0	425	425	0	0.41904995	0.00085146923
+Inferior fronto-occipital fasciculus	Left	6	25.0	420	420	0	0.43171528	0.0008392719
+Inferior fronto-occipital fasciculus	Left	7	30.0	434	434	0	0.4384842	0.0008382994
+Inferior fronto-occipital fasciculus	Left	8	35.0	443	443	0	0.4414471	0.00083321764
+Inferior fronto-occipital fasciculus	Left	9	40.0	435	435	0	0.43220413	0.0008250802
+Inferior fronto-occipital fasciculus	Left	10	45.0	417	417	0	0.4289723	0.00083251164
+Inferior fronto-occipital fasciculus	Left	11	50.0	396	396	0	0.4156403	0.0008330083
+Inferior fronto-occipital fasciculus	Left	12	55.0	386	386	0	0.40341586	0.0008464403
+Inferior fronto-occipital fasciculus	Left	13	60.0	377	377	0	0.39491624	0.0008454569
+Inferior fronto-occipital fasciculus	Left	14	65.0	367	367	0	0.37678185	0.0008702103
+Inferior fronto-occipital fasciculus	Left	15	70.0	354	354	0	0.33751172	0.0008855775
+Inferior fronto-occipital fasciculus	Left	16	75.0	354	354	0	0.3278548	0.00090607145
+Inferior fronto-occipital fasciculus	Left	17	80.0	383	383	0	0.3033295	0.000945281
+Inferior fronto-occipital fasciculus	Left	18	85.0	437	437	0	0.3061168	0.0009469528
+Inferior fronto-occipital fasciculus	Left	19	90.0	485	485	0	0.29073238	0.0009240515
+Inferior fronto-occipital fasciculus	Left	20	95.0	558	558	0	0.2361198	0.00090860715
+Inferior fronto-occipital fasciculus	Left	21	100.0	750	750	0	0.120246	0.0011138283
+Inferior fronto-occipital fasciculus	Right	1	0.0	637	598	0	0.09547716	0.0010833107
+Inferior fronto-occipital fasciculus	Right	2	5.0	434	434	0	0.22280309	0.0008564764
+Inferior fronto-occipital fasciculus	Right	3	10.0	369	369	0	0.2778526	0.0009266989
+Inferior fronto-occipital fasciculus	Right	4	15.0	394	394	0	0.30819276	0.00097306777
+Inferior fronto-occipital fasciculus	Right	5	20.0	410	410	0	0.3358143	0.0010140596
+Inferior fronto-occipital fasciculus	Right	6	25.0	427	427	0	0.3826188	0.0010342867
+Inferior fronto-occipital fasciculus	Right	7	30.0	424	424	0	0.3972997	0.0010025983
+Inferior fronto-occipital fasciculus	Right	8	35.0	431	431	0	0.4358591	0.0009405478
+Inferior fronto-occipital fasciculus	Right	9	40.0	414	414	0	0.4493919	0.0008665091
+Inferior fronto-occipital fasciculus	Right	10	45.0	394	394	0	0.4493919	0.00084677606
+Inferior fronto-occipital fasciculus	Right	11	50.0	372	372	0	0.42692894	0.00084677606
+Inferior fronto-occipital fasciculus	Right	12	55.0	331	331	0	0.4052506	0.0008592609
+Inferior fronto-occipital fasciculus	Right	13	60.0	309	309	0	0.3822859	0.00087054586
+Inferior fronto-occipital fasciculus	Right	14	65.0	306	306	0	0.35240358	0.0008787783
+Inferior fronto-occipital fasciculus	Right	15	70.0	349	349	0	0.34991625	0.0008677665
+Inferior fronto-occipital fasciculus	Right	16	75.0	415	415	0	0.33591434	0.0008750734
+Inferior fronto-occipital fasciculus	Right	17	80.0	520	520	0	0.31803852	0.00087508245
+Inferior fronto-occipital fasciculus	Right	18	85.0	727	727	0	0.29814067	0.00087496586
+Inferior fronto-occipital fasciculus	Right	19	90.0	954	954	0	0.26981825	0.0008687652
+Inferior fronto-occipital fasciculus	Right	20	95.0	1182	1182	0	0.21685463	0.00087914476
+Inferior fronto-occipital fasciculus	Right	21	100.0	1684	1669	0	0.102593355	0.001094461

@@ -18,7 +18,7 @@ from IPython.display import HTML, display
 from PIL import Image
 
 from .diffusion import (DMRI_METHODS, DMRI_SUBDIR, dmri_method,
-                        tensor_metrics_paths, tractometry_paths)
+                        saved_tractometry_paths, tensor_metrics_paths)
 from .report_ui import file_link
 from .study import config_for_entry, dataset_for_entry
 
@@ -84,13 +84,24 @@ def _artifact_item(study, entry):
         # GQI and ODF panels: one orientation preview is enough here.
         preview = _first(recon, "*desc-wmFOD_peaks.png", "*desc-GQIODF_peaks.png")
         report = _first(recon, f"{stem}.html")
-        metrics, _ = tractometry_paths(dataset, config, entry)
+        metrics, _, _ = saved_tractometry_paths(dataset, config, entry)
         if report is not None:
             links.append((report, "Full QSIRecon report"))
         if metrics.is_file():
             links.append((metrics, "Tractometry table"))
         caption = ("Direction-coloured fibre-orientation peaks. This is an orientation QC view, "
                    "not streamline density or proof that a tract is intact or disconnected.")
+        overlay = metrics.with_name("bundle_lesion_qc.png")
+        if overlay.is_file():
+            preview = overlay
+            caption = ("Reconstructed bundles in blue and the registered lesion in red on the diffusion "
+                       "reference. Review their alignment and each bundle's anatomy.")
+            links.append((overlay, "Full-size bundle and lesion QC"))
+            for filename, label in (("bundle_profiles.png", "FA and MD profiles"),
+                                    ("bundle_profiles.tsv", "Profile data")):
+                path = metrics.with_name(filename)
+                if path.is_file():
+                    links.append((path, label))
 
     return {
         # Subject labels are only unique inside a dataset, and the same
